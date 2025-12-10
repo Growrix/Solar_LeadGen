@@ -510,6 +510,8 @@ enum NotificationType {
   ASSIGNMENT_ACCEPTED_COMPETITIVE
   BID_WON
   BID_LOST
+  BID_SUBMITTED
+  PAYMENT_FAILED
 }
 
 // ============================================================================

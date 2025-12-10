@@ -191,7 +191,7 @@ export default function NotificationsPage() {
                       {notification.actionUrl && (
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); window.location.href = notification.actionUrl; }}
+                          onClick={(e) => { e.stopPropagation(); if (notification.actionUrl) window.location.href = notification.actionUrl; }}
                           className="px-3 py-1.5 text-xs font-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                           aria-label={`View details for ${notification.title}`}
                         >

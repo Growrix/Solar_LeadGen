@@ -138,6 +138,42 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     }
   };
 
+  // T358: Validate and sanitize action URL to prevent 404 errors
+  const validateActionUrl = (url: string | null, userRole: string): string => {
+    if (!url) return userRole === 'INSTALLER' ? '/installer/dashboard' : '/homeowner/dashboard';
+
+    // Trim whitespace
+    const cleanUrl = url.trim();
+    
+    // Ensure URL starts with /
+    if (!cleanUrl.startsWith('/')) {
+      console.warn('[NotificationDropdown] Invalid actionUrl (missing leading slash):', url);
+      return userRole === 'INSTALLER' ? '/installer/dashboard' : '/homeowner/dashboard';
+    }
+
+    // Validate role-specific routes
+    const isInstallerRoute = cleanUrl.startsWith('/installer');
+    const isHomeownerRoute = cleanUrl.startsWith('/homeowner');
+    const isAdminRoute = cleanUrl.startsWith('/admin');
+
+    // Check role mismatch
+    if (userRole === 'INSTALLER' && !isInstallerRoute) {
+      console.warn('[NotificationDropdown] Role mismatch - installer got non-installer route:', cleanUrl);
+      return '/installer/dashboard';
+    }
+    if (userRole === 'HOMEOWNER' && !isHomeownerRoute) {
+      console.warn('[NotificationDropdown] Role mismatch - homeowner got non-homeowner route:', cleanUrl);
+      return '/homeowner/dashboard';
+    }
+    if (userRole === 'ADMIN' && !isAdminRoute && !isInstallerRoute && !isHomeownerRoute) {
+      // Admin can access any route, but if completely invalid, fallback
+      console.warn('[NotificationDropdown] Invalid route for admin:', cleanUrl);
+      return '/admin/dashboard';
+    }
+
+    return cleanUrl;
+  };
+
   // Handle notification click
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
@@ -145,7 +181,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     }
 
     if (notification.actionUrl) {
-      router.push(notification.actionUrl);
+      const validUrl = validateActionUrl(notification.actionUrl, session?.user?.role || 'HOMEOWNER');
+      router.push(validUrl);
     }
 
     setIsOpen(false);
@@ -160,7 +197,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     }
 
     if (notification.actionUrl) {
-      router.push(notification.actionUrl);
+      const validUrl = validateActionUrl(notification.actionUrl, session?.user?.role || 'HOMEOWNER');
+      router.push(validUrl);
     }
 
     setIsOpen(false);
@@ -294,7 +332,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
 
   // T357: Get smart action button for notification
   const getSmartActionButton = (notification: Notification) => {
-    const baseClasses = "px-3 py-1.5 text-xs font-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary";
+    const baseClasses = "px-3 py-1.5 text-button rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary";
     
     switch (notification.type) {
       case 'BID_WON':
@@ -381,23 +419,6 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     }
   };
 
-  // Get icon container classes based on category
-  const getIconContainerClasses = (category: 'success' | 'error' | 'info' | 'accent') => {
-    const baseClasses = "flex items-center justify-center w-12 h-12 rounded-card flex-shrink-0";
-    
-    switch (category) {
-      case 'success':
-        return `${baseClasses} bg-success/10 text-success`;
-      case 'error':
-        return `${baseClasses} bg-error/10 text-error`;
-      case 'accent':
-        return `${baseClasses} bg-accent/10 text-accent`;
-      case 'info':
-      default:
-        return `${baseClasses} bg-primary/10 text-primary`;
-    }
-  };
-
   // Get relative time
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -425,7 +446,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       >
         <BellIcon className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-semibold text-white ring-2 ring-surface">
+          <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-caption text-foreground ring-2 ring-surface">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -441,13 +462,13 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border p-4 bg-surface">
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className="text-heading-3 text-foreground">
               Notifications
             </h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary-hover transition-colors font-medium"
+                className="flex items-center gap-1.5 text-label text-primary hover:text-primary-hover transition-colors"
                 title="Mark all as read"
                 aria-label="Mark all notifications as read"
               >
@@ -466,7 +487,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-8 text-center">
                 <BellIcon className="h-12 w-12 text-muted-foreground opacity-30 mb-3" />
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-body-small">
                   No notifications yet
                 </p>
               </div>
@@ -505,7 +526,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
                   router.push('/notifications');
                   setIsOpen(false);
                 }}
-                className="w-full text-center text-sm text-primary hover:text-primary-hover font-semibold transition-colors"
+                className="w-full text-center text-label text-primary hover:text-primary-hover transition-colors"
                 aria-label="View all notifications page"
               >
                 View all notifications
@@ -566,20 +587,20 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
             {/* T356: Title + Type Badge + Timestamp */}
             <div className="flex justify-between items-start gap-2 mb-1">
               <div className="flex items-center gap-2 flex-1">
-                <h4 className="text-base font-semibold text-foreground">
+                <h4 className="text-heading-4 text-foreground">
                   {notification.title}
                 </h4>
-                <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${typeBadgeClasses}`}>
+                <span className={`px-2 py-0.5 text-caption rounded-full ${typeBadgeClasses}`}>
                   {typeLabel}
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
+              <span className="text-caption text-muted-foreground whitespace-nowrap">
                 {getRelativeTime(notification.createdAt)}
               </span>
             </div>
 
             {/* Message (full text, no truncation) */}
-            <p className="text-sm text-foreground-secondary mb-3">
+            <p className="text-body-small text-foreground-secondary mb-3">
               {notification.message}
             </p>
 
@@ -589,7 +610,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
                   <button
                     onClick={(e) => onMarkAsRead(notification.id, e)}
                     disabled={isMarkingThis}
-                    className="px-3 py-1.5 text-xs font-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="px-3 py-1.5 text-button rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary"
                     aria-label="Mark this notification as read"
                   >
                     {isMarkingThis ? (
