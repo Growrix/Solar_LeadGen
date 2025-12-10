@@ -279,6 +279,7 @@ export async function confirmPurchase(
         type: 'LEAD_PURCHASED',
         title: 'Your Lead Is Being Processed',
         message: `An installer has accepted your ${lead.quoteType?.replace('_', ' ').toLowerCase() || 'quote'} request.`,
+        actionUrl: `/homeowner/leads/${leadId}`,
         metadata: { leadId },
       });
 

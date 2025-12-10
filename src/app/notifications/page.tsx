@@ -137,7 +137,7 @@ export default function NotificationsPage() {
 
   return (
     <main className="max-w-2xl mx-auto py-8 px-4">
-      <h1 className="text-heading-1 font-heading-bold mb-6 text-foreground">All Notifications</h1>
+      <h1 className="text-2xl font-bold mb-6 text-foreground">All Notifications</h1>
       <div className="bg-surface rounded-modal shadow-modal border border-border">
         {loading ? (
           <div className="flex items-center justify-center p-8">
@@ -146,7 +146,7 @@ export default function NotificationsPage() {
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center">
             <BellIcon className="h-12 w-12 text-muted-foreground opacity-30 mb-3" />
-            <p className="text-muted-foreground text-body-small">No notifications yet</p>
+            <p className="text-muted-foreground text-sm">No notifications yet</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -172,16 +172,16 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-2 mb-1">
-                      <h4 className="text-heading-3 font-heading-semibold text-foreground flex-1">{notification.title}</h4>
-                      <span className="text-caption text-muted-foreground whitespace-nowrap">{getRelativeTime(notification.createdAt)}</span>
+                      <h4 className="text-base font-semibold text-foreground flex-1">{notification.title}</h4>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">{getRelativeTime(notification.createdAt)}</span>
                     </div>
-                    <p className="text-body-small text-foreground-secondary mb-3">{notification.message}</p>
+                    <p className="text-sm text-foreground-secondary mb-3">{notification.message}</p>
                     <div className="flex gap-2">
                       {!notification.isRead && (
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); markAsRead(notification.id); }}
-                          className="px-3 py-1.5 text-caption font-caption-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="px-3 py-1.5 text-xs font-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
                           aria-label="Mark this notification as read"
                         >
                           <CheckCheck className="h-3 w-3" />
@@ -192,7 +192,7 @@ export default function NotificationsPage() {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); window.location.href = notification.actionUrl; }}
-                          className="px-3 py-1.5 text-caption font-caption-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="px-3 py-1.5 text-xs font-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                           aria-label={`View details for ${notification.title}`}
                         >
                           View

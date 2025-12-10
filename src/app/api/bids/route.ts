@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { createNotification } from '@/lib/services/notification-service';
 import type { CreateBidRequest, GetBidsResponse } from '@/types/bid';
 
 /**
@@ -152,17 +153,38 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Trigger notification to homeowner
-    console.log('[POST /api/bids] Bid submitted:', {
+    // T351: Send BID_SUBMITTED notification to homeowner
+    const installer = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { companyName: true, name: true }
+    });
+
+    const installerName = installer?.companyName || installer?.name || 'An installer';
+    const leadLocation = `${lead.location}${lead.postcode ? ', ' + lead.postcode : ''}`;
+
+    await createNotification({
+      userId: lead.homeownerId,
+      type: 'BID_SUBMITTED',
+      title: 'New Bid Received',
+      message: `${installerName} has submitted a bid for your ${leadLocation} project. Review all bids and select a winner.`,
+      actionUrl: `/homeowner/leads/${body.leadId}?modal=reviewBids`,
+      metadata: {
+        bidId: bid.id,
+        installerId: session.user.id,
+        installerName: installerName,
+        bidTotal: bid.finalTotal,
+        leadLocation: leadLocation
+      }
+    });
+
+    console.log('[POST /api/bids] Bid submitted and notification sent:', {
       bidId: bid.id,
       leadId: lead.id,
       installerId: session.user.id,
       amount: bid.amount,
-      finalTotal: bid.finalTotal
+      finalTotal: bid.finalTotal,
+      homeownerId: lead.homeownerId
     });
-
-    // TODO: Send email notification to homeowner
-    // await sendBidSubmittedEmail(lead.homeowner.email, lead.location);
 
     return NextResponse.json(
       {

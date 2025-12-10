@@ -174,7 +174,7 @@ export async function POST(
       type: 'BID_WON',
       title: '🎉 Congratulations! Your bid was selected',
       message: `The homeowner at ${leadLocation} has selected your bid! Proceed to payment to unlock full contact details and begin installation.`,
-      actionUrl: `/installer/leads/${bid.leadId}`,
+      actionUrl: `/installer/leads/${bid.leadId}?action=payment&bidId=${bidId}`,
       metadata: {
         bidId: bid.id,
         leadId: bid.leadId,

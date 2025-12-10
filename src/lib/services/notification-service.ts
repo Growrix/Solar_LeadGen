@@ -23,6 +23,81 @@ import { sendEmail } from '@/lib/sendgrid';
 import { CreateNotificationInput } from '@/types/notification';
 
 /**
+ * T353: Validate and correct actionUrl based on user role
+ * 
+ * @param userId - Target user ID
+ * @param type - Notification type
+ * @param actionUrl - Original action URL
+ * @param metadata - Notification metadata
+ * @returns Validated/corrected action URL or undefined
+ */
+async function validateActionUrl(
+  userId: string,
+  type: NotificationType,
+  actionUrl: string | undefined,
+  metadata: Record<string, any>
+): Promise<string | undefined> {
+  if (!actionUrl) return undefined;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true }
+    });
+
+    if (!user) {
+      console.warn(`[Notification] User not found for validation: ${userId}`);
+      return actionUrl;
+    }
+
+    const rolePrefix = user.role.toLowerCase();
+    
+    // Ensure URL starts with correct role prefix
+    if (!actionUrl.startsWith(`/${rolePrefix}/`)) {
+      console.warn(`[Notification] Invalid role prefix for ${user.role}: ${actionUrl}`);
+      
+      // Auto-correct based on notification type
+      const leadId = metadata.leadId;
+      
+      switch (type) {
+        case 'NEW_LEAD':
+          return user.role === 'ADMIN' 
+            ? `/admin/leads/${leadId}` 
+            : `/installer/leads`;
+            
+        case 'LEAD_ASSIGNED':
+        case 'BID_WON':
+          return `/installer/leads/${leadId}`;
+          
+        case 'LEAD_PURCHASED':
+        case 'LEAD_APPROVED':
+          return user.role === 'HOMEOWNER' 
+            ? `/homeowner/leads/${leadId}` 
+            : `/installer/purchased-leads`;
+            
+        case 'BID_SUBMITTED':
+          return `/homeowner/leads/${leadId}?modal=reviewBids`;
+          
+        case 'BID_LOST':
+          return `/installer/leads`;
+          
+        case 'QUOTE_ACCEPTED':
+          return `/installer/purchased-leads`;
+          
+        default:
+          console.warn(`[Notification] No auto-correct rule for type: ${type}`);
+          return actionUrl;
+      }
+    }
+
+    return actionUrl;
+  } catch (error) {
+    console.error('[Notification] Error validating actionUrl:', error);
+    return actionUrl; // Return original on error
+  }
+}
+
+/**
  * Create and deliver notification
  * 
  * @param data - Notification data
@@ -42,6 +117,14 @@ export async function createNotification(
   data: CreateNotificationInput
 ): Promise<void> {
   try {
+    // T353: Validate and correct actionUrl based on user role
+    const validatedUrl = await validateActionUrl(
+      data.userId,
+      data.type,
+      data.actionUrl,
+      data.metadata || {}
+    );
+
     // 1. Save to database
     const notification = await prisma.notification.create({
       data: {
@@ -49,7 +132,7 @@ export async function createNotification(
         type: data.type,
         title: data.title,
         message: data.message,
-        actionUrl: data.actionUrl,
+        actionUrl: validatedUrl,
         metadata: data.metadata,
         isRead: false,
         createdAt: new Date(),
