@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: SolarMatch - Chat API
+  description: |
+    Real-time chat API for communication between homeowners and installers after lead purchase.
+    Supports instant message delivery, automatic persistence, and admin monitoring.
+    Uses Pusher Channels for real-time delivery with database backup.
+  version: 1.0.0
+  contact:
+    name: SolarMatch API Support
+    email: api@solarmatch.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://solarmatch.com/api
+    description: Production server
+
+tags:
+  - name: Chat
+    description: Real-time chat endpoints
+
+paths:
+  /chat/{leadId}/messages:
+    get:
+      tags:
+        - Chat
+      summary: Get chat history for a lead
+      description: |
+        Retrieves all chat messages for a specific lead.
+        - Homeowners and installers can access chats for their own leads
+        - Admins can access all chats for monitoring and compliance
+        - Messages sorted chronologically (oldest first)
+        - Full conversation replay available
+      operationId: getChatHistory
+      parameters:
+        - name: leadId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Lead ID
+          example: 'clxyz123abc'
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ChatMessage'
+                  totalCount:
+                    type: integer
+                    example: 15
+        '401':
+          description: Unauthorized - must be authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - not authorized to access this chat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+    post:
+      tags:
+        - Chat
+      summary: Send a chat message
+      description: |
+        Sends a message in a lead's chat conversation.
+        - Message is immediately saved to database (automatic persistence)
+        - Real-time delivery via Pusher to recipient
+        - Notification sent to recipient
+        - Logged in audit trail
+        - Admins can view but not send messages (read-only monitoring)
+      operationId: sendMessage
+      parameters:
+        - name: leadId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Lead ID
+          example: 'clxyz123abc'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  example: 'Hi, I have a question about the installation timeline.'
+                  description: Message content (max 2000 characters)
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessage'
+        '400':
+          description: Invalid message content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - must be authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - not authorized to send messages in this chat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                adminCannotSend:
+                  summary: Admin cannot send messages
+                  value:
+                    error: 'Admins have read-only access to chats'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    ChatMessage:
+      type: object
+      required:
+        - id
+        - leadId
+        - senderId
+        - senderName
+        - senderRole
+        - message
+        - timestamp
+      properties:
+        id:
+          type: string
+          example: 'clmsg123abc'
+          description: Unique message ID
+        leadId:
+          type: string
+          example: 'clxyz123abc'
+          description: Lead ID
+        senderId:
+          type: string
+          example: 'clusr456def'
+          description: Sender's user ID
+        senderName:
+          type: string
+          example: 'John Smith'
+          description: Sender's display name
+        senderRole:
+          type: string
+          enum: [HOMEOWNER, INSTALLER]
+          example: 'INSTALLER'
+          description: Sender's role (admins cannot send messages)
+        message:
+          type: string
+          example: 'Hi, I have a question about the installation timeline.'
+          description: Message content
+        timestamp:
+          type: string
+          format: date-time
+          example: '2025-10-15T12:34:56Z'
+          description: Message timestamp (ISO 8601)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: 'Lead not found'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from NextAuth session

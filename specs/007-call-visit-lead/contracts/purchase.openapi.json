@@ -1,0 +1,69 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CALL_VISIT Lead Purchase",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/installer/leads/{id}/purchase": {
+      "post": {
+        "summary": "Purchase a CALL_VISIT lead",
+        "tags": ["installer", "leads"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Lead UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lead purchased successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "lead": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "string"},
+                        "status": {"type": "string", "enum": ["PURCHASED"]},
+                        "installerId": {"type": "string"},
+                        "purchasedAt": {"type": "string", "format": "date-time"},
+                        "leadPrice": {"type": "number"},
+                        "maskedContact": {"type": "boolean", "example": false},
+                        "contact": {
+                          "type": "object",
+                          "properties": {
+                            "name": {"type": "string"},
+                            "phone": {"type": "string"}
+                          }
+                        }
+                      },
+                      "required": ["id", "status", "installerId", "purchasedAt", "leadPrice"]
+                    }
+                  },
+                  "required": ["lead"]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lead already purchased",
+            "content": {"application/json": {"schema": {"type": "object", "properties": {"error": {"type": "string", "example": "already_purchased"}}}}}
+          },
+          "400": {
+            "description": "Invalid status or expired",
+            "content": {"application/json": {"schema": {"type": "object", "properties": {"error": {"type": "string", "example": "invalid_status"}}}}}
+          },
+          "404": {
+            "description": "Lead not found"
+          }
+        }
+      }
+    }
+  }
+}

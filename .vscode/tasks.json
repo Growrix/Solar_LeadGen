@@ -1,0 +1,45 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Delete .storybook config",
+			"type": "shell",
+			"command": "rmdir /s /q \".storybook\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Delete stories directory",
+			"type": "shell",
+			"command": "rmdir /s /q \"stories\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Delete storybook config contract",
+			"type": "shell",
+			"command": "del /f /q \"specs\\004-centralized-theme-color\\contracts\\storybook.config.contract.md\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Delete backup storybook config contract",
+			"type": "shell",
+			"command": "del /f /q \"backup-2025-10-28\\specs\\004-centralized-theme-color\\contracts\\storybook.config.contract.md\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Move root .md files to DOC",
+			"type": "shell",
+			"command": "move /Y BLUE-COLOR-BUG-AUDIT.md DOC\\ && move /Y BLUE-COLOR-BUG-FIX-REPORT.md DOC\\ && move /Y SHADCN-REMOVAL-REPORT.md DOC\\ && move /Y THEME-REMOVAL-AUDIT.md DOC\\ && move /Y THEME-AUDIT-REPORT.md DOC\\ && move /Y TESTING_MODAL_FIX.md DOC\\ && move /Y TESTING-GUIDE.md DOC\\ && move /Y GLOBALS-CLEANUP-V2-REPORT.md DOC\\",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

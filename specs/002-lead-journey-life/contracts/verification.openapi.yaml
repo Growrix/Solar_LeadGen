@@ -1,0 +1,185 @@
+openapi: 3.0.3
+info:
+  title: SolarMatch - Phone Verification API
+  description: API for phone number verification via OTP (One-Time Password)
+  version: 1.0.0
+  contact:
+    name: SolarMatch API Support
+    email: api@solarmatch.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://solarmatch.com/api
+    description: Production server
+
+tags:
+  - name: Verification
+    description: Phone number verification endpoints
+
+paths:
+  /verification/send-otp:
+    post:
+      tags:
+        - Verification
+      summary: Send OTP to phone number
+      description: |
+        Sends a 6-digit OTP code to the specified phone number via SMS.
+        Rate limited to 3 requests per hour per phone number.
+        OTP expires after 10 minutes.
+      operationId: sendOTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumber
+              properties:
+                phoneNumber:
+                  type: string
+                  pattern: '^\+?[1-9]\d{1,14}$'
+                  example: '+447123456789'
+                  description: Phone number in E.164 format
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'OTP sent to +447123456789'
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    example: '2025-10-15T12:30:00Z'
+        '400':
+          description: Invalid phone number
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: 'Rate limit exceeded. Try again in 45 minutes.'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  /verification/verify-otp:
+    post:
+      tags:
+        - Verification
+      summary: Verify OTP code
+      description: |
+        Verifies the OTP code sent to the phone number.
+        Maximum 3 attempts allowed per OTP.
+        Marks user as verified upon successful verification.
+      operationId: verifyOTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumber
+                - code
+              properties:
+                phoneNumber:
+                  type: string
+                  pattern: '^\+?[1-9]\d{1,14}$'
+                  example: '+447123456789'
+                  description: Phone number in E.164 format
+                code:
+                  type: string
+                  pattern: '^\d{6}$'
+                  example: '123456'
+                  description: 6-digit OTP code
+      responses:
+        '200':
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Phone number verified successfully'
+                  verifiedAt:
+                    type: string
+                    format: date-time
+                    example: '2025-10-15T12:25:30Z'
+        '400':
+          description: Invalid code or verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidCode:
+                  summary: Invalid OTP code
+                  value:
+                    error: 'Invalid OTP code'
+                expired:
+                  summary: OTP expired
+                  value:
+                    error: 'OTP expired. Request a new code.'
+                maxAttempts:
+                  summary: Too many attempts
+                  value:
+                    error: 'Maximum attempts exceeded. Request a new code.'
+        '404':
+          description: No pending verification found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: 'Invalid phone number format'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from NextAuth session

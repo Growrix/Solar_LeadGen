@@ -1,0 +1,61 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Installer Lead Feed (CALL_VISIT subset)", "version": "1.0.0"},
+  "paths": {
+    "/api/installer/leads": {
+      "get": {
+        "summary": "List CALL_VISIT leads available or purchased by installer",
+        "tags": ["installer", "leads"],
+        "parameters": [
+          {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1, "default": 1}},
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 25}},
+          {"name": "quoteType", "in": "query", "schema": {"type": "string", "enum": ["CALL_VISIT"], "default": "CALL_VISIT"}, "required": true}
+        ],
+        "responses": {
+          "200": {
+            "description": "Paged feed response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "page": {"type": "integer"},
+                    "limit": {"type": "integer"},
+                    "total": {"type": "integer"},
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string"},
+                          "status": {"type": "string", "enum": ["APPROVED", "PURCHASED"]},
+                          "quoteType": {"type": "string", "enum": ["CALL_VISIT"]},
+                          "leadPrice": {"type": "number"},
+                          "installerId": {"type": ["string", "null"]},
+                          "purchasedAt": {"type": ["string", "null"], "format": "date-time"},
+                          "purchasedByMe": {"type": "boolean"},
+                          "purchasedByOther": {"type": "boolean"},
+                          "canPurchase": {"type": "boolean"},
+                          "maskedContact": {"type": "boolean"},
+                          "contact": {
+                            "type": ["object", "null"],
+                            "properties": {
+                              "name": {"type": "string"},
+                              "phone": {"type": "string"}
+                            }
+                          }
+                        },
+                        "required": ["id", "status", "quoteType", "leadPrice", "purchasedByMe", "purchasedByOther", "canPurchase", "maskedContact"]
+                      }
+                    }
+                  },
+                  "required": ["page", "limit", "total", "items"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
