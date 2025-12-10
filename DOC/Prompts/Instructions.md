@@ -2,7 +2,7 @@ commit all the changes to your local repository:
 
 git add .
 git commit -m "Your commit message"
-Push the changes to the remote repository: git push to the branch-name: 008-description-enhance-existing
+Push the changes to the remote repository: git push to the branch-name: Notification
 
 ***Database backup instruction***
 Take a backup of the PostgreSQL database running in Docker to ensure data safety before making any significant changes. Use the following command to create a backup:
