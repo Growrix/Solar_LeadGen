@@ -15,6 +15,9 @@ import {
   createPurchaseIntent, 
   confirmPurchase 
 } from '@/lib/services/purchase-service';
+import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(
   request: NextRequest,
@@ -96,6 +99,52 @@ export async function POST(
           { error: result.error || 'Failed to confirm purchase' },
           { status: 400 }
         );
+      }
+
+      // Send notifications after successful purchase
+      const lead = result.lead;
+      
+      if (lead) {
+        // Get admin users for notification
+        const admins = await prisma.user.findMany({
+          where: { role: UserRole.ADMIN },
+          select: { id: true }
+        });
+        console.log('[POST /api/leads/[id]/purchase] Admin users found:', admins.length, admins.map(a => a.id));
+
+        // Notification 1: Installer confirmation
+        await createNotification({
+          recipientUserId: installerId,
+          actionType: NotificationType.PURCHASE_CONFIRMED,
+          role: UserRole.INSTALLER,
+          messageKey: 'installer.purchase.confirmed',
+          routeKey: 'installer.leads',
+          routeParams: { leadId }
+        });
+
+        // Notification 2: Homeowner notification
+        await createNotification({
+          recipientUserId: lead.homeownerId,
+        actionType: NotificationType.INSTALLER_RESPONDED,
+        role: UserRole.HOMEOWNER,
+        messageKey: 'homeowner.installer.responded',
+        routeKey: 'homeowner.requests',
+        routeParams: { leadId }
+      });
+
+        // Notification 3: Admin notifications
+        if (admins.length > 0) {
+          await createBulkNotifications(
+            admins.map(admin => ({
+              recipientUserId: admin.id,
+              actionType: NotificationType.LEAD_PURCHASED,
+              role: UserRole.ADMIN,
+              messageKey: 'admin.lead.purchased',
+              routeKey: 'admin.dashboard',
+              routeParams: { leadId, installerId }
+            }))
+          );
+        }
       }
 
       return NextResponse.json({

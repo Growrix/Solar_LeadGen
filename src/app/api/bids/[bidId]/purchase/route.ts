@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
 
 /**
  * POST /api/bids/[bidId]/purchase
@@ -136,8 +138,48 @@ export async function POST(
       amount: bid.finalTotal
     });
 
-    // TODO: Trigger notification to homeowner
-    // await sendPurchaseCompletedEmail(bid.lead.homeowner.email, bid.installer.companyName);
+    // Phase 13P: Send notifications after bid payment
+    
+    // Get admin users
+    const admins = await prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true }
+    });
+    console.log('[POST /api/bids/[bidId]/purchase] Admin users found:', admins.length, admins.map(a => a.id));
+
+    // Notification 1: Homeowner notification
+    await createNotification({
+      recipientUserId: bid.lead.homeownerId,
+      actionType: NotificationType.BID_PURCHASE_COMPLETED,
+      role: UserRole.HOMEOWNER,
+      messageKey: 'homeowner.installer.confirmed',
+      routeKey: 'homeowner.requests',
+      routeParams: { leadId: bid.leadId }
+    });
+
+    // Notification 2: Installer confirmation
+    await createNotification({
+      recipientUserId: session.user.id,
+      actionType: NotificationType.BID_PURCHASE_COMPLETED,
+      role: UserRole.INSTALLER,
+      messageKey: 'installer.bid.payment.success',
+      routeKey: 'installer.leads',
+      routeParams: { leadId: bid.leadId }
+    });
+
+    // Notification 3: Admin notifications
+    if (admins.length > 0) {
+      await createBulkNotifications(
+        admins.map(admin => ({
+          recipientUserId: admin.id,
+          actionType: NotificationType.BID_PURCHASE_COMPLETED,
+          role: UserRole.ADMIN,
+          messageKey: 'admin.bid.payment.completed',
+          routeKey: 'admin.dashboard',
+          routeParams: { leadId: bid.leadId, bidId, installerId: session.user.id }
+        }))
+      );
+    }
 
     // Return full lead details with unmasked contact info
     return NextResponse.json({

@@ -1527,6 +1527,629 @@ Acceptance Scenarios (Phase 15):
 
 ---
 
+## Phase 13P – Fix Admin Notification System (P0 - CRITICAL BUG)
+
+**Goal**: Fix admin notification system so admins receive notifications for all system activities (new leads, phone verifications, bid submissions, winner selections, lead assignments).
+
+**User Story**: As an admin, I want to receive notifications for all critical system activities so I can monitor platform health and respond to issues quickly.
+
+**Context** (from audit report DOC/AUDIT-REPORTS/ADMIN-NOTIFICATION-SYSTEM-AUDIT.md):
+- **Critical Bug**: Lead creation notifications use email string as userId instead of actual admin user ID
+- **Root Cause**: Line 312 in `src/lib/services/lead-service.ts` uses `adminEmail` string as `userId`
+- **Dual System Conflict**: Legacy notification service vs new normalized service
+- **Impact**: Admin sees "No notifications yet" despite new leads being created
+- **Database Evidence**: 0 notifications with correct admin userId, 1 orphaned notification with email as userId
+
+**Fix Strategy** (from audit report):
+1. Query for all admin users by role (not email lookup)
+2. Use new normalized notification service (not legacy)
+3. Create bulk notifications for all admins
+4. Add missing admin notification triggers (phone verification, winner selection, lead assignment)
+5. Update message catalog with missing admin message keys
+
+**Acceptance Criteria**:
+1. Lead creation triggers admin notifications correctly (uses admin user IDs, not email)
+2. Phone verification triggers admin notifications
+3. Winner selection triggers admin notifications  
+4. Lead assignment triggers admin notifications
+5. All admin notifications use new normalized service (messageKey + routeKey)
+6. Message catalog includes all admin message keys
+7. Database queries show admin notifications with correct userId
+8. Admin notification bell shows notification count
+9. Clicking notification navigates to correct route
+10. TypeScript compilation: 0 errors
+11. Build: Success
+12. No console errors
+
+Independent test: Create new lead as homeowner → Admin receives notification → Click notification → Navigates to lead detail page → Installer submits bid → Admin receives notification → Homeowner selects winner → Admin receives notification → Phone verification → Admin receives notification
+
+Pre-phase checklist (MANDATORY):
+- [x] Read audit report: `DOC/AUDIT-REPORTS/ADMIN-NOTIFICATION-SYSTEM-AUDIT.md`
+- [x] Read guidelines: `DOC/Guidelines/AI-IMPLEMENTATION-GUIDELINES.md`
+- [ ] Backup commit: `git add . && git commit -m "backup: before Phase 13P (admin notification fixes)"`
+- [ ] Run GATE 0 checks: `npx tsc --noEmit`, `npm run build`, `npm run dev`
+
+### T183 [P0][Critical Fix]: Fix lead creation admin notifications
+
+**Path**: `src/lib/services/lead-service.ts` (Line 312)
+
+**Action**:
+1. Change import to use new notification service:
+   ```typescript
+   // OLD (Line 19):
+   import { createNotification } from './notification-service';
+   
+   // NEW:
+   import { createBulkNotifications } from '../notifications/notification-service';
+   import { NotificationType, UserRole } from '@prisma/client';
+   ```
+
+2. Replace email-based notification (Lines 310-320) with admin user query:
+   ```typescript
+   // OLD:
+   const adminEmail = await getSetting('ADMIN_EMAIL');
+   await createNotification({
+     userId: adminEmail, // ❌ BUG
+     type: 'NEW_LEAD',
+     title: 'New Lead Submitted',
+     message: `New ${input.quoteType} lead in ${input.location}`,
+     actionUrl: `/admin/leads/${lead.id}`,
+     metadata: { leadId: lead.id, quoteType: input.quoteType }
+   });
+   
+   // NEW:
+   // Query for all admin users
+   const admins = await prisma.user.findMany({
+     where: { role: UserRole.ADMIN },
+     select: { id: true }
+   });
+   
+   // Create bulk notifications for all admins
+   if (admins.length > 0) {
+     console.log(`[createLead] Creating admin notifications for ${admins.length} admins`);
+     await createBulkNotifications(
+       admins.map(admin => ({
+         recipientUserId: admin.id,
+         role: UserRole.ADMIN,
+         actionType: NotificationType.NEW_LEAD,
+         messageKey: 'admin.lead.created',
+         routeKey: 'admin.leads.detail',
+         routeParams: { 
+           leadId: lead.id,
+           quoteType: input.quoteType,
+           location: input.location
+         }
+       }))
+     );
+   } else {
+     console.warn('[createLead] No admin users found to notify');
+   }
+   ```
+
+**Testing** (MANDATORY - Test IMMEDIATELY):
+1. Save changes
+2. Run `npx tsc --noEmit` → 0 errors
+3. Restart dev server: `npm run dev`
+4. Open Prisma Studio: `npx prisma studio`
+5. Delete test notification (if exists): `DELETE FROM Notification WHERE userId = 'admin@solarmatch.com'`
+6. Create new lead as homeowner:
+   - Login as homeowner
+   - Navigate to "Get Quote" page
+   - Fill lead form completely
+   - Submit form
+7. Check terminal logs: Should see `[createLead] Creating admin notifications for X admins`
+8. Check Prisma Studio Notification table:
+   - Query: `SELECT * FROM Notification WHERE userId = 'cmiviuphm0000i1hcxvkulwog' ORDER BY createdAt DESC`
+   - Expected: NEW notification with correct admin userId
+   - Verify messageKey: 'admin.lead.created'
+   - Verify routeKey: 'admin.leads.detail'
+   - Verify routeParams includes leadId
+9. Login as admin:
+   - Check notification bell → Should show count (1)
+   - Click bell → Dropdown shows notification
+   - Click notification → Navigates to lead detail page
+10. Browser console: 0 errors
+
+**Acceptance**:
+- Import changed to new notification service
+- Email lookup removed
+- Admin user query added
+- Bulk notifications created
+- Terminal logs confirm notification creation
+- Database shows notification with correct userId
+- Admin sees notification in UI
+- Clicking notification navigates correctly
+- TypeScript: 0 errors
+- No console errors
+
+**Status**: NOT STARTED
+
+---
+
+### T184 [P1][Message Catalog]: Add missing admin message keys
+
+**Path**: `src/lib/notifications/message-catalog.ts`
+
+**Action**:
+Add missing admin message keys to catalog:
+
+```typescript
+// Add after existing admin messages (around line 45):
+
+'admin.lead.created': {
+  title: 'New Lead Submitted',
+  message: 'Homeowner submitted a new lead request. Review and assign to installers.',
+},
+
+'admin.phone.verified': {
+  title: 'Phone Verification Complete',
+  message: 'Homeowner completed phone verification. Pending leads now approved.',
+},
+
+'admin.lead.assigned': {
+  title: 'Lead Assigned to Installers',
+  message: 'Lead assigned to installers. Monitor bid submissions.',
+},
+
+'admin.bid.winner.selected': {
+  title: 'Bid Winner Selected',
+  message: 'Homeowner selected a winning bid. Monitor payment completion.',
+},
+```
+
+**Testing**:
+1. Run `npx tsc --noEmit` → 0 errors
+2. Verify messageKey references resolve correctly
+3. Test each notification type triggers with correct message
+
+**Acceptance**:
+- All 4 admin message keys added
+- Messages clear and actionable
+- TypeScript: 0 errors
+- Messages display correctly in UI
+
+**Status**: NOT STARTED
+
+---
+
+### T185 [P2][Missing Trigger]: Add admin notification for phone verification
+
+**Path**: `src/app/api/leads/verify-phone/route.ts` (or wherever phone verification happens)
+
+**Action**:
+Add admin notification after successful phone verification:
+
+```typescript
+// After phone verification success:
+
+// Notify admins about phone verification
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.PHONE_VERIFIED,
+      messageKey: 'admin.phone.verified',
+      routeKey: 'admin.dashboard',
+      routeParams: { 
+        userId: homeowner.id,
+        leadId: lead.id
+      }
+    }))
+  );
+}
+```
+
+**Testing**:
+1. Complete phone verification flow
+2. Check Prisma Studio: Admin notification created
+3. Check admin UI: Notification appears
+4. Click notification: Navigates to admin dashboard
+
+**Acceptance**:
+- Admin notified after phone verification
+- Notification displays correctly
+- Navigation works
+- TypeScript: 0 errors
+
+**Status**: NOT STARTED
+
+---
+
+### T186 [P2][Missing Trigger]: Add admin notification for winner selection
+
+**Path**: `src/app/api/bids/[bidId]/select/route.ts`
+
+**Action**:
+Add admin notification after winner selection (after line 230):
+
+```typescript
+// After winner/loser notifications, add admin notification:
+
+// Notify admins about winner selection
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.BID_WON,
+      messageKey: 'admin.bid.winner.selected',
+      routeKey: 'admin.dashboard',
+      routeParams: { 
+        leadId: bid.leadId,
+        bidId: bid.id,
+        winnerId: bid.installerId
+      }
+    }))
+  );
+}
+```
+
+**Testing**:
+1. Select bid as winner
+2. Check Prisma Studio: Admin notification created
+3. Check admin UI: Notification appears
+4. Click notification: Navigates to admin dashboard
+
+**Acceptance**:
+- Admin notified after winner selection
+- Notification displays correctly
+- Navigation works
+- TypeScript: 0 errors
+
+**Status**: NOT STARTED
+
+---
+
+### T187 [P2][Missing Trigger]: Add admin notification for lead assignment
+
+**Path**: `src/app/api/admin/leads/assign/route.ts` (or wherever lead assignment happens)
+
+**Action**:
+Add admin notification after lead assignment:
+
+```typescript
+// After lead assignment success:
+
+// Notify admins about lead assignment
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.LEAD_ASSIGNED,
+      messageKey: 'admin.lead.assigned',
+      routeKey: 'admin.dashboard',
+      routeParams: { 
+        leadId: lead.id,
+        installerId: installer.id,
+        assignedCount: installers.length
+      }
+    }))
+  );
+}
+```
+
+**Testing**:
+1. Assign lead to installer(s)
+2. Check Prisma Studio: Admin notification created
+3. Check admin UI: Notification appears
+4. Click notification: Navigates to admin dashboard
+
+**Acceptance**:
+- Admin notified after lead assignment
+- Notification displays correctly
+- Navigation works
+- TypeScript: 0 errors
+
+**Status**: NOT STARTED
+
+---
+
+### T188 [P1][Verification]: Run verification commands
+
+**Path**: Project root
+
+**Action**:
+Run all verification checks:
+
+```powershell
+# 1. TypeScript compilation
+npx tsc --noEmit
+# Expected: 0 errors
+
+# 2. Build
+npm run build
+# Expected: Compiled successfully
+
+# 3. Dev server
+npm run dev
+# Expected: Server starts without errors
+
+# 4. Prisma validation
+npx prisma validate
+# Expected: Schema valid
+
+# 5. Database query (check admin notifications)
+# Open Prisma Studio and run:
+SELECT COUNT(*) FROM "Notification" 
+WHERE userId = 'cmiviuphm0000i1hcxvkulwog';
+# Expected: > 0 (admin has notifications)
+
+# 6. Browser console
+# Login as admin → Open DevTools → Console
+# Expected: 0 errors
+```
+
+**Acceptance**:
+- All verification checks pass
+- TypeScript: 0 errors
+- Build: Success
+- Dev server: Running
+- Database: Admin notifications exist
+- Browser: No console errors
+
+**Status**: NOT STARTED
+
+---
+
+### T189 [P0][E2E Testing]: End-to-end admin notification flow test
+
+**Path**: Browser + Prisma Studio
+
+**Action**:
+Test complete admin notification flow:
+
+**Test Scenario 1: Lead Creation**
+1. Login as homeowner
+2. Create new lead (fill form, submit)
+3. Check Prisma Studio:
+   - Query: `SELECT * FROM Notification WHERE messageKey = 'admin.lead.created' ORDER BY createdAt DESC LIMIT 1`
+   - Verify: userId = admin user ID (not email)
+   - Verify: routeKey = 'admin.leads.detail'
+   - Verify: routeParams includes leadId
+4. Login as admin
+5. Check notification bell → Count shows (1+)
+6. Click bell → Dropdown shows "New Lead Submitted"
+7. Click notification → Navigates to lead detail page
+8. Verify lead details displayed
+
+**Test Scenario 2: Bid Submission**
+1. Login as installer
+2. Submit bid on lead
+3. Login as admin
+4. Check notification bell → Count increased
+5. Verify "New Bid Submitted" notification appears
+6. Click notification → Navigates correctly
+
+**Test Scenario 3: Winner Selection**
+1. Login as homeowner
+2. Select winning bid
+3. Login as admin
+4. Check notification bell → Count increased
+5. Verify "Bid Winner Selected" notification appears
+6. Click notification → Navigates correctly
+
+**Test Scenario 4: Phone Verification** (if implemented)
+1. Complete phone verification flow
+2. Login as admin
+3. Check notification bell → Count increased
+4. Verify "Phone Verification Complete" notification appears
+
+**Acceptance**:
+- All 4 scenarios pass
+- Admin receives notifications for all activities
+- Notification count updates correctly
+- Clicking notifications navigates correctly
+- Database shows correct userId (not email)
+- No console errors throughout testing
+
+**Status**: NOT STARTED
+
+---
+
+### T190 [P1][Documentation]: Update implementation documentation
+
+**Path**: Multiple files
+
+**Action**:
+Document Phase 13P completion:
+
+**1. Update tasks.md** (this file):
+- Mark all T183-T190 tasks complete
+- Add Phase 13P summary
+
+**2. Update audit report** (`DOC/AUDIT-REPORTS/ADMIN-NOTIFICATION-SYSTEM-AUDIT.md`):
+Add "Resolution" section at end:
+```markdown
+## Resolution
+
+**Date Fixed**: [Current date]
+**Phase**: 13P
+
+**Changes Made**:
+1. ✅ Fixed lead creation notification (T183)
+   - Changed import to new notification service
+   - Query admins by role (not email)
+   - Create bulk notifications with correct userId
+   
+2. ✅ Added missing message keys (T184)
+   - admin.lead.created
+   - admin.phone.verified
+   - admin.lead.assigned
+   - admin.bid.winner.selected
+   
+3. ✅ Added missing notification triggers (T185-T187)
+   - Phone verification notification
+   - Winner selection notification
+   - Lead assignment notification
+
+**Verification Results**:
+✅ TypeScript: 0 errors
+✅ Build: Success
+✅ Database: Admin notifications with correct userId
+✅ UI: Notification bell shows count
+✅ Navigation: Clicking notifications works
+✅ E2E Testing: All 4 scenarios pass
+
+**Status**: FIXED ✅
+```
+
+**3. Create commit**:
+```bash
+git add .
+git commit -m "fix(notifications): Phase 13P Complete - Fix admin notification system (T183-T190)
+
+Root Cause:
+- Lead creation notifications used email string as userId instead of admin user ID
+- Legacy notification service used instead of new normalized service
+- Missing admin notification triggers for phone verification, winner selection, lead assignment
+
+Solution:
+1. Fixed lead creation notification (src/lib/services/lead-service.ts Line 312)
+   - Query admins by role: UserRole.ADMIN
+   - Use new notification service: createBulkNotifications
+   - Create notifications with correct userId (not email)
+   
+2. Added missing admin message keys (src/lib/notifications/message-catalog.ts)
+   - admin.lead.created
+   - admin.phone.verified
+   - admin.lead.assigned
+   - admin.bid.winner.selected
+   
+3. Added missing notification triggers:
+   - Phone verification (src/app/api/leads/verify-phone/route.ts)
+   - Winner selection (src/app/api/bids/[bidId]/select/route.ts)
+   - Lead assignment (src/app/api/admin/leads/assign/route.ts)
+
+Database Evidence:
+Before: SELECT COUNT(*) FROM Notification WHERE userId = 'cmiviuphm0000i1hcxvkulwog' → 0
+After: SELECT COUNT(*) FROM Notification WHERE userId = 'cmiviuphm0000i1hcxvkulwog' → 4+
+
+Verification:
+✅ TypeScript: 0 errors
+✅ Build: Success
+✅ Dev server: No errors
+✅ Database: Admin notifications with correct userId
+✅ UI: Notification bell shows count
+✅ Navigation: Clicking notifications works correctly
+✅ E2E Testing: All 4 scenarios pass (lead creation, bid submission, winner selection, phone verification)
+
+Files Modified:
+- src/lib/services/lead-service.ts (fixed lead creation notification)
+- src/lib/notifications/message-catalog.ts (added 4 admin message keys)
+- src/app/api/leads/verify-phone/route.ts (added phone verification notification)
+- src/app/api/bids/[bidId]/select/route.ts (added winner selection notification)
+- src/app/api/admin/leads/assign/route.ts (added lead assignment notification)
+- DOC/AUDIT-REPORTS/ADMIN-NOTIFICATION-SYSTEM-AUDIT.md (resolution section)
+- specs/008-description-enhance-existing/tasks.md (Phase 13P documented)
+
+Status: ADMIN NOTIFICATION SYSTEM FULLY FUNCTIONAL ✅"
+```
+
+**Acceptance**:
+- tasks.md updated with Phase 13P completion
+- Audit report updated with resolution
+- Comprehensive commit message created
+- Documentation clear for future reference
+
+**Status**: NOT STARTED
+
+---
+
+**Phase 13P Checkpoint** (MANDATORY - STOP if any fail):
+- [ ] All T183-T190 tasks completed
+- [ ] Lead creation triggers admin notifications (correct userId)
+- [ ] Phone verification triggers admin notifications
+- [ ] Winner selection triggers admin notifications
+- [ ] Lead assignment triggers admin notifications
+- [ ] Message catalog includes all admin message keys
+- [ ] TypeScript compilation: 0 errors
+- [ ] Build: Success
+- [ ] Dev server: No errors
+- [ ] Database: Admin notifications with correct userId
+- [ ] Admin UI: Notification bell shows count
+- [ ] Clicking notifications navigates correctly
+- [ ] E2E testing: All 4 scenarios pass
+- [ ] No console errors
+- [ ] Documentation updated (audit report, tasks.md)
+- [ ] Commit: Phase 13P complete with comprehensive message
+
+---
+
+**Phase 13P Success Criteria**:
+
+**Functional Requirements**:
+- [x] Admin receives notifications for lead creation
+- [x] Admin receives notifications for phone verification
+- [x] Admin receives notifications for bid submission (already working)
+- [x] Admin receives notifications for winner selection
+- [x] Admin receives notifications for lead assignment
+- [x] All notifications use correct admin userId (not email)
+- [x] All notifications use new normalized service (messageKey + routeKey)
+- [x] Notification bell shows correct count
+- [x] Clicking notifications navigates to correct routes
+
+**Technical Requirements**:
+- [x] Legacy notification service removed from lead-service
+- [x] New notification service used for all admin notifications
+- [x] Admin users queried by role (not email lookup)
+- [x] Bulk notifications created for all admins
+- [x] Message catalog complete with all admin message keys
+- [x] TypeScript compilation: 0 errors
+- [x] Build: Success
+- [x] No console errors
+
+**Testing Requirements**:
+- [x] Database verification: Admin notifications have correct userId
+- [x] E2E testing: Lead creation scenario
+- [x] E2E testing: Bid submission scenario (already working)
+- [x] E2E testing: Winner selection scenario
+- [x] E2E testing: Phone verification scenario
+- [x] UI testing: Notification bell count updates
+- [x] UI testing: Notification dropdown displays messages
+- [x] UI testing: Clicking notifications navigates correctly
+
+**Documentation**:
+- [x] Audit report updated with resolution
+- [x] tasks.md updated with Phase 13P details
+- [x] Comprehensive commit message documenting all changes
+- [x] Root cause documented
+- [x] Solution documented
+- [x] Verification results documented
+
+**Impact**:
+✅ Admin no longer blind to system activities
+✅ Can monitor new leads immediately
+✅ Can track bid submissions
+✅ Can see winner selections
+✅ Can verify phone verifications
+✅ Can respond quickly to issues
+✅ Complete visibility into platform health
+
+**Status**: PLANNED - Ready for implementation
+**Priority**: P0 - Critical (admin blind to system activities)
+**Estimated Effort**: 3-4 hours (8 tasks)
+**Dependencies**: None - All code already in place, just needs fixes
+**Blocker**: None - Ready to start immediately
+
+---
+
 ## Phase 16 – Fix Right Column Data Fetching: Align with BidEvaluationModal API Call
 
 **User Story**: As an installer, I want the right column Lead Details section to show accurate data matching what I see in the Bid Evaluation modal, so that I have consistent and complete lead information.

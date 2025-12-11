@@ -7,15 +7,24 @@ export type MessageKey =
   | 'homeowner.responses.available'
   | 'homeowner.selection.confirmed'
   | 'homeowner.appointment.suggested'
+  | 'homeowner.installer.responded'
+  | 'homeowner.installer.confirmed'
+  | 'homeowner.bid.received'
   // Installer messages (professional tone)
   | 'installer.new.opportunity'
   | 'installer.bid.won'
   | 'installer.bid.outcome.other'
   | 'installer.data.update'
+  | 'installer.purchase.confirmed'
+  | 'installer.bid.payment.success'
   // Admin messages (operational tone)
   | 'admin.assignment.started'
   | 'admin.assignment.ended'
-  | 'admin.config.updated';
+  | 'admin.config.updated'
+  | 'admin.lead.purchased'
+  | 'admin.bid.submitted'
+  | 'admin.bid.winner.selected'
+  | 'admin.bid.payment.completed';
 
 export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: string }> = {
   // Homeowner messages (avoid: lead, purchased, paid)
@@ -35,6 +44,18 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
     title: 'Next Steps Suggested',
     message: 'An installer suggested next steps. Review and confirm.',
   },
+  'homeowner.installer.responded': {
+    title: 'Installer Responded',
+    message: 'An installer has responded to your request and will contact you soon.',
+  },
+  'homeowner.installer.confirmed': {
+    title: 'Installer Confirmed',
+    message: 'Your installer confirmed next steps. They\'ll reach out shortly.',
+  },
+  'homeowner.bid.received': {
+    title: 'New Response Received',
+    message: 'An installer submitted a response to your request. Review and select.',
+  },
 
   // Installer messages
   'installer.new.opportunity': {
@@ -53,6 +74,14 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
     title: 'Request Updated',
     message: 'The request details were updated. Review in your feed.',
   },
+  'installer.purchase.confirmed': {
+    title: 'Purchase Confirmed',
+    message: 'Purchase confirmed. You can now contact the homeowner.',
+  },
+  'installer.bid.payment.success': {
+    title: 'Payment Successful',
+    message: 'Payment successful. Contact details unlocked.',
+  },
 
   // Admin messages
   'admin.assignment.started': {
@@ -66,6 +95,22 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'admin.config.updated': {
     title: 'Configuration Updated',
     message: 'Configuration updated successfully.',
+  },
+  'admin.lead.purchased': {
+    title: 'Lead Purchased',
+    message: 'An installer purchased a lead. View transaction details.',
+  },
+  'admin.bid.submitted': {
+    title: 'New Bid Submitted',
+    message: 'An installer submitted a new bid. Review in dashboard.',
+  },
+  'admin.bid.winner.selected': {
+    title: 'Bid Winner Selected',
+    message: 'Homeowner selected a winning bid. Track payment progress.',
+  },
+  'admin.bid.payment.completed': {
+    title: 'Bid Payment Completed',
+    message: 'Winning installer completed payment. Transaction successful.',
   },
 };
 

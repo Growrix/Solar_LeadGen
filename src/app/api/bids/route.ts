@@ -9,7 +9,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createNotification } from '@/lib/services/notification-service';
+import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
 import type { CreateBidRequest, GetBidsResponse } from '@/types/bid';
 
 /**
@@ -153,30 +154,38 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // T351: Send BID_SUBMITTED notification to homeowner
-    const installer = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { companyName: true, name: true }
+    // Phase 13P: Send notifications using new normalized system
+    
+    // Get admin users for notification
+    const admins = await prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true }
     });
+    console.log('[POST /api/bids] Admin users found:', admins.length, admins.map(a => a.id));
 
-    const installerName = installer?.companyName || installer?.name || 'An installer';
-    const leadLocation = `${lead.location}${lead.postcode ? ', ' + lead.postcode : ''}`;
-
-    // T402: Fixed actionUrl to point to dashboard with modal parameters
+    // Notification 1: Homeowner gets bid notification
     await createNotification({
-      userId: lead.homeownerId,
-      type: 'BID_SUBMITTED',
-      title: 'New Bid Received',
-      message: `${installerName} has submitted a bid for your ${leadLocation} project. Review all bids and select a winner.`,
-      actionUrl: `/homeowner/dashboard?modal=reviewBids&leadId=${body.leadId}`,
-      metadata: {
-        bidId: bid.id,
-        installerId: session.user.id,
-        installerName: installerName,
-        bidTotal: bid.finalTotal,
-        leadLocation: leadLocation
-      }
+      recipientUserId: lead.homeownerId,
+      actionType: NotificationType.BID_SUBMITTED,
+      role: UserRole.HOMEOWNER,
+      messageKey: 'homeowner.bid.received',
+      routeKey: 'homeowner.requests.review',
+      routeParams: { leadId: body.leadId, bidId: bid.id }
     });
+
+    // Notification 2: Admin gets notification about new bid
+    if (admins.length > 0) {
+      await createBulkNotifications(
+        admins.map(admin => ({
+          recipientUserId: admin.id,
+          actionType: NotificationType.BID_SUBMITTED,
+          role: UserRole.ADMIN,
+          messageKey: 'admin.bid.submitted',
+          routeKey: 'admin.dashboard',
+          routeParams: { leadId: body.leadId, bidId: bid.id, installerId: session.user.id }
+        }))
+      );
+    }
 
     console.log('[POST /api/bids] Bid submitted and notification sent:', {
       bidId: bid.id,

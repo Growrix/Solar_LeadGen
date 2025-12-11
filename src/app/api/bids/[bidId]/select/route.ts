@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createNotification as createNotificationNew } from '@/lib/notifications/notification-service';
+import { createNotification as createNotificationNew, createBulkNotifications } from '@/lib/notifications/notification-service';
 import { createNotification as createLegacyNotification } from '@/lib/services/notification-service';
 
 /**
@@ -231,6 +231,34 @@ export async function POST(
       losersNotified: loserBids.length,
       totalBids: allBids.length
     });
+
+    // Admin notification when winner selected
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true }
+    });
+
+    if (admins.length > 0) {
+      await createBulkNotifications(
+        admins.map(admin => ({
+          recipientUserId: admin.id,
+          actionType: 'BID_WON',
+          role: 'ADMIN',
+          messageKey: 'admin.bid.winner.selected',
+          routeKey: 'admin.dashboard',
+          routeParams: {
+            leadId: bid.leadId,
+            bidId: bid.id,
+            winnerId: bid.installerId
+          },
+          metadata: {
+            winnerCompany: bid.installer.companyName,
+            finalTotal: bid.finalTotal,
+            leadLocation
+          }
+        }))
+      );
+    }
 
     // ✅ T190: Add audit logging for bid selection
     await prisma.auditLog.create({

@@ -2990,3 +2990,64 @@ The notification system is a complete mess. There are a lot of issues still pers
 ***Strickt rules***  Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create the plan for new notification system based on your deep audit. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
 
 ***Mandatory*** must do the playwright e2e testing instructions after completing the new notification system implimentation. 
+
+-------------------------------------------------------------------------------------------
+
+
+
+***Testing flow : ***
+
+# Homeowners:
+- Created new homeowners account > generated first lead > end - no notification in this action.
+- Phone verified > notification - Phone Verified 
+your phone number has been successfully verified. All 1 of your lead(s) have been updated with verified status. (I do not want to show lead(s) word here , change it to "your requests" or something like that)
+- created more leads > no notifications in the admin side. > admin assigned to installers > installer notification - New Opportunity
+NEW_OPPORTUNITY
+A new homeowner request is available in your feed. 
+> I do not need tags like NEW_OPPORTUNITY in any notification. make it simple. 
+
+- After installer purchased the call/visit lead > There is no notification for the Installer side - there should be a notification.
+- After installer purchased the call/visit lead > Homeowners notification - Installer Responded to Your Request
+Purchase
+An installer has responded to your solar request and will contact you soon. > here I do not want any tags like purchase. 
+- After installer purchased the call/visit lead > There is no Admin Notifications.
+
+
+- After assigining the bidding lead > Installer got notification > But after installer submitted the bid the admin doesnt get any notifications - there should be a notification for the admin side as well.
+- After submitting the BID to homeowners > homeowners notification - New Bid Received
+Bid
+Invalid Date
+
+An installer has submitted a bid for your Sydney, 3000 project. Review all bids and select a winner.
+> here I do not want any tags like Bid. and also why there is no time there?  it is showing invalid date , need fixing there. 
+
+- after homeowner selected winner > installer got notification - I do not need the Proceed to payment button in the notification. > also there is no Admin notifications - there should be a notification for the admin side as well.
+- After the bid is purchased by the winner installer > there is no notification for admins and also installers and homeowners. 
+
+- I do not need tags in the notifications , e.g System , Purchase. I want you to remove the tags from the notification cards in the notification center modal for all 3 user roles.
+- The Admin notifications are not showing up, check if it implimented or not. 
+- Also I do not want the homewoners see workds like lead, purchase, paid , etc. I want you to change the messages accordingly to polite and relevant messages for homeowners. no notification message should have these kind of words. Even I mentioed earlier, it is applied partially. 
+
+***Overall*** it seems like it is very complicated to identify each flow and its notification based on the user interactions. All the texts were not even well planned, noification mapping was not well done, there are lots of gaps . Even I explained above as much as I could find, but there are more that I still do not know even what is there and what is not. 
+
+***Instructions*** I want you to track down each user flows end to end and identify all the notification messages according to user actions. e.g  - After the bid is purchased by the winner installer > there is no notification for admins and also installers and homeowners. 
+I need you to track down everything within notification system in 1 audit report. 
+
+***Strickt rules*** do the froentend backend comprhensive audit. ollow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md.
+
+
+--------------------------------------------------------------------------------
+
+I do not agree with this (❌ ROOT CAUSE IDENTIFIED:
+Admin has 0 notifications because NO ACTIVITIES HAVE OCCURRED since the new notification system was implemented.
+
+Recent bids in database: Created Dec 8-11 (BEFORE new code)
+Recent purchases: Created Dec 8-11 (BEFORE new code)
+New notification service code: Just deployed TODAY (Dec 11)
+No new bids, winner selections, or purchases have triggered since code deployment) .
+
+*** I have tested by generating new lead from homeowners account and the admin notification dropdown still not showing any notificaitons. 
+- Your new notificaiton system might not working perfectly, may be working partially. 
+- I want you do deep dive audit on the admin notification and all of its settings and udnerstand what is currently being implimented. After that create a comprehensive fix plan to fix the admin notification issues. so that the admin gets notified accordingly based on the user actions in the system.
+
+***Strickt Rules***  Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
