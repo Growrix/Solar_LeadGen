@@ -196,12 +196,12 @@ export async function POST(
           type: 'NEW_LEAD',
           title: 'New Lead Available',
           message: `A new ${body.isHot ? 'HOT ' : ''}lead has been assigned to you.`,
-          actionUrl: `/installer/marketplace`,
+          actionUrl: `/installer/leads`,
           metadata: {
             leadId: id,
             entityType: 'lead',
-            isHot: body.isHot || false,
-          },
+            isHot: body.isHot || false
+          }
         });
       }
     }

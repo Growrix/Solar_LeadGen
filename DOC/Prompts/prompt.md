@@ -2963,3 +2963,30 @@ now the issue is , Clicking on the notification buttons are not redirecting to t
 clicking on the notifications are not redirecting to relevant directions. also some are showing error messages . e.g proceed to payment shows "check screenshot". what the tests you have done? what you tested with playwright?  The issues are just same as before doing this implimentations. I want you to checkback everything , Audit back if the entire notification system and all relevant files.  
 
 ***Strickt rules***  Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md . Make sure to follow backend frontend rules in the guidelines. Also the testing instructions as well. 
+
+-----------------------------------------------------------------------------------------------------
+
+
+I have no Idea what you have tested and done so far.
+Nothing is going as per planned. The notification clicks are still not redirecting to relevant pages. e.g clicking on New lead Available is redirecting to the Marketplace page instead of Lead feed page. The marketplace page is not in even use but you are redirecting there. Also proceed to payment is still showing error message as before. I want you to audit the entire notification system again deeply including frontend backend API prisma etc. after that create a comprehensive fix plan to fix the notification system issues. so that clicking on the notifications are redirecting to relevant pages without any error messages.
+
+I want you to address the real issues this time. not just passing the tests without fixing the real issues.
+You are overcomplicating things. just focus on the real issues and fix them properly. 
+
+- Your playwright tests should be focued on notification system only. You must check the redirections after clicking on the notifications. and also check any error messages if shown. You must make sure the redirections are relevant and no error messages shown. Identify which actions are for which notifications. and test accordingly. Do not overcomplicate things. just focus on the real issues and fix them properly. Do not implimenet blindly anything without understanding the real issues.
+
+***Strickt rules***  Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
+
+--------------------------------------------------------------------------------------------
+
+The notification system is a complete mess. There are a lot of issues still persisting. e.g The homeowner clicks on view button and it show 404 error page. Also there are some meesages needs to be changed to polite and relevant messages. I do not want any homeowners sees the words like Lead, purchased , paid , etc. THe homeowners side should never feel anything like their quotre request is on selling to installers. The Homeowners should feel like they are getting free services from this site as they are not paying anything to the site. 
+
+- I want you to redesign the notification system. the existing system has a lot of issues that are kind of impossible to fix. You have tried so many times to fix it but failled. 
+- Previously there are no notification was built for the Admin side. Now need to add the notification bell icon in the admin header same as like the installers and homeowners. 
+- Track down each and every actions of all the 3 parties separately. Then create a action based notification messages and redirections plan accordingly. 
+- Before implimenting, you need to eliminate the existing notification system and redirections. 
+
+
+***Strickt rules***  Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create the plan for new notification system based on your deep audit. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
+
+***Mandatory*** must do the playwright e2e testing instructions after completing the new notification system implimentation. 

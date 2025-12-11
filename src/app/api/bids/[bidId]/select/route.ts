@@ -169,14 +169,14 @@ export async function POST(
     const leadLocation = `${bid.lead.location}, ${bid.lead.state} ${bid.lead.postcode}`;
 
     // Send notification to WINNER
-    // T401: Simplified routing - just route to lead page, no URL params
-    // The lead card itself will show winner status and payment button
+    // T411: Route to lead FEED (not detail page) - winner banner shows in feed
+    // The lead card in feed shows winner status and payment button
     await createNotification({
       userId: bid.installerId,
       type: 'BID_WON',
       title: '🎉 Congratulations! Your bid was selected',
       message: `The homeowner at ${leadLocation} has selected your bid! Proceed to payment to unlock full contact details and begin installation.`,
-      actionUrl: `/installer/leads/${bid.leadId}`,
+      actionUrl: `/installer/leads`,
       metadata: {
         bidId: bid.id,
         leadId: bid.leadId,

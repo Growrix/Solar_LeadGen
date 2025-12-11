@@ -17,91 +17,49 @@ Mandatory Pre/Post Checks (from 002 tasks and AI guidelines):
 ## Phase 1 – Setup
 
 T001 [X][Setup]: Confirm repository branch and feature directory
-- Path: `specs/008-description-enhance-existing/`
-- Action: Ensure plan/spec/research/data-model/contracts/quickstart exist.
-- Status: COMPLETE ✓
-
-T002 [X][Setup]: Establish SOT references
 - Path: `specs/008-description-enhance-existing/spec.md`
-- Action: Verify References & Governance sections; link SOT files.
 - Status: COMPLETE ✓
-
-T003 [X][Setup]: Pre-migration audit gate
-- Path: `specs/008-description-enhance-existing/quickstart.md`
-- Action: Execute audit; document gaps vs. current modal (QuoteBuilder components).
 - Status: COMPLETE ✓ - Audit shows: hardcoded assumptions (yield 4.2, selfUse 0.5, retail 0.30), no FIT/OPEX, simple payback only, no multi-option support, no compliance validation
 
-Checkpoint: Pre/post checks completed; proceed if PASS. ✓ PASSED
-
-## Phase 2 – Foundational (blocking for all stories)
-
 T004 [X][Foundational]: Calculator alignment
-- Path: `src/components/quote-builder/*`
-- Action: Identify all places computing totals/ROI; plan replacement with single calculator per `ChatGPT_CalculationLogic.md`.
 - Status: COMPLETE ✓ - Created src/utils/quoteCalculator.ts and src/utils/stcZones.ts
 
 T005 [X][Foundational]: Autosave restore paths
 - Path: `src/components/quote-builder/*`
 - Action: Confirm draft persistence keys (leadId + option set) and restore behavior.
-- Status: COMPLETE ✓ - Autosave already implemented with proper keys (quote:draft:${leadId}:installer-id)
-
 T006 [X][Foundational]: Design-system compliance
-- Path: `src/components/quote-builder/*`
 - Action: Replace any hardcoded classes; ensure zero violations.
 - Status: COMPLETE ✓ - Verification commands show 0 violations in current components
 
-Checkpoint: Pre/post checks completed; proceed if PASS. ✓ PASSED
 
 ## Phase 3 – [US1] Real-time calculator accuracy (P1)
-
 Story goal: Accurate pricing and ROI in existing modal without rebuild.
 Independent test: Change self-consumption from 0.3 to 0.7; verify Annual Savings and Payback update instantly (<500ms) and consistently.
 
 T007 [X][US1][P]: Wire single calculator outputs into summary cards
-- Path: `src/components/QuoteBuilderModal.tsx`
-- Action: Source Subtotal, GST, Incentives, Total, $/W from calculator.
 - Status: COMPLETE ✓ - Integrated calcQuoteTotals from quoteCalculator.ts
-
 T008 [X][US1][P]: Wire assumptions panel to calculator
 - Path: `src/components/quote-builder/PricingEngine.tsx`
 - Action: Bind yield, selfUse, retail, FiT, OPEX; recompute outputs.
-- Status: COMPLETE ✓ - Added Financial Assumptions panel with 7 configurable parameters
 
 T009 [X][US1]: Handle Payback = N/A when savings <= 0
-- Path: `src/components/quote-builder/CustomerPreview.tsx`
 - Action: Display N/A with guidance; propagate across UI.
 - Status: COMPLETE ✓ - Added isFinite check and warning message
-
-T010 [X][US1]: STC zone mapping + override
 - Path: `src/components/quote-builder/PricingEngine.tsx`
-- Action: Apply postcode→zone; support manual override; stcCount × stcPrice.
-- Status: COMPLETE ✓ - Added postcode input with auto zone detection and manual override
 
 Post-checkpoint: Run verification commands; test themes/breakpoints; confirm PASS. ✓ PASSED
-
 ## Phase 4 – UX Improvements & Addon Integration (P2)
-
 Story goal: Improve user experience with real-time preview, addon cost integration, and enhanced category options.
 Independent test: Add an EV charger addon → verify it appears in pricing engine line items → verify preview updates automatically → verify total price reflects addon cost.
-
-T018 [X][UX][P]: Auto-sync addons to pricing engine line items
 - Path: `src/components/QuoteBuilderModal.tsx`
-- Action: When addons are added/updated in ProductConfiguration, automatically create/update corresponding line items in PricingEngine with category "Addons", preserving qty and unitPrice.
-- Testing: Add addon → verify line item auto-created in pricing engine with correct qty/price → modify addon qty → verify line item updates → remove addon → verify line item removed
-- Status: COMPLETE ✓ - Added useEffect to auto-sync addons array to pricing engine line items with "Addons" category
 
-T019 [X][UX][P]: Show addons in customer preview
-- Path: `src/components/quote-builder/CustomerPreview.tsx`
 - Action: Display selected addons list in preview with labels (e.g., "Addons: EV Charger, Bird Proofing").
-- Testing: Add multiple addons → verify all appear in preview → remove addon → verify removed from preview
 - Status: COMPLETE ✓ - Added addons display in preview under "Additional Items" section
 
 T020 [X][UX]: Remove "Current Configuration" button, enable real-time preview
 - Path: `src/components/QuoteBuilderModal.tsx`
-- Action: Update preview options automatically on product/pricing changes without requiring button click. Remove unnecessary UI element.
 - Testing: Change any product field → verify preview updates within 500ms → change pricing → verify preview updates → no manual refresh needed
 - Status: COMPLETE ✓ - Removed condition check, preview now updates automatically on all changes
-
 T021 [X][UX]: Enhance category dropdown with comprehensive options
 - Path: `src/components/quote-builder/PricingEngine.tsx`
 - Action: Update CATEGORIES constant to include: ['Panels', 'Inverter', 'Battery', 'Mounting Structure', 'EV Charger', 'Electrical', 'Labour', 'Addons', 'Other'].
@@ -111,28 +69,14 @@ T021 [X][UX]: Enhance category dropdown with comprehensive options
 Post-checkpoint: Run verification commands; test themes/breakpoints; verify addons flow end-to-end; confirm PASS.
 
 ## Phase 5 – [US2] Multi-option quoting & comparison (P3) - SKIPPED
-
 Story goal: Create up to three options and compare metrics side-by-side.
-Reason for skipping: Deferred to future iteration. Current single-option flow meets MVP requirements.
 
 T011 [SKIPPED][US2][P]: Add options manager (presets/duplicate)
 - Status: SKIPPED - Not required for MVP
-
 T012 [SKIPPED][US2][P]: Comparison table wiring
-- Status: SKIPPED - Not required for MVP
-
 T013 [SKIPPED][US2]: Autosave per lead + options set
-- Status: SKIPPED - Not required for MVP
 
-## Phase 6 – [US3] Compliance validation before submit (P3) - SKIPPED
 
-Story goal: Block submission until required artefacts are provided.
-Reason for skipping: User requirement changed - no blocking for quote submission. Installers should be able to submit quotes without mandatory compliance documents.
-
-T014 [SKIPPED][US3][P]: Compliance UI and validators
-- Status: SKIPPED - No blocking validation required per user request
-
-T015 [SKIPPED][US3]: Compliance service hook
 - Status: SKIPPED - No blocking validation required per user request
 
 ## Final Phase – Polish & Cross-Cutting
@@ -7898,4 +7842,376 @@ Before marking ANY phase "complete":
 ---
 
 **END OF PHASE 13N**
+
+---
+
+# PHASE 13O: NOTIFICATION ROUTING - REAL ISSUES FIX
+
+**Priority**: 🔴 CRITICAL - Production Blocking  
+**Created**: December 11, 2025  
+**Audit Report**: `DOC/AUDIT-REPORTS/NOTIFICATION-ROUTING-REAL-ISSUES-AUDIT.md`  
+**User Pain Point**: "clicking on New lead Available is redirecting to the Marketplace page instead of Lead feed page. Also proceed to payment is still showing error message"
+
+## Root Cause Analysis
+
+**What Actually Happened**:
+- Phase 13N fixed T400-T404 (BID_WON, BID_SUBMITTED, LEAD_PURCHASED, QUOTE_ACCEPTED)
+- BUT MISSED: NEW_LEAD notification still routes to `/installer/marketplace` (deprecated page)
+- Result: Most common notification (NEW_LEAD) is BROKEN
+
+**Why This Happened**:
+- Incomplete audit (checked some notification types, not all)
+- Assumed "tests pass" = "everything works"
+- Did not test in browser by clicking actual notifications
+- Did not grep for ALL notification type occurrences
+
+**Lesson**: Audit means checking EVERY occurrence, not just obvious ones.
+
+---
+
+## Phase 13O Tasks
+
+### T410 [HIGH][P0]: Fix NEW_LEAD Notification Routing
+
+**Problem**: NEW_LEAD notifications route installers to `/installer/marketplace` (deprecated)  
+**Expected**: Should route to `/installer/leads` (lead feed page)
+
+**Files to Change**:
+```typescript
+// File: src/app/api/leads/[id]/approve/route.ts
+// Line 199
+
+// BEFORE:
+actionUrl: `/installer/marketplace`,
+
+// AFTER:
+actionUrl: `/installer/leads`,
+```
+
+**Testing**:
+1. Admin assigns lead to installer
+2. Check installer receives NEW_LEAD notification
+3. Click notification → Should route to `/installer/leads`
+4. Verify lead feed page loads successfully
+5. Verify console has 0 errors
+
+**Verification Commands**:
+```powershell
+# Check no other places still use marketplace:
+Select-String -Path "src/**/*.ts*" -Pattern "marketplace" -CaseSensitive
+
+# Expected: Should only find the marketplace page file itself (not in notifications)
+```
+
+**Checkpoint**: Installer clicks "New lead Available" → Goes to Lead Feed → NO errors shown
+
+---
+
+### T411 [HIGH][P0]: Investigate BID_WON "Proceed to Payment" Error
+
+**Problem**: User reports "proceed to payment shows 'check screenshot'" error message  
+**Current actionUrl**: `/installer/leads/${leadId}` (CORRECT format)
+
+**Investigation Steps**:
+1. Check if `/installer/leads/[id]/page.tsx` detects BID_WON status
+2. Verify payment button renders for bid winners
+3. Test payment flow actually works
+4. Check console for JavaScript errors
+5. Verify error message text and source
+
+**Possible Root Causes**:
+- Lead page doesn't show payment button for BID_WON leads?
+- Lead status not updated after homeowner selects winner?
+- Payment modal/flow not implemented?
+- Error message hardcoded somewhere?
+
+**Files to Audit**:
+- `src/app/installer/(dashboard)/leads/[id]/page.tsx` - Lead detail page
+- `src/app/api/bids/[bidId]/purchase/route.ts` - Payment endpoint
+- Check if payment button conditional on lead status
+
+**Testing**:
+1. Homeowner selects bid winner
+2. Installer gets BID_WON notification
+3. Click notification → Route to lead detail page
+4. **Verify**: "Proceed to Payment" button visible
+5. Click payment button → Should work (no error message)
+
+**Checkpoint**: Installer clicks BID_WON notification → Sees lead → Can click "Proceed to Payment" → NO error messages
+
+---
+
+### T412 [MEDIUM][P1]: Comprehensive Notification Routing Audit
+
+**Goal**: Verify ALL notification types route correctly
+
+**Notification Types to Test** (20 types total):
+1. ✅ NEW_LEAD (for installers) - **BROKEN** (Fix in T410)
+2. ✅ NEW_LEAD (for admin) - OK (routes to admin leads)
+3. ✅ LEAD_ASSIGNED - Need to check
+4. ✅ LEAD_PURCHASED (homeowner) - Fixed T403
+5. ✅ LEAD_APPROVED - Need to check
+6. ✅ BID_SUBMITTED (homeowner) - Fixed T402
+7. ✅ BID_WON (installer) - Fixed T401 (but ERROR reported - T411)
+8. ✅ BID_LOST (installer) - Need to check
+9. ✅ QUOTE_ACCEPTED (installer) - Fixed T404
+10. ✅ QUOTE_REJECTED - Need to check
+11. ✅ NEW_MESSAGE - Need to check
+12. ✅ PAYMENT_RECEIVED - Need to check
+13. ✅ PAYMENT_FAILED - Need to check
+14. ✅ ASSIGNMENT_ACCEPTED_COMPETITIVE - Need to check
+15. ✅ ASSIGNMENT_ACCEPTED_EXCLUSIVE - Need to check
+16. ✅ ASSIGNMENT_REJECTED - Need to check
+17. ✅ LEAD_CANCELLED - Need to check
+18. ✅ LEAD_ARCHIVED - Need to check
+19. ✅ SYSTEM - Need to check
+20. ✅ NEW_QUOTE - Need to check
+
+**Action**: Grep all notification creation points, list actionUrls, verify each one
+
+**Verification Script**:
+```powershell
+# Find all notification creation calls:
+Select-String -Path "src/**/*.ts*" -Pattern "createNotification\(" -Context 0,15 | 
+  Select-String "type:|actionUrl:" | 
+  Out-File "notification-urls-audit.txt"
+
+# Review file and check each URL is correct
+```
+
+**Checkpoint**: All 20 notification types route to valid, correct pages
+
+---
+
+### T413 [CRITICAL][P0]: Browser Testing - Manual Verification
+
+**Goal**: Actually CLICK each notification type in browser and verify it works
+
+**Test Procedure** (for EACH notification type):
+1. Create notification in database (via actual user action)
+2. Open browser DevTools (F12) → Console tab
+3. Click notification in UI
+4. **Verify**:
+   - ✅ Correct page loads
+   - ✅ Console has 0 errors
+   - ✅ No error messages shown to user
+   - ✅ Page content relevant to notification
+
+**Priority Order**:
+1. NEW_LEAD (BROKEN - fix first)
+2. BID_WON (ERROR reported - fix second)
+3. BID_SUBMITTED (test to confirm fix works)
+4. LEAD_PURCHASED (test to confirm fix works)
+5. QUOTE_ACCEPTED (test to confirm fix works)
+6. All others
+
+**Evidence Required**:
+- Screenshot of each notification click
+- Screenshot of destination page loaded successfully
+- Console screenshot showing 0 errors
+
+**Checkpoint**: Can click ANY notification → Goes to correct page → 0 errors → Works as expected
+
+---
+
+### T414 [HIGH][P0]: Playwright E2E Tests for Notifications
+
+**Goal**: Automated tests for notification routing (prevent regression)
+
+**Test File**: `tests/e2e/notification-routing.spec.ts`
+
+**Test Structure**:
+```typescript
+test.describe('Notification Routing - All Types', () => {
+  
+  test('NEW_LEAD notification routes to lead feed', async ({ page }) => {
+    // 1. Login as installer
+    // 2. Create NEW_LEAD notification
+    // 3. Click notification
+    // 4. Verify URL is /installer/leads
+    // 5. Verify page loaded successfully
+    // 6. Verify 0 console errors
+  });
+
+  test('BID_WON notification shows payment button', async ({ page }) => {
+    // 1. Login as installer
+    // 2. Create BID_WON notification with leadId
+    // 3. Click notification
+    // 4. Verify routes to /installer/leads/[id]
+    // 5. Verify "Proceed to Payment" button visible
+    // 6. Verify 0 console errors
+  });
+
+  // ... tests for each notification type
+});
+```
+
+**Must Test**:
+- Correct URL navigation
+- Page loads successfully (not 404)
+- Console has 0 errors
+- Expected content visible on page
+
+**Checkpoint**: All Playwright notification tests pass (100%)
+
+---
+
+### T415 [MEDIUM][P1]: Multi-User Flow Testing
+
+**Goal**: Verify cross-user notification flows work end-to-end
+
+**Test Scenarios**:
+
+**Scenario 1: Lead Assignment Flow**
+1. Admin assigns lead to installer
+2. Installer gets NEW_LEAD notification
+3. Installer clicks notification → Goes to lead feed
+4. Installer sees assigned lead
+5. Installer can view lead details
+
+**Scenario 2: Bidding Flow**
+1. Installer submits bid
+2. Homeowner gets BID_SUBMITTED notification
+3. Homeowner clicks notification → Review bids modal opens
+4. Homeowner selects winner
+5. Winner gets BID_WON notification
+6. Winner clicks notification → Goes to lead page
+7. Winner sees "Proceed to Payment" button
+8. Losers get BID_LOST notification
+9. Losers click notification → See polite message
+
+**Scenario 3: Purchase Flow**
+1. Installer purchases lead
+2. Homeowner gets LEAD_PURCHASED notification
+3. Homeowner clicks notification → Goes to dashboard
+4. Homeowner sees lead status updated
+
+**Checkpoint**: All cross-user flows work without errors
+
+---
+
+### T416 [CRITICAL][P0]: Verification & Commit
+
+**Final Verification Commands**:
+```powershell
+# 1. TypeScript
+npx tsc --noEmit
+# Expected: Empty output (0 errors)
+
+# 2. Build
+npm run build
+# Expected: "Compiled successfully"
+
+# 3. Check notification URLs don't use marketplace:
+Select-String -Path "src/**/*.ts*" -Pattern "marketplace" -Include "*.ts","*.tsx"
+# Expected: Only src/app/installer/(dashboard)/marketplace/page.tsx (the page itself)
+
+# 4. Run Playwright tests:
+npx playwright test tests/e2e/notification-routing.spec.ts
+# Expected: All tests pass
+
+# 5. Manual browser test:
+# Open app → Create notifications → Click each → Verify works
+```
+
+**Commit Message Template**:
+```
+Phase 13O: Fix notification routing - Address REAL user-reported issues
+
+Critical Fixes:
+- T410: NEW_LEAD notifications now route to /installer/leads (not marketplace)
+- T411: BID_WON notifications [describe fix]
+- T412: Audited all 20 notification types
+- T413: Browser tested each notification type
+- T414: Added Playwright E2E tests
+- T415: Multi-user flows verified
+
+User Pain Points Resolved:
+✅ "New lead Available" now goes to Lead Feed (not Marketplace)
+✅ "Proceed to Payment" [error resolved - describe]
+✅ All notifications route to correct pages
+✅ 0 console errors
+✅ 0 error messages shown
+
+Testing Evidence:
+- Browser testing: 20/20 notification types work
+- Playwright tests: 100% pass
+- Multi-user flows: All scenarios work
+- Console: 0 errors verified
+
+Verification:
+- TypeScript: 0 errors ✅
+- Build: Compiled successfully ✅
+- Playwright: All tests pass ✅
+- Browser: Manual testing complete ✅
+```
+
+**Checkpoint**: All verification commands pass → Commit created → Phase 13O COMPLETE
+
+---
+
+## Success Criteria (Must Achieve ALL)
+
+### User Experience:
+- [ ] Clicking "New lead Available" → Routes to Lead Feed (NOT Marketplace)
+- [ ] Clicking "Proceed to Payment" → No error messages shown
+- [ ] ALL notification types route to correct pages
+- [ ] 0 console errors when clicking notifications
+- [ ] Pages load successfully (no 404s)
+
+### Code Quality:
+- [ ] TypeScript: 0 errors
+- [ ] Build: Compiled successfully (no warnings)
+- [ ] No hardcoded marketplace URLs in notification code
+- [ ] All notification actionUrls validated
+
+### Testing:
+- [ ] Browser tested: ALL 20 notification types clicked and verified
+- [ ] Playwright tests: 100% pass rate
+- [ ] Multi-user flows: All scenarios work
+- [ ] Console checked: 0 errors verified
+- [ ] Screenshots collected for evidence
+
+### Documentation:
+- [ ] Audit report updated with findings
+- [ ] Tasks.md updated with progress
+- [ ] Commit message includes all fixes
+- [ ] Lessons learned documented
+
+---
+
+**Phase 13O Status**: 🔴 READY TO START (CRITICAL)  
+**Created**: December 11, 2025  
+**Estimated Time**: 2-3 hours (FOCUSED, TESTED implementation)
+
+---
+
+## CRITICAL REMINDERS FOR PHASE 13O
+
+### ⚠️ DON'T REPEAT PHASE 13N MISTAKES:
+
+1. **DON'T**: Fix some notifications and assume others work
+   **DO**: Audit ALL notification types (grep every occurrence)
+
+2. **DON'T**: Trust "tests pass" without browser testing
+   **DO**: Click EACH notification in browser, verify works
+
+3. **DON'T**: Write Playwright tests but not run them
+   **DO**: Run tests BEFORE commit, require 100% pass
+
+4. **DON'T**: Mark complete without testing
+   **DO**: Test → Verify → Screenshot → THEN mark complete
+
+5. **DON'T**: Overcomplicate simple issues
+   **DO**: Fix the ONE LINE that's wrong (e.g., marketplace → leads)
+
+### ✅ SUCCESS DEFINITION:
+
+**Simple Test**: User clicks notification → Goes to correct page → No errors → Works
+
+If this simple test fails for ANY notification type → NOT DONE YET
+
+---
+
+**END OF PHASE 13O**
 
