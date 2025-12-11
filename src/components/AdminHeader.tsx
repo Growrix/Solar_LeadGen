@@ -1,6 +1,7 @@
 ﻿"use client";
 import React from 'react';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { NotificationDropdown } from './NotificationDropdown';
 
 const AdminHeader: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const AdminHeader: React.FC = () => {
       </div>
       <div className="dashboard-header__right">
         <ThemeSwitcher />
+        <NotificationDropdown />
       </div>
     </header>
   );
