@@ -7035,11 +7035,867 @@ T363 [ ][13M][Docs][P2]: Create implementation guide for future notification typ
 
 **Blockers**: None
 
-**Next Phase After 13M**: TBD based on user priorities (analytics dashboard, performance optimization, etc.)
+**Next Phase After 13M**: Phase 13N - Notification System Fix (Critical - Production Blocking)
 
 ---
 
-**Phase 13M Status**: READY TO START  
+**Phase 13M Status**: ⚠️ INCOMPLETE - Issues found in production, requires Phase 13N fixes  
 **Created**: December 10, 2025  
 **Last Updated**: December 10, 2025
+
+---
+
+## Phase 13N – Notification System Fix (P0 - CRITICAL PRODUCTION BLOCKING)
+
+**Context**: Phase 13M was marked complete but testing reveals **critical failures**:
+- ❌ Notification routing broken (clicks don't redirect properly)
+- ❌ Runtime errors displayed (TypeError: Cannot read properties of undefined)
+- ❌ URL parameters not handled by destination pages
+- ❌ Payment modal doesn't auto-open from BID_WON notifications
+- ❌ Review Bids modal doesn't auto-open from BID_SUBMITTED notifications
+- ❌ **NO Playwright tests were run** (deferred, violating guidelines)
+- ❌ **NO browser testing was performed** (would have caught all issues)
+
+**User Report**: "Clicking on notifications are not redirecting to relevant directions. Also some are showing error messages. The issues are just same as before doing this implementations."
+
+**Root Cause**: Phase 13M changed backend routing URLs but **did not update frontend pages** to handle new URL parameters (`?action=payment`, `?modal=reviewBids`). Implementation was incomplete.
+
+**Audit Report**: `DOC/AUDIT-REPORTS/PHASE-13N-NOTIFICATION-FIX-AUDIT.md`
+
+**Priority**: 🔴 P0 - CRITICAL (Blocks all notification-based workflows)  
+**Estimated Effort**: 14 hours  
+**Dependencies**: Phase 13M (flawed implementation to be fixed)
+
+---
+
+### Phase 13N-1: Critical Runtime Error Fixes (IMMEDIATE - 2 hours)
+
+**Goal**: Eliminate all TypeErrors and runtime crashes
+
+#### T400 [CRITICAL][P0]: Add Null Checks to Lead Detail Pages
+- **Priority**: 🔴 CRITICAL
+- **Files**:
+  - `src/app/installer/(dashboard)/leads/[id]/page.tsx`
+  - `src/app/homeowner/(dashboard)/leads/[id]/page.tsx`
+  - `src/components/NotificationDropdown.tsx`
+- **Problem**: Code calls `.replace()`, `.toLowerCase()` on undefined/null values
+- **Error**: "TypeError: Cannot read properties of undefined (reading 'replace')"
+- **Fix**:
+  ```typescript
+  // BEFORE (unsafe):
+  const formattedType = lead.quoteType.replace('_', ' ');
+  const location = lead.location.toLowerCase();
+  
+  // AFTER (safe):
+  const formattedType = lead?.quoteType?.replace('_', ' ') || 'Unknown';
+  const location = lead?.location?.toLowerCase() || 'Unknown';
+  ```
+- **Testing**:
+  - Open lead detail page in browser
+  - Check DevTools console (F12) → NO errors
+  - Test with incomplete lead data (null fields)
+  - Verify all string methods have null checks
+- **Verification Commands**:
+  ```powershell
+  npm run dev
+  # Open http://localhost:3000/installer/leads/[any-id]
+  # Open DevTools → Console tab → Should be CLEAN (no errors)
+  ```
+- **Acceptance**: Console is completely clean, no TypeErrors
+- **Status**: NOT STARTED
+
+**Checkpoint**: ALL runtime errors eliminated, console clean before proceeding to next tasks.
+
+---
+
+### Phase 13N-2: Backend Routing Simplification (HIGH - 2 hours)
+
+**Goal**: Simplify notification routing - route to pages, not modals (let lead cards handle actions)
+
+#### T401 [HIGH][P0]: Fix BID_WON Notification Routing (Simplified)
+- **Priority**: 🔴 HIGH
+- **File**: `src/app/api/bids/[bidId]/select/route.ts`
+- **Problem**: Backend sends `/installer/leads/${leadId}?action=payment&bidId=${bidId}` but we're overcomplicating things
+- **User Feedback**: "I think you do not need to do this: T401 payment modal auto-open. Instead just show the lead only. The lead card will have payment button."
+- **New Approach**: Keep it simple - just route to the lead page, no URL parameters needed
+- **Current Routing**:
+  ```typescript
+  // Line 177 in src/app/api/bids/[bidId]/select/route.ts
+  actionUrl: `/installer/leads/${bid.leadId}?action=payment&bidId=${bidId}`,
+  ```
+- **Simplified Routing**:
+  ```typescript
+  // Just route to lead page - the lead card already has payment button
+  actionUrl: `/installer/leads/${bid.leadId}`,
+  ```
+- **Rationale**:
+  - Lead card already shows winner status (trophy icon)
+  - Lead card already has "Proceed to Payment" button
+  - No need for auto-opening modals via URL parameters
+  - Simpler = more reliable
+- **Testing**:
+  1. Homeowner selects winning bid
+  2. Installer receives BID_WON notification
+  3. Click notification "Proceed to Payment" button
+  4. **Verify**: Routes to `/installer/leads/${leadId}` (simple URL, no params)
+  5. **Verify**: Lead page loads with winner status shown
+  6. **Verify**: Lead card displays trophy icon + payment button
+  7. **Verify**: Console has no errors
+  8. **Verify**: Payment button on lead card works
+- **Verification Commands**:
+  ```powershell
+  npm run dev
+  # Manual test: Click BID_WON notification → Should route to lead page
+  # Check URL in browser address bar → Should be clean: /installer/leads/[id] (no ?action params)
+  # DevTools Console → NO errors
+  # Lead card should show winner UI with payment button
+  ```
+- **Acceptance**: 
+  - Notification routes to simple lead page URL (no URL parameters)
+  - Lead page loads successfully
+  - Lead card shows winner status and payment button
+  - Console clean (no errors)
+- **Status**: NOT STARTED
+
+---
+
+#### T402 [HIGH][P0]: Implement Review Bids Modal Auto-Open for BID_SUBMITTED Notifications
+- **Priority**: 🔴 HIGH
+- **File**: `src/app/homeowner/(dashboard)/leads/[id]/page.tsx`
+- **Problem**: Backend sends `/homeowner/leads/${leadId}?modal=reviewBids` but page ignores parameter
+- **Current Behavior**: Page loads normally, user must manually click "Review Bids" button
+- **Expected Behavior**: Page detects `modal=reviewBids` → auto-opens review bids modal
+- **Implementation**:
+  ```typescript
+  'use client';
+  
+  import { useSearchParams } from 'next/navigation';
+  import { useEffect, useState } from 'react';
+  
+  export default function HomeownerLeadDetailPage({ params }: { params: { id: string } }) {
+    const searchParams = useSearchParams();
+    const [showReviewBidsModal, setShowReviewBidsModal] = useState(false);
+    
+    // Check for modal parameter on mount
+    useEffect(() => {
+      const modal = searchParams.get('modal');
+      
+      if (modal === 'reviewBids') {
+        console.log('[HomeownerLeadDetailPage] Auto-opening review bids modal');
+        setShowReviewBidsModal(true);
+      }
+    }, [searchParams]);
+    
+    // ... rest of component
+  }
+  ```
+- **Testing**:
+  1. Submit bid as installer (trigger BID_SUBMITTED notification)
+  2. Login as homeowner
+  3. Click notification "Review Bids" button
+  4. **Verify**: Review Bids modal opens automatically
+  5. **Verify**: Bid data displayed correctly
+  6. **Verify**: Console has no errors
+  7. **Verify**: Can select winner from modal
+- **Verification Commands**:
+  ```powershell
+  npm run dev
+  # Manual test: Submit bid → Homeowner clicks notification → Modal should auto-open
+  # DevTools Console → Should see: "[HomeownerLeadDetailPage] Auto-opening review bids modal"
+  # DevTools Console → NO errors
+  ```
+- **Acceptance**:
+  - Review Bids modal auto-opens when URL contains `?modal=reviewBids`
+  - Modal displays all submitted bids
+  - Homeowner can select winner
+  - Console clean (no errors)
+- **Status**: NOT STARTED
+
+**Checkpoint**: BID_WON routing simplified, BID_SUBMITTED modal still needs URL parameter handling.
+
+---
+
+### Phase 13N-3: Backend Routing Corrections (MEDIUM - 2 hours)
+
+**Goal**: Fix notification routes that point to wrong pages
+
+#### T403 [MEDIUM][P1]: Update LEAD_PURCHASED Notification Routing
+- **Priority**: 🟡 MEDIUM
+- **File**: `src/lib/services/purchase-service.ts`
+- **Problem**: LEAD_PURCHASED routes to `/installer/leads/${leadId}` (wrong page - should be purchased-leads)
+- **Current Behavior**: Installer clicks notification → goes to lead feed → lead not found (it's now in purchased leads)
+- **Expected Behavior**: Installer clicks notification → goes to purchased-leads page → correct tab → lead highlighted
+- **Implementation**:
+  ```typescript
+  // BEFORE:
+  actionUrl: `/installer/leads/${leadId}`,
+  
+  // AFTER (role + quote type specific):
+  const quoteTypeTab = lead.quoteType === 'CALL_VISIT' ? 'call-visit' 
+                     : lead.quoteType === 'WRITTEN_QUOTE' ? 'written-quotes'
+                     : 'bidding';
+  
+  actionUrl: `/installer/purchased-leads?tab=${quoteTypeTab}&leadId=${leadId}`,
+  ```
+- **Testing**:
+  - Purchase lead (any quote type)
+  - Check notification created
+  - Click "View" button
+  - **Verify**: Redirects to `/installer/purchased-leads?tab=X&leadId=Y`
+  - **Verify**: Correct tab selected (call-visit / written-quotes / bidding)
+  - **Verify**: Lead is visible and highlighted
+- **Verification Commands**:
+  ```powershell
+  # Test in browser:
+  # 1. Purchase CALL_VISIT lead → Verify tab=call-visit
+  # 2. Purchase WRITTEN_QUOTE lead → Verify tab=written-quotes
+  # 3. Purchase BIDDING lead → Verify tab=bidding
+  ```
+- **Acceptance**: Notification routes to correct tab in purchased-leads page with leadId parameter
+- **Status**: NOT STARTED
+
+---
+
+#### T404 [MEDIUM][P1]: Update QUOTE_ACCEPTED Notification Routing
+- **Priority**: 🟡 MEDIUM
+- **Files**: Locate quote acceptance notification creation (search codebase)
+- **Problem**: QUOTE_ACCEPTED routes to `/installer/leads/${leadId}` (should be purchased-leads)
+- **Implementation**:
+  ```typescript
+  // BEFORE:
+  actionUrl: `/installer/leads/${leadId}`,
+  
+  // AFTER:
+  actionUrl: `/installer/purchased-leads?leadId=${leadId}`,
+  ```
+- **Testing**:
+  - Homeowner accepts quote
+  - Installer receives QUOTE_ACCEPTED notification
+  - Click "View" button
+  - **Verify**: Redirects to purchased-leads page
+  - **Verify**: Lead is visible
+- **Acceptance**: Notification routes to purchased-leads page
+- **Status**: NOT STARTED
+
+**Checkpoint**: All backend routes point to correct pages, verified in browser.
+
+---
+
+### Phase 13N-4: MANDATORY TESTING (CRITICAL - 4 hours)
+
+**Goal**: Achieve 100% test coverage and zero failures
+
+#### T405 [CRITICAL][P0]: Browser Console Testing (ALL Notification Types)
+- **Priority**: 🔴 CRITICAL
+- **Requirement**: Test EVERY notification type in browser with DevTools open
+- **Process**:
+  1. Start dev server: `npm run dev`
+  2. Open browser: `http://localhost:3000`
+  3. Open DevTools: Press F12 → Console tab
+  4. For EACH notification type:
+     - Create notification in Prisma Studio
+     - Refresh notification dropdown
+     - Click notification button
+     - **Document**: Any errors in console
+     - **Document**: Any warnings in console
+     - **Document**: Routing destination (correct page?)
+     - **Document**: Modal opened (if expected)?
+  5. Fix ALL errors/warnings before proceeding
+  6. Re-test until console is CLEAN for all types
+- **Notification Types to Test** (20 total):
+  - [ ] NEW_LEAD (Admin)
+  - [ ] NEW_LEAD (Installer) - if implemented
+  - [ ] LEAD_ASSIGNED
+  - [ ] LEAD_PURCHASED (Homeowner)
+  - [ ] LEAD_PURCHASED (Installer)
+  - [ ] LEAD_APPROVED
+  - [ ] LEAD_RESOLD
+  - [ ] BID_WON (CRITICAL - test payment modal auto-open)
+  - [ ] BID_LOST
+  - [ ] BID_SUBMITTED (CRITICAL - test review bids modal auto-open)
+  - [ ] NEW_QUOTE
+  - [ ] QUOTE_ACCEPTED
+  - [ ] QUOTE_REJECTED
+  - [ ] NEW_MESSAGE
+  - [ ] PAYMENT_RECEIVED
+  - [ ] PAYMENT_FAILED
+  - [ ] SYSTEM
+- **Documentation**:
+  - Create spreadsheet or markdown table
+  - Columns: Type | Destination | Modal Opened? | Console Clean? | Status
+  - Attach screenshots of successful tests
+- **Acceptance**:
+  - ✅ ALL 20 types tested
+  - ✅ Console CLEAN for all types (no errors, no warnings)
+  - ✅ All routes go to correct pages
+  - ✅ Modals auto-open where expected
+- **Status**: NOT STARTED
+
+**Checkpoint**: 100% of notification types tested, console clean, all routing verified.
+
+---
+
+#### T406 [CRITICAL][P0]: Playwright E2E Tests (NON-NEGOTIABLE)
+- **Priority**: 🔴 CRITICAL
+- **Requirement**: Per AI-IMPLEMENTATION-GUIDELINES.md - Playwright tests are MANDATORY, not optional
+- **Why This Matters**: Phase 13M failed because these tests were "deferred" - that's a violation of guidelines
+- **Test Files to Create**:
+  
+  **Test 1: `tests/notifications/bid-won.spec.ts`**
+  ```typescript
+  import { test, expect } from '@playwright/test';
+  
+  test.describe('BID_WON Notification Flow', () => {
+    test('should auto-open payment modal when clicking notification', async ({ page }) => {
+      // 1. Login as installer
+      await page.goto('/api/auth/signin');
+      await page.fill('input[name="email"]', 'installer@test.com');
+      await page.fill('input[name="password"]', 'test123');
+      await page.click('button[type="submit"]');
+      
+      // 2. Create BID_WON notification via API
+      const notificationId = await page.evaluate(async () => {
+        const response = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'BID_WON',
+            title: 'Test: You won!',
+            message: 'Test bid won notification',
+            actionUrl: '/installer/leads/test-lead-id?action=payment&bidId=test-bid-id'
+          })
+        });
+        const data = await response.json();
+        return data.id;
+      });
+      
+      // 3. Open notifications dropdown
+      await page.click('[data-testid="notification-bell"]');
+      
+      // 4. Click "Proceed to Payment" button
+      await page.click(`[data-notification-id="${notificationId}"] button:has-text("Proceed to Payment")`);
+      
+      // 5. Assertions
+      await expect(page).toHaveURL(/\/installer\/leads\/test-lead-id\?action=payment&bidId=test-bid-id/);
+      await expect(page.locator('[data-testid="payment-modal"]')).toBeVisible({ timeout: 2000 });
+      
+      // 6. Check console for errors
+      const consoleLogs = [];
+      page.on('console', msg => consoleLogs.push(msg.text()));
+      const errors = consoleLogs.filter(log => log.includes('Error') || log.includes('TypeError'));
+      expect(errors).toHaveLength(0);
+    });
+  });
+  ```
+  
+  **Test 2: `tests/notifications/bid-submitted.spec.ts`**
+  ```typescript
+  import { test, expect } from '@playwright/test';
+  
+  test.describe('BID_SUBMITTED Notification Flow', () => {
+    test('should auto-open review bids modal when clicking notification', async ({ page }) => {
+      // 1. Login as homeowner
+      await page.goto('/api/auth/signin');
+      await page.fill('input[name="email"]', 'homeowner@test.com');
+      await page.fill('input[name="password"]', 'test123');
+      await page.click('button[type="submit"]');
+      
+      // 2. Create BID_SUBMITTED notification
+      const notificationId = await page.evaluate(async () => {
+        const response = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'BID_SUBMITTED',
+            title: 'New Bid Received',
+            message: 'Installer submitted a bid',
+            actionUrl: '/homeowner/leads/test-lead-id?modal=reviewBids'
+          })
+        });
+        const data = await response.json();
+        return data.id;
+      });
+      
+      // 3. Open notifications dropdown
+      await page.click('[data-testid="notification-bell"]');
+      
+      // 4. Click "Review Bids" button
+      await page.click(`[data-notification-id="${notificationId}"] button:has-text("Review Bids")`);
+      
+      // 5. Assertions
+      await expect(page).toHaveURL(/\/homeowner\/leads\/test-lead-id\?modal=reviewBids/);
+      await expect(page.locator('[data-testid="review-bids-modal"]')).toBeVisible({ timeout: 2000 });
+      
+      // 6. Check console for errors
+      const errors = page.locator('.console-error');
+      await expect(errors).toHaveCount(0);
+    });
+  });
+  ```
+  
+  **Test 3: `tests/notifications/all-types-routing.spec.ts`**
+  ```typescript
+  import { test, expect } from '@playwright/test';
+  
+  const notificationTypes = [
+    { type: 'NEW_LEAD', role: 'installer', expectedPath: /\/installer\/leads/ },
+    { type: 'LEAD_PURCHASED', role: 'installer', expectedPath: /\/installer\/purchased-leads/ },
+    { type: 'LEAD_APPROVED', role: 'homeowner', expectedPath: /\/homeowner\/leads/ },
+    { type: 'BID_LOST', role: 'installer', expectedPath: /\/installer\/leads/ },
+    { type: 'QUOTE_ACCEPTED', role: 'installer', expectedPath: /\/installer\/purchased-leads/ },
+    // Add all types
+  ];
+  
+  for (const { type, role, expectedPath } of notificationTypes) {
+    test(`${type} notification should route correctly for ${role}`, async ({ page }) => {
+      // Login as role
+      await page.goto('/api/auth/signin');
+      await page.fill('input[name="email"]', `${role}@test.com`);
+      await page.fill('input[name="password"]', 'test123');
+      await page.click('button[type="submit"]');
+      
+      // Create notification
+      const notificationId = await page.evaluate(async (notifType) => {
+        const response = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: notifType,
+            title: `Test ${notifType}`,
+            message: 'Test message',
+            actionUrl: '/auto-generated-by-backend' // Backend should generate correct URL
+          })
+        });
+        const data = await response.json();
+        return data.id;
+      }, type);
+      
+      // Click notification
+      await page.click('[data-testid="notification-bell"]');
+      await page.click(`[data-notification-id="${notificationId}"] button`);
+      
+      // Assertions
+      await expect(page).toHaveURL(expectedPath);
+      const statusCode = await page.evaluate(() => document.querySelector('body')?.textContent?.includes('404') ? 404 : 200);
+      expect(statusCode).toBe(200); // Not 404 error
+    });
+  }
+  ```
+
+- **Running Tests**:
+  ```powershell
+  # Install Playwright if not already:
+  npm init playwright@latest
+  
+  # Run all notification tests:
+  npx playwright test tests/notifications/
+  
+  # Run with UI (see browser):
+  npx playwright test tests/notifications/ --ui
+  
+  # Run specific test:
+  npx playwright test tests/notifications/bid-won.spec.ts
+  
+  # Generate HTML report:
+  npx playwright test tests/notifications/ --reporter=html
+  npx playwright show-report
+  ```
+- **Acceptance Criteria**:
+  - ✅ ALL tests pass (100% pass rate)
+  - ✅ NO console errors logged
+  - ✅ NO 404/403 routing errors
+  - ✅ Modals open when expected
+  - ✅ Data displays correctly
+  - ✅ Can complete flows end-to-end
+- **Mandatory**: ❌ **DO NOT proceed to next phase until ALL Playwright tests pass**
+- **Status**: NOT STARTED
+
+**Checkpoint**: ALL Playwright tests pass, evidence collected (HTML report), no failures.
+
+---
+
+#### T407 [HIGH][P0]: Multi-User Flow Testing
+- **Priority**: 🔴 HIGH
+- **Goal**: Test cross-user notification scenarios (homeowner ↔ installer)
+- **Scenarios**:
+  
+  **Scenario 1: BID_SUBMITTED Flow (Installer → Homeowner)**
+  ```markdown
+  STEPS:
+  1. Window 1: Login as homeowner
+  2. Window 1: Create bidding lead
+  3. Window 2: Login as installer
+  4. Window 2: Submit bid for that lead
+  5. Window 1: Check notifications (should see BID_SUBMITTED)
+  6. Window 1: Click "Review Bids" button
+  
+  EXPECTED:
+  - Homeowner receives BID_SUBMITTED notification within 5 seconds (Pusher)
+  - Notification displays correct installer name and bid total
+  - Clicking "Review Bids" → Opens modal
+  - Modal shows submitted bid with all details
+  
+  VERIFY:
+  - [ ] Notification appears in real-time
+  - [ ] Notification data is correct
+  - [ ] Modal auto-opens
+  - [ ] Bid data displayed correctly
+  - [ ] No console errors in either window
+  ```
+  
+  **Scenario 2: BID_WON Flow (Homeowner → Installer)**
+  ```markdown
+  STEPS:
+  1. Window 1: Login as homeowner (with existing bids)
+  2. Window 1: Select winning bid
+  3. Window 2: Login as winning installer
+  4. Window 2: Check notifications (should see BID_WON)
+  5. Window 2: Click "Proceed to Payment" button
+  
+  EXPECTED:
+  - Installer receives BID_WON notification within 5 seconds
+  - Notification displays lead location and bid total
+  - Clicking "Proceed to Payment" → Opens payment modal
+  - Modal shows correct bidId and amount
+  - Can complete payment
+  
+  VERIFY:
+  - [ ] Notification appears in real-time
+  - [ ] Notification data is correct
+  - [ ] Payment modal auto-opens
+  - [ ] BidId is correct
+  - [ ] Payment flow works
+  - [ ] No console errors
+  ```
+  
+  **Scenario 3: LEAD_PURCHASED Flow (Installer → Homeowner)**
+  ```markdown
+  STEPS:
+  1. Window 1: Login as installer
+  2. Window 1: Purchase lead (CALL_VISIT type)
+  3. Window 2: Login as homeowner (lead owner)
+  4. Window 2: Check notifications
+  5. Window 2: Click notification
+  
+  EXPECTED:
+  - Homeowner receives LEAD_PURCHASED notification
+  - Clicking notification → Goes to lead detail page
+  - Page shows "Purchased" status
+  - Installer contact revealed (if applicable)
+  
+  VERIFY:
+  - [ ] Notification appears
+  - [ ] Routes to correct page
+  - [ ] Lead status updated
+  - [ ] No console errors
+  ```
+
+- **Testing Tools**:
+  - Option 1: Two browser windows (Incognito for 2nd user)
+  - Option 2: Playwright multi-context tests
+  - Option 3: Two different browsers (Chrome + Firefox)
+- **Documentation**:
+  - Record each scenario with screenshots
+  - Document timing (notification delay)
+  - Note any UI glitches or errors
+- **Acceptance**:
+  - ✅ All 3 scenarios pass
+  - ✅ Real-time notifications work (Pusher)
+  - ✅ Cross-user flows complete successfully
+  - ✅ No console errors
+- **Status**: NOT STARTED
+
+**Checkpoint**: All multi-user flows tested and verified, real-time updates working.
+
+---
+
+### Phase 13N-5: Verification & Documentation (2 hours)
+
+#### T408 [CRITICAL][P0]: Run ALL Verification Commands
+- **Priority**: 🔴 CRITICAL
+- **Requirement**: ZERO PROBLEMS policy - must achieve EXACTLY 0 errors/warnings
+- **Commands to Run**:
+  ```powershell
+  # 1. TypeScript (MUST be empty output):
+  npx tsc --noEmit
+  # Expected: (empty - no errors, no warnings)
+  
+  # 2. Build (MUST compile successfully):
+  npm run build
+  # Expected: ✓ Compiled successfully in X.Xs
+  # ❌ FAIL if you see: "Compiled with warnings"
+  
+  # 3. Design System (MUST be 0/0/0/0/0/0):
+  # Run all 6 verification commands from DOC/Guidelines/DESIGN-SYSTEM-SOT.md
+  # Command 1: Hardcoded gray/slate colors
+  Select-String -Path "src\components\NotificationDropdown.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-"
+  # Expected: No matches
+  
+  # Command 2: Dark mode classes
+  Select-String -Path "src\components\NotificationDropdown.tsx" -Pattern "dark:"
+  # Expected: No matches
+  
+  # Command 3: RGB/HEX colors
+  Select-String -Path "src\components\NotificationDropdown.tsx" -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}"
+  # Expected: No matches
+  
+  # Command 4: Hardcoded white/black
+  Select-String -Path "src\components\NotificationDropdown.tsx" -Pattern "text-white|bg-white|text-black|bg-black"
+  # Expected: No matches
+  
+  # Command 5: Hardcoded typography
+  Select-String -Path "src\components\NotificationDropdown.tsx" -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold"
+  # Expected: No matches
+  
+  # Command 6: Manual responsive classes
+  Select-String -Path "src\components\NotificationDropdown.tsx" -Pattern "sm:text-|md:text-|lg:text-"
+  # Expected: No matches
+  
+  # Also check lead detail pages:
+  Select-String -Path "src\app\installer\(dashboard)\leads\[id]\page.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-"
+  Select-String -Path "src\app\homeowner\(dashboard)\leads\[id]\page.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-"
+  
+  # 4. Prisma (MUST be valid):
+  npx prisma validate
+  # Expected: Environment variables loaded from .env
+  #           Prisma schema loaded from prisma\schema.prisma
+  #           Datasource "db": PostgreSQL database "solarmatch"...
+  #           The schema is valid ✓
+  
+  # 5. Browser Console (MUST be clean):
+  npm run dev
+  # Open http://localhost:3000
+  # Open DevTools (F12) → Console tab
+  # Navigate to all modified pages
+  # Expected: No errors, no warnings
+  
+  # 6. Playwright Tests (MUST be 100% pass):
+  npx playwright test
+  # Expected: X passed (X)
+  # ❌ FAIL if ANY test fails or is skipped
+  
+  # 7. Git Status (know what's being committed):
+  git status
+  # Review all modified files
+  ```
+- **Results Documentation**:
+  ```markdown
+  ## Verification Results - Phase 13N
+  
+  **Date**: [Current Date]
+  **Branch**: Notification
+  **Commit**: [Pending]
+  
+  ### Command Results
+  1. TypeScript: ✅ 0 errors, 0 warnings (empty output)
+  2. Build: ✅ Compiled successfully in 42.3s
+  3. Design System:
+     - Command 1 (gray/slate): ✅ 0 matches
+     - Command 2 (dark mode): ✅ 0 matches
+     - Command 3 (RGB/HEX): ✅ 0 matches
+     - Command 4 (white/black): ✅ 0 matches
+     - Command 5 (typography): ✅ 0 matches
+     - Command 6 (responsive): ✅ 0 matches
+     - **Total**: ✅ 0/0/0/0/0/0
+  4. Prisma: ✅ Schema is valid
+  5. Browser Console: ✅ Clean (no errors, no warnings)
+  6. Playwright Tests: ✅ 15/15 passed (100%)
+  7. Git Status: ✅ Reviewed (X files modified)
+  
+  ### Files Modified
+  - src/app/installer/(dashboard)/leads/[id]/page.tsx
+  - src/app/homeowner/(dashboard)/leads/[id]/page.tsx
+  - src/lib/services/purchase-service.ts
+  - (List all)
+  
+  ### Tests Created
+  - tests/notifications/bid-won.spec.ts
+  - tests/notifications/bid-submitted.spec.ts
+  - tests/notifications/all-types-routing.spec.ts
+  
+  **Verification Status**: ✅ ALL CHECKS PASSED
+  ```
+- **Mandatory**: ❌ **DO NOT COMMIT if ANY verification fails**
+- **Status**: NOT STARTED
+
+---
+
+#### T409 [MEDIUM][P1]: Update Documentation with Implementation Results
+- **Priority**: 🟡 MEDIUM
+- **Files to Update**:
+  
+  **1. This Audit Report**: `DOC/AUDIT-REPORTS/PHASE-13N-NOTIFICATION-FIX-AUDIT.md`
+  - Add "Implementation Results" section
+  - Document all verification command outputs
+  - List files modified with brief description
+  - Include screenshots of successful tests
+  - Note any issues encountered and how resolved
+  
+  **2. Implementation Guide**: `DOC/Guidelines/NOTIFICATION-IMPLEMENTATION-GUIDE.md` (if needed)
+  - Add lessons learned from Phase 13N
+  - Update common pitfalls section
+  - Add URL parameter handling pattern
+  
+  **3. Testing Guide**: `DOC/TESTING/PHASE-13M-MANUAL-TESTS.md`
+  - Mark all tests as COMPLETED with dates
+  - Add Playwright test results
+  - Add multi-user flow test results
+  
+  **4. Tasks File**: `specs/008-description-enhance-existing/tasks.md`
+  - Mark all Phase 13N tasks as COMPLETE
+  - Add Phase 13N Summary section
+  - Update Phase 13M status to "FIXED in Phase 13N"
+
+- **Commit Message Template**:
+  ```
+  Phase 13N: Fix notification routing and modal auto-open (T400-T409)
+  
+  CRITICAL FIX - Resolves Phase 13M incomplete implementation
+  
+  Root Cause:
+  - Phase 13M changed backend routing URLs but did not update frontend pages
+  - URL parameters (?action=payment, ?modal=reviewBids) not handled
+  - Runtime errors due to missing null checks
+  - NO browser testing or Playwright tests performed
+  
+  Changes:
+  - [T400] Added null checks to lead detail pages (fixes TypeError)
+  - [T401] Implemented payment modal auto-open for BID_WON notifications
+  - [T402] Implemented review bids modal auto-open for BID_SUBMITTED notifications
+  - [T403] Fixed LEAD_PURCHASED routing to purchased-leads page
+  - [T404] Fixed QUOTE_ACCEPTED routing to purchased-leads page
+  - [T405] Browser tested all 20 notification types (0 errors)
+  - [T406] Created Playwright E2E tests (15 tests, 100% pass)
+  - [T407] Tested multi-user flows (3 scenarios, all passed)
+  - [T408] Ran all verification commands (0/0/0/0/0/0)
+  - [T409] Updated documentation with results
+  
+  Verification:
+  - TypeScript: ✅ 0 errors
+  - Build: ✅ Compiled successfully
+  - Design System: ✅ 0/0/0/0/0/0
+  - Playwright: ✅ 15/15 passed
+  - Browser Console: ✅ Clean (no errors)
+  - Multi-User Flows: ✅ All 3 scenarios passed
+  
+  Files Modified:
+  - src/app/installer/(dashboard)/leads/[id]/page.tsx
+  - src/app/homeowner/(dashboard)/leads/[id]/page.tsx
+  - src/lib/services/purchase-service.ts
+  - (List all files)
+  
+  Tests Created:
+  - tests/notifications/bid-won.spec.ts
+  - tests/notifications/bid-submitted.spec.ts
+  - tests/notifications/all-types-routing.spec.ts
+  
+  Impact:
+  - ✅ BID_WON notifications now open payment modal
+  - ✅ BID_SUBMITTED notifications now open review bids modal
+  - ✅ All notification routing works correctly
+  - ✅ No runtime errors
+  - ✅ 100% Playwright test coverage
+  
+  Tested By: [Your Name]
+  Reviewed By: [Pending]
+  
+  Closes: Phase 13N
+  Fixes: Phase 13M (incomplete implementation)
+  ```
+- **Status**: NOT STARTED
+
+**Checkpoint**: All documentation updated, commit message prepared, ready for final review.
+
+---
+
+## Phase 13N Summary
+
+**Total Tasks**: 10 tasks (T400-T409)  
+**Estimated Effort**: 14 hours  
+**Priority**: P0 - CRITICAL (Production Blocking)  
+**Dependencies**: Phase 13M (flawed implementation to be fixed)
+
+**Breakdown**:
+- **Critical Runtime Fixes**: 1 task (T400) - 2 hours
+- **URL Parameter Handling**: 2 tasks (T401-T402) - 4 hours
+- **Backend Routing Fixes**: 2 tasks (T403-T404) - 2 hours
+- **Mandatory Testing**: 3 tasks (T405-T407) - 4 hours
+- **Verification & Documentation**: 2 tasks (T408-T409) - 2 hours
+
+**Success Criteria (ALL Must Be Achieved)**:
+- [ ] ✅ NO runtime errors (console clean)
+- [ ] ✅ BID_WON notification auto-opens payment modal
+- [ ] ✅ BID_SUBMITTED notification auto-opens review bids modal
+- [ ] ✅ LEAD_PURCHASED routes to purchased-leads page
+- [ ] ✅ QUOTE_ACCEPTED routes to purchased-leads page
+- [ ] ✅ TypeScript: 0 errors
+- [ ] ✅ Build: Compiled successfully (no warnings)
+- [ ] ✅ Design System: 0/0/0/0/0/0
+- [ ] ✅ Playwright Tests: 100% pass (minimum 15 tests)
+- [ ] ✅ Browser Console: Clean (all 20 notification types)
+- [ ] ✅ Multi-User Flows: All 3 scenarios pass
+- [ ] ✅ Documentation updated with results
+- [ ] ✅ Commit message complete and descriptive
+
+**Risk Assessment**:
+- **Low Risk**: Changes are additive (URL param handling)
+- **Low Risk**: Null checks improve stability
+- **Low Risk**: Backend route changes are targeted
+- **Mitigation**: Comprehensive testing (browser + Playwright + multi-user)
+
+**Blockers**: None
+
+**Next Phase After 13N**: User Acceptance Testing → Merge to Main → Production Deployment
+
+---
+
+**Phase 13N Status**: 🔴 READY TO START (CRITICAL)  
+**Created**: December 10, 2025  
+**Last Updated**: December 10, 2025
+
+---
+
+## LESSONS LEARNED - Phase 13M → 13N
+
+### ❌ What Went Wrong in Phase 13M
+1. **Incomplete Implementation**: Backend URLs changed but frontend pages not updated
+2. **No End-to-End Testing**: TypeScript/Build passed but feature didn't work
+3. **Playwright Tests Skipped**: Deferred instead of running (guideline violation)
+4. **No Browser Testing**: Would have caught all issues in < 1 minute
+5. **False Reporting**: Documentation created but actual testing not performed
+6. **Overconfidence**: Passing compilation checks ≠ working feature
+
+### ✅ How Phase 13N Prevents This
+1. **Complete Implementation**: Backend + Frontend + Testing = Done
+2. **Mandatory Browser Testing**: Test EVERY notification type in browser
+3. **Mandatory Playwright Tests**: BEFORE commit, not "deferred"
+4. **Multi-User Flow Testing**: Verify cross-user scenarios work
+5. **Honest Reporting**: Don't mark complete until ACTUALLY tested
+6. **Zero Warnings Policy**: 0/0/0/0/0/0 means EXACTLY zero, not "reduced"
+
+### 📋 Universal Checklist for Future Phases
+```markdown
+Before marking ANY phase "complete":
+- [ ] Backend code implemented
+- [ ] Frontend code implemented
+- [ ] URL parameters handled (if applicable)
+- [ ] Null checks added (defensive coding)
+- [ ] TypeScript: 0 errors
+- [ ] Build: Compiled successfully (NO warnings)
+- [ ] Design System: 0/0/0/0/0/0
+- [ ] Browser tested (click through ENTIRE flow)
+- [ ] Console checked (NO errors, NO warnings)
+- [ ] Playwright tests written
+- [ ] Playwright tests run (100% pass)
+- [ ] Multi-user flow tested (if cross-user feature)
+- [ ] Screenshot evidence collected
+- [ ] Documentation updated
+- [ ] ONLY THEN: Create commit
+```
+
+**Critical Takeaway**: "Compiles successfully" ≠ "Works in production". Always test end-to-end.
+
+---
+
+**END OF PHASE 13N**
 
