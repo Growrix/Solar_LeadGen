@@ -9513,3 +9513,278 @@ Add to `DOC/AUDIT-REPORTS/NOTIFICATION-SYSTEM-COMPREHENSIVE-AUDIT.md`:
 
 **END OF PHASE 13Q**
 
+---
+
+## Phase 13R – Remove Notification Type Tags for Homeowners (P1 - UX Enhancement)
+
+**Goal**: Remove technical notification type tags (e.g., "Purchase", "REQUEST_RECEIVED") from homeowner notification cards to maintain customer-friendly language.
+
+**Context**: Homeowners should never see technical terms like "Lead", "Purchase", "Paid" that make them feel their requests are being sold. The notification system currently shows type badges (lines 588-590 in NotificationDropdown.tsx) for all users.
+
+**User Story**: As a homeowner, I want to see clean notification messages without technical tags, so I feel like I'm getting free professional services, not that my information is being sold.
+
+---
+
+### Tasks
+
+#### T601: GATE 0 - Pre-Implementation Health Check
+**Owner**: AI  
+**Priority**: P0 - MANDATORY  
+**Estimated**: 5 min
+
+- [ ] Run TypeScript check: `npx tsc --noEmit`
+- [ ] Confirm 0 errors before proceeding
+- [ ] Document baseline state
+
+**Success Criteria**: Clean TypeScript compilation
+
+---
+
+#### T602: Audit Current Notification Tag Implementation
+**Owner**: AI  
+**Priority**: P1  
+**Estimated**: 10 min
+
+- [ ] Review `NotificationDropdown.tsx` lines 286-300 (`getTypeLabel` function)
+- [ ] Review lines 588-590 (type badge rendering)
+- [ ] Identify where user role is available
+- [ ] Document current tag display logic
+
+**Files to Review**:
+- `src/components/NotificationDropdown.tsx`
+- Session data structure for role
+
+**Success Criteria**: Complete understanding of tag rendering flow
+
+---
+
+#### T603: Create Backup Commit
+**Owner**: AI  
+**Priority**: P0 - MANDATORY  
+**Estimated**: 2 min
+
+```powershell
+git add .
+git commit -m "backup: before Phase 13R - remove homeowner notification tags"
+```
+
+**Success Criteria**: Backup commit created successfully
+
+---
+
+#### T604: Pass User Role to NotificationCard Component
+**Owner**: AI  
+**Priority**: P1  
+**Estimated**: 5 min
+
+- [ ] Extract `userRole` from session in `NotificationDropdown` component
+- [ ] Pass `userRole` prop to `NotificationCard` component
+- [ ] Update `NotificationCardProps` interface to include `userRole?: string`
+
+**Code Location**: `NotificationDropdown.tsx` lines 540-570
+
+**Success Criteria**: User role available in NotificationCard component
+
+---
+
+#### T605: Conditionally Hide Type Badge for Homeowners
+**Owner**: AI  
+**Priority**: P1  
+**Estimated**: 10 min
+
+- [ ] Modify type badge rendering (line 588-590) to check user role
+- [ ] Hide badge when `userRole === 'HOMEOWNER'`
+- [ ] Keep badge visible for INSTALLER and ADMIN roles
+- [ ] Maintain all styling for non-homeowner users
+
+**Implementation**:
+```tsx
+{/* Only show type badge for Admin and Installer */}
+{userRole !== 'HOMEOWNER' && (
+  <span className={`px-2 py-0.5 text-caption rounded-full ${typeBadgeClasses}`}>
+    {typeLabel}
+  </span>
+)}
+```
+
+**Success Criteria**: 
+- Tags hidden for homeowners only
+- Tags still visible for installers and admins
+- No layout shift or UI breaks
+
+---
+
+#### T606: TypeScript Verification
+**Owner**: AI  
+**Priority**: P0 - MANDATORY  
+**Estimated**: 2 min
+
+```powershell
+npx tsc --noEmit
+```
+
+**Success Criteria**: 0 TypeScript errors
+
+---
+
+#### T607: Browser Testing - All 3 User Roles
+**Owner**: AI + Manual  
+**Priority**: P0 - MANDATORY  
+**Estimated**: 15 min
+
+**Test Scenarios**:
+
+1. **Homeowner Account**:
+   - [ ] Login as homeowner
+   - [ ] Open notification dropdown
+   - [ ] Verify NO type badges visible (e.g., no "Purchase", "REQUEST_RECEIVED")
+   - [ ] Verify notification messages still show correctly
+   - [ ] Verify action buttons still work
+
+2. **Installer Account**:
+   - [ ] Login as installer
+   - [ ] Open notification dropdown
+   - [ ] Verify type badges ARE visible
+   - [ ] Verify all styling intact
+
+3. **Admin Account**:
+   - [ ] Login as admin
+   - [ ] Open notification dropdown
+   - [ ] Verify type badges ARE visible
+   - [ ] Verify all styling intact
+
+**Success Criteria**: 
+- Homeowner: NO tags visible ✅
+- Installer: Tags visible ✅
+- Admin: Tags visible ✅
+- No console errors
+
+---
+
+#### T608: Test Dark/Light/Purple Themes
+**Owner**: AI + Manual  
+**Priority**: P1  
+**Estimated**: 10 min
+
+- [ ] Test homeowner notifications in Dark theme
+- [ ] Test homeowner notifications in Light theme
+- [ ] Test homeowner notifications in Purple theme
+- [ ] Verify no styling issues or layout breaks
+
+**Success Criteria**: All themes work correctly without tags for homeowners
+
+---
+
+#### T609: Test Responsive Breakpoints
+**Owner**: AI + Manual  
+**Priority**: P1  
+**Estimated**: 10 min
+
+- [ ] Test notification dropdown at 320px width (mobile)
+- [ ] Test at 768px (tablet)
+- [ ] Test at 1024px (desktop)
+- [ ] Verify dropdown stays within viewport
+- [ ] Verify text wrapping works correctly
+
+**Success Criteria**: Responsive design works at all breakpoints
+
+---
+
+#### T610: Create Implementation Commit
+**Owner**: AI  
+**Priority**: P0 - MANDATORY  
+**Estimated**: 2 min
+
+```powershell
+git add .
+git commit -m "feat(notifications): Phase 13R - Remove type tags for homeowner notifications
+
+- Conditionally hide notification type badges for homeowners only
+- Pass userRole prop to NotificationCard component
+- Maintain customer-friendly UX (no 'Lead', 'Purchase', 'Paid' tags)
+- Keep badges visible for Admin and Installer roles
+- Zero TypeScript errors
+- Tested across all 3 user roles
+
+Fixes: Homeowners no longer see technical notification tags
+Impact: Improved UX - homeowners feel they're getting free service
+Files: src/components/NotificationDropdown.tsx
+
+Phase 13R Complete ✅"
+```
+
+**Success Criteria**: Implementation commit created with comprehensive message
+
+---
+
+#### T611: Update Documentation
+**Owner**: AI  
+**Priority**: P2  
+**Estimated**: 5 min
+
+- [ ] Update this tasks.md with Phase 13R completion status
+- [ ] Document decision to hide tags only for homeowners
+- [ ] Note that this aligns with customer-friendly language guidelines
+
+**Success Criteria**: Documentation updated
+
+---
+
+### Phase 13R Success Criteria
+
+✅ **Functional Requirements**:
+- [ ] Type tags hidden for homeowner notifications
+- [ ] Type tags still visible for installer notifications
+- [ ] Type tags still visible for admin notifications
+- [ ] No TypeScript errors (0/0)
+- [ ] No console errors in browser
+
+✅ **UX Requirements**:
+- [ ] Homeowner notifications look clean without tags
+- [ ] No layout shift when tags are hidden
+- [ ] All themes work correctly (Dark/Light/Purple)
+- [ ] Responsive design works at all breakpoints
+
+✅ **Technical Requirements**:
+- [ ] User role correctly passed to NotificationCard
+- [ ] Conditional rendering implemented correctly
+- [ ] No breaking changes to other components
+- [ ] Git commits follow convention
+
+✅ **Testing Requirements**:
+- [ ] Tested with all 3 user roles (Homeowner/Installer/Admin)
+- [ ] Tested in all 3 themes
+- [ ] Tested at multiple breakpoints
+- [ ] Verified no regressions
+
+---
+
+### Implementation Notes
+
+**Why This Approach?**:
+1. **Minimal Change**: Only modifies rendering logic, no API changes needed
+2. **Role-Based**: Uses existing session data, no new database fields
+3. **Maintainable**: Simple conditional check, easy to understand
+4. **Safe**: Doesn't affect installer or admin notifications
+
+**Customer Psychology**:
+- Homeowners should feel they're receiving **free professional services**
+- Technical tags like "Purchase" create perception of "being sold"
+- Clean notifications = professional, customer-centric experience
+
+**Design System Alignment**:
+- Maintains all existing semantic tokens
+- No new components created
+- Follows conditional rendering best practices
+
+---
+
+**Phase 13R Status**: 🟢 READY TO IMPLEMENT  
+**Estimated Time**: 60 minutes (Implementation + testing)  
+**Priority**: P1 - UX Enhancement  
+**Risk**: Low (simple conditional rendering)
+
+---
+
+**END OF PHASE 13R**
+
