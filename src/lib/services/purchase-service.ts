@@ -296,6 +296,21 @@ export async function confirmPurchase(
         }]);
       }
 
+      // Notify installer about successful purchase confirmation
+      await createBulkNotifications([{
+        recipientUserId: installerId,
+        role: UserRole.INSTALLER,
+        actionType: NotificationType.PURCHASE_CONFIRMED,
+        messageKey: 'installer.purchase.confirmed',
+        routeKey: 'installer.leads',
+        metadata: { 
+          leadId,
+          quoteType: lead.quoteType,
+          location: lead.location,
+          homeownerId: lead.homeownerId
+        }
+      }]);
+
       return {
         success: true,
         lead: updatedLead,
@@ -355,6 +370,47 @@ export async function confirmPurchase(
         messageKey: 'homeowner.lead.purchased',
         routeKey: 'homeowner.requests',
         metadata: { leadId },
+      }]);
+
+      // Notify all admins about purchase (dev mode)
+      const adminsDevMode = await prisma.user.findMany({
+        where: { role: UserRole.ADMIN },
+        select: { id: true }
+      });
+
+      if (adminsDevMode.length > 0) {
+        await createBulkNotifications(
+          adminsDevMode.map(admin => ({
+            recipientUserId: admin.id,
+            role: UserRole.ADMIN,
+            actionType: NotificationType.LEAD_PURCHASED,
+            messageKey: 'admin.lead.purchased',
+            routeKey: 'admin.lead.manage',
+            metadata: { 
+              leadId, 
+              installerId,
+              quoteType: lead.quoteType,
+              location: lead.location,
+              state: lead.state,
+              bypassMode: true
+            }
+          }))
+        );
+      }
+
+      // Notify installer about successful purchase confirmation
+      await createBulkNotifications([{
+        recipientUserId: installerId,
+        role: UserRole.INSTALLER,
+        actionType: NotificationType.PURCHASE_CONFIRMED,
+        messageKey: 'installer.purchase.confirmed',
+        routeKey: 'installer.leads',
+        metadata: { 
+          leadId,
+          quoteType: lead.quoteType,
+          location: lead.location,
+          homeownerId: lead.homeownerId
+        }
       }]);
 
       return {
@@ -423,6 +479,48 @@ export async function confirmPurchase(
       messageKey: 'homeowner.lead.purchased',
       routeKey: 'homeowner.requests',
       metadata: { leadId },
+    }]);
+
+    // Notify all admins about purchase (production mode)
+    const adminsProdMode = await prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true }
+    });
+
+    if (adminsProdMode.length > 0) {
+      await createBulkNotifications(
+        adminsProdMode.map(admin => ({
+          recipientUserId: admin.id,
+          role: UserRole.ADMIN,
+          actionType: NotificationType.LEAD_PURCHASED,
+          messageKey: 'admin.lead.purchased',
+          routeKey: 'admin.lead.manage',
+          metadata: { 
+            leadId, 
+            installerId,
+            quoteType: lead.quoteType,
+            location: lead.location,
+            state: lead.state,
+            amount: paymentIntent.amount / 100,
+            bypassMode: false
+          }
+        }))
+      );
+    }
+
+    // Notify installer about successful purchase confirmation
+    await createBulkNotifications([{
+      recipientUserId: installerId,
+      role: UserRole.INSTALLER,
+      actionType: NotificationType.PURCHASE_CONFIRMED,
+      messageKey: 'installer.purchase.confirmed',
+      routeKey: 'installer.leads',
+      metadata: { 
+        leadId,
+        quoteType: lead.quoteType,
+        location: lead.location,
+        homeownerId: lead.homeownerId
+      }
     }]);
 
     return {
