@@ -8838,3 +8838,678 @@ If this simple test fails for ANY notification type → NOT DONE YET
 
 **END OF PHASE 13O**
 
+---
+
+## Phase 13Q – Complete Notification Coverage for All User Flows (P0 - CRITICAL)
+
+**Audit Report**: `DOC/AUDIT-REPORTS/NOTIFICATION-SYSTEM-COMPREHENSIVE-AUDIT.md`  
+**Priority**: P0 (Critical - Admins blind to 60% of system activities)  
+**Estimated Time**: 3-4 hours (Focused implementation + testing)  
+**Created**: December 11, 2025
+
+### 🚨 CRITICAL PROBLEM STATEMENT
+
+**Current State**:
+- ✅ Admin receives notification when lead is created
+- ✅ Admin receives notification when lead is assigned
+- ❌ **Admin does NOT receive notification when installer purchases lead** (USER REPORTED BUG)
+- ❌ Admin does NOT receive notification when bid is submitted
+- ❌ Admin does NOT receive notification when winner is selected
+- ❌ Admin does NOT receive notification when bid is purchased
+- ❌ Installers do NOT receive purchase confirmation
+- ❌ Installers do NOT receive contact unlocked notification
+
+**Impact**:
+- Admin cannot monitor revenue (purchases happen silently)
+- Admin cannot track bidding progress (blind to submissions/selections)
+- Installers don't know if purchase succeeded
+- 18 total missing notification touchpoints identified
+
+**Root Cause**:
+- Purchase-service.ts has 3 code paths for purchases
+- Only 1 path (assignment-accepted) notifies admin (line 289)
+- Dev-bypass (line 351) and production Stripe (line 419) paths do NOT notify admin
+- Message catalog has unused keys: `admin.bid.submitted`, `admin.bid.winner.selected`, `admin.bid.payment.completed`
+- Bidding flow never triggers these notifications
+
+---
+
+### 📋 TASKS
+
+#### T501 [GATE 0] System Health Check
+**Acceptance**: ALL checks must pass before proceeding
+```powershell
+# 1. TypeScript check
+npx tsc --noEmit  # Expected: 0 errors (empty output)
+
+# 2. Build check
+npm run build  # Expected: "Compiled successfully"
+
+# 3. Dev server
+npm run dev  # Expected: Starts without errors
+
+# 4. Verify current notification state
+git status  # Expected: Working tree clean (we just committed Phase 13P)
+```
+
+**Stop Criteria**: If ANY check fails, fix before proceeding
+
+---
+
+#### T502 [AUDIT] Read Comprehensive Audit Report
+**Acceptance**: Understand all 18 missing notification touchpoints
+
+1. Read: `DOC/AUDIT-REPORTS/NOTIFICATION-SYSTEM-COMPREHENSIVE-AUDIT.md`
+2. Identify the 3 purchase code paths in purchase-service.ts
+3. Locate unused message keys in message-catalog.ts
+4. Map notification touchpoints per user flow
+
+**Deliverable**: Confirmation that audit report is understood
+
+---
+
+#### T503 [BACKUP] Create Safety Commit
+**Acceptance**: Git working tree clean with descriptive commit
+
+```powershell
+git add .
+git commit -m "backup: before Phase 13Q - complete notification coverage"
+git log --oneline -1  # Verify commit created
+```
+
+**Stop Criteria**: If commit fails, resolve before proceeding
+
+---
+
+#### T504 [FIX] Add Admin Notification to Dev-Bypass Purchase Path
+**Location**: `src/lib/services/purchase-service.ts` Line ~358  
+**Acceptance**: Admin notified when installer purchases via dev mode
+
+**Current Code** (Lines 351-359):
+```typescript
+// T403: Notify homeowner - added missing actionUrl
+await createBulkNotifications([{
+  recipientUserId: lead.homeownerId,
+  role: UserRole.HOMEOWNER,
+  actionType: NotificationType.LEAD_PURCHASED,
+  messageKey: 'homeowner.lead.purchased',
+  routeKey: 'homeowner.requests',
+  metadata: { leadId },
+}]);
+```
+
+**Required Change**: Add admin notification AFTER homeowner notification
+
+**Implementation**:
+```typescript
+// T403: Notify homeowner
+await createBulkNotifications([{
+  recipientUserId: lead.homeownerId,
+  role: UserRole.HOMEOWNER,
+  actionType: NotificationType.LEAD_PURCHASED,
+  messageKey: 'homeowner.lead.purchased',
+  routeKey: 'homeowner.requests',
+  metadata: { leadId },
+}]);
+
+// Notify all admins about purchase (dev mode)
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.LEAD_PURCHASED,
+      messageKey: 'admin.lead.purchased',
+      routeKey: 'admin.lead.manage',
+      metadata: { 
+        leadId, 
+        installerId,
+        quoteType: lead.quoteType,
+        location: lead.location,
+        state: lead.state,
+        bypassMode: true
+      }
+    }))
+  );
+}
+```
+
+**Verification**:
+```powershell
+# 1. TypeScript check
+npx tsc --noEmit
+
+# 2. Check terminal for dev server recompile
+# Should see: ✓ Compiled /src/lib/services/purchase-service
+```
+
+---
+
+#### T505 [FIX] Add Admin Notification to Production Purchase Path
+**Location**: `src/lib/services/purchase-service.ts` Line ~426  
+**Acceptance**: Admin notified when installer purchases via Stripe
+
+**Current Code** (Lines 419-427):
+```typescript
+// T403: Notify homeowner - added missing actionUrl
+await createBulkNotifications([{
+  recipientUserId: lead.homeownerId,
+  role: UserRole.HOMEOWNER,
+  actionType: NotificationType.LEAD_PURCHASED,
+  messageKey: 'homeowner.lead.purchased',
+  routeKey: 'homeowner.requests',
+  metadata: { leadId },
+}]);
+```
+
+**Required Change**: Add admin notification (same pattern as T504)
+
+**Implementation**: Same code as T504, but set `bypassMode: false` in metadata
+
+**Verification**: Same as T504
+
+---
+
+#### T506 [FIX] Add Installer Purchase Confirmation (All 3 Paths)
+**Locations**: 
+- `src/lib/services/purchase-service.ts` Line ~297 (assignment path)
+- `src/lib/services/purchase-service.ts` Line ~358 (dev-bypass path)
+- `src/lib/services/purchase-service.ts` Line ~426 (production path)
+
+**Acceptance**: Installer receives confirmation notification after ALL purchase types
+
+**Implementation** (Add AFTER homeowner + admin notifications):
+```typescript
+// Notify installer about successful purchase
+await createBulkNotifications([{
+  recipientUserId: installerId,
+  role: UserRole.INSTALLER,
+  actionType: NotificationType.PURCHASE_CONFIRMED,
+  messageKey: 'installer.purchase.confirmed',
+  routeKey: 'installer.leads',
+  metadata: { 
+    leadId,
+    quoteType: lead.quoteType,
+    location: lead.location,
+    homeownerId: lead.homeownerId
+  }
+}]);
+```
+
+**Verification**:
+```powershell
+npx tsc --noEmit  # Expected: 0 errors
+grep -n "installer.purchase.confirmed" src/lib/services/purchase-service.ts
+# Expected: 3 matches (one per code path)
+```
+
+---
+
+#### T507 [FIX] Add Admin Notification for Bid Submission
+**Location**: `src/app/api/bids/route.ts` Line ~178  
+**Acceptance**: Admin notified when ANY installer submits a bid
+
+**Current Code** (Lines 178-186):
+```typescript
+await createBulkNotifications(
+  [lead.homeownerId].map(id => ({
+    recipientUserId: id,
+    role: UserRole.HOMEOWNER,
+    actionType: NotificationType.BID_RECEIVED,
+    messageKey: 'homeowner.bid.received',
+    routeKey: 'homeowner.requests',
+    metadata: { leadId, bidId: bid.id, installerId }
+  }))
+);
+```
+
+**Required Change**: Add admin notification AFTER homeowner notification
+
+**Implementation**:
+```typescript
+// Notify homeowner
+await createBulkNotifications([{
+  recipientUserId: lead.homeownerId,
+  role: UserRole.HOMEOWNER,
+  actionType: NotificationType.BID_RECEIVED,
+  messageKey: 'homeowner.bid.received',
+  routeKey: 'homeowner.requests',
+  metadata: { leadId, bidId: bid.id, installerId }
+}]);
+
+// Notify all admins about bid submission (USE EXISTING MESSAGE KEY)
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.BID_SUBMITTED,
+      messageKey: 'admin.bid.submitted',  // ✅ Already exists in catalog
+      routeKey: 'admin.lead.manage',
+      metadata: { 
+        leadId, 
+        bidId: bid.id, 
+        installerId,
+        location: lead.location,
+        quoteType: lead.quoteType
+      }
+    }))
+  );
+}
+```
+
+**Verification**:
+```powershell
+npx tsc --noEmit
+grep -n "admin.bid.submitted" src/app/api/bids/route.ts
+# Expected: 1 match (new code)
+```
+
+---
+
+#### T508 [FIX] Add Admin Notification for Winner Selection
+**Location**: `src/app/api/bids/[bidId]/select/route.ts` Line ~242  
+**Acceptance**: Admin notified when homeowner selects winning bid
+
+**Current Code** (Lines 242-250):
+```typescript
+await createBulkNotifications(
+  [leadOwnerId].map(id => ({
+    recipientUserId: id,
+    role: UserRole.HOMEOWNER,
+    actionType: NotificationType.BID_WINNER_SELECTED,
+    messageKey: 'homeowner.selection.confirmed',
+    routeKey: 'homeowner.requests',
+    metadata: { leadId, bidId, winnerId: winnerInstallerId }
+  }))
+);
+```
+
+**Required Change**: Add admin notification AFTER homeowner notification
+
+**Implementation**:
+```typescript
+// Notify homeowner (existing)
+await createBulkNotifications([{
+  recipientUserId: leadOwnerId,
+  role: UserRole.HOMEOWNER,
+  actionType: NotificationType.BID_WINNER_SELECTED,
+  messageKey: 'homeowner.selection.confirmed',
+  routeKey: 'homeowner.requests',
+  metadata: { leadId, bidId, winnerId: winnerInstallerId }
+}]);
+
+// Notify all admins about winner selection (USE EXISTING MESSAGE KEY)
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.BID_WINNER_SELECTED,
+      messageKey: 'admin.bid.winner.selected',  // ✅ Already exists in catalog
+      routeKey: 'admin.lead.manage',
+      metadata: { 
+        leadId, 
+        bidId, 
+        winnerId: winnerInstallerId,
+        leadLocation: lead.location || 'Unknown',
+        quoteType: lead.quoteType || 'Unknown'
+      }
+    }))
+  );
+}
+```
+
+**Verification**: Same as T507
+
+---
+
+#### T509 [FIX] Add Admin Notification for Bid Purchase
+**Location**: `src/app/api/bids/[bidId]/purchase/route.ts` Line ~172  
+**Acceptance**: Admin notified when winning installer completes payment
+
+**Current Code** (Lines 172-180):
+```typescript
+await createBulkNotifications(
+  [lead.homeownerId].map(id => ({
+    recipientUserId: id,
+    role: UserRole.HOMEOWNER,
+    actionType: NotificationType.INSTALLER_RESPONDED,
+    messageKey: 'homeowner.installer.responded',
+    routeKey: 'homeowner.requests',
+    metadata: { leadId, installerId, bidId }
+  }))
+);
+```
+
+**Required Change**: Add admin notification AFTER homeowner notification
+
+**Implementation**:
+```typescript
+// Notify homeowner (existing)
+await createBulkNotifications([{
+  recipientUserId: lead.homeownerId,
+  role: UserRole.HOMEOWNER,
+  actionType: NotificationType.INSTALLER_RESPONDED,
+  messageKey: 'homeowner.installer.responded',
+  routeKey: 'homeowner.requests',
+  metadata: { leadId, installerId, bidId }
+}]);
+
+// Notify all admins about bid purchase (USE EXISTING MESSAGE KEY)
+const admins = await prisma.user.findMany({
+  where: { role: UserRole.ADMIN },
+  select: { id: true }
+});
+
+if (admins.length > 0) {
+  await createBulkNotifications(
+    admins.map(admin => ({
+      recipientUserId: admin.id,
+      role: UserRole.ADMIN,
+      actionType: NotificationType.BID_PAYMENT_COMPLETED,
+      messageKey: 'admin.bid.payment.completed',  // ✅ Already exists in catalog
+      routeKey: 'admin.lead.manage',
+      metadata: { 
+        leadId, 
+        bidId, 
+        installerId,
+        amount: bid.totalPrice || 0,
+        location: lead.location || 'Unknown'
+      }
+    }))
+  );
+}
+```
+
+**Verification**: Same as T507
+
+---
+
+#### T510 [VERIFY] TypeScript Compilation
+**Acceptance**: 0 TypeScript errors
+
+```powershell
+npx tsc --noEmit
+```
+
+**Expected Output**: Empty (no errors)  
+**Stop Criteria**: If errors exist, fix before proceeding
+
+---
+
+#### T511 [VERIFY] Dev Server Starts
+**Acceptance**: Dev server compiles without errors
+
+```powershell
+npm run dev
+```
+
+**Expected**: Terminal shows "✓ Compiled" without errors  
+**Stop Criteria**: If compilation fails, fix before proceeding
+
+---
+
+#### T512 [TEST] E2E Notification Testing (MANDATORY)
+**Acceptance**: ALL notification types verified in browser
+
+**Test Scenario 1: Call/Visit Lead Purchase (Marketplace Path)**
+1. Login as Homeowner
+2. Create new call/visit lead
+3. Login as Admin → Verify "New Lead Submitted" notification appears
+4. Approve lead → Verify homeowner notified
+5. Login as Installer
+6. Purchase lead from marketplace
+7. **Login as Admin → Verify "Lead Purchased" notification appears** ⭐ (FIX VERIFIED)
+8. **Login as Installer → Verify "Purchase Confirmed" notification appears** ⭐ (NEW)
+
+**Test Scenario 2: Call/Visit Lead Purchase (Assignment Path)**
+1. Login as Admin
+2. Assign lead to installer
+3. Login as Installer → Verify "New Opportunity" notification
+4. Purchase assigned lead
+5. **Login as Admin → Verify "Assignment Accepted" notification appears** ⭐ (EXISTING)
+6. **Verify "Purchase Confirmed" notification for installer** ⭐ (NEW)
+
+**Test Scenario 3: Complete Bidding Flow**
+1. Login as Homeowner → Create bidding lead
+2. Login as Admin → Assign to 3 installers
+3. Login as Installer1 → Submit bid
+4. **Login as Admin → Verify "Bid Submitted" notification** ⭐ (NEW)
+5. Login as Installer2 → Submit bid
+6. **Login as Admin → Verify 2nd "Bid Submitted" notification** ⭐ (NEW)
+7. Login as Homeowner → Select Installer1 as winner
+8. **Login as Admin → Verify "Bid Winner Selected" notification** ⭐ (NEW)
+9. Login as Installer1 → Complete payment
+10. **Login as Admin → Verify "Bid Payment Completed" notification** ⭐ (NEW)
+11. **Login as Installer1 → Verify "Purchase Confirmed" notification** ⭐ (NEW)
+12. Login as Installer2 → Verify "Bid Outcome" (loser) notification
+
+**Verification Checklist**:
+- [ ] Admin receives notification for marketplace purchase
+- [ ] Admin receives notification for assignment purchase
+- [ ] Admin receives notification for bid submission (each bid)
+- [ ] Admin receives notification for winner selection
+- [ ] Admin receives notification for bid purchase
+- [ ] Installer receives purchase confirmation (all 3 paths)
+- [ ] Homeowner receives all existing notifications (no regressions)
+- [ ] Loser installers receive outcome notification
+
+**Stop Criteria**: If ANY notification fails to appear, fix before marking complete
+
+---
+
+#### T513 [TEST] Notification Database Verification
+**Acceptance**: Notifications correctly stored in database
+
+```powershell
+# Open Prisma Studio
+npx prisma studio
+
+# Navigate to Notification table
+# Filter by: createdAt > "2025-12-11" (today)
+# Expected: 
+# - At least 3 admin notifications with messageKey: admin.lead.purchased, admin.bid.submitted, admin.bid.winner.selected, admin.bid.payment.completed
+# - At least 3 installer notifications with messageKey: installer.purchase.confirmed
+# - All notifications have correct userId (not email strings)
+# - All notifications have valid routeKey values
+```
+
+**Verification**:
+- [ ] Admin notifications exist with correct messageKey
+- [ ] Installer purchase confirmations exist
+- [ ] All userId fields are UUIDs (not emails)
+- [ ] All routeKey fields are valid enum values
+- [ ] createdAt timestamps are correct
+
+---
+
+#### T514 [COMMIT] Create Comprehensive Commit
+**Acceptance**: All changes committed with detailed message
+
+```powershell
+git add .
+git commit -m "feat(notifications): Phase 13Q Complete - Add missing admin & installer purchase notifications
+
+CRITICAL BUG FIX: Admin blind to purchases
+USER REPORTED: Created lead > assigned > purchased > NO ADMIN NOTIFICATION
+
+ROOT CAUSE:
+- purchase-service.ts has 3 code paths for purchases
+- Only assignment path notified admin (line 289)
+- Dev-bypass (line 351) and production (line 419) paths SILENT
+
+NOTIFICATIONS ADDED (11 total):
+
+Admin Notifications (6):
+1. Lead purchased via dev-bypass mode (purchase-service.ts:358)
+2. Lead purchased via production Stripe (purchase-service.ts:426)
+3. Bid submitted by installer (bids/route.ts:178)
+4. Winner selected by homeowner (bids/[bidId]/select/route.ts:242)
+5. Bid purchased by winner (bids/[bidId]/purchase/route.ts:172)
+6. Assignment accepted (existing - verified still works)
+
+Installer Notifications (3):
+1. Purchase confirmed - assignment path (purchase-service.ts:297)
+2. Purchase confirmed - dev-bypass path (purchase-service.ts:358)
+3. Purchase confirmed - production path (purchase-service.ts:426)
+
+Homeowner Notifications (2):
+- No changes (all existing notifications preserved)
+- Verified no regressions in E2E tests
+
+VERIFICATION:
+✅ TypeScript: 0 errors (npx tsc --noEmit)
+✅ Dev server: Compiled successfully
+✅ E2E tests: All 12 notification touchpoints verified in browser
+✅ Database: All notifications created with correct userId/messageKey/routeKey
+✅ Regression: Existing notifications still work (homeowner, loser installers)
+
+IMPACT:
+- Admin now receives 100% of purchase notifications (was 33%)
+- Admin can monitor revenue in real-time
+- Admin can track bidding progress end-to-end
+- Installers get confirmation their purchase succeeded
+- 11 new notification touchpoints added (was 10, now 21)
+
+FILES MODIFIED (4):
+- src/lib/services/purchase-service.ts (3 notification additions)
+- src/app/api/bids/route.ts (1 admin notification)
+- src/app/api/bids/[bidId]/select/route.ts (1 admin notification)
+- src/app/api/bids/[bidId]/purchase/route.ts (1 admin notification)
+
+AUDIT REPORT: DOC/AUDIT-REPORTS/NOTIFICATION-SYSTEM-COMPREHENSIVE-AUDIT.md
+
+STATUS: ADMIN NOTIFICATION COVERAGE 100% ✅"
+```
+
+**Verification**:
+```powershell
+git log --oneline -1
+git show --stat
+# Verify 4 files modified, commit message complete
+```
+
+---
+
+#### T515 [DOCS] Update Audit Report with Results
+**Acceptance**: Audit report updated with implementation results
+
+Add to `DOC/AUDIT-REPORTS/NOTIFICATION-SYSTEM-COMPREHENSIVE-AUDIT.md`:
+
+```markdown
+---
+
+## 🎉 PHASE 13Q IMPLEMENTATION RESULTS
+
+**Completed**: December 11, 2025  
+**Status**: ✅ SUCCESS - All critical notifications implemented
+
+### Notifications Added (11 total)
+
+#### Admin Notifications (6):
+1. ✅ Lead purchased (dev-bypass) - `purchase-service.ts:358`
+2. ✅ Lead purchased (production) - `purchase-service.ts:426`
+3. ✅ Bid submitted - `bids/route.ts:178`
+4. ✅ Winner selected - `bids/[bidId]/select/route.ts:242`
+5. ✅ Bid purchased - `bids/[bidId]/purchase/route.ts:172`
+6. ✅ Assignment accepted - Verified existing code still works
+
+#### Installer Notifications (3):
+1. ✅ Purchase confirmed (assignment) - `purchase-service.ts:297`
+2. ✅ Purchase confirmed (dev-bypass) - `purchase-service.ts:358`
+3. ✅ Purchase confirmed (production) - `purchase-service.ts:426`
+
+#### Homeowner Notifications:
+- ✅ No regressions - All existing notifications preserved
+
+### Verification Results
+
+**TypeScript**: ✅ 0 errors  
+**Build**: ✅ Compiled successfully  
+**Dev Server**: ✅ No compilation errors  
+**E2E Tests**: ✅ All 12 touchpoints verified  
+**Database**: ✅ All notifications created correctly  
+**Regression**: ✅ No existing functionality broken
+
+### Coverage Improvement
+
+**Before Phase 13Q**:
+- Admin notification coverage: 27% (3 of 11)
+- Installer confirmation: 0% (0 of 3)
+- Total system coverage: 36% (10 of 28)
+
+**After Phase 13Q**:
+- Admin notification coverage: 82% (9 of 11) ⬆️ +55%
+- Installer confirmation: 100% (3 of 3) ⬆️ +100%
+- Total system coverage: 75% (21 of 28) ⬆️ +39%
+
+### Remaining Gaps (7)
+
+*These are P2 priority (next sprint):*
+- Chat message notifications (both directions)
+- Lead update notifications
+- Deadline reminders
+- Admin daily summary
+
+**Next Phase**: Phase 13R - Implement remaining P2 notifications
+```
+
+---
+
+### ✅ PHASE 13Q SUCCESS CRITERIA
+
+**ALL must pass to mark phase complete**:
+
+1. **TypeScript**: ✅ 0 errors (`npx tsc --noEmit`)
+2. **Build**: ✅ Compiled successfully (`npm run build`)
+3. **E2E Tests**: ✅ All 12 notification touchpoints verified in browser
+4. **Database**: ✅ Notifications created with correct userId/messageKey/routeKey
+5. **Regression**: ✅ Existing notifications still work
+6. **User Report Fixed**: ✅ Admin receives notification when installer purchases lead
+7. **Documentation**: ✅ Audit report updated, commit message complete
+
+**If ANY criteria fails**: ❌ Phase NOT complete, continue fixing
+
+---
+
+### 🚨 CRITICAL REMINDERS
+
+**DON'T**:
+- Trust "it should work" without browser testing
+- Mark complete without verifying ALL 12 touchpoints
+- Skip database verification (Prisma Studio check)
+- Assume existing notifications still work (test regressions)
+
+**DO**:
+- Test EVERY notification type in browser (click bell icon, see notifications)
+- Verify admin receives notifications for ALL 3 purchase paths
+- Check Prisma Studio for correct database records
+- Take screenshots of successful notifications
+- Run E2E tests before commit
+
+---
+
+**Phase 13Q Status**: 🟡 READY TO IMPLEMENT  
+**Estimated Time**: 3-4 hours (Implementation + thorough testing)  
+**Priority**: P0 - CRITICAL (Admins currently blind to purchases)
+
+---
+
+**END OF PHASE 13Q**
+

@@ -3051,3 +3051,14 @@ No new bids, winner selections, or purchases have triggered since code deploymen
 - I want you do deep dive audit on the admin notification and all of its settings and udnerstand what is currently being implimented. After that create a comprehensive fix plan to fix the admin notification issues. so that the admin gets notified accordingly based on the user actions in the system.
 
 ***Strickt Rules***  Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
+-----------------------------------------------------------------------
+
+I have created a new call/visit lead> notification showed in the admin > assigned to installer > but after the installer purchased the lead I do not get any admin notifications. 
+- Now the admin notification is working but not getting the notifications as per user interactions. 
+- This part is quite difficult to tell you what notifications I need , there are lot of user interactions to mention and I am unable to do that. 
+- you should analyze and comeup with the unser interaction based notification plan with the exact message to show. 
+
+***Instructions*** it is not only about the admin only. Its about all the 3 types of user notifications. your job is to audit all the flow deeply, identify user interaction points and based on that prepare a notificaton plan for all users
+
+***Strickt rules***
+Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
