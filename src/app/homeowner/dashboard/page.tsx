@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { LeadStatus as LeadStatusEnum } from '@prisma/client';
 import { useTheme, type Theme } from '@/components/ThemeProvider';
@@ -856,6 +856,28 @@ export default function HomeownerDashboardPage() {
   useEffect(() => {
     fetchDashboardSummary();
   }, [fetchDashboardSummary]);
+
+  // T402: Handle URL parameters for modal auto-open (e.g., ?modal=reviewBids&leadId=123)
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    const modalParam = searchParams.get('modal');
+    const leadIdParam = searchParams.get('leadId');
+
+    if (modalParam === 'reviewBids' && leadIdParam) {
+      console.log('[T402] Auto-opening review bids modal for lead:', leadIdParam);
+      setSelectedBiddingLeadId(leadIdParam);
+      setIsBiddingReviewModalOpen(true);
+
+      // Clean URL after opening modal (optional - prevents modal reopening on page refresh)
+      if (window.history.replaceState) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('modal');
+        url.searchParams.delete('leadId');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [searchParams]);
 
   // Listen for global lead limit reached events (fallback trigger from CTA button)
   useEffect(() => {

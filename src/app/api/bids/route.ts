@@ -162,12 +162,13 @@ export async function POST(request: NextRequest) {
     const installerName = installer?.companyName || installer?.name || 'An installer';
     const leadLocation = `${lead.location}${lead.postcode ? ', ' + lead.postcode : ''}`;
 
+    // T402: Fixed actionUrl to point to dashboard with modal parameters
     await createNotification({
       userId: lead.homeownerId,
       type: 'BID_SUBMITTED',
       title: 'New Bid Received',
       message: `${installerName} has submitted a bid for your ${leadLocation} project. Review all bids and select a winner.`,
-      actionUrl: `/homeowner/leads/${body.leadId}?modal=reviewBids`,
+      actionUrl: `/homeowner/dashboard?modal=reviewBids&leadId=${body.leadId}`,
       metadata: {
         bidId: bid.id,
         installerId: session.user.id,
