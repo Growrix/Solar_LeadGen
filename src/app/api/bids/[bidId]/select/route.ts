@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createNotification } from '@/lib/services/notification-service';
+import { createNotification as createNotificationNew } from '@/lib/notifications/notification-service';
+import { createNotification as createLegacyNotification } from '@/lib/services/notification-service';
 
 /**
  * POST /api/bids/[bidId]/select
@@ -168,15 +169,19 @@ export async function POST(
 
     const leadLocation = `${bid.lead.location}, ${bid.lead.state} ${bid.lead.postcode}`;
 
-    // Send notification to WINNER
-    // T411: Route to lead FEED (not detail page) - winner banner shows in feed
+    // Send notification to WINNER (using new service)
+    // Route to lead FEED (not detail page) - winner banner shows in feed
     // The lead card in feed shows winner status and payment button
-    await createNotification({
-      userId: bid.installerId,
-      type: 'BID_WON',
-      title: '🎉 Congratulations! Your bid was selected',
-      message: `The homeowner at ${leadLocation} has selected your bid! Proceed to payment to unlock full contact details and begin installation.`,
-      actionUrl: `/installer/leads`,
+    await createNotificationNew({
+      recipientUserId: bid.installerId,
+      role: 'INSTALLER',
+      actionType: 'BID_WON',
+      messageKey: 'installer.bid.won',
+      routeKey: 'installer.leads',
+      routeParams: {
+        leadId: bid.leadId,
+        bidId: bid.id
+      },
       metadata: {
         bidId: bid.id,
         leadId: bid.leadId,
@@ -192,16 +197,20 @@ export async function POST(
       winnerEmail: bid.installer.email
     });
 
-    // Send notifications to LOSERS (polite messages)
+    // Send notifications to LOSERS (polite messages using new service)
     const loserBids = allBids.filter(b => b.id !== bidId && b.status === 'REJECTED');
 
     for (const loserBid of loserBids) {
-      await createNotification({
-        userId: loserBid.installerId,
-        type: 'BID_LOST',
-        title: 'Bid Update',
-        message: `Thank you for your bid on ${leadLocation}. The homeowner has selected another installer for this project. We appreciate your participation and encourage you to continue bidding on future leads.`,
-        actionUrl: `/installer/leads`,
+      await createNotificationNew({
+        recipientUserId: loserBid.installerId,
+        role: 'INSTALLER',
+        actionType: 'BID_OUTCOME_NOT_SELECTED',
+        messageKey: 'installer.bid.outcome.other',
+        routeKey: 'installer.leads',
+        routeParams: {
+          leadId: bid.leadId,
+          bidId: loserBid.id
+        },
         metadata: {
           bidId: loserBid.id,
           leadId: bid.leadId,

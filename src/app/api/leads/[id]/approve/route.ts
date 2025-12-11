@@ -9,7 +9,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createAuditLog, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
-import { createNotification } from '@/lib/services/notification-service';
+import { createNotification as createNotificationNew } from '@/lib/notifications/notification-service';
+import { createNotification as createLegacyNotification } from '@/lib/services/notification-service';
 import { transitionLeadStatus } from '@/lib/services/lead-state';
 import { getSettingAsNumber } from '@/lib/services/settings-service';
 import { 
@@ -163,13 +164,13 @@ export async function POST(
       },
     });
 
-    // Notify homeowner
-    await createNotification({
-      userId: lead.homeowner.id,
-      type: 'LEAD_APPROVED',
-      title: 'Lead Approved!',
-      message: 'Your quote request has been approved and is now visible to installers.',
-      actionUrl: `/homeowner/leads/${id}`,
+    // Notify homeowner (using new service with homeowner-safe language)
+    await createNotificationNew({
+      recipientUserId: lead.homeowner.id,
+      role: 'HOMEOWNER',
+      actionType: 'REQUEST_RECEIVED',
+      messageKey: 'homeowner.request.received',
+      routeKey: 'homeowner.requests',
       metadata: {
         leadId: id,
         entityType: 'lead',
@@ -189,14 +190,15 @@ export async function POST(
         skipDuplicates: true, // Handle re-approval gracefully
       });
 
-      // Send notifications to assigned installers
+      // Send notifications to assigned installers (new service)
       for (const installerId of body.assignTo) {
-        await createNotification({
-          userId: installerId,
-          type: 'NEW_LEAD',
-          title: 'New Lead Available',
-          message: `A new ${body.isHot ? 'HOT ' : ''}lead has been assigned to you.`,
-          actionUrl: `/installer/leads`,
+        await createNotificationNew({
+          recipientUserId: installerId,
+          role: 'INSTALLER',
+          actionType: 'NEW_OPPORTUNITY',
+          messageKey: 'installer.new.opportunity',
+          routeKey: 'installer.leads',
+          routeParams: { leadId: id },
           metadata: {
             leadId: id,
             entityType: 'lead',

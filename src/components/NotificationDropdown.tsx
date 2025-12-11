@@ -22,13 +22,19 @@ import {
   Info            // SYSTEM
 } from 'lucide-react';
 import { useNotifications } from '@/lib/hooks/usePusher';
+import { resolveRoute, validateRouteKey, RouteKey, RouteParams } from '@/lib/notifications/route-resolver';
 
 interface Notification {
   id: string;
   type: string;
   title: string;
   message: string;
+  // Legacy field
   actionUrl: string | null;
+  // New normalized fields
+  messageKey?: string | null;
+  routeKey?: string | null;
+  routeParams?: RouteParams | null;
   isRead: boolean;
   createdAt: string;
 }
@@ -138,40 +144,26 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
     }
   };
 
-  // T358: Validate and sanitize action URL to prevent 404 errors
-  const validateActionUrl = (url: string | null, userRole: string): string => {
-    if (!url) return userRole === 'INSTALLER' ? '/installer/dashboard' : '/homeowner/dashboard';
-
-    // Trim whitespace
-    const cleanUrl = url.trim();
-    
-    // Ensure URL starts with /
-    if (!cleanUrl.startsWith('/')) {
-      console.warn('[NotificationDropdown] Invalid actionUrl (missing leading slash):', url);
-      return userRole === 'INSTALLER' ? '/installer/dashboard' : '/homeowner/dashboard';
+  // Get notification destination (new normalized approach)
+  const getNotificationDestination = (notification: Notification): string => {
+    // Prefer new normalized fields
+    if (notification.routeKey && validateRouteKey(notification.routeKey)) {
+      return resolveRoute(notification.routeKey as RouteKey, notification.routeParams || undefined);
     }
 
-    // Validate role-specific routes
-    const isInstallerRoute = cleanUrl.startsWith('/installer');
-    const isHomeownerRoute = cleanUrl.startsWith('/homeowner');
-    const isAdminRoute = cleanUrl.startsWith('/admin');
-
-    // Check role mismatch
-    if (userRole === 'INSTALLER' && !isInstallerRoute) {
-      console.warn('[NotificationDropdown] Role mismatch - installer got non-installer route:', cleanUrl);
-      return '/installer/dashboard';
-    }
-    if (userRole === 'HOMEOWNER' && !isHomeownerRoute) {
-      console.warn('[NotificationDropdown] Role mismatch - homeowner got non-homeowner route:', cleanUrl);
-      return '/homeowner/dashboard';
-    }
-    if (userRole === 'ADMIN' && !isAdminRoute && !isInstallerRoute && !isHomeownerRoute) {
-      // Admin can access any route, but if completely invalid, fallback
-      console.warn('[NotificationDropdown] Invalid route for admin:', cleanUrl);
-      return '/admin/dashboard';
+    // Fallback to legacy actionUrl
+    if (notification.actionUrl) {
+      const cleanUrl = notification.actionUrl.trim();
+      if (cleanUrl.startsWith('/')) {
+        return cleanUrl;
+      }
     }
 
-    return cleanUrl;
+    // Default fallback based on role
+    const userRole = session?.user?.role || 'HOMEOWNER';
+    if (userRole === 'INSTALLER') return '/installer/leads';
+    if (userRole === 'ADMIN') return '/admin/dashboard';
+    return '/homeowner/dashboard';
   };
 
   // Handle notification click
@@ -180,11 +172,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       markAsRead(notification.id);
     }
 
-    if (notification.actionUrl) {
-      const validUrl = validateActionUrl(notification.actionUrl, session?.user?.role || 'HOMEOWNER');
-      router.push(validUrl);
-    }
-
+    const destination = getNotificationDestination(notification);
+    router.push(destination);
     setIsOpen(false);
   };
 
@@ -196,11 +185,8 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       markAsRead(notification.id);
     }
 
-    if (notification.actionUrl) {
-      const validUrl = validateActionUrl(notification.actionUrl, session?.user?.role || 'HOMEOWNER');
-      router.push(validUrl);
-    }
-
+    const destination = getNotificationDestination(notification);
+    router.push(destination);
     setIsOpen(false);
   };
 

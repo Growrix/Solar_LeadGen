@@ -421,18 +421,24 @@ model AuditLog {
 }
 
 model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  actionUrl String?
-  metadata  Json?
-  isRead    Boolean          @default(false)
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
+  id            String           @id @default(cuid())
+  userId        String
+  role          UserRole?
+  type          NotificationType
+  title         String
+  message       String
+  messageKey    String?
+  routeKey      String?
+  routeParams   Json?
+  // Legacy field for backward compatibility (deprecated)
+  actionUrl     String?
+  metadata      Json?
+  isRead        Boolean          @default(false)
+  readAt        DateTime?
+  createdAt     DateTime         @default(now())
 
   @@index([userId])
+  @@index([role])
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
@@ -493,8 +499,26 @@ enum PurchaseStatus {
 }
 
 enum NotificationType {
-  NEW_LEAD
+  // Admin actions
+  ASSIGNMENT_WINDOW_STARTED
+  ASSIGNMENT_WINDOW_ENDED
+  LEAD_CONFIG_UPDATED
+  
+  // Installer actions
+  NEW_OPPORTUNITY
+  BID_WON
+  BID_OUTCOME_NOT_SELECTED
+  DATA_UPDATE
   LEAD_PURCHASED
+  
+  // Homeowner actions
+  REQUEST_RECEIVED
+  RESPONSES_AVAILABLE
+  SELECTION_CONFIRMED
+  APPOINTMENT_SUGGESTED
+  
+  // Legacy types (deprecated but kept for migration)
+  NEW_LEAD
   LEAD_APPROVED
   LEAD_REJECTED
   NEW_QUOTE
@@ -508,7 +532,6 @@ enum NotificationType {
   LEAD_RESOLD
   ASSIGNMENT_REMOVED
   ASSIGNMENT_ACCEPTED_COMPETITIVE
-  BID_WON
   BID_LOST
   BID_SUBMITTED
   PAYMENT_FAILED
