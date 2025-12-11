@@ -269,7 +269,7 @@ export default function InstallerMarketplacePage() {
                 {/* Quote Type Badge */}
                 <div className="mb-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-caption bg-brand-100 text-brand-800">
-                    {lead.quoteType.replace('_', ' ')}
+                    {lead?.quoteType?.replace('_', ' ') || 'Unknown'}
                   </span>
                 </div>
 

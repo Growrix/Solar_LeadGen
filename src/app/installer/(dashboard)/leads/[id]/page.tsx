@@ -202,7 +202,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
               </h1>
               <div className="flex items-center space-x-3">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-body-small bg-brand-100 text-brand-800">
-                  {lead.quoteType.replace('_', ' ')}
+                  {lead?.quoteType?.replace('_', ' ') || 'Unknown'}
                 </span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-body-small bg-success/20 text-success">
                   <CheckCircleIcon className="h-4 w-4 mr-1" />
