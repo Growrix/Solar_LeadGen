@@ -52,6 +52,9 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
   const [loading, setLoading] = useState(false);
   const [markingAsRead, setMarkingAsRead] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Extract user role for conditional UI rendering
+  const userRole = session?.user?.role || 'HOMEOWNER';
 
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
@@ -497,6 +500,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
                       typeLabel={getTypeLabel(notification.type)}
                       getRelativeTime={getRelativeTime}
                       smartActionButton={getSmartActionButton(notification)}
+                      userRole={userRole}
                     />
                   );
                 })}
@@ -537,6 +541,7 @@ interface NotificationCardProps {
   typeLabel: string;
   getRelativeTime: (dateString: string) => string;
   smartActionButton: React.ReactNode;
+  userRole?: string;
 }
 
 const NotificationCard: React.FC<NotificationCardProps> = ({
@@ -550,6 +555,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   typeLabel,
   getRelativeTime,
   smartActionButton,
+  userRole,
 }) => {
   const isMarkingThis = markingAsRead === notification.id;
 
@@ -570,15 +576,18 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            {/* T356: Title + Type Badge + Timestamp */}
+            {/* T356: Title + Type Badge (hidden for homeowners) + Timestamp */}
             <div className="flex justify-between items-start gap-2 mb-1">
               <div className="flex items-center gap-2 flex-1">
                 <h4 className="text-heading-4 text-foreground">
                   {notification.title}
                 </h4>
-                <span className={`px-2 py-0.5 text-caption rounded-full ${typeBadgeClasses}`}>
-                  {typeLabel}
-                </span>
+                {/* Only show type badge for Admin and Installer - hide for Homeowners */}
+                {userRole !== 'HOMEOWNER' && (
+                  <span className={`px-2 py-0.5 text-caption rounded-full ${typeBadgeClasses}`}>
+                    {typeLabel}
+                  </span>
+                )}
               </div>
               <span className="text-caption text-muted-foreground whitespace-nowrap">
                 {getRelativeTime(notification.createdAt)}
