@@ -10,6 +10,9 @@ export type MessageKey =
   | 'homeowner.installer.responded'
   | 'homeowner.installer.confirmed'
   | 'homeowner.bid.received'
+  | 'homeowner.lead.rejected'
+  | 'homeowner.system.limit_updated'
+  | 'homeowner.lead.purchased'
   // Installer messages (professional tone)
   | 'installer.new.opportunity'
   | 'installer.bid.won'
@@ -17,6 +20,8 @@ export type MessageKey =
   | 'installer.data.update'
   | 'installer.purchase.confirmed'
   | 'installer.bid.payment.success'
+  | 'installer.assignment.removed'
+  | 'installer.lead.resold'
   // Admin messages (operational tone)
   | 'admin.assignment.started'
   | 'admin.assignment.ended'
@@ -24,7 +29,11 @@ export type MessageKey =
   | 'admin.lead.purchased'
   | 'admin.bid.submitted'
   | 'admin.bid.winner.selected'
-  | 'admin.bid.payment.completed';
+  | 'admin.bid.payment.completed'
+  | 'admin.lead.created'
+  | 'admin.phone.verified'
+  | 'admin.lead.assigned'
+  | 'admin.assignment.accepted';
 
 export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: string }> = {
   // Homeowner messages (avoid: lead, purchased, paid)
@@ -56,6 +65,18 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
     title: 'New Response Received',
     message: 'An installer submitted a response to your request. Review and select.',
   },
+  'homeowner.lead.rejected': {
+    title: 'Request Update',
+    message: 'Your quote request could not be processed at this time. Check details.',
+  },
+  'homeowner.system.limit_updated': {
+    title: 'Quote Limit Updated',
+    message: 'Your quote request limit has been updated. Check your dashboard.',
+  },
+  'homeowner.lead.purchased': {
+    title: 'Request Accepted',
+    message: 'An installer has accepted your request and will contact you soon.',
+  },
 
   // Installer messages
   'installer.new.opportunity': {
@@ -81,6 +102,14 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'installer.bid.payment.success': {
     title: 'Payment Successful',
     message: 'Payment successful. Contact details unlocked.',
+  },
+  'installer.assignment.removed': {
+    title: 'Assignment Removed',
+    message: 'Your lead assignment was removed by admin. Check your feed.',
+  },
+  'installer.lead.resold': {
+    title: 'Lead Resold',
+    message: 'A purchased lead was resold by admin and removed from your account.',
   },
 
   // Admin messages
@@ -111,6 +140,22 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'admin.bid.payment.completed': {
     title: 'Bid Payment Completed',
     message: 'Winning installer completed payment. Transaction successful.',
+  },
+  'admin.lead.created': {
+    title: 'New Lead Submitted',
+    message: 'Homeowner submitted a new lead request. Review and assign to installers.',
+  },
+  'admin.phone.verified': {
+    title: 'Phone Verification Complete',
+    message: 'Homeowner completed phone verification. Pending leads now approved.',
+  },
+  'admin.lead.assigned': {
+    title: 'Lead Assigned to Installers',
+    message: 'Lead assigned to installers. Monitor bid submissions.',
+  },
+  'admin.assignment.accepted': {
+    title: 'Assignment Accepted',
+    message: 'Installer accepted a lead assignment. Track progress in dashboard.',
   },
 };
 

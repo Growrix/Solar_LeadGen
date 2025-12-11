@@ -8,8 +8,8 @@
 
 import { prisma } from '@/lib/prisma';
 import { AUDIT_ACTIONS, createAuditLog } from './audit-logger';
-import { createNotification } from './notification-service';
-import { NotificationType } from '@prisma/client';
+import { createBulkNotifications } from '../notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
 
 interface UpdateHomeownerQuoteLimitInput {
   adminId: string;
@@ -75,18 +75,18 @@ export async function updateHomeownerQuoteLimit(
       0,
     );
 
-    await createNotification({
-      userId: homeownerId,
-      type: NotificationType.SYSTEM,
-      title: 'Quote limit updated',
-      message: `Your quote request limit is now ${updatedHomeowner.leadSubmissionLimit}. You have ${remainingAllowance} submissions remaining.`,
-      actionUrl: '/homeowner/dashboard',
+    await createBulkNotifications([{
+      recipientUserId: homeownerId,
+      role: UserRole.HOMEOWNER,
+      actionType: NotificationType.SYSTEM,
+      messageKey: 'homeowner.system.limit_updated',
+      routeKey: 'homeowner.requests',
       metadata: {
         previousLimit: homeowner.leadSubmissionLimit,
         newLimit: updatedHomeowner.leadSubmissionLimit,
         remainingAllowance,
       },
-    });
+    }]);
   }
 
   return updatedHomeowner;

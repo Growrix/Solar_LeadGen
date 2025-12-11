@@ -9,8 +9,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createAuditLog, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
-import { createNotification as createNotificationNew } from '@/lib/notifications/notification-service';
-import { createNotification as createLegacyNotification } from '@/lib/services/notification-service';
+import { createBulkNotifications } from '@/lib/notifications/notification-service';
 import { transitionLeadStatus } from '@/lib/services/lead-state';
 import { getSettingAsNumber } from '@/lib/services/settings-service';
 import { 
@@ -165,7 +164,7 @@ export async function POST(
     });
 
     // Notify homeowner (using new service with homeowner-safe language)
-    await createNotificationNew({
+    await createBulkNotifications([{
       recipientUserId: lead.homeowner.id,
       role: 'HOMEOWNER',
       actionType: 'REQUEST_RECEIVED',
@@ -175,7 +174,7 @@ export async function POST(
         leadId: id,
         entityType: 'lead',
       },
-    });
+    }]);
 
     // Create LeadAssignment records and notify assigned installers (if specific assignment)
     if (body.assignTo && body.assignTo !== 'ALL' && Array.isArray(body.assignTo)) {
@@ -191,20 +190,22 @@ export async function POST(
       });
 
       // Send notifications to assigned installers (new service)
-      for (const installerId of body.assignTo) {
-        await createNotificationNew({
-          recipientUserId: installerId,
-          role: 'INSTALLER',
-          actionType: 'NEW_OPPORTUNITY',
-          messageKey: 'installer.new.opportunity',
-          routeKey: 'installer.leads',
-          routeParams: { leadId: id },
-          metadata: {
-            leadId: id,
-            entityType: 'lead',
-            isHot: body.isHot || false
-          }
-        });
+      if (body.assignTo.length > 0) {
+        await createBulkNotifications(
+          body.assignTo.map((installerId: string) => ({
+            recipientUserId: installerId,
+            role: 'INSTALLER',
+            actionType: 'NEW_OPPORTUNITY',
+            messageKey: 'installer.new.opportunity',
+            routeKey: 'installer.leads',
+            routeParams: { leadId: id },
+            metadata: {
+              leadId: id,
+              entityType: 'lead',
+              isHot: body.isHot || false
+            }
+          }))
+        );
       }
     }
 

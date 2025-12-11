@@ -14,9 +14,9 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { LeadStatus, LeadVisibility, PurchaseStatus, UserRole } from '@prisma/client';
+import { LeadStatus, LeadVisibility, PurchaseStatus, UserRole, NotificationType } from '@prisma/client';
 import { createAuditLog, AUDIT_ACTIONS } from './audit-logger';
-import { createNotification } from './notification-service';
+import { createBulkNotifications } from '../notifications/notification-service';
 import { getSetting, getSettingAsNumber } from './settings-service';
 import { canCancelLead, canEditLead } from '@/lib/utils/lead-helpers';
 
@@ -307,20 +307,32 @@ export async function createLead(input: CreateLeadInput): Promise<CreateLeadResu
     userAgent: input.userAgent,
   });
 
-  // Send notification to admin
-  const adminEmail = await getSetting('ADMIN_EMAIL');
-  await createNotification({
-    userId: adminEmail, // Will lookup admin user by email
-    type: 'NEW_LEAD',
-    title: 'New Lead Submitted',
-    message: `New ${input.quoteType} lead in ${input.location} (${input.propertyPostcode})`,
-    actionUrl: `/admin/leads/${lead.id}`,
-    metadata: {
-      leadId: lead.id,
-      quoteType: input.quoteType,
-      postcode: input.propertyPostcode,
-    },
+  // Send notification to all admin users
+  const admins = await prisma.user.findMany({
+    where: { role: UserRole.ADMIN },
+    select: { id: true }
   });
+
+  if (admins.length > 0) {
+    console.log(`[createLead] Creating admin notifications for ${admins.length} admins`);
+    await createBulkNotifications(
+      admins.map(admin => ({
+        recipientUserId: admin.id,
+        role: UserRole.ADMIN,
+        actionType: NotificationType.NEW_LEAD,
+        messageKey: 'admin.lead.created',
+        routeKey: 'admin.lead.manage',
+        routeParams: { 
+          leadId: lead.id,
+          quoteType: input.quoteType,
+          location: input.location,
+          postcode: input.propertyPostcode
+        }
+      }))
+    );
+  } else {
+    console.warn('[createLead] No admin users found to notify');
+  }
 
   return {
     lead,
@@ -1100,22 +1112,22 @@ export async function assignLeadToInstallers(input: AssignLeadInput) {
 
   // Send notifications to assigned installers
   if (notifyInstallers) {
-    await Promise.all(
-      assignments.map((assignment) =>
-        createNotification({
-          userId: assignment.installerId,
-          type: 'LEAD_ASSIGNED',
-          title: 'New Lead Assigned',
-          message: `You have been assigned a new lead by admin${notes ? ': ' + notes : ''}`,
-          metadata: {
-            leadId,
-            assignmentMode: mode,
-            homeownerName: lead.homeowner.name,
-            location: lead.location,
-            quoteType: lead.quoteType,
-          },
-        })
-      )
+    await createBulkNotifications(
+      assignments.map((assignment) => ({
+        recipientUserId: assignment.installerId,
+        role: UserRole.INSTALLER,
+        actionType: NotificationType.LEAD_ASSIGNED,
+        messageKey: 'installer.new.opportunity',
+        routeKey: 'installer.leads',
+        metadata: {
+          leadId,
+          assignmentMode: mode,
+          homeownerName: lead.homeowner.name,
+          location: lead.location,
+          quoteType: lead.quoteType,
+          notes: notes || undefined
+        },
+      }))
     );
 
     // Mark assignments as notified
@@ -1242,15 +1254,16 @@ export async function removeLeadAssignment(
   }
 
   // Notify installer
-  await createNotification({
-    userId: installerId,
-    type: 'ASSIGNMENT_REMOVED',
-    title: 'Lead Assignment Removed',
-    message: `Your assignment to lead #${leadId.slice(-8)} has been removed by admin`,
+  await createBulkNotifications([{
+    recipientUserId: installerId,
+    role: UserRole.INSTALLER,
+    actionType: NotificationType.ASSIGNMENT_REMOVED,
+    messageKey: 'installer.assignment.removed',
+    routeKey: 'installer.leads',
     metadata: {
       leadId,
     },
-  });
+  }]);
 
   // Create audit log
   await createAuditLog({
@@ -1317,16 +1330,17 @@ export async function resellLead(
   });
 
   // Notify previous installer
-  await createNotification({
-    userId: previousInstallerId,
-    type: 'LEAD_RESOLD',
-    title: 'Lead Resold',
-    message: `Lead #${leadId.slice(-8)} has been resold by admin and removed from your purchased leads`,
+  await createBulkNotifications([{
+    recipientUserId: previousInstallerId,
+    role: UserRole.INSTALLER,
+    actionType: NotificationType.LEAD_RESOLD,
+    messageKey: 'installer.lead.resold',
+    routeKey: 'installer.leads',
     metadata: {
       leadId,
       returnedToMarketplace: toMarketplace,
     },
-  });
+  }]);
 
   // Create audit log
   await createAuditLog({

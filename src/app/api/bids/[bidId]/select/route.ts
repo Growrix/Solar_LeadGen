@@ -8,8 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createNotification as createNotificationNew, createBulkNotifications } from '@/lib/notifications/notification-service';
-import { createNotification as createLegacyNotification } from '@/lib/services/notification-service';
+import { createBulkNotifications } from '@/lib/notifications/notification-service';
 
 /**
  * POST /api/bids/[bidId]/select
@@ -172,7 +171,7 @@ export async function POST(
     // Send notification to WINNER (using new service)
     // Route to lead FEED (not detail page) - winner banner shows in feed
     // The lead card in feed shows winner status and payment button
-    await createNotificationNew({
+    await createBulkNotifications([{
       recipientUserId: bid.installerId,
       role: 'INSTALLER',
       actionType: 'BID_WON',
@@ -189,7 +188,7 @@ export async function POST(
         finalTotal: bid.finalTotal,
         systemSize: (bid.systemData as any)?.capacityKw || 'N/A'
       }
-    });
+    }]);
 
     console.log('[POST /api/bids/[bidId]/select] Winner notification sent:', {
       bidId: bid.id,
@@ -200,29 +199,30 @@ export async function POST(
     // Send notifications to LOSERS (polite messages using new service)
     const loserBids = allBids.filter(b => b.id !== bidId && b.status === 'REJECTED');
 
-    for (const loserBid of loserBids) {
-      await createNotificationNew({
-        recipientUserId: loserBid.installerId,
-        role: 'INSTALLER',
-        actionType: 'BID_OUTCOME_NOT_SELECTED',
-        messageKey: 'installer.bid.outcome.other',
-        routeKey: 'installer.leads',
-        routeParams: {
-          leadId: bid.leadId,
-          bidId: loserBid.id
-        },
-        metadata: {
-          bidId: loserBid.id,
-          leadId: bid.leadId,
-          leadLocation: leadLocation,
-          reason: 'Another bid selected'
-        }
-      });
+    if (loserBids.length > 0) {
+      await createBulkNotifications(
+        loserBids.map(loserBid => ({
+          recipientUserId: loserBid.installerId,
+          role: 'INSTALLER',
+          actionType: 'BID_OUTCOME_NOT_SELECTED',
+          messageKey: 'installer.bid.outcome.other',
+          routeKey: 'installer.leads',
+          routeParams: {
+            leadId: bid.leadId,
+            bidId: loserBid.id
+          },
+          metadata: {
+            bidId: loserBid.id,
+            leadId: bid.leadId,
+            leadLocation: leadLocation,
+            reason: 'Another bid selected'
+          }
+        }))
+      );
 
-      console.log('[POST /api/bids/[bidId]/select] Loser notification sent:', {
-        bidId: loserBid.id,
-        loserId: loserBid.installerId,
-        loserEmail: loserBid.installer.email
+      console.log('[POST /api/bids/[bidId]/select] Loser notifications sent:', {
+        count: loserBids.length,
+        bidIds: loserBids.map(b => b.id)
       });
     }
 

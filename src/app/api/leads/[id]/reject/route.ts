@@ -9,7 +9,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createAuditLog, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
-import { createNotification } from '@/lib/services/notification-service';
+import { createBulkNotifications } from '@/lib/notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
 
 /**
  * POST /api/leads/[id]/reject
@@ -120,18 +121,19 @@ export async function POST(
     });
 
     // Notify homeowner
-    await createNotification({
-      userId: lead.homeowner.id,
-      type: 'LEAD_REJECTED',
-      title: 'Lead Request Update',
-      message: `Your quote request was not approved. Reason: ${body.reason}`,
-      actionUrl: `/homeowner/dashboard`,
+    await createBulkNotifications([{
+      recipientUserId: lead.homeowner.id,
+      role: UserRole.HOMEOWNER,
+      actionType: NotificationType.LEAD_REJECTED,
+      messageKey: 'homeowner.lead.rejected',
+      routeKey: 'homeowner.requests',
+      routeParams: { requestId: id },
       metadata: {
         leadId: id,
         entityType: 'lead',
         reason: body.reason,
       },
-    });
+    }]);
 
     return NextResponse.json({
       success: true,

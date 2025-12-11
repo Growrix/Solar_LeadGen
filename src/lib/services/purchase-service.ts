@@ -11,9 +11,10 @@
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { createAuditLog } from './audit-logger';
-import { createNotification } from './notification-service';
+import { createBulkNotifications } from '../notifications/notification-service';
 import { getSetting, getSettingAsNumber } from './settings-service';
 import type { Lead, User, PurchaseStatus } from '@prisma/client';
+import { NotificationType, UserRole } from '@prisma/client';
 
 // Development bypass mode flag
 const STRIPE_BYPASS_MODE = process.env.STRIPE_BYPASS_MODE === 'true';
@@ -274,24 +275,25 @@ export async function confirmPurchase(
       });
 
       // T403: Notify homeowner - fixed actionUrl to dashboard
-      await createNotification({
-        userId: lead.homeownerId,
-        type: 'LEAD_PURCHASED',
-        title: 'Your Lead Is Being Processed',
-        message: `An installer has accepted your ${lead.quoteType?.replace('_', ' ').toLowerCase() || 'quote'} request.`,
-        actionUrl: `/homeowner/dashboard`,
+      await createBulkNotifications([{
+        recipientUserId: lead.homeownerId,
+        role: UserRole.HOMEOWNER,
+        actionType: NotificationType.LEAD_PURCHASED,
+        messageKey: 'homeowner.lead.purchased',
+        routeKey: 'homeowner.requests',
         metadata: { leadId },
-      });
+      }]);
 
       // Notify admin who assigned the lead
       if (assignment.assignedBy) {
-        await createNotification({
-          userId: assignment.assignedBy,
-          type: 'ASSIGNMENT_ACCEPTED_COMPETITIVE',
-          title: 'Assignment Accepted',
-          message: `Installer has accepted the lead assignment for ${lead.location}, ${lead.state}.`,
-          metadata: { leadId, installerId },
-        });
+        await createBulkNotifications([{
+          recipientUserId: assignment.assignedBy,
+          role: UserRole.ADMIN,
+          actionType: NotificationType.ASSIGNMENT_ACCEPTED_COMPETITIVE,
+          messageKey: 'admin.assignment.accepted',
+          routeKey: 'admin.lead.manage',
+          metadata: { leadId, installerId, location: lead.location, state: lead.state },
+        }]);
       }
 
       return {
@@ -346,14 +348,14 @@ export async function confirmPurchase(
       });
 
       // T403: Notify homeowner - added missing actionUrl
-      await createNotification({
-        userId: lead.homeownerId,
-        type: 'LEAD_PURCHASED',
-        title: 'Your Lead Has Been Purchased',
-        message: `An installer has purchased your ${(lead.quoteType || 'quote').replace('_', ' ').toLowerCase()} request.`,
-        actionUrl: `/homeowner/dashboard`,
+      await createBulkNotifications([{
+        recipientUserId: lead.homeownerId,
+        role: UserRole.HOMEOWNER,
+        actionType: NotificationType.LEAD_PURCHASED,
+        messageKey: 'homeowner.lead.purchased',
+        routeKey: 'homeowner.requests',
         metadata: { leadId },
-      });
+      }]);
 
       return {
         success: true,
@@ -414,14 +416,14 @@ export async function confirmPurchase(
     });
 
     // T403: Notify homeowner - added missing actionUrl
-    await createNotification({
-      userId: lead.homeownerId,
-      type: 'LEAD_PURCHASED',
-      title: 'Your Lead Has Been Purchased',
-      message: `An installer has purchased your ${(lead.quoteType || 'quote').replace('_', ' ').toLowerCase()} request.`,
-      actionUrl: `/homeowner/dashboard`,
+    await createBulkNotifications([{
+      recipientUserId: lead.homeownerId,
+      role: UserRole.HOMEOWNER,
+      actionType: NotificationType.LEAD_PURCHASED,
+      messageKey: 'homeowner.lead.purchased',
+      routeKey: 'homeowner.requests',
       metadata: { leadId },
-    });
+    }]);
 
     return {
       success: true,
