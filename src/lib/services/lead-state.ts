@@ -211,14 +211,14 @@ async function triggerStatusChangeNotifications(
     });
   }
 
-  // Notify installer when quote is accepted
+  // T404: Notify installer when quote is accepted - fixed actionUrl to purchased-leads
   if (newStatus === 'ACCEPTED' && lead.installer) {
     await createNotification({
       userId: lead.installerId!,
       type: 'QUOTE_ACCEPTED',
       title: 'Quote Accepted!',
       message: `${lead.homeowner.name} accepted your quote for ${lead.location}.`,
-      actionUrl: `/installer/leads/${leadId}`,
+      actionUrl: `/installer/purchased-leads`,
       metadata: { leadId },
     });
   }

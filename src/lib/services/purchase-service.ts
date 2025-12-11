@@ -273,13 +273,13 @@ export async function confirmPurchase(
         },
       });
 
-      // Notify homeowner
+      // T403: Notify homeowner - fixed actionUrl to dashboard
       await createNotification({
         userId: lead.homeownerId,
         type: 'LEAD_PURCHASED',
         title: 'Your Lead Is Being Processed',
         message: `An installer has accepted your ${lead.quoteType?.replace('_', ' ').toLowerCase() || 'quote'} request.`,
-        actionUrl: `/homeowner/leads/${leadId}`,
+        actionUrl: `/homeowner/dashboard`,
         metadata: { leadId },
       });
 
@@ -345,12 +345,13 @@ export async function confirmPurchase(
         },
       });
 
-      // Notify homeowner
+      // T403: Notify homeowner - added missing actionUrl
       await createNotification({
         userId: lead.homeownerId,
         type: 'LEAD_PURCHASED',
         title: 'Your Lead Has Been Purchased',
         message: `An installer has purchased your ${(lead.quoteType || 'quote').replace('_', ' ').toLowerCase()} request.`,
+        actionUrl: `/homeowner/dashboard`,
         metadata: { leadId },
       });
 
@@ -412,12 +413,13 @@ export async function confirmPurchase(
       },
     });
 
-    // Notify homeowner
+    // T403: Notify homeowner - added missing actionUrl
     await createNotification({
       userId: lead.homeownerId,
       type: 'LEAD_PURCHASED',
       title: 'Your Lead Has Been Purchased',
       message: `An installer has purchased your ${(lead.quoteType || 'quote').replace('_', ' ').toLowerCase()} request.`,
+      actionUrl: `/homeowner/dashboard`,
       metadata: { leadId },
     });
 
