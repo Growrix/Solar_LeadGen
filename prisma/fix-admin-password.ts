@@ -16,18 +16,32 @@ async function fixAdminPassword() {
   try {
     console.log('🔧 Fixing admin password after database reset...\n');
 
-    const adminEmail = 'admin@solarmatch.com';
+
+    // Set new admin email and password
+    const oldAdminEmail = 'admin@solarmatch.com';
+    const newAdminEmail = 'rayisselectricalandsolar@gmail.com';
     const adminPassword = 'Admin123!Secure';
 
-    // Check if admin exists
+
+    // Check if admin exists (by old email)
     const admin = await prisma.user.findUnique({
-      where: { email: adminEmail }
+      where: { email: oldAdminEmail }
     });
 
     if (!admin) {
       console.error('❌ Admin user not found!');
       console.log('💡 Run: npx tsx prisma/seed-admin.ts first\n');
       process.exit(1);
+    }
+
+    // Update the admin email if needed
+    if (admin.email !== newAdminEmail) {
+      await prisma.user.update({
+        where: { email: oldAdminEmail },
+        data: { email: newAdminEmail }
+      });
+      admin.email = newAdminEmail;
+      console.log('✅ Admin email updated to:', newAdminEmail);
     }
 
     console.log('✅ Admin user found:', admin.email);
@@ -40,16 +54,17 @@ async function fixAdminPassword() {
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
     console.log('✅ Password hashed successfully\n');
 
+
     // Update the admin password
     console.log('💾 Updating admin password in database...');
     const updated = await prisma.user.update({
-      where: { email: adminEmail },
+      where: { email: newAdminEmail },
       data: { password: hashedPassword }
     });
 
     console.log('✅ Admin password updated successfully!\n');
     console.log('🎯 LOGIN CREDENTIALS:');
-    console.log('   Email:', adminEmail);
+    console.log('   Email:', newAdminEmail);
     console.log('   Password:', adminPassword);
     console.log('\n📍 Login URL: http://localhost:3000/admin/login');
     console.log('\n⚠️  IMPORTANT: Clear your browser cookies before logging in!');

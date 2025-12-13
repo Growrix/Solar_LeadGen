@@ -6,7 +6,7 @@ Push the changes to the remote repository: git push to the branch-name: SendGrid
 
 
 
- backup instruction***
+ ***backup instruction***
 Take a backup of the PostgreSQL database running in Docker to ensure data safety before making any significant changes. Use the following command to create a backup:
 docker exec -t your_postgres_container pg_dumpall -c -U your_db_user > /path/to/backup/backup_$(date +%Y%m%d_%H%M%S).sql
 
