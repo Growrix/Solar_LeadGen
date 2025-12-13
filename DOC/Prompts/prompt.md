@@ -3068,3 +3068,21 @@ Follow the Guidelines from this file before doing anything, and must read throug
 I do not want to show these tags on the notifiation e.g parchase, request_receive etc in the homeowners notifications dropdown card. I want you to remove these tags from the notification cards in the notification center modal for homeowners.
 ***Strickt rules***
 Follow the Guidelines from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well.
+
+-------------------------------------------------------------------------------------------
+
+***SendGrid Functionality Testing and Fixing***
+We have integrated SendGrid email service in the application for sending transactional emails. I want you to test the SendGrid functionality thoroughly to ensure that all email notifications are being sent correctly as per the user actions in the system.
+
+- Our goal is to make sure all the email notifications are working perfectly in realtime without any issues.
+
+***Instructions*** I want you to test the SendGrid functionality thoroughly to ensure that all email notifications are being sent correctly as per the user actions in the system. I want you to track down the entire email notification flows for all 3 user roles (homeowners, installers, admins) and identify any missing gaps if any. Run all the necessary tests to make sure the email notifications are working perfectly in realtime without any issues. Your Audit should be comprhensive enough to cover all the aspects of SendGrid functionality including frontend, backend, API, prisma etc. 
+
+***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.

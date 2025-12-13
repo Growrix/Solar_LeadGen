@@ -170,14 +170,29 @@ export async function createNotification(
  */
 function shouldSendEmail(type: NotificationType): boolean {
   const emailNotificationTypes: NotificationType[] = [
+    // Admin notifications
     'NEW_LEAD',
     'LEAD_PURCHASED',
+    'BID_SUBMITTED',        // ✅ Phase 8: Admin gets email when bid submitted
+    
+    // Homeowner notifications
     'LEAD_APPROVED',
+    'REQUEST_RECEIVED',     // ✅ Phase 8: Homeowner request received (approved)
+    'INSTALLER_RESPONDED',  // ✅ Phase 8: Installer purchased lead
+    'SELECTION_CONFIRMED',  // ✅ Phase 8: Homeowner selected winner
+    
+    // Installer notifications
+    'NEW_OPPORTUNITY',      // ✅ Phase 8: Lead assigned to installer
+    'BID_WON',              // ✅ T186: Winner notification
+    'BID_LOST',             // ✅ T186: Loser notification (legacy)
+    'BID_OUTCOME_NOT_SELECTED', // ✅ Phase 8: New loser notification type
+    'PURCHASE_CONFIRMED',   // ✅ Phase 8: Purchase confirmation
+    'BID_PURCHASE_COMPLETED', // ✅ Phase 8: Bid purchase completed
+    
+    // Generic/shared
     'NEW_QUOTE',
     'QUOTE_ACCEPTED',
     'PAYMENT_RECEIVED',
-    'BID_WON',        // ✅ T186: Send email to winner
-    'BID_LOST',       // ✅ T186: Send email to losers
   ];
 
   return emailNotificationTypes.includes(type);

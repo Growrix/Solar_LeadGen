@@ -198,6 +198,46 @@ Post-checkpoint: Final verification and testing complete. ✅ ALL CHECKS PASSED
 - ✅ Final Phase: Polish & Documentation (T016-T017)
 
 **Key Achievements:**
+ 
+---
+
+## Phase 8 – SendGrid Email Notifications Audit & E2E (P2)
+
+Story goal: Verify transactional email notifications (homeowners, installers, admins) are sent correctly via SendGrid for key actions.
+
+Pre-checks:
+- Read DOC/Guidelines/AI-IMPLEMENTATION-GUIDELINES.md
+- Confirm env: `SENDGRID_API_KEY`, `SENDGRID_FROM_EMAIL` present
+- Identify notification types mapped to email in `src/lib/services/notification-service.ts` (`shouldSendEmail`)
+
+T101 [P][Audit]: Create SendGrid audit report
+- Path: `DOC/AUDIT-REPORTS/SendGrid/SENDGRID-AUDIT-REPORT.md`
+- Action: Document config, code paths, gaps, role-based flows, and test plan
+- Status: COMPLETE ✓
+
+T102 [P][Verification]: Unit/runtime checks
+- Path: `src/lib/sendgrid.ts`, `src/lib/services/notification-service.ts`
+- Action: Verify `sendEmail()` called for targeted notification types; confirm graceful behavior when API key missing
+- Testing: Run dev server, perform actions to trigger email, check logs for `✅ [SendGrid] Email sent`
+
+T103 [P][E2E]: Playwright tests for SendGrid triggers
+- Path: `tests/e2e/sendgrid-notifications.spec.ts`
+- Action: Write tests to simulate key flows and assert `sendEmail()` invocation payloads via test harness/mocking
+- Cases:
+  - Installer: New opportunity assigned → email
+  - Installer: Winner selected → email
+  - Homeowner: New bid received → email
+  - Homeowner: Bid awarded → email
+  - Admin: Bid submitted → email; Purchase completed → email
+
+Post-checkpoint:
+- `npx tsc --noEmit` (0 problems)
+- `npm run build` (Compiled successfully)
+- Run Playwright suite → all SendGrid tests pass
+
+Rollback:
+- Commit before changes: "backup: before Phase 8 – SendGrid"
+
 1. Integrated professional calculator with accurate pricing and ROI calculations
 2. Added configurable financial assumptions panel (yield, self-consumption, tariffs, OPEX, etc.)
 3. Implemented STC zone detection from postcode with manual override

@@ -36,6 +36,29 @@ if (!process.env.SENDGRID_API_KEY) {
 
 const DEFAULT_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || 'noreply@solarmatch.com';
 
+// Test harness: capture emails during e2e runs to verify triggers without
+// calling external SendGrid service. Enabled when NODE_ENV==='test' or
+// PLAYWRIGHT_TEST==='1'.
+type CapturedEmail = {
+  to: string | string[];
+  subject: string;
+  text: string;
+  html?: string;
+  from?: string;
+  timestamp: number;
+};
+
+const isTestEnv = process.env.NODE_ENV === 'test' || process.env.PLAYWRIGHT_TEST === '1';
+const emailCaptureStore: CapturedEmail[] = [];
+
+export function __getCapturedEmails(): CapturedEmail[] {
+  return emailCaptureStore;
+}
+
+export function __clearCapturedEmails(): void {
+  emailCaptureStore.length = 0;
+}
+
 /**
  * Email message interface
  */
@@ -64,21 +87,32 @@ export interface EmailMessage {
 export async function sendEmail(message: EmailMessage): Promise<void> {
   if (!process.env.SENDGRID_API_KEY) {
     console.warn('⚠️ [SendGrid] Email not sent (API key not configured):', message.subject);
-    return;
+    // In test mode, still capture the intent to send for verification
+    if (!isTestEnv) return;
   }
 
   try {
-    await sgMail.send({
-      to: message.to,
-      from: message.from || DEFAULT_FROM_EMAIL,
-      subject: message.subject,
-      text: message.text,
-      html: message.html || message.text,
-    });
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ [SendGrid] Email sent to ${message.to}: ${message.subject}`);
+    if (isTestEnv) {
+      emailCaptureStore.push({
+        to: message.to,
+        from: message.from || DEFAULT_FROM_EMAIL,
+        subject: message.subject,
+        text: message.text,
+        html: message.html || message.text,
+        timestamp: Date.now(),
+      });
+    } else {
+      await sgMail.send({
+        to: message.to,
+        from: message.from || DEFAULT_FROM_EMAIL,
+        subject: message.subject,
+        text: message.text,
+        html: message.html || message.text,
+      });
     }
+
+    const logVerb = isTestEnv ? 'captured' : 'sent';
+    console.log(`✅ [SendGrid] Email ${logVerb} to ${message.to}: ${message.subject}`);
   } catch (error) {
     console.error('❌ [SendGrid] Failed to send email:', error);
     throw error;
