@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
 
 export async function POST(
   request: NextRequest,
@@ -118,16 +120,63 @@ export async function POST(
       }
     });
 
-    // Create notification for homeowner
-    await prisma.notification.create({
-      data: {
-        userId: updatedLead.homeownerId,
-        type: 'LEAD_PURCHASED',
-        title: 'Installer Responded to Your Request',
-        message: 'An installer has responded to your solar request and will contact you soon.',
-        isRead: false
-      }
+    // Send notifications to all parties with SendGrid email integration
+    console.log('[POST /api/installer/leads/[id]/purchase] Sending notifications for lead purchase');
+
+    // Get admin users for notification
+    const admins = await prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true }
     });
+    console.log('[POST /api/installer/leads/[id]/purchase] Admin users found:', admins.length);
+
+    // Notification 1: Installer confirmation (with email)
+    await createNotification({
+      recipientUserId: session.user.id,
+      actionType: NotificationType.PURCHASE_CONFIRMED,
+      role: UserRole.INSTALLER,
+      messageKey: 'installer.purchase.confirmed',
+      routeKey: 'installer.leads',
+      routeParams: { leadId }
+    });
+    console.log('[POST /api/installer/leads/[id]/purchase] Installer notification created');
+
+    // Notification 2: Homeowner notification (with email)
+    await createNotification({
+      recipientUserId: updatedLead.homeownerId,
+      actionType: NotificationType.INSTALLER_RESPONDED,
+      role: UserRole.HOMEOWNER,
+      messageKey: 'homeowner.installer.responded',
+      routeKey: 'homeowner.requests',
+      routeParams: { leadId }
+    });
+    console.log('[POST /api/installer/leads/[id]/purchase] Homeowner notification created');
+
+    // Notification 3: Admin notifications (with email)
+    if (admins.length > 0) {
+      // Get installer email for admin metadata
+      const installer = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true }
+      });
+
+      await createBulkNotifications(
+        admins.map(admin => ({
+          recipientUserId: admin.id,
+          actionType: NotificationType.LEAD_PURCHASED,
+          role: UserRole.ADMIN,
+          messageKey: 'admin.lead.purchased',
+          routeKey: 'admin.dashboard',
+          routeParams: { leadId, installerId: session.user.id },
+          metadata: {
+            actorEmail: installer?.email, // Pass installer email for admin to see
+            leadId,
+            installerId: session.user.id
+          }
+        }))
+      );
+      console.log('[POST /api/installer/leads/[id]/purchase] Admin notifications created');
+    }
 
     // Return unmasked contact details
     return NextResponse.json({

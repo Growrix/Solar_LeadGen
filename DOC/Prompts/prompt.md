@@ -3104,3 +3104,33 @@ Follow the
  After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
 ### Implementation Phase:
  After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.
+
+ ----------------------------------------------------------------------------------------------
+
+ I have now received the email. but I am confused and there might a mig issue with the user id and their classifications. I have generated a lead from the homeowners accunt (Homeowner : nayeem4978@gmail.com) , The admin received the email from the Installers account which is Installer : mohammadikramul7@gmail.com . check the screenshot for better understanding. 
+
+- there are another issue as well. I am able to login with any regestered Email ID from any user role login page. e.g I can login with the homeowners email ID from the installers login page. which is wrong. it is creating more confusion regarding the user roles and their email IDs. 
+
+***Instructions*** I want you to audit the user roles and their email IDs deeply to ensure there is no mix up or mig issue with the user id and their classifications. after that create a comprehensive fix plan to fix any issues found during the audit. so that each user role is properly classified and there is no mix up with the email IDs. also make sure that each user can only login from their respective login pages only. e.g homeowners can only login from homeowners login page only.
+
+***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.
+ -----------------------------------------------------------------
+ I did not receive any email and notification after the installer purchased the call/visit lead in any end admin/homeowner. I have tested by generating new lead from the homeowners account and assigning to installer. after that the installer purchased the lead but I did not receive any email and notification after the installer purchased the call/visit lead in any end admin/homeowner.
+
+***Instructions*** I want you to test the SendGrid functionality thoroughly to ensure that all email notifications are being sent correctly as per the user actions in the system. I want you to track down the entire email notification flows for all 3 user roles (homeowners, installers, admins) and identify any missing gaps if any. Run all the necessary tests to make sure the email notifications are working perfectly in realtime without any issues. Your Audit should be comprhensive enough to cover all the aspects of SendGrid functionality including frontend, backend, API, prisma etc. Make sure the SendGrid Integration is working perfectly without any issues. make sure all the action points are covered including after the installer purchased the call/visit lead.
+
+***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through: D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\AI-IMPLEMENTATION-GUIDELINES.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.

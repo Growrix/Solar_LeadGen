@@ -111,6 +111,7 @@ const HomeownerSignInModal: React.FC<HomeownerSignInModalProps> = ({
         redirect: false,
         email: formData.email,
         password: formData.password,
+        role: 'HOMEOWNER',
       });
 
       if (result?.error) {

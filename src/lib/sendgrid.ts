@@ -68,6 +68,8 @@ export interface EmailMessage {
   text: string;
   html?: string;
   from?: string;
+  recipientRole?: 'ADMIN' | 'INSTALLER' | 'HOMEOWNER'; // New: recipient's role
+  actorEmail?: string; // New: actual sender's email (homeowner or installer)
 }
 
 /**
@@ -92,10 +94,17 @@ export async function sendEmail(message: EmailMessage): Promise<void> {
   }
 
   try {
+    // Dynamic sender logic based on recipient role
+    // ALWAYS use verified sender email (SENDGRID_FROM_EMAIL) as the "from" address
+    // For admin emails, we'll include actorEmail in the email body content instead
+    const fromEmail = message.from || DEFAULT_FROM_EMAIL;
+    
+    console.log(`📧 [SendGrid] Raw input - recipientRole: ${message.recipientRole}, actorEmail: ${message.actorEmail}, to: ${message.to}`);
+    
     if (isTestEnv) {
       emailCaptureStore.push({
         to: message.to,
-        from: message.from || DEFAULT_FROM_EMAIL,
+        from: fromEmail,
         subject: message.subject,
         text: message.text,
         html: message.html || message.text,
@@ -104,7 +113,7 @@ export async function sendEmail(message: EmailMessage): Promise<void> {
     } else {
       await sgMail.send({
         to: message.to,
-        from: message.from || DEFAULT_FROM_EMAIL,
+        from: fromEmail,
         subject: message.subject,
         text: message.text,
         html: message.html || message.text,
@@ -112,7 +121,7 @@ export async function sendEmail(message: EmailMessage): Promise<void> {
     }
 
     const logVerb = isTestEnv ? 'captured' : 'sent';
-    console.log(`✅ [SendGrid] Email ${logVerb} to ${message.to}: ${message.subject}`);
+    console.log(`✅ [SendGrid] Email ${logVerb} to ${message.to} from ${fromEmail}: ${message.subject}`);
   } catch (error) {
     console.error('❌ [SendGrid] Failed to send email:', error);
     throw error;

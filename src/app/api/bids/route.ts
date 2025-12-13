@@ -175,6 +175,12 @@ export async function POST(request: NextRequest) {
 
     // Notification 2: Admin gets notification about new bid
     if (admins.length > 0) {
+      // Get installer email for admin to see
+      const installer = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { email: true }
+      });
+      
       await createBulkNotifications(
         admins.map(admin => ({
           recipientUserId: admin.id,
@@ -182,7 +188,12 @@ export async function POST(request: NextRequest) {
           role: UserRole.ADMIN,
           messageKey: 'admin.bid.submitted',
           routeKey: 'admin.dashboard',
-          routeParams: { leadId: body.leadId, bidId: bid.id, installerId: session.user.id }
+          routeParams: { leadId: body.leadId, bidId: bid.id, installerId: session.user.id },
+          metadata: {
+            actorEmail: installer?.email, // Pass installer email for admin to see
+            leadId: body.leadId,
+            bidId: bid.id
+          }
         }))
       );
     }

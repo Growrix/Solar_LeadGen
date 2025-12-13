@@ -327,6 +327,12 @@ export async function createLead(input: CreateLeadInput): Promise<CreateLeadResu
           quoteType: input.quoteType,
           location: input.location,
           postcode: input.propertyPostcode
+        },
+        metadata: {
+          actorEmail: homeowner.email, // Pass homeowner email for admin to see
+          quoteType: input.quoteType,
+          postcode: input.propertyPostcode,
+          location: input.location,
         }
       }))
     );

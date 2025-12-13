@@ -205,10 +205,10 @@ function shouldSendEmail(type: NotificationType): boolean {
  */
 async function sendEmailNotification(data: CreateNotificationInput): Promise<void> {
   try {
-    // Get user email
+    // Get user email and role
     const user = await prisma.user.findUnique({
       where: { id: data.userId },
-      select: { email: true, name: true },
+      select: { email: true, name: true, role: true },
     });
 
     if (!user?.email) return;
@@ -216,6 +216,9 @@ async function sendEmailNotification(data: CreateNotificationInput): Promise<voi
     const actionUrl = data.actionUrl
       ? `${process.env.NEXTAUTH_URL}${data.actionUrl}`
       : undefined;
+
+    // Extract actor email from metadata (for admin notifications only)
+    const actorEmail = data.metadata?.actorEmail as string | undefined;
 
     await sendEmail({
       to: user.email,
@@ -236,6 +239,8 @@ async function sendEmailNotification(data: CreateNotificationInput): Promise<voi
           </p>
         </div>
       `,
+      recipientRole: user.role === 'GUEST' ? undefined : user.role,
+      actorEmail: actorEmail,
     });
   } catch (error) {
     console.error('❌ [Notification] Failed to send email:', error);

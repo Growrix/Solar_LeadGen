@@ -103,6 +103,7 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
         redirect: false, // Don't redirect automatically
         email: formData.email,
         password: formData.password,
+        role: 'INSTALLER',
       });
 
       if (result?.error) {

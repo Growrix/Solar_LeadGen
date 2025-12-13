@@ -7,7 +7,7 @@ import { getSettingAsNumber } from"@/lib/services/settings-service";
 export const authOptions: NextAuthOptions = {
   providers: [CredentialsProvider({
     name:"credentials",
-    credentials: { email: { label:"Email", type:"email" }, password: { label:"Password", type:"password" } },
+    credentials: { email: { label:"Email", type:"email" }, password: { label:"Password", type:"password" }, role: { label:"Role", type:"text" } },
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) throw new Error("Invalid credentials");
       
@@ -35,6 +35,12 @@ export const authOptions: NextAuthOptions = {
       const valid = await bcrypt.compare(credentials.password, user.password);
       if (!valid) throw new Error("Invalid credentials");
       if (!user.isActive) throw new Error("Account deactivated");
+
+      // Enforce role-specific login when provided by role pages
+      const expectedRole = (credentials as any).role as string | undefined;
+      if (expectedRole && user.role !== expectedRole) {
+        throw new Error("Invalid login page for this account");
+      }
 
       prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() }, select: { id: true } }).catch(console.error);
 

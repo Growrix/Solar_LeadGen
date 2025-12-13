@@ -78,6 +78,7 @@ const AdminSignIn: React.FC = () => {
         redirect: false,
         email: formData.email,
         password: formData.password,
+        role: 'ADMIN',
       });
 
       if (result?.error) {

@@ -57,9 +57,11 @@ function shouldSendEmail(type: NotificationType): boolean {
  */
 async function sendEmailNotification(
   userId: string,
+  role: UserRole,
   title: string,
   message: string,
-  routeKey?: string
+  routeKey?: string,
+  metadata?: Record<string, any>
 ): Promise<void> {
   try {
     // Get user email
@@ -78,6 +80,10 @@ async function sendEmailNotification(
       ? `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}${routeKey}`
       : undefined;
 
+    // Extract actor email from metadata (if available)
+    // This is the actual homeowner or installer email that triggered the notification
+    const actorEmail = metadata?.actorEmail as string | undefined;
+
     await sendEmail({
       to: user.email,
       subject: title,
@@ -86,6 +92,12 @@ async function sendEmailNotification(
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #1A1A1A;">
           <h2 style="color: #FFFFFF; margin-bottom: 20px;">${title}</h2>
           <p style="color: #F5F5F5; line-height: 1.6; margin-bottom: 20px;">${message}</p>
+          ${actorEmail && role === 'ADMIN' ? `
+            <div style="background-color: #2C2C2C; padding: 16px; border-radius: 6px; margin: 20px 0; border-left: 3px solid #7C3AED;">
+              <p style="color: #A3A3A3; font-size: 14px; margin: 0 0 8px 0;">Installer Contact:</p>
+              <p style="color: #FFFFFF; font-size: 16px; margin: 0;">${actorEmail}</p>
+            </div>
+          ` : ''}
           ${actionUrl ? `
             <a href="${actionUrl}" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #2C2C2C; color: #FFFFFF; text-decoration: none; border-radius: 6px; border: 1px solid #404040;">
               View Details
@@ -97,9 +109,11 @@ async function sendEmailNotification(
           </p>
         </div>
       `,
+      recipientRole: role === 'GUEST' ? undefined : role,
+      actorEmail: undefined, // Always use verified sender address
     });
 
-    console.log(`✅ [Notification Service] Email sent to ${user.email} for notification type: ${title}`);
+    console.log(`✅ [Notification Service] Email sent to ${user.email} (${role}) for notification type: ${title}${actorEmail ? ` from ${actorEmail}` : ''}`);
   } catch (error) {
     console.error('❌ [Notification Service] Failed to send email:', error);
     // Don't throw - email failures shouldn't break notification creation
@@ -145,9 +159,11 @@ export async function createNotification(input: CreateNotificationInput) {
     if (shouldSendEmail(input.actionType)) {
       await sendEmailNotification(
         input.recipientUserId,
+        input.role,
         title,
         message,
-        input.routeKey
+        input.routeKey,
+        input.metadata
       );
     }
 

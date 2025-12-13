@@ -236,11 +236,33 @@ T103 [P][E2E]: Playwright tests for SendGrid triggers
   - Homeowner: New bid received → email
   - Homeowner: Bid awarded → email
   - Admin: Bid submitted → email; Purchase completed → email
+- Status: PENDING ⏳
+
+T104 [X][P][Critical Fix]: Fix purchase notification emails for all parties
+- Path: `src/app/api/installer/leads/[id]/purchase/route.ts`
+- Issue: Installer purchase endpoint used legacy `prisma.notification.create()` bypassing SendGrid email service
+- Action: Replace legacy notification creation with `createNotification()` and `createBulkNotifications()` from notification service
+- Changes:
+  - Added imports: `createNotification`, `createBulkNotifications`, `NotificationType`, `UserRole`
+  - Replaced single homeowner notification with 3-party notification system:
+    1. Installer: PURCHASE_CONFIRMED notification with email
+    2. Homeowner: INSTALLER_RESPONDED notification with email
+    3. Admin(s): LEAD_PURCHASED notification with email and actorEmail metadata
+  - Added console logging for debugging
+  - Added admin user query to get all admin recipients
+- Testing: Generate lead → Admin assigns → Installer purchases → Verify all 3 emails sent (installer, homeowner, admin)
+- Status: COMPLETE ✓ (Dec 2, 2024)
+- Audit Report: `DOC/AUDIT-REPORTS/SendGrid/PURCHASE-NOTIFICATION-AUDIT.md`
+- Verification: 
+  - TypeScript: 0 errors
+  - Build: Pending manual test
+  - E2E: Pending Playwright test creation
 
 Post-checkpoint:
 - `npx tsc --noEmit` (0 problems)
 - `npm run build` (Compiled successfully)
 - Run Playwright suite → all SendGrid tests pass
+- Manual test: Purchase flow with real emails → all 3 parties receive emails
 
 Rollback:
 - Commit before changes: "backup: before Phase 8 – SendGrid"
