@@ -48,6 +48,9 @@ function shouldSendEmail(type: NotificationType): boolean {
     'NEW_QUOTE',
     'QUOTE_ACCEPTED',
     'PAYMENT_RECEIVED',
+    
+    // System notifications (Phase 13T)
+    'SYSTEM', // ✅ Enables emails for limit updates
   ];
 
   return emailNotificationTypes.includes(type);

@@ -154,7 +154,7 @@ export default function Home() {
     };
 
     fetchUserLeadData();
-  }, [status, session?.user?.id]); // ✅ Phase 23 Fix 3: Optimize dependency (only user ID, not entire session)
+  }, [status, session?.user?.id, session?.user?.email, session?.user?.phone, session?.user?.phoneVerified, session?.user?.role]); // ✅ Fixed: Include all session dependencies
 
   // Captures quote data from the form and stores it pending authentication
   const handleQuoteCalculated = useCallback((data: any) => {

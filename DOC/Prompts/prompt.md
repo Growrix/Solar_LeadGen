@@ -3277,3 +3277,17 @@ Follow the
  After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
 ### Implementation Phase:
  After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.
+ --------------------------------------------------------------------------------------------
+
+ When the admin increased the limit of quote generation the homewoners should get notifications via internal notification and also email. 
+
+***Instructions*** I want you to enhance the Quote limit increase functionality as per the above instructions. so that when the admin increased the limit of quote generation the homewoners should get notifications via internal notification and also email.
+
+ ***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\README.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.

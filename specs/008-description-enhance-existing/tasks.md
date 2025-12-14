@@ -10257,3 +10257,175 @@ Phase 13R Complete ✅"
 3. Complete with T614-T615 (testing and validation)
 
 **END OF PHASE 13S**
+
+---
+
+## Phase 13T – Quote Limit Notification & Email Enhancement (P1 - UX Improvement) 🆕
+
+**Date Created**: December 14, 2025  
+**Status**: 🟢 Ready to Implement  
+**Priority**: P1 - High (User Communication)  
+**Audit Report**: `DOC/AUDIT-REPORTS/SendGrid/QUOTE-LIMIT-NOTIFICATION-EMAIL-AUDIT-2025-12-14.md`
+
+### Problem Statement
+
+When admin increases homeowner quote limits (regular or bidding), homeowners receive **internal notifications** but **NO EMAIL notifications**. This creates a communication gap where homeowners may not realize their limit was increased unless they manually check the notification dropdown.
+
+**Current Behavior**:
+- ✅ Admin increases limit via admin panel
+- ✅ Internal notification created in database
+- ✅ Notification appears in UI dropdown
+- ❌ **No email sent to homeowner**
+
+**Expected Behavior**:
+- ✅ Admin increases limit
+- ✅ Internal notification created
+- ✅ Notification appears in UI
+- ✅ **Email sent to homeowner with limit update details**
+
+### Root Cause
+
+`NotificationType.SYSTEM` is NOT included in the email whitelist in [`notification-service.ts:26`](src/lib/notifications/notification-service.ts#L26). The `shouldSendEmail()` function only allows specific notification types to trigger emails, and `SYSTEM` was intentionally excluded.
+
+### Solution
+
+Add `'SYSTEM'` to the email whitelist + optional email template enhancements.
+
+---
+
+### Tasks
+
+#### T701: [Phase 13T.1] Core Email Fix - Enable SYSTEM Notifications
+
+**Goal**: Add `SYSTEM` notification type to email whitelist  
+**Time Estimate**: 15 minutes  
+**Risk Level**: Low (one-line change, low impact)
+
+**Subtasks**:
+- [ ] **T701.1**: Update `shouldSendEmail()` function
+  - File: `src/lib/notifications/notification-service.ts`
+  - Line: 26
+  - Change: Add `'SYSTEM',` to `emailNotificationTypes` array
+
+**Testing Checkpoints**:
+- [ ] Run `npx tsc --noEmit` → 0 errors
+- [ ] Run `npm run dev` → Server starts without errors
+- [ ] Manual test: Admin increases quote limit → Check terminal for email log
+
+**Success Criteria**:
+- [ ] TypeScript compiles cleanly
+- [ ] Email sent when admin increases quote/bidding limit
+- [ ] EmailDeliveryLog entry created
+
+---
+
+#### T702: [Phase 13T.2] Email Template Enhancement (Optional)
+
+**Goal**: Add visual limit update details to email HTML  
+**Time Estimate**: 30 minutes  
+**Risk Level**: Low (cosmetic enhancement only)
+
+**Subtasks**:
+- [ ] **T702.1**: Add limit update detection logic
+- [ ] **T702.2**: Create limit update HTML block
+- [ ] **T702.3**: Update action button text/color to green
+
+**Testing Checkpoints**:
+- [ ] Send test email → Verify HTML renders correctly
+- [ ] Test email in Gmail, Outlook, Apple Mail
+
+**Success Criteria**:
+- [ ] Email HTML contains limit change visualization
+- [ ] "Generate New Quote" button appears with green color
+
+---
+
+#### T703: [Phase 13T.3] Playwright E2E Tests
+
+**Goal**: Create comprehensive E2E tests for email delivery  
+**Time Estimate**: 1 hour  
+**Risk Level**: Low (tests only)
+
+**Subtasks**:
+- [ ] **T703.1**: Create test file `tests/e2e/quote-limit-email-notification.spec.ts`
+- [ ] **T703.2**: Test - Admin increases quote limit → Email sent
+- [ ] **T703.3**: Test - Admin increases bidding limit → Email sent
+- [ ] **T703.4**: Test - Email contains correct action URL
+- [ ] **T703.5**: Test - No email when `notify=false`
+
+**Testing Checkpoints**:
+- [ ] Run `npx playwright test quote-limit-email-notification`
+- [ ] All 4 tests pass
+
+**Success Criteria**:
+- [ ] All Playwright tests pass (4/4)
+- [ ] Tests verify email delivery audit logs
+
+---
+
+#### T704: [Phase 13T.4] Validation & Commit
+
+**Goal**: Complete system validation and commit changes  
+**Time Estimate**: 15 minutes
+
+**Subtasks**:
+- [ ] **T704.1**: TypeScript validation (`npx tsc --noEmit`)
+- [ ] **T704.2**: Build validation (`npm run build`)
+- [ ] **T704.3**: Dev server check (`npm run dev`)
+- [ ] **T704.4**: Playwright full test suite
+- [ ] **T704.5**: Manual end-to-end test (real email)
+- [ ] **T704.6**: Git commit with descriptive message
+- [ ] **T704.7**: Update gitstatus.md
+
+**Success Criteria**:
+- [ ] All validation commands pass
+- [ ] Real email received in inbox
+- [ ] Changes committed and pushed
+
+---
+
+### Implementation Timeline
+
+**Total Time**: 2 hours (or 1.5 hours if skipping T702)
+
+- **Phase 13T.1 (T701)**: 15 minutes - Core fix
+- **Phase 13T.2 (T702)**: 30 minutes - Enhancement (Optional)
+- **Phase 13T.3 (T703)**: 1 hour - E2E tests
+- **Phase 13T.4 (T704)**: 15 minutes - Validation
+
+---
+
+### Success Criteria (Phase 13T Complete)
+
+**Functional Requirements**:
+- [ ] Admin increases homeowner quote limit → Email sent
+- [ ] Admin increases homeowner bidding limit → Email sent
+- [ ] EmailDeliveryLog entry created with status `'sent'`
+- [ ] Internal notification still created (unchanged behavior)
+
+**Testing Requirements**:
+- [ ] TypeScript: 0 errors, 0 warnings
+- [ ] Build: Compiled successfully
+- [ ] Playwright: All tests pass (including 4 new tests)
+- [ ] Manual test: Real email received
+
+---
+
+### Rollback Plan
+
+**If something goes wrong**: Comment out `'SYSTEM'` from email whitelist → Redeploy  
+**Rollback Time**: < 5 minutes  
+**Impact**: Returns to previous behavior (no emails for limit updates)
+
+---
+
+### Phase 13T - READY TO IMPLEMENT ✅
+
+**Priority**: P1 - High  
+**Status**: 🟢 Ready to Implement  
+**Estimated Time**: 2 hours  
+**Risk Level**: Low
+
+**Quick Win**: This is a **15-minute fix** (T701 only) that significantly improves user communication.
+
+**END OF PHASE 13T**
