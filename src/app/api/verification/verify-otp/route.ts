@@ -12,7 +12,7 @@ import { getServerSession } from"next-auth";
 import { authOptions } from"@/lib/auth";
 import { phoneVerificationService } from"@/lib/services/phone-verification-service";
 import { createAuditLog } from"@/lib/services/audit-logger";
-import { createNotification } from"@/lib/services/notification-service";
+import { createLegacyNotification as createNotification } from"@/lib/notifications/notification-service";
 import { prisma } from"@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -105,17 +105,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Send confirmation notification
-    await createNotification({
-      userId: session.user.id,
-      type: 'SYSTEM',
-      title: 'Phone Verified',
-      message: `Your phone number has been successfully verified. ${updatedLeads.count > 0 ? `All ${updatedLeads.count} of your lead(s) have been updated with verified status.` : 'You can now submit additional lead requests.'}`,
-      metadata: {
+    await createNotification(
+      session.user.id,
+      'SYSTEM',
+      'Phone Verified',
+      `Your phone number has been successfully verified. ${updatedLeads.count > 0 ? `All ${updatedLeads.count} of your lead(s) have been updated with verified status.` : 'You can now submit additional lead requests.'}`,
+      undefined,
+      {
         verificationId: verificationId,
         leadsUpdated: updatedLeads.count, // Phase 4.13
         timestamp: new Date().toISOString()
       }
-    });
+    );
 
     return NextResponse.json({
       success: true,

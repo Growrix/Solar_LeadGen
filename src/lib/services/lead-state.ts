@@ -164,7 +164,7 @@ async function triggerStatusChangeNotifications(
   newStatus: LeadStatus
 ): Promise<void> {
   // Import notification service to avoid circular dependency
-  const { createNotification } = await import('./notification-service');
+  const { createLegacyNotification: createNotification } = await import('@/lib/notifications/notification-service');
   const { triggerStatusUpdate } = await import('@/lib/pusher');
   const { sendLeadApprovedNotification } = await import('@/lib/sendgrid');
 
@@ -181,14 +181,14 @@ async function triggerStatusChangeNotifications(
 
   // Notify homeowner when lead is approved
   if (newStatus === 'APPROVED') {
-    await createNotification({
-      userId: lead.homeownerId,
-      type: 'LEAD_APPROVED',
-      title: 'Lead Approved!',
-      message: 'Your solar lead request has been approved and is now visible to installers.',
-      actionUrl: `/homeowner/leads/${leadId}`,
-      metadata: { leadId },
-    });
+    await createNotification(
+      lead.homeownerId,
+      'LEAD_APPROVED',
+      'Lead Approved!',
+      'Your solar lead request has been approved and is now visible to installers.',
+      `/homeowner/leads/${leadId}`,
+      { leadId }
+    );
 
     // Send email notification
     if (lead.homeowner.email) {
@@ -201,38 +201,38 @@ async function triggerStatusChangeNotifications(
 
   // Notify homeowner when lead is purchased
   if (newStatus === 'PURCHASED' && lead.installer) {
-    await createNotification({
-      userId: lead.homeownerId,
-      type: 'LEAD_PURCHASED',
-      title: 'Your Lead Was Purchased!',
-      message: `${lead.installer.companyName || lead.installer.name} is now working on your quote.`,
-      actionUrl: `/homeowner/leads/${leadId}`,
-      metadata: { leadId, installerId: lead.installerId },
-    });
+    await createNotification(
+      lead.homeownerId,
+      'LEAD_PURCHASED',
+      'Your Lead Was Purchased!',
+      `${lead.installer.companyName || lead.installer.name} is now working on your quote.`,
+      `/homeowner/leads/${leadId}`,
+      { leadId, installerId: lead.installerId }
+    );
   }
 
   // T404: Notify installer when quote is accepted - fixed actionUrl to purchased-leads
   if (newStatus === 'ACCEPTED' && lead.installer) {
-    await createNotification({
-      userId: lead.installerId!,
-      type: 'QUOTE_ACCEPTED',
-      title: 'Quote Accepted!',
-      message: `${lead.homeowner.name} accepted your quote for ${lead.location}.`,
-      actionUrl: `/installer/purchased-leads`,
-      metadata: { leadId },
-    });
+    await createNotification(
+      lead.installerId!,
+      'QUOTE_ACCEPTED',
+      'Quote Accepted!',
+      `${lead.homeowner.name} accepted your quote for ${lead.location}.`,
+      `/installer/purchased-leads`,
+      { leadId }
+    );
   }
 
   // Notify installer when quote is rejected
   if (newStatus === 'REJECTED' && lead.installer) {
-    await createNotification({
-      userId: lead.installerId!,
-      type: 'QUOTE_REJECTED',
-      title: 'Quote Not Accepted',
-      message: `${lead.homeowner.name} did not accept your quote for ${lead.location}.`,
-      actionUrl: `/installer/leads/${leadId}`,
-      metadata: { leadId },
-    });
+    await createNotification(
+      lead.installerId!,
+      'QUOTE_REJECTED',
+      'Quote Not Accepted',
+      `${lead.homeowner.name} did not accept your quote for ${lead.location}.`,
+      `/installer/leads/${leadId}`,
+      { leadId }
+    );
   }
 
   // Broadcast status update via Pusher
