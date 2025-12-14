@@ -96,6 +96,7 @@ model User {
   phoneVerified         Boolean                  @default(false)
   leadSubmissionLimit   Int                      @default(5)
   biddingLeadsSubmitted Int                      @default(0)
+  biddingLeadsLimit     Int                      @default(1) // Phase 13S.2: Adjustable bidding lead quota
   profileComplete       Boolean                  @default(false) // Auth Part A+B: installer onboarding gate
   sessionVersion        Int                      @default(0) // Auth Part A+B: invalidate sessions on password reset
   signupIp              String? // Phase 21: IP address captured at registration

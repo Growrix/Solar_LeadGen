@@ -12,6 +12,7 @@ export type MessageKey =
   | 'homeowner.bid.received'
   | 'homeowner.lead.rejected'
   | 'homeowner.system.limit_updated'
+  | 'homeowner.system.bidding_limit_updated' // Phase 13S.2
   | 'homeowner.lead.purchased'
   // Installer messages (professional tone)
   | 'installer.new.opportunity'
@@ -72,6 +73,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'homeowner.system.limit_updated': {
     title: 'Quote Limit Updated',
     message: 'Your quote request limit has been updated. Check your dashboard.',
+  },
+  'homeowner.system.bidding_limit_updated': {
+    title: 'Bidding Limit Updated',
+    message: 'Your bidding request limit has been updated. Check your dashboard.',
   },
   'homeowner.lead.purchased': {
     title: 'Request Accepted',

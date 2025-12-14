@@ -161,11 +161,16 @@ export async function createLead(input: CreateLeadInput): Promise<CreateLeadResu
       phoneVerified: true, // Phase 4.13: For copying to lead
       leadSubmissionCount: true,
       leadSubmissionLimit: true,
+      biddingLeadsSubmitted: true, // Phase 13S.2: Bidding quota check
+      biddingLeadsLimit: true, // Phase 13S.2: Admin-adjustable bidding limit
     },
   }) as any; // Type assertion to work around Prisma type cache
   
-  // Manually add biddingLeadsSubmitted since type cache hasn't updated
-  const homeownerWithBidding = homeowner as typeof homeowner & { biddingLeadsSubmitted: number };
+  // Manually add biddingLeadsSubmitted & biddingLeadsLimit since type cache hasn't updated
+  const homeownerWithBidding = homeowner as typeof homeowner & { 
+    biddingLeadsSubmitted: number;
+    biddingLeadsLimit: number;
+  };
 
   if (!homeowner) {
     throw new Error('Homeowner not found');
@@ -173,10 +178,11 @@ export async function createLead(input: CreateLeadInput): Promise<CreateLeadResu
 
   const currentCount = homeowner.leadSubmissionCount;
 
-  // Check BIDDING quota limit (max 1 per user)
+  // Phase 13S.2: Check BIDDING quota limit (admin-adjustable, default 1)
   if (input.quoteType === 'BIDDING') {
-    if (homeownerWithBidding.biddingLeadsSubmitted >= 1) {
-      throw new Error('BIDDING quota exceeded. You can only create 1 bidding quote per account.');
+    const biddingLimit = homeownerWithBidding.biddingLeadsLimit ?? 1;
+    if (homeownerWithBidding.biddingLeadsSubmitted >= biddingLimit) {
+      throw new Error(`BIDDING quota exceeded. You can only create ${biddingLimit} bidding quote(s) per account.`);
     }
   }
 

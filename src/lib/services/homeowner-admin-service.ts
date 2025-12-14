@@ -91,3 +91,87 @@ export async function updateHomeownerQuoteLimit(
 
   return updatedHomeowner;
 }
+
+/**
+ * Phase 13S.2: Update homeowner bidding lead submission limit
+ */
+interface UpdateHomeownerBiddingLimitInput {
+  adminId: string;
+  homeownerId: string;
+  biddingLimit: number;
+  notify?: boolean;
+  reason?: string;
+}
+
+export async function updateHomeownerBiddingLimit(
+  input: UpdateHomeownerBiddingLimitInput
+) {
+  const { adminId, homeownerId, biddingLimit, notify = true, reason } = input;
+
+  if (!Number.isFinite(biddingLimit) || biddingLimit < 0) {
+    throw new Error('Bidding limit must be a non-negative number');
+  }
+
+  const homeowner = await prisma.user.findUnique({
+    where: { id: homeownerId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      biddingLeadsLimit: true,
+      biddingLeadsSubmitted: true,
+    },
+  });
+
+  if (!homeowner) {
+    throw new Error('Homeowner not found');
+  }
+
+  const updatedHomeowner = await prisma.user.update({
+    where: { id: homeownerId },
+    data: {
+      biddingLeadsLimit: Math.floor(biddingLimit),
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      biddingLeadsLimit: true,
+      biddingLeadsSubmitted: true,
+    },
+  });
+
+  await createAuditLog({
+    action: AUDIT_ACTIONS.ADMIN_HOMEOWNER_BIDDING_LIMIT_UPDATED,
+    entityType: 'user',
+    entityId: homeownerId,
+    userId: adminId,
+    metadata: {
+      previousLimit: homeowner.biddingLeadsLimit,
+      newLimit: updatedHomeowner.biddingLeadsLimit,
+      reason,
+    },
+  });
+
+  if (notify) {
+    const remainingBiddingAllowance = Math.max(
+      updatedHomeowner.biddingLeadsLimit - updatedHomeowner.biddingLeadsSubmitted,
+      0,
+    );
+
+    await createBulkNotifications([{
+      recipientUserId: homeownerId,
+      role: UserRole.HOMEOWNER,
+      actionType: NotificationType.SYSTEM,
+      messageKey: 'homeowner.system.bidding_limit_updated',
+      routeKey: 'homeowner.requests',
+      metadata: {
+        previousLimit: homeowner.biddingLeadsLimit,
+        newLimit: updatedHomeowner.biddingLeadsLimit,
+        remainingBiddingAllowance,
+      },
+    }]);
+  }
+
+  return updatedHomeowner;
+}

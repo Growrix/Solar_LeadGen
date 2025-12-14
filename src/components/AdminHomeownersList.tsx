@@ -24,6 +24,8 @@ interface Homeowner {
   phoneVerified: boolean;
   leadSubmissionCount: number;
   leadSubmissionLimit: number;
+  biddingLeadsSubmitted: number; // Phase 13S.2
+  biddingLeadsLimit: number; // Phase 13S.2
   remainingLeadAllowance: number;
   signupIp: string | null;
   primaryAddress: string | null;
@@ -67,6 +69,8 @@ export default function AdminHomeownersList() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
+  const [editingBiddingId, setEditingBiddingId] = useState<string | null>(null); // Phase 13S.2
+  const [editBiddingValue, setEditBiddingValue] = useState<number>(0); // Phase 13S.2
   const [updating, setUpdating] = useState(false);
 
   // Debounce search input
@@ -195,6 +199,47 @@ export default function AdminHomeownersList() {
       setEditValue(0);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to update quote limit');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Phase 13S.2: Bidding limit edit handlers
+  const handleEditBiddingClick = (homeowner: Homeowner) => {
+    setEditingBiddingId(homeowner.id);
+    setEditBiddingValue(homeowner.biddingLeadsLimit);
+  };
+
+  const handleCancelBiddingEdit = () => {
+    setEditingBiddingId(null);
+    setEditBiddingValue(0);
+  };
+
+  const handleSaveBiddingEdit = async (homeownerId: string) => {
+    if (editBiddingValue < 0 || !Number.isFinite(editBiddingValue)) {
+      alert('Bidding limit must be a non-negative number');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/homeowners/${homeownerId}/bidding-limit`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ biddingLimit: editBiddingValue, notify: true }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update bidding limit');
+      }
+
+      // Refresh the list
+      await fetchHomeowners();
+      setEditingBiddingId(null);
+      setEditBiddingValue(0);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update bidding limit');
     } finally {
       setUpdating(false);
     }
@@ -403,6 +448,9 @@ export default function AdminHomeownersList() {
                     Lead Usage
                   </th>
                   <th className="px-6 py-3 text-left text-caption text-muted-foreground uppercase tracking-wider">
+                    Bidding Usage
+                  </th>
+                  <th className="px-6 py-3 text-left text-caption text-muted-foreground uppercase tracking-wider">
                     Remaining
                   </th>
                   <th className="px-6 py-3 text-left text-caption text-muted-foreground uppercase tracking-wider">
@@ -539,6 +587,50 @@ export default function AdminHomeownersList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-body-small text-foreground">
+                          {homeowner.biddingLeadsSubmitted}/
+                          {editingBiddingId === homeowner.id ? (
+                            <input
+                              type="number"
+                              min="0"
+                              value={editBiddingValue}
+                              onChange={(e) => setEditBiddingValue(Number(e.target.value))}
+                              className="w-16 px-2 py-1 text-body-small border border-info rounded focus:ring-2 focus:ring-info bg-surface"
+                              disabled={updating}
+                            />
+                          ) : (
+                            homeowner.biddingLeadsLimit
+                          )}
+                        </span>
+                        {editingBiddingId === homeowner.id ? (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleSaveBiddingEdit(homeowner.id)}
+                              disabled={updating}
+                              className="px-2 py-1 text-caption bg-success text-success-foreground rounded hover:bg-success/90 disabled:opacity-50"
+                            >
+                              {updating ? '...' : '✓'}
+                            </button>
+                            <button
+                              onClick={handleCancelBiddingEdit}
+                              disabled={updating}
+                              className="px-2 py-1 text-caption bg-muted-foreground text-foreground-secondary rounded hover:bg-muted-foreground/80 disabled:opacity-50"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleEditBiddingClick(homeowner)}
+                            className="px-2 py-1 text-caption bg-info text-info-foreground rounded hover:bg-info/90"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-caption rounded-full ${
                         homeowner.remainingLeadAllowance > 0
                           ? 'bg-success text-success-foreground'
@@ -636,6 +728,12 @@ export default function AdminHomeownersList() {
                     <span className="text-muted-foreground">Lead Usage:</span>
                     <div className="text-foreground">
                       {homeowner.leadSubmissionCount}/{homeowner.leadSubmissionLimit}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Bidding Usage:</span>
+                    <div className="text-foreground">
+                      {homeowner.biddingLeadsSubmitted}/{homeowner.biddingLeadsLimit}
                     </div>
                   </div>
                   <div>

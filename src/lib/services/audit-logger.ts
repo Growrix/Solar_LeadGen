@@ -270,6 +270,7 @@ export const AUDIT_ACTIONS = {
   ADMIN_USER_ACTIVATED: 'admin_user_activated',
   ADMIN_SETTINGS_CHANGED: 'admin_settings_changed',
   ADMIN_HOMEOWNER_QUOTE_LIMIT_UPDATED: 'admin_homeowner_quote_limit_updated',
+  ADMIN_HOMEOWNER_BIDDING_LIMIT_UPDATED: 'admin_homeowner_bidding_limit_updated', // Phase 13S.2
 
   // Phase 7: Admin lead assignment and lifecycle
   LEAD_ASSIGNED: 'lead_assigned',
