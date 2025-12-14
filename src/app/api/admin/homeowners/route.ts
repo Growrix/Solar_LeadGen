@@ -104,6 +104,8 @@ export async function GET(request: NextRequest) {
       phoneVerified: boolean;
       leadSubmissionCount: number;
       leadSubmissionLimit: number;
+      biddingLeadsSubmitted: number;
+      biddingLeadsLimit: number;
       signupIp: string | null;
       primaryAddress: string | null;
       residentialLeadCount: number;
@@ -127,6 +129,8 @@ export async function GET(request: NextRequest) {
         u."phoneVerified",
         u."leadSubmissionCount",
         u."leadSubmissionLimit",
+        u."biddingLeadsSubmitted",
+        u."biddingLeadsLimit",
         u."signupIp",
         (
           SELECT l."address"

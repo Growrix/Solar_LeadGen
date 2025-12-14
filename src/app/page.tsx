@@ -69,6 +69,8 @@ export default function Home() {
   const [hasBiddingLead, setHasBiddingLead] = useState<boolean>(false);
   // ✅ Phase 13S.1: Track real-time quote limit from database (not hardcoded constant)
   const [userQuoteLimit, setUserQuoteLimit] = useState<number>(5); // Default to 5, updated from API
+  const [userBiddingLimit, setUserBiddingLimit] = useState<number>(1); // Phase 13S.2: Bidding limit
+  const [userBiddingCount, setUserBiddingCount] = useState<number>(0); // Phase 13S.2: Bidding count
 
   // Ensure page starts at top on mount
   useEffect(() => {
@@ -93,11 +95,15 @@ export default function Home() {
             const quoteLimitFromDB = dashboardData.quoteLimit || 5;
             const remainingFromDB = dashboardData.remainingLeadAllowance || 0;
             const leadCountFromDB = dashboardData.totalSubmitted || 0;
+            const biddingLimitFromDB = dashboardData.biddingLeadsLimit || 1; // Phase 13S.2
+            const biddingCountFromDB = dashboardData.biddingLeadsSubmitted || 0; // Phase 13S.2
             
             // ✅ FIX: Use dashboard data directly instead of calculating locally
             setUserQuoteLimit(quoteLimitFromDB);
             setUserLeadCount(leadCountFromDB);
             setRemainingLeadQuota(remainingFromDB);
+            setUserBiddingLimit(biddingLimitFromDB); // Phase 13S.2
+            setUserBiddingCount(biddingCountFromDB); // Phase 13S.2
             setIsPhoneVerified(dashboardData.phoneVerified || false);
             setUserPhoneNumber(dashboardData.phoneNumber || session?.user?.phone || '');
             
@@ -105,12 +111,13 @@ export default function Home() {
               quoteLimitFromDB,
               leadCountFromDB,
               remainingFromDB,
+              biddingLimitFromDB,
+              biddingCountFromDB,
               phoneVerified: dashboardData.phoneVerified,
             });
             
             // Detect if user already has a BIDDING lead
-            const biddingLeadsCount = dashboardData.biddingLeadsSubmitted || 0;
-            setHasBiddingLead(biddingLeadsCount >= 1);
+            setHasBiddingLead(biddingCountFromDB >= 1); // Phase 13S.2
             
           } else {
             console.warn('[Homepage useEffect] Failed to fetch dashboard, using fallback data');
@@ -797,6 +804,8 @@ export default function Home() {
           onSubmit={handleQuoteDistributionSubmit}
           remainingQuota={remainingLeadQuota}
           userAlreadyHasBiddingLead={hasBiddingLead}
+          biddingLeadsSubmitted={userBiddingCount}
+          biddingLeadsLimit={userBiddingLimit}
         />
       )}
 

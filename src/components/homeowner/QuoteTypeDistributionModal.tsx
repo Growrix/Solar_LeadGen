@@ -24,7 +24,9 @@ interface QuoteTypeDistributionModalProps {
   onSubmit: (distributions: QuoteDistribution[]) => void;
   remainingQuota: number;
   quoteData?: any; // InstantQuote calculation results for context
-  userAlreadyHasBiddingLead?: boolean; // Phase 4.9.7: Check if user used their one-time bidding
+  userAlreadyHasBiddingLead?: boolean; // Deprecated, kept for backward compatibility
+  biddingLeadsSubmitted?: number; // Phase 13S.2: Current bidding count
+  biddingLeadsLimit?: number; // Phase 13S.2: Max bidding allowed (admin-adjustable)
 }
 
 /**
@@ -44,7 +46,9 @@ export default function QuoteTypeDistributionModal({
   onSubmit,
   remainingQuota,
   quoteData,
-  userAlreadyHasBiddingLead = false,
+  userAlreadyHasBiddingLead = false, // Deprecated
+  biddingLeadsSubmitted = 0, // Phase 13S.2
+  biddingLeadsLimit = 1, // Phase 13S.2
 }: QuoteTypeDistributionModalProps) {
   const [callVisitCount, setCallVisitCount] = useState(0);
   const [writtenQuoteCount, setWrittenQuoteCount] = useState(0);
@@ -73,13 +77,15 @@ export default function QuoteTypeDistributionModal({
     setWrittenQuoteCount(Math.max(0, Math.min(count, remainingQuota)));
   };
 
-  // Phase 4.9.7: Handle bidding count change (only 0 or 1 allowed)
+  // Phase 13S.2: Handle bidding count change (dynamic limit)
+  const remainingBiddingQuota = Math.max(0, biddingLeadsLimit - biddingLeadsSubmitted);
+  
   const handleBiddingChange = (count: number) => {
-    if (count === 1 && userAlreadyHasBiddingLead) {
-      alert('You have already used your one-time bidding request. Only one bidding request is allowed per homeowner.');
+    if (count > 0 && remainingBiddingQuota === 0) {
+      alert(`You have already used all ${biddingLeadsLimit} bidding request(s). Contact admin to increase your limit.`);
       return;
     }
-    setBiddingCount(Math.max(0, Math.min(count, 1))); // Max 1 bidding request
+    setBiddingCount(Math.max(0, Math.min(count, remainingBiddingQuota)));
   };
 
   // Handle form submission
@@ -213,7 +219,7 @@ export default function QuoteTypeDistributionModal({
             </div>
           </div>
 
-          {/* Phase 4.9.7: Competitive Bidding Section */}
+          {/* Phase 13S.2: Competitive Bidding Section (Dynamic Limit) */}
           <div className="theme-card p-6 space-y-4 border-2 border-warning">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -223,27 +229,36 @@ export default function QuoteTypeDistributionModal({
                 <p className="text-body-small text-muted-foreground mt-1">
                   Open competitive bidding - multiple installers submit proposals to compete for your project
                 </p>
-                <p className="text-caption text-warning mt-2">
-                  ⚠️ Limited to 1 bidding request per homeowner (one-time only)
+                <p className="text-caption text-info mt-2">
+                  📊 Bidding Usage: {biddingLeadsSubmitted}/{biddingLeadsLimit}
                 </p>
+                {remainingBiddingQuota > 0 ? (
+                  <p className="text-caption text-success mt-1">
+                    ✅ You have {remainingBiddingQuota} bidding request(s) remaining
+                  </p>
+                ) : (
+                  <p className="text-caption text-warning mt-1">
+                    ⚠️ All bidding requests used. Contact admin to increase limit.
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Count Selector - Only 0 or 1 */}
+            {/* Count Selector - Dynamic based on remaining quota */}
             <div className="flex items-center gap-3">
               <label className="text-body-small text-foreground">
                 Count:
               </label>
               <div className="flex gap-2">
-                {[0, 1].map((num) => (
+                {Array.from({ length: remainingBiddingQuota + 1 }, (_, i) => i).map((num) => (
                   <button
                     key={num}
                     onClick={() => handleBiddingChange(num)}
-                    disabled={userAlreadyHasBiddingLead && num === 1}
+                    disabled={remainingBiddingQuota === 0 && num > 0}
                     className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
                       biddingCount === num
                         ? 'bg-white text-foreground-inverted shadow-md scale-105'
-                        : userAlreadyHasBiddingLead && num === 1
+                        : remainingBiddingQuota === 0 && num > 0
                         ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                         : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
                     }`}
@@ -252,11 +267,6 @@ export default function QuoteTypeDistributionModal({
                   </button>
                 ))}
               </div>
-              {userAlreadyHasBiddingLead && (
-                <p className="text-caption text-error ml-2">
-                  You have already used your one-time bidding request
-                </p>
-              )}
             </div>
           </div>
 

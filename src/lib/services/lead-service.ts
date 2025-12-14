@@ -123,8 +123,9 @@ export interface HomeownerLeadSummary {
   totalSubmitted: number;
   quoteLimit: number;
   remainingLeadAllowance: number;
-  biddingLeadsSubmitted: number; // T263: Track BIDDING quota usage (max 1)
-  biddingQuotaRemaining: number; // T263: Remaining BIDDING quota (0 or 1)
+  biddingLeadsSubmitted: number; // T263: Track BIDDING quota usage
+  biddingLeadsLimit: number; // Phase 13S.2: Max BIDDING quota allowed (admin-adjustable)
+  biddingQuotaRemaining: number; // T263: Remaining BIDDING quota (dynamic)
   phoneVerified: boolean;
   phoneNumber: string | null; // Phase 12: Phone from most recent lead for ContactVerificationModal prefill
   userPhone: string | null; // User's actual phone number in profile for sync detection
@@ -515,6 +516,7 @@ export async function getHomeownerLeadSummary(userId: string): Promise<Homeowner
       leadSubmissionCount: true,
       leadSubmissionLimit: true,
       biddingLeadsSubmitted: true, // T263: Fetch BIDDING quota usage
+      biddingLeadsLimit: true, // Phase 13S.2: Fetch BIDDING quota limit
     },
   });
   
@@ -570,7 +572,8 @@ export async function getHomeownerLeadSummary(userId: string): Promise<Homeowner
 
   const quoteLimit = homeowner.leadSubmissionLimit ?? await getSettingAsNumber('MAX_LEAD_SUBMISSIONS_TOTAL');
   const remainingLeadAllowance = Math.max(quoteLimit - homeowner.leadSubmissionCount, 0);
-  const biddingQuotaRemaining = Math.max(1 - homeowner.biddingLeadsSubmitted, 0); // T263: Calculate from actual field
+  const biddingLimit = homeowner.biddingLeadsLimit ?? 1; // Phase 13S.2: Dynamic bidding limit
+  const biddingQuotaRemaining = Math.max(biddingLimit - homeowner.biddingLeadsSubmitted, 0); // Phase 13S.2: Calculate from dynamic limit
   const requiresVerification = !homeowner.phoneVerified && homeowner.leadSubmissionCount >= verificationThreshold;
 
   const statusBreakdown = Object.values(LeadStatus).reduce((acc, status) => {
@@ -587,7 +590,8 @@ export async function getHomeownerLeadSummary(userId: string): Promise<Homeowner
     quoteLimit,
     remainingLeadAllowance,
     biddingLeadsSubmitted: homeowner.biddingLeadsSubmitted, // T263: Return BIDDING usage count
-    biddingQuotaRemaining, // T263: Return remaining BIDDING quota (0 or 1)
+    biddingLeadsLimit: biddingLimit, // Phase 13S.2: Return BIDDING limit
+    biddingQuotaRemaining, // T263: Return remaining BIDDING quota (dynamic)
     phoneVerified: homeowner.phoneVerified,
     phoneNumber: recentLeads.length > 0 ? recentLeads[0].phoneNumber : null, // Phase 12: For ContactVerificationModal prefill
     userPhone: homeowner.phone, // User's actual phone number for sync detection
