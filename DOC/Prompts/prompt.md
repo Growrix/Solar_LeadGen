@@ -3257,3 +3257,23 @@ Follow the
  After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
 ### Implementation Phase:
  After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.
+
+
+----------------------------------------------------------------------------------------
+
+***testing results:***
+- First , you should check back all your implimentation vs my last promts instructions. You will know the missing gaps.
+- The issue mentioned in the previous prompt is still persisting. now in the Marketing page instantQUote Flow > the user is not seeing the quote limit in the quote distribution modal, but in the dashboard page instantQuote flow > the user is seeing the quote limit in the quote distribution modal with the correct limit number.
+- check the bot screen shots. 
+- In the admin panel > the admin increating limit is still same as before. I mean it is just working as per the existing logic which is fine , but there is no option for the admin to chose the bidding lead quote limit separately. I want you to add that option as well in the admin panel so that the admin can increase the bidding lead quote limit separately as per the previous instructions. You may need to create a new modal to solve this issue.
+
+***Instructions*** I want you to fix the issues found during the testing as per the above instructions. so that the quote limit is showing correctly in all the places. also the admin can increase the bidding lead quote limit separately from the admin panel as per the previous instructions.
+
+***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\README.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.

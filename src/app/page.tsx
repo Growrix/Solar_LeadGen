@@ -43,9 +43,6 @@ const TagIcon = () => (
   </svg>
 );
 
-// ✅ Phase 23: Lead submission limits (matches backend MAX_LEAD_SUBMISSIONS_TOTAL setting)
-const MAX_LEADS = 5; // Users can submit up to 5 leads total
-
 export default function Home() {
   const router = useRouter();
   // ✅ Phase 23 Fix 1: Import update function for session management
@@ -70,6 +67,8 @@ export default function Home() {
   const [remainingLeadQuota, setRemainingLeadQuota] = useState<number>(0);
   const [userPhoneNumber, setUserPhoneNumber] = useState<string>('');
   const [hasBiddingLead, setHasBiddingLead] = useState<boolean>(false);
+  // ✅ Phase 13S.1: Track real-time quote limit from database (not hardcoded constant)
+  const [userQuoteLimit, setUserQuoteLimit] = useState<number>(5); // Default to 5, updated from API
 
   // Ensure page starts at top on mount
   useEffect(() => {
@@ -87,53 +86,58 @@ export default function Home() {
             role: session.user.role,
           });
 
-          // Fetch user's leads (session-based, no userId param needed)
-          const response = await fetch('/api/leads');
-          if (response.ok) {
-            const data = await response.json();
-            const leadCount = data.leads?.length || 0;
-            console.log('[Homepage useEffect] Fetched lead data:', { 
-              leadCount, 
-              totalLeads: data.leads?.length,
-              userRole: session.user.role,
-              leadsPreview: data.leads?.slice(0, 3).map((l: any) => ({ 
-                id: l.id, 
-                homeownerId: l.homeownerId, 
-                status: l.status 
-              }))
+          // ✅ Phase 13S.1: Fetch homeowner dashboard summary for real-time quote limit
+          const dashboardResponse = await fetch('/api/homeowner/dashboard');
+          if (dashboardResponse.ok) {
+            const dashboardData = await dashboardResponse.json();
+            const quoteLimitFromDB = dashboardData.quoteLimit || 5;
+            const remainingFromDB = dashboardData.remainingLeadAllowance || 0;
+            const leadCountFromDB = dashboardData.totalSubmitted || 0;
+            
+            // ✅ FIX: Use dashboard data directly instead of calculating locally
+            setUserQuoteLimit(quoteLimitFromDB);
+            setUserLeadCount(leadCountFromDB);
+            setRemainingLeadQuota(remainingFromDB);
+            setIsPhoneVerified(dashboardData.phoneVerified || false);
+            setUserPhoneNumber(dashboardData.phoneNumber || session?.user?.phone || '');
+            
+            console.log('[Homepage useEffect] Dashboard data loaded:', {
+              quoteLimitFromDB,
+              leadCountFromDB,
+              remainingFromDB,
+              phoneVerified: dashboardData.phoneVerified,
             });
-            setUserLeadCount(leadCount);
-            // Detect if user already has a BIDDING lead (quota is max 1)
-            const alreadyHasBidding = (data.leads || []).some((l: any) => l.quoteType === 'BIDDING');
-            setHasBiddingLead(alreadyHasBidding);
             
-            // Extract phone number from first lead as additional fallback
-            const firstLeadPhone = data.leads?.[0]?.phoneNumber || '';
+            // Detect if user already has a BIDDING lead
+            const biddingLeadsCount = dashboardData.biddingLeadsSubmitted || 0;
+            setHasBiddingLead(biddingLeadsCount >= 1);
             
-            // Fetch user verification status
-            const userResponse = await fetch('/api/user/me');
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              console.log('[Homepage useEffect] User data from /api/user/me:', { 
-                phoneVerified: userData.phoneVerified,
-                phoneNumber: userData.phoneNumber 
-              });
-              setIsPhoneVerified(userData.phoneVerified || false);
-              setUserPhoneNumber(userData.phoneNumber || session?.user?.phone || firstLeadPhone || '');
-              // ✅ Phase 23 Fix 2: Calculate remaining quota (5 max leads)
-              const remaining = Math.max(0, MAX_LEADS - leadCount);
-              console.log('[Homepage useEffect] Quota calculated:', { leadCount, maxLeads: MAX_LEADS, remaining });
-              setRemainingLeadQuota(remaining);
-            } else {
-              // Fallback when /api/user/me doesn't exist
-              console.log('[Homepage useEffect] /api/user/me not available, using session data');
-              console.log('[Homepage useEffect] Session phoneVerified:', session?.user?.phoneVerified);
+          } else {
+            console.warn('[Homepage useEffect] Failed to fetch dashboard, using fallback data');
+            
+            // Fallback: Fetch user's leads manually
+            const response = await fetch('/api/leads');
+            if (response.ok) {
+              const data = await response.json();
+              const leadCount = data.leads?.length || 0;
+              setUserLeadCount(leadCount);
+              setUserQuoteLimit(5); // Fallback default
+              setRemainingLeadQuota(Math.max(0, 5 - leadCount));
+              
+              // Detect bidding lead
+              const alreadyHasBidding = (data.leads || []).some((l: any) => l.quoteType === 'BIDDING');
+              setHasBiddingLead(alreadyHasBidding);
+              
+              // Extract phone number from first lead
+              const firstLeadPhone = data.leads?.[0]?.phoneNumber || '';
               setUserPhoneNumber(session?.user?.phone || firstLeadPhone || '');
               setIsPhoneVerified(session?.user?.phoneVerified || false);
-              // ✅ Phase 23 Fix 2: Use MAX_LEADS constant instead of hardcoded 3
-              const remaining = Math.max(0, MAX_LEADS - leadCount);
-              console.log('[Homepage useEffect] Fallback quota calculated:', { leadCount, maxLeads: MAX_LEADS, remaining });
-              setRemainingLeadQuota(remaining);
+              
+              console.log('[Homepage useEffect] Fallback: Using /api/leads data:', { 
+                leadCount, 
+                defaultLimit: 5,
+                remaining: Math.max(0, 5 - leadCount)
+              });
             }
           }
         } catch (error) {
@@ -160,7 +164,7 @@ export default function Home() {
       isPhoneVerified, // Local state from /api/user/me or session
       sessionPhoneVerified: session?.user?.phoneVerified, // Direct from session
       remainingLeadQuota,
-      maxLeads: MAX_LEADS,
+      quoteLimitFromDB: userQuoteLimit, // ✅ Phase 13S.1: Database value, not hardcoded
       sessionUser: session?.user?.email,
     });
 
@@ -179,9 +183,9 @@ export default function Home() {
       return;
     }
 
-    // ✅ Phase 23 Fix 2: Lead limit reached (5 leads) - block further requests
-    if (userLeadCount >= MAX_LEADS) {
-      console.log('[Flow 5] Lead limit reached (' + userLeadCount + '/' + MAX_LEADS + ' leads used) → LeadLimitReachedModal');
+    // ✅ Phase 13S.1: Lead limit reached (database-driven) - block further requests
+    if (userLeadCount >= userQuoteLimit) {
+      console.log('[Flow 5] Lead limit reached (' + userLeadCount + '/' + userQuoteLimit + ' leads used) → LeadLimitReachedModal');
       setIsLeadLimitReachedModalOpen(true);
       return;
     }
@@ -222,9 +226,9 @@ export default function Home() {
         return;
       }
       
-      // ✅ Lead limit reached first
-      if (userLeadCount >= MAX_LEADS) {
-        console.log('[Flow 5] Lead limit reached (' + userLeadCount + '/' + MAX_LEADS + ' leads) → LeadLimitReachedModal');
+      // ✅ Phase 13S.1: Lead limit reached first (database-driven)
+      if (userLeadCount >= userQuoteLimit) {
+        console.log('[Flow 5] Lead limit reached (' + userLeadCount + '/' + userQuoteLimit + ' leads) → LeadLimitReachedModal');
         setIsLeadLimitReachedModalOpen(true);
         return;
       }
@@ -417,8 +421,8 @@ export default function Home() {
           const leadCount = data.leads?.length || 0;
           console.log('[Homepage] Refreshed lead data after verification:', { leadCount });
           setUserLeadCount(leadCount);
-          // ✅ Phase 23 Fix 2: Use MAX_LEADS instead of hardcoded 3
-          setRemainingLeadQuota(Math.max(0, MAX_LEADS - leadCount));
+          // ✅ Phase 13S.1: Use database quote limit (not hardcoded)
+          setRemainingLeadQuota(Math.max(0, userQuoteLimit - leadCount));
         }
       } catch (error) {
         console.error('[Homepage] Error refreshing lead data after verification:', error);
@@ -550,8 +554,8 @@ export default function Home() {
       if (leadCountResponse.ok) {
         const leadData = await leadCountResponse.json();
         setUserLeadCount(leadData.leads?.length || 0);
-        // ✅ Phase 23 Fix 2: Use MAX_LEADS constant
-        setRemainingLeadQuota(Math.max(0, MAX_LEADS - (leadData.leads?.length || 0)));
+        // ✅ Phase 13S.1: Use database quote limit (not hardcoded)
+        setRemainingLeadQuota(Math.max(0, userQuoteLimit - (leadData.leads?.length || 0)));
         const alreadyHasBidding = (leadData.leads || []).some((l: any) => l.quoteType === 'BIDDING');
         setHasBiddingLead(alreadyHasBidding);
       }
@@ -605,8 +609,8 @@ export default function Home() {
         
         // Update user lead count
         setUserLeadCount(1);
-        // ✅ Phase 23 Fix 2: 5 max - 1 used = 4 remaining
-        setRemainingLeadQuota(MAX_LEADS - 1);
+        // ✅ Phase 13S.1: Database quote limit - 1 used = remaining
+        setRemainingLeadQuota(userQuoteLimit - 1);
       } else {
         console.error('Lead submission error:', data.error);
         alert(data.error || 'Failed to submit lead request. Please try again.');
@@ -762,7 +766,7 @@ export default function Home() {
           onVerifyContact={handleVerifyContactFromFirstQuote}
           quoteType={selectedQuoteType === 'call_visit' ? 'CALL_VISIT' : 'WRITTEN_QUOTE'}
           remainingQuotes={remainingLeadQuota}
-          totalQuoteLimit={MAX_LEADS}
+          totalQuoteLimit={userQuoteLimit}
         />
       )}
 
@@ -801,7 +805,7 @@ export default function Home() {
           isOpen={isLeadLimitReachedModalOpen}
           onClose={() => setIsLeadLimitReachedModalOpen(false)}
           usedQuotes={userLeadCount}
-          totalQuoteLimit={MAX_LEADS}
+          totalQuoteLimit={userQuoteLimit}
         />
       )}
 
