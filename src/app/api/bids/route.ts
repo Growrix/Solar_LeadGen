@@ -3,15 +3,21 @@
  * 
  * POST /api/bids - Installer submits bid for a bidding lead
  * Phase 13B - Enhanced to accept comprehensive Quote Builder data
+ * 
+ * Constitutional Compliance: Article VI (Zero-Trust Authorization)
+ * Uses: requireRole from @/lib/auth/authorization
+ * Uses: createLogger from @/lib/logger for structured logging
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth/authorization';
 import { prisma } from '@/lib/prisma';
 import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
 import type { CreateBidRequest, GetBidsResponse } from '@/types/bid';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger({ context: 'BidsRoute' });
 
 /**
  * POST /api/bids
@@ -24,29 +30,24 @@ import type { CreateBidRequest, GetBidsResponse } from '@/types/bid';
  * @errors 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Server Error
  */
 export async function POST(request: NextRequest) {
+  const correlationId = request.headers.get('x-correlation-id') || `bid-${Date.now()}`;
+  
   try {
-    const session = await getServerSession(authOptions);
-
-    // Authentication check
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Role authorization
-    if (session.user.role !== 'INSTALLER') {
-      return NextResponse.json(
-        { error: 'Only installers can submit bids' },
-        { status: 403 }
-      );
-    }
+    // Constitutional Article VI: Zero-trust authorization
+    const auth = await requireRole('INSTALLER');
 
     const body = await request.json();
+    
+    logger.info('Bid submission initiated', { 
+      leadId: body.leadId, 
+      installerId: auth.userId,
+      amount: body.amount,
+      correlationId 
+    });
 
     // Validate required fields
     if (!body.leadId || !body.amount) {
+      logger.warn('Missing required fields', { body, correlationId });
       return NextResponse.json(
         { error: 'Missing required fields: leadId, amount' },
         { status: 400 }
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Validate amount is positive
     if (body.amount <= 0) {
+      logger.warn('Invalid bid amount', { amount: body.amount, correlationId });
       return NextResponse.json(
         { error: 'Bid amount must be greater than 0' },
         { status: 400 }
@@ -72,6 +74,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!lead) {
+      logger.warn('Lead not found', { leadId: body.leadId, correlationId });
       return NextResponse.json(
         { error: 'Lead not found' },
         { status: 404 }
@@ -80,6 +83,11 @@ export async function POST(request: NextRequest) {
 
     // Validate lead is BIDDING type
     if (lead.quoteType !== 'BIDDING') {
+      logger.warn('Invalid quote type for bidding', { 
+        leadId: body.leadId, 
+        quoteType: lead.quoteType,
+        correlationId 
+      });
       return NextResponse.json(
         { error: 'This lead is not a bidding lead' },
         { status: 403 }
@@ -88,6 +96,11 @@ export async function POST(request: NextRequest) {
 
     // Validate countdown not expired
     if (lead.expiresAt && lead.expiresAt < new Date()) {
+      logger.warn('Bidding countdown expired', { 
+        leadId: body.leadId, 
+        expiresAt: lead.expiresAt,
+        correlationId 
+      });
       return NextResponse.json(
         { error: 'Bidding countdown has expired' },
         { status: 403 }
@@ -99,12 +112,18 @@ export async function POST(request: NextRequest) {
       where: {
         leadId_installerId: {
           leadId: body.leadId,
-          installerId: session.user.id
+          installerId: auth.userId
         }
       }
     });
 
     if (existingBid) {
+      logger.warn('Duplicate bid attempt', { 
+        leadId: body.leadId, 
+        installerId: auth.userId,
+        existingBidId: existingBid.id,
+        correlationId 
+      });
       return NextResponse.json(
         { error: 'You have already submitted a bid for this lead' },
         { status: 403 }
@@ -123,7 +142,7 @@ export async function POST(request: NextRequest) {
     const bid = await prisma.bid.create({
       data: {
         leadId: body.leadId,
-        installerId: session.user.id,
+        installerId: auth.userId,
         
         // Legacy fields (backward compatible)
         amount: body.amount,
@@ -153,15 +172,29 @@ export async function POST(request: NextRequest) {
         installerContact: body.installerContact || null,
       }
     });
+    
+    logger.info('Bid created successfully', { 
+      bidId: bid.id, 
+      leadId: body.leadId,
+      installerId: auth.userId,
+      amount: bid.amount,
+      finalTotal: bid.finalTotal,
+      correlationId 
+    });
 
     // Phase 13P: Send notifications using new normalized system
+    logger.info('Sending bid submission notifications', { 
+      bidId: bid.id, 
+      leadId: body.leadId,
+      correlationId 
+    });
     
     // Get admin users for notification
     const admins = await prisma.user.findMany({
       where: { role: UserRole.ADMIN },
       select: { id: true }
     });
-    console.log('[POST /api/bids] Admin users found:', admins.length, admins.map(a => a.id));
+    logger.debug('Admin users found', { count: admins.length });
 
     // Notification 1: Homeowner gets bid notification
     await createNotification({
@@ -172,12 +205,13 @@ export async function POST(request: NextRequest) {
       routeKey: 'homeowner.requests.review',
       routeParams: { leadId: body.leadId, bidId: bid.id }
     });
+    logger.debug('Homeowner notification created');
 
     // Notification 2: Admin gets notification about new bid
     if (admins.length > 0) {
       // Get installer email for admin to see
       const installer = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: auth.userId },
         select: { email: true }
       });
       
@@ -188,23 +222,25 @@ export async function POST(request: NextRequest) {
           role: UserRole.ADMIN,
           messageKey: 'admin.bid.submitted',
           routeKey: 'admin.dashboard',
-          routeParams: { leadId: body.leadId, bidId: bid.id, installerId: session.user.id },
+          routeParams: { leadId: body.leadId, bidId: bid.id, installerId: auth.userId },
           metadata: {
-            actorEmail: installer?.email, // Pass installer email for admin to see
+            actorEmail: installer?.email,
             leadId: body.leadId,
             bidId: bid.id
           }
         }))
       );
+      logger.debug('Admin notifications created', { count: admins.length });
     }
 
-    console.log('[POST /api/bids] Bid submitted and notification sent:', {
+    logger.info('Bid submission completed successfully', {
       bidId: bid.id,
       leadId: lead.id,
-      installerId: session.user.id,
+      installerId: auth.userId,
       amount: bid.amount,
       finalTotal: bid.finalTotal,
-      homeownerId: lead.homeownerId
+      homeownerId: lead.homeownerId,
+      correlationId
     });
 
     return NextResponse.json(
@@ -217,7 +253,18 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[POST /api/bids] Error:', error);
+    logger.error('Bid submission failed', error, { correlationId });
+    
+    // Handle authorization errors
+    if (error instanceof Error) {
+      if (error.message.includes('Unauthorized')) {
+        return NextResponse.json({ error: error.message }, { status: 401 });
+      }
+      if (error.message.includes('Forbidden')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to submit bid' },
       { status: 500 }
@@ -235,16 +282,11 @@ export async function POST(request: NextRequest) {
  * @returns GetBidsResponse - Array of bids with full data
  */
 export async function GET(request: NextRequest) {
+  const correlationId = request.headers.get('x-correlation-id') || `get-bids-${Date.now()}`;
+  
   try {
-    const session = await getServerSession(authOptions);
-
-    // Authentication check
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
+    // Constitutional Article VI: Zero-trust authorization
+    const auth = await requireAuth();
 
     const { searchParams } = new URL(request.url);
     const leadId = searchParams.get('leadId');
@@ -263,6 +305,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!lead) {
+      logger.warn('Lead not found for bids retrieval', { leadId, correlationId });
       return NextResponse.json(
         { error: 'Lead not found' },
         { status: 404 }
@@ -270,15 +313,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Authorization: homeowner can see bids for their leads, admin can see all
-    const isHomeowner = session.user.role === 'HOMEOWNER' && lead.homeownerId === session.user.id;
-    const isAdmin = session.user.role === 'ADMIN';
+    const isHomeowner = auth.role === 'HOMEOWNER' && lead.homeownerId === auth.userId;
+    const isAdmin = auth.role === 'ADMIN';
 
     if (!isHomeowner && !isAdmin) {
+      logger.warn('Unauthorized bid access attempt', { 
+        userId: auth.userId, 
+        role: auth.role, 
+        leadId,
+        correlationId 
+      });
       return NextResponse.json(
         { error: 'You are not authorized to view these bids' },
         { status: 403 }
       );
     }
+    
+    logger.debug('Fetching bids for lead', { leadId, role: auth.role, correlationId });
 
     // Fetch all bids for the lead with installer details
     // T293: Include businessAddress for PURCHASED leads (winner contact unmasking)

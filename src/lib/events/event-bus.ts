@@ -1,23 +1,24 @@
 /**
- * Event Bus - In-Memory Implementation
+ * Event Bus - DB-Persisted Implementation
  * 
- * Purpose: Lightweight event bus for decoupling side effects from business logic
- * Authority: DOC/Architecture/EVENT-ORCHESTRATION.md
+ * Purpose: Event bus with durable event storage for auditability
+ * Authority: DOC/Guidelines/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md Article VII
+ * Updated: 2025-12-14 - Added database persistence for constitutional compliance
  * 
  * Implementation Notes:
- * - In-memory only (events not persisted)
+ * - Events persisted to database via domain-event-logger
  * - Synchronous handler execution (blocking)
  * - No retry logic (handler failures logged only)
- * - Production-ready for Phase 1 (foundation)
+ * - In-memory handlers for real-time side effects
  * 
- * Future Enhancements (Phase 3+):
- * - Event persistence to database
+ * Future Enhancements:
  * - Async handler execution with worker threads
  * - Dead-letter queue for failed handlers
  * - Event replay capability
  */
 
 import { DomainEvent, EventHandler, EventMetadata } from './types';
+import { recordDomainEvent } from './domain-event-logger';
 
 // Simple CUID generator (fallback if @paralleldrive/cuid2 not installed)
 function generateCuid(): string {
@@ -25,12 +26,10 @@ function generateCuid(): string {
 }
 
 /**
- * Simple in-memory event bus
+ * Event bus with DB persistence
  */
 class EventBus {
   private handlers: Map<string, EventHandler[]> = new Map();
-  private eventLog: DomainEvent[] = []; // In-memory event history (capped at 1000)
-  private readonly MAX_LOG_SIZE = 1000;
 
   /**
    * Register an event handler
@@ -52,7 +51,7 @@ class EventBus {
   }
 
   /**
-   * Emit a domain event
+   * Emit a domain event (persists to DB + notifies handlers)
    * 
    * @param event - Partial event (id, timestamp auto-generated)
    * @returns Promise that resolves when all handlers complete
@@ -77,13 +76,22 @@ class EventBus {
       },
     };
 
-    // Add to event log (capped at MAX_LOG_SIZE)
-    this.eventLog.push(fullEvent);
-    if (this.eventLog.length > this.MAX_LOG_SIZE) {
-      this.eventLog.shift(); // Remove oldest event
-    }
-
     console.log(`📡 [EventBus] Emitting ${fullEvent.type} for ${fullEvent.aggregateType}#${fullEvent.aggregateId}`);
+
+    // Persist event to database for auditability (Constitution Article VII)
+    try {
+      await recordDomainEvent({
+        eventType: fullEvent.type,
+        entityType: fullEvent.aggregateType,
+        entityId: fullEvent.aggregateId,
+        actorId: fullEvent.metadata.userId,
+        actorRole: fullEvent.metadata.userRole,
+        metadata: fullEvent.data as Record<string, any>,
+      });
+    } catch (error) {
+      console.error(`❌ [EventBus] Failed to persist event ${fullEvent.type}:`, error);
+      // Continue with handler execution even if persistence fails
+    }
 
     // Get handlers for this event type
     const handlers = this.handlers.get(fullEvent.type) || [];
@@ -107,42 +115,11 @@ class EventBus {
   }
 
   /**
-   * Get recent events from in-memory log
-   * 
-   * @param limit - Number of events to return
-   * @returns Recent events (newest first)
-   */
-  getRecentEvents(limit: number = 10): DomainEvent[] {
-    return this.eventLog.slice(-limit).reverse();
-  }
-
-  /**
-   * Get events by type from in-memory log
-   * 
-   * @param eventType - Event type to filter by
-   * @returns Events matching type (newest first)
-   */
-  getEventsByType(eventType: string): DomainEvent[] {
-    return this.eventLog.filter(e => e.type === eventType).reverse();
-  }
-
-  /**
-   * Get events by aggregate ID from in-memory log
-   * 
-   * @param aggregateId - Aggregate ID to filter by
-   * @returns Events for this aggregate (chronological order)
-   */
-  getEventsByAggregateId(aggregateId: string): DomainEvent[] {
-    return this.eventLog.filter(e => e.aggregateId === aggregateId);
-  }
-
-  /**
    * Clear all registered handlers (for testing)
    */
   clear(): void {
     this.handlers.clear();
-    this.eventLog = [];
-    console.log(`🧹 [EventBus] Cleared all handlers and events`);
+    console.log(`🧹 [EventBus] Cleared all handlers`);
   }
 
   /**

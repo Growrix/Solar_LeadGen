@@ -400,6 +400,22 @@ model LeadFeedback {
   @@map("lead_feedback")
 }
 
+model LeadPurchase {
+  id               String    @id @default(cuid())
+  leadId           String
+  installerId      String
+  amount           Float
+  paymentIntentId  String?
+  purchasedAt      DateTime  @default(now())
+  refundedAt       DateTime?
+  refundReason     String?
+
+  @@index([leadId])
+  @@index([installerId])
+  @@index([purchasedAt])
+  @@map("lead_purchases")
+}
+
 model AuditLog {
   id         String   @id @default(cuid())
   leadId     String?
@@ -707,4 +723,74 @@ model InstallerPreferences {
 enum QuoteType {
   FORMAL
   INFORMAL
+}
+
+// Domain Events for Auditability (Constitution Article VII)
+model DomainEvent {
+  id         String   @id @default(cuid())
+  eventType  String   // e.g., "LEAD_PURCHASED", "BID_SUBMITTED", "SELECTION_CONFIRMED"
+  entityType String   // e.g., "Lead", "Bid", "Purchase"
+  entityId   String   // The ID of the entity that changed
+  actorId    String?  // User who performed the action
+  actorRole  String?  // Role of the actor (ADMIN, INSTALLER, HOMEOWNER)
+  metadata   Json     // Event-specific data
+  timestamp  DateTime @default(now())
+
+  @@index([eventType])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("domain_events")
+}
+
+// Immutable Mutation History (Constitution Article IV.3)
+model LeadHistory {
+  id             String   @id @default(cuid())
+  leadId         String
+  actorId        String?
+  actorRole      String?
+  previousState  String?
+  nextState      String
+  reason         String?
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([leadId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("lead_history")
+}
+
+model BidHistory {
+  id             String   @id @default(cuid())
+  bidId          String
+  actorId        String?
+  actorRole      String?
+  previousState  String?
+  nextState      String
+  reason         String?
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([bidId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("bid_history")
+}
+
+model PurchaseHistory {
+  id             String   @id @default(cuid())
+  purchaseId     String
+  actorId        String?
+  actorRole      String?
+  previousState  String?
+  nextState      String
+  reason         String?
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([purchaseId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("purchase_history")
 }

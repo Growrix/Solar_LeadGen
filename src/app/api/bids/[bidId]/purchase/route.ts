@@ -2,14 +2,20 @@
  * Bid Purchase API (Dev Mode)
  * 
  * POST /api/bids/[bidId]/purchase - Winner pays to unlock contact details
+ * 
+ * Constitutional Compliance: Article VI (Zero-Trust Authorization)
+ * Uses: requireRole from @/lib/auth/authorization
+ * Uses: createLogger from @/lib/logger for structured logging
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireRole } from '@/lib/auth/authorization';
 import { prisma } from '@/lib/prisma';
 import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger({ context: 'BidPurchaseRoute' });
 
 /**
  * POST /api/bids/[bidId]/purchase
@@ -24,26 +30,14 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { bidId: string } }
 ) {
+  const correlationId = request.headers.get('x-correlation-id') || `bid-purchase-${Date.now()}`;
+  
   try {
-    const session = await getServerSession(authOptions);
-
-    // Authentication check
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Role authorization
-    if (session.user.role !== 'INSTALLER') {
-      return NextResponse.json(
-        { error: 'Only installers can purchase leads' },
-        { status: 403 }
-      );
-    }
-
+    // Constitutional Article VI: Zero-trust authorization
+    const auth = await requireRole('INSTALLER');
     const { bidId } = params;
+    
+    logger.info('Bid purchase initiated', { bidId, installerId: auth.userId, correlationId });
 
     // Fetch bid with lead and homeowner data
     const bid = await prisma.bid.findUnique({
@@ -68,6 +62,7 @@ export async function POST(
     });
 
     if (!bid) {
+      logger.warn('Bid not found', { bidId, correlationId });
       return NextResponse.json(
         { error: 'Bid not found' },
         { status: 404 }
@@ -75,7 +70,13 @@ export async function POST(
     }
 
     // Validate installer owns this bid
-    if (bid.installerId !== session.user.id) {
+    if (bid.installerId !== auth.userId) {
+      logger.warn('Unauthorized bid purchase attempt', { 
+        bidId, 
+        bidOwnerId: bid.installerId, 
+        requesterId: auth.userId,
+        correlationId 
+      });
       return NextResponse.json(
         { error: 'You do not have permission to purchase this bid' },
         { status: 403 }
@@ -84,6 +85,11 @@ export async function POST(
 
     // Validate bid status is SELECTED
     if (bid.status !== 'SELECTED') {
+      logger.warn('Invalid bid status for purchase', { 
+        bidId, 
+        status: bid.status,
+        correlationId 
+      });
       return NextResponse.json(
         { error: 'This bid has not been selected as winner' },
         { status: 403 }
@@ -95,7 +101,7 @@ export async function POST(
     // - Validate paymentMethodId from request body
     // - Create payment intent with bid.finalTotal
     // - Handle payment success/failure
-    console.log('[POST /api/bids/[bidId]/purchase] DEV MODE: Skipping payment processing');
+    logger.debug('DEV MODE: Skipping payment processing', { bidId, amount: bid.finalTotal });
 
     // Use transaction to update bid and lead atomically
     const result = await prisma.$transaction(async (tx) => {
@@ -131,21 +137,23 @@ export async function POST(
       return { purchasedBid, updatedLead };
     });
 
-    console.log('[POST /api/bids/[bidId]/purchase] Purchase completed:', {
+    logger.info('Bid purchase completed', {
       bidId: result.purchasedBid.id,
       leadId: bid.leadId,
-      installerId: session.user.id,
-      amount: bid.finalTotal
+      installerId: auth.userId,
+      amount: bid.finalTotal,
+      correlationId
     });
 
     // Phase 13P: Send notifications after bid payment
+    logger.info('Sending bid purchase notifications', { bidId, leadId: bid.leadId, correlationId });
     
     // Get admin users
     const admins = await prisma.user.findMany({
       where: { role: UserRole.ADMIN },
       select: { id: true }
     });
-    console.log('[POST /api/bids/[bidId]/purchase] Admin users found:', admins.length, admins.map(a => a.id));
+    logger.debug('Admin users found', { count: admins.length });
 
     // Notification 1: Homeowner notification
     await createNotification({
@@ -159,19 +167,20 @@ export async function POST(
 
     // Notification 2: Installer confirmation
     await createNotification({
-      recipientUserId: session.user.id,
+      recipientUserId: auth.userId,
       actionType: NotificationType.BID_PURCHASE_COMPLETED,
       role: UserRole.INSTALLER,
       messageKey: 'installer.bid.payment.success',
       routeKey: 'installer.leads',
       routeParams: { leadId: bid.leadId }
     });
+    logger.debug('Installer notification created');
 
     // Notification 3: Admin notifications
     if (admins.length > 0) {
       // Get installer email for admin to see
       const installer = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: auth.userId },
         select: { email: true }
       });
       
@@ -182,14 +191,15 @@ export async function POST(
           role: UserRole.ADMIN,
           messageKey: 'admin.bid.payment.completed',
           routeKey: 'admin.dashboard',
-          routeParams: { leadId: bid.leadId, bidId, installerId: session.user.id },
+          routeParams: { leadId: bid.leadId, bidId, installerId: auth.userId },
           metadata: {
-            actorEmail: installer?.email, // Pass installer email for admin to see
+            actorEmail: installer?.email,
             leadId: bid.leadId,
             bidId
           }
         }))
       );
+      logger.debug('Admin notifications created', { count: admins.length });
     }
 
     // Return full lead details with unmasked contact info
@@ -223,7 +233,18 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('[POST /api/bids/[bidId]/purchase] Error:', error);
+    logger.error('Bid purchase failed', error, { bidId: params.bidId, correlationId });
+    
+    // Handle authorization errors
+    if (error instanceof Error) {
+      if (error.message.includes('Unauthorized')) {
+        return NextResponse.json({ error: error.message }, { status: 401 });
+      }
+      if (error.message.includes('Forbidden')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to purchase lead' },
       { status: 500 }

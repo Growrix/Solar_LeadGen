@@ -23,6 +23,7 @@ declare module "next-auth" {
       installerVerified: boolean;
       quoteLimit: number;
       profileComplete: boolean; // Auth Part A+B: installer onboarding gate
+      sessionVersion: number; // Auth Part A+B: invalidate sessions on password reset
     } & DefaultSession["user"];
   }
 

@@ -3236,3 +3236,24 @@ I want to fix these issues found in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT M
   - Why it failed
   - Exact fix location
 - If uncertain, ask before proceeding
+
+
+------------------------------------------------------------------------------------
+
+***The QUote Limit reached modal enhancement and issues***
+- The Homewones Quote limit was reached and I have increaded Limit from the Admin panel. but the homeowner side still showing the Quote limit reached modal when trying to generate new lead. 
+- The dashboard Is showing the limit and it is working there fine, also the lead generation is working fine from the dashboard as well. but when trying to generate new lead from the marketplace page > it is showing the quote limit reached modal still.
+***ANother Enhancement***
+- Now the admins can increase the homeowner's quote limit from the admin panel. but the homeowners are always has 1 bidding lead quote only. The logic is completely fine. But I want The admin can increase the homeowner's bidding lead quote limit as well from the admin panel. so that the homeowners can generate more bidding leads as per the increased limit from the admin panel. 
+- Make sure the limit for bidding is always 1 from homeowners side. but the admin can increase the bidding lead quote limit from the admin panel. so that the homeowners can generate more bidding leads as per the increased limit from the admin panel.
+
+***Instructions*** I want you to enhance the Quote limit reached modal and fix the issues as per the above instructions. so that after increasing the quote limit from the admin panel, the homeowner should be able to generate new lead without seeing the quote limit reached modal from any page.
+
+***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\README.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.

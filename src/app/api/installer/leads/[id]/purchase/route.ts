@@ -7,45 +7,42 @@
  * @body {} - No body required
  * @returns 200 OK + Updated lead with unmasked contact
  * @errors 401 Unauthorized, 403 Forbidden, 404 Not Found, 400 Bad Request, 500 Internal Server Error
+ * 
+ * Constitutional Compliance: Article VI (Zero-Trust Authorization)
+ * Uses: requireAuth, requireRole from @/lib/auth/authorization
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { requireAuth, requireRole } from '@/lib/auth/authorization';
 import { prisma } from '@/lib/prisma';
 import { createNotification, createBulkNotifications } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger({ context: 'PurchaseLeadRoute' });
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const correlationId = request.headers.get('x-correlation-id') || `purchase-${Date.now()}`;
+  
   try {
-    const session = await getServerSession(authOptions);
-
-    // Check authentication
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Check installer role
-    if (session.user.role !== 'INSTALLER') {
-      return NextResponse.json(
-        { error: 'Installer access required' },
-        { status: 403 }
-      );
-    }
-
+    // Constitutional Article VI: Zero-trust authorization
+    const auth = await requireRole('INSTALLER');
+    
     const leadId = params.id;
+    const installerId = auth.userId;
+
+    logger.info('Lead purchase initiated', { leadId, installerId, correlationId });
 
     // Check if lead is assigned to this installer
     const assignment = await prisma.leadAssignment.findFirst({
       where: {
         leadId,
-        installerId: session.user.id
+        installerId
       },
       include: {
         lead: {
@@ -64,6 +61,7 @@ export async function POST(
     });
 
     if (!assignment) {
+      logger.warn('Lead not found or not assigned', { leadId, installerId });
       return NextResponse.json(
         { error: 'Lead not found or not assigned to you' },
         { status: 404 }
@@ -74,6 +72,7 @@ export async function POST(
 
     // Validate it's a CALL_VISIT lead
     if (lead.quoteType !== 'CALL_VISIT') {
+      logger.warn('Invalid quote type for purchase', { leadId, quoteType: lead.quoteType });
       return NextResponse.json(
         { error: 'Only CALL_VISIT leads require purchase/unlock' },
         { status: 400 }
@@ -81,7 +80,8 @@ export async function POST(
     }
 
     // Check if already purchased by this installer
-    if (lead.installerId === session.user.id && lead.purchasedAt) {
+    if (lead.installerId === installerId && lead.purchasedAt) {
+      logger.warn('Lead already purchased', { leadId, installerId });
       return NextResponse.json(
         { error: 'Lead already purchased by you' },
         { status: 400 }
@@ -90,6 +90,7 @@ export async function POST(
 
     // Check if lead is expired
     if (lead.expiresAt && new Date() > lead.expiresAt) {
+      logger.warn('Lead expired', { leadId, expiresAt: lead.expiresAt });
       return NextResponse.json(
         { error: 'Lead has expired' },
         { status: 400 }
@@ -99,11 +100,11 @@ export async function POST(
     // TODO: Validate credit balance / payment before unlocking
     // For now, we'll just update the lead to mark as purchased
 
-    // Update lead with purchase info
+    // Update lead with purchase info (keeping original logic for CALL_VISIT leads)
     const updatedLead = await prisma.lead.update({
       where: { id: leadId },
       data: {
-        installerId: session.user.id,
+        installerId,
         purchasedAt: new Date(),
         purchaseStatus: 'COMPLETED',
         status: 'PURCHASED'
@@ -120,26 +121,33 @@ export async function POST(
       }
     });
 
+    logger.info('Lead purchase completed', { 
+      leadId, 
+      installerId, 
+      purchaseStatus: updatedLead.purchaseStatus,
+      correlationId 
+    });
+
     // Send notifications to all parties with SendGrid email integration
-    console.log('[POST /api/installer/leads/[id]/purchase] Sending notifications for lead purchase');
+    logger.info('Sending lead purchase notifications', { leadId, installerId, correlationId });
 
     // Get admin users for notification
     const admins = await prisma.user.findMany({
       where: { role: UserRole.ADMIN },
       select: { id: true }
     });
-    console.log('[POST /api/installer/leads/[id]/purchase] Admin users found:', admins.length);
+    logger.debug('Admin users found', { count: admins.length });
 
     // Notification 1: Installer confirmation (with email)
     await createNotification({
-      recipientUserId: session.user.id,
+      recipientUserId: installerId,
       actionType: NotificationType.PURCHASE_CONFIRMED,
       role: UserRole.INSTALLER,
       messageKey: 'installer.purchase.confirmed',
       routeKey: 'installer.leads',
       routeParams: { leadId }
     });
-    console.log('[POST /api/installer/leads/[id]/purchase] Installer notification created');
+    logger.debug('Installer notification created');
 
     // Notification 2: Homeowner notification (with email)
     await createNotification({
@@ -150,13 +158,13 @@ export async function POST(
       routeKey: 'homeowner.requests',
       routeParams: { leadId }
     });
-    console.log('[POST /api/installer/leads/[id]/purchase] Homeowner notification created');
+    logger.debug('Homeowner notification created');
 
     // Notification 3: Admin notifications (with email)
     if (admins.length > 0) {
       // Get installer email for admin metadata
       const installer = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: installerId },
         select: { email: true }
       });
 
@@ -167,15 +175,15 @@ export async function POST(
           role: UserRole.ADMIN,
           messageKey: 'admin.lead.purchased',
           routeKey: 'admin.dashboard',
-          routeParams: { leadId, installerId: session.user.id },
+          routeParams: { leadId, installerId },
           metadata: {
-            actorEmail: installer?.email, // Pass installer email for admin to see
+            actorEmail: installer?.email,
             leadId,
-            installerId: session.user.id
+            installerId
           }
         }))
       );
-      console.log('[POST /api/installer/leads/[id]/purchase] Admin notifications created');
+      logger.debug('Admin notifications created', { count: admins.length });
     }
 
     // Return unmasked contact details
@@ -206,7 +214,18 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('Error purchasing lead:', error);
+    logger.error('Lead purchase failed', error, { leadId: params.id, correlationId });
+    
+    // Handle authorization errors
+    if (error instanceof Error) {
+      if (error.message.includes('Authentication required')) {
+        return NextResponse.json({ error: error.message }, { status: 401 });
+      }
+      if (error.message.includes('access required')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
+    }
+    
     return NextResponse.json(
       { error: 'Failed to purchase lead' },
       { status: 500 }
