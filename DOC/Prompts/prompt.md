@@ -3134,3 +3134,105 @@ Follow the
  After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
 ### Implementation Phase:
  After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.
+
+ --------------------------------------------------------------------------------------
+
+ You are a senior Staff Software Architect.
+
+Your task is to CREATE a single authoritative `README.md` file for this repository. 
+
+PURPOSE OF README:
+- This README is NOT general documentation
+- It is the **System Control Index** and **AI Navigation Entry Point**
+- Both humans and AI must read this file FIRST before any task
+
+CONTEXT:
+- All `.md` files in this project already exist
+- You MUST scan and understand existing markdown files
+- Do NOT invent files or rules that do not exist
+- Do NOT rewrite other files — only reference them
+
+WHAT THE README MUST DO:
+
+1. Declare Authority Hierarchy (very important)
+   - Define a clear order of authority between documents
+   - Example layers: Constitution, Blueprint, Audit Protocol, Implementation Guidelines, Design System, UI/UX Standards
+   - Explicitly state: if conflicts exist, higher authority always wins
+
+2. Act as an AI Navigation Controller
+   - Instruct AI which documents to read first
+   - Instruct AI to load ONLY relevant files to avoid token waste
+   - Prohibit assumptions or hallucinations
+
+3. Map Documents to Use-Cases
+   - Where to look for:
+     - Architecture decisions
+     - Feature implementation rules
+     - Auditing & debugging
+     - Refactoring
+     - UI/UX decisions
+     - Error handling & incidents
+
+4. Define AI Behavior Rules
+   - AI must not proceed without reading required authorities
+   - AI must ask for clarification if authority conflicts
+   - AI must never invent undocumented behavior
+
+5. Be Stable, Clear, and Professional
+   - This README should rarely change
+   - No hype, no marketing language
+   - Short sections, precise wording
+   - Industry-standard tone (like internal engineering docs)
+
+CONSTRAINTS:
+- Do NOT include code samples
+- Do NOT repeat content from other files
+- Do NOT exceed what is verifiable from existing files
+- Use clear headings and bullet points
+
+OUTPUT:
+- Produce ONLY the final `README.md` content in this directory : D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines
+- Markdown format
+- This README should be suitable for long-term use in a professional SaaS codebase
+-----------------------------------------------------------------------------------------
+
+
+I want to fix these issues found in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System\UNIVERSAL-SYSTEM-AUDIT-2025-12-14.md file . Please follow the instructions below carefully.
+
+***STRICT RULES***
+
+1. Authority & Navigation
+- Read and follow: README.md (System Control Index & AI Navigation Entry Point)
+- Follow the Authority Hierarchy strictly
+- SYSTEM_CONSTITUTION.md is supreme authority
+- Do not override higher-level documents
+
+2. Scope Discipline
+- Load only files required for this task
+- Do not assume undocumented behavior
+- If a required rule or flow is missing, STOP and report it
+
+3. Architecture Rules
+- UI displays state only; backend enforces truth
+- Business logic must not live in UI
+- Follow separation of concerns as defined in Blueprint and Guidelines
+
+4. Audit & Quality
+- Track the full end-to-end flow (UI → API → DB → Side-effects)
+- Identify missing gaps, not just failures
+- Ensure actions are traceable (logs/events/notifications)
+
+5. Execution Constraints
+- Follow AI-IMPLEMENTATION-GUIDELINES.md for:
+  - Backend/frontend rules
+  - Testing rules
+  - GATE 0 and zero-warnings policy
+- Do not invent entities, roles, states, or workflows
+
+6. Output Requirements
+- Clearly list:
+  - What was checked
+  - What failed
+  - Why it failed
+  - Exact fix location
+- If uncertain, ask before proceeding

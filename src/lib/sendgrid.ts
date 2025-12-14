@@ -25,6 +25,8 @@
  */
 
 import sgMail from '@sendgrid/mail';
+import { buildFullUrl } from '@/lib/config/app-url';
+import { logEmailDelivery } from '@/lib/audit/email-delivery-logger';
 
 // Validate environment variables at startup
 if (!process.env.SENDGRID_API_KEY) {
@@ -101,6 +103,8 @@ export async function sendEmail(message: EmailMessage): Promise<void> {
     
     console.log(`📧 [SendGrid] Raw input - recipientRole: ${message.recipientRole}, actorEmail: ${message.actorEmail}, to: ${message.to}`);
     
+    let providerMessageId: string | undefined;
+    
     if (isTestEnv) {
       emailCaptureStore.push({
         to: message.to,
@@ -111,19 +115,50 @@ export async function sendEmail(message: EmailMessage): Promise<void> {
         timestamp: Date.now(),
       });
     } else {
-      await sgMail.send({
+      const response = await sgMail.send({
         to: message.to,
         from: fromEmail,
         subject: message.subject,
         text: message.text,
         html: message.html || message.text,
       });
+      
+      // Extract SendGrid message ID for audit logging
+      providerMessageId = response[0]?.headers?.['x-message-id'] as string | undefined;
     }
+    
+    // Log email delivery for audit trail
+    await logEmailDelivery({
+      recipientEmail: Array.isArray(message.to) ? message.to[0] : message.to,
+      recipientRole: message.recipientRole,
+      subject: message.subject,
+      messageType: 'transactional',
+      provider: 'sendgrid',
+      providerMessageId,
+      metadata: {
+        actorEmail: message.actorEmail,
+        htmlLength: message.html?.length || 0,
+        textLength: message.text?.length || 0,
+      },
+    });
 
     const logVerb = isTestEnv ? 'captured' : 'sent';
     console.log(`✅ [SendGrid] Email ${logVerb} to ${message.to} from ${fromEmail}: ${message.subject}`);
   } catch (error) {
     console.error('❌ [SendGrid] Failed to send email:', error);
+    
+    // Log failed delivery attempt
+    await logEmailDelivery({
+      recipientEmail: Array.isArray(message.to) ? message.to[0] : message.to,
+      recipientRole: message.recipientRole,
+      subject: message.subject,
+      messageType: 'transactional',
+      provider: 'sendgrid',
+      metadata: {
+        error: error instanceof Error ? error.message : String(error),
+      },
+    });
+    
     throw error;
   }
 }
@@ -155,7 +190,7 @@ Postcode: ${leadDetails.propertyPostcode}
 Quote Type: ${leadDetails.quoteType}
 
 Please review and approve this lead in the admin dashboard:
-${process.env.NEXTAUTH_URL}/admin/leads/${leadDetails.leadId}
+${buildFullUrl(`/admin/leads/${leadDetails.leadId}`)}
     `.trim(),
     html: `
 <h2>New Lead Submitted</h2>
@@ -166,7 +201,7 @@ ${process.env.NEXTAUTH_URL}/admin/leads/${leadDetails.leadId}
   <tr><td><strong>Postcode:</strong></td><td>${leadDetails.propertyPostcode}</td></tr>
   <tr><td><strong>Quote Type:</strong></td><td>${leadDetails.quoteType}</td></tr>
 </table>
-<p><a href="${process.env.NEXTAUTH_URL}/admin/leads/${leadDetails.leadId}">View Lead in Dashboard</a></p>
+<p><a href="${buildFullUrl(`/admin/leads/${leadDetails.leadId}`)}">View Lead in Dashboard</a></p>
     `.trim(),
   });
 }
@@ -195,7 +230,7 @@ Great news! Your solar quote request has been approved and is now visible to ver
 You will receive notifications when installers express interest in your project.
 
 View your request status:
-${process.env.NEXTAUTH_URL}/homeowner/leads/${leadDetails.leadId}
+${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}
 
 Best regards,
 The SolarMatch Team
@@ -205,7 +240,7 @@ The SolarMatch Team
 <p>Hi ${leadDetails.homeownerName},</p>
 <p>Great news! Your solar quote request has been approved and is now visible to verified installers.</p>
 <p>You will receive notifications when installers express interest in your project.</p>
-<p><a href="${process.env.NEXTAUTH_URL}/homeowner/leads/${leadDetails.leadId}">View Request Status</a></p>
+<p><a href="${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}">View Request Status</a></p>
 <p>Best regards,<br>The SolarMatch Team</p>
     `.trim(),
   });
@@ -239,7 +274,7 @@ Installer: ${leadDetails.installerName} (${leadDetails.installerCompany})
 They now have access to your contact details and project information. You can chat with them directly through the platform.
 
 View your lead:
-${process.env.NEXTAUTH_URL}/homeowner/leads/${leadDetails.leadId}
+${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}
 
 Best regards,
 The SolarMatch Team
@@ -250,7 +285,7 @@ The SolarMatch Team
 <p>Good news! An installer has purchased your lead and will be in touch shortly.</p>
 <p><strong>Installer:</strong> ${leadDetails.installerName} (${leadDetails.installerCompany})</p>
 <p>They now have access to your contact details and project information. You can chat with them directly through the platform.</p>
-<p><a href="${process.env.NEXTAUTH_URL}/homeowner/leads/${leadDetails.leadId}">View Your Lead</a></p>
+<p><a href="${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}">View Your Lead</a></p>
 <p>Best regards,<br>The SolarMatch Team</p>
     `.trim(),
   });
@@ -282,7 +317,7 @@ You have a new message from ${messageDetails.senderName}:
 "${messageDetails.message}"
 
 Reply in the chat:
-${process.env.NEXTAUTH_URL}/leads/${messageDetails.leadId}
+${buildFullUrl(`/leads/${messageDetails.leadId}`)}
 
 Best regards,
 The SolarMatch Team
@@ -294,7 +329,7 @@ The SolarMatch Team
 <blockquote style="border-left: 3px solid #ccc; padding-left: 10px; margin-left: 0;">
   ${messageDetails.message}
 </blockquote>
-<p><a href="${process.env.NEXTAUTH_URL}/leads/${messageDetails.leadId}">Reply in Chat</a></p>
+<p><a href="${buildFullUrl(`/leads/${messageDetails.leadId}`)}">Reply in Chat</a></p>
 <p>Best regards,<br>The SolarMatch Team</p>
     `.trim(),
   });

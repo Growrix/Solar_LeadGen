@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { buildFullUrl } from '@/lib/config/app-url';
 
 /**
  * Mailer abstraction for sending authentication emails
@@ -58,7 +59,7 @@ export async function sendVerificationEmail(
   token: string,
   userName?: string
 ): Promise<boolean> {
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/verify/confirm?token=${token}`;
+  const verificationUrl = buildFullUrl(`/api/auth/verify/confirm?token=${token}`);
   
   const html = `
     <!DOCTYPE html>
@@ -106,7 +107,7 @@ export async function sendPasswordResetEmail(
   token: string,
   userName?: string
 ): Promise<boolean> {
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+  const resetUrl = buildFullUrl(`/auth/reset-password?token=${token}`);
   
   const html = `
     <!DOCTYPE html>

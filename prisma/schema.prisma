@@ -445,6 +445,49 @@ model Notification {
   @@map("notifications")
 }
 
+// Email Delivery Audit Log
+// Purpose: Track email delivery outcomes for compliance and debugging
+// Authority: DOC/AUDIT-REPORTS/System/UNIVERSAL-SYSTEM-AUDIT-2025-12-14.md (Phase 4)
+model EmailDelivery {
+  id                String   @id @default(cuid())
+  
+  // Recipient info
+  recipientEmail    String
+  recipientRole     UserRole?
+  recipientUserId   String?
+  
+  // Message info
+  subject           String
+  messageType       String   // 'notification', 'verification', 'password-reset', 'lead-alert', etc.
+  notificationId    String?  // Link to Notification if applicable
+  
+  // Delivery status
+  status            EmailDeliveryStatus @default(PENDING)
+  provider          String   @default("sendgrid") // 'sendgrid', 'resend', 'smtp'
+  providerMessageId String?  // SendGrid/Resend message ID
+  
+  // Timestamps
+  sentAt            DateTime @default(now())
+  deliveredAt       DateTime?
+  bouncedAt         DateTime?
+  spamReportedAt    DateTime?
+  
+  // Error tracking
+  errorMessage      String?
+  errorCode         String?
+  
+  // Metadata
+  metadata          Json?    // Original request details, template used, etc.
+  
+  @@index([recipientEmail])
+  @@index([recipientUserId])
+  @@index([status])
+  @@index([messageType])
+  @@index([notificationId])
+  @@index([sentAt])
+  @@map("email_deliveries")
+}
+
 model Settings {
   id          String   @id @default(cuid())
   key         String   @unique
@@ -538,6 +581,15 @@ enum NotificationType {
   BID_LOST
   BID_SUBMITTED
   PAYMENT_FAILED
+}
+
+enum EmailDeliveryStatus {
+  PENDING       // Email queued or being sent
+  SENT          // Successfully sent to provider
+  DELIVERED     // Confirmed delivered by provider
+  BOUNCED       // Hard/soft bounce
+  SPAM_REPORT   // Recipient marked as spam
+  FAILED        // Send failed (auth, quota, etc.)
 }
 
 // ============================================================================

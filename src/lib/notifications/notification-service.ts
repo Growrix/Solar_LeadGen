@@ -7,6 +7,7 @@ import { MessageKey, getNotificationText } from './message-catalog';
 import { RouteKey, RouteParams } from './route-resolver';
 import { sendEmail } from '@/lib/sendgrid';
 import { triggerNotification } from '@/lib/pusher';
+import { buildFullUrl } from '@/lib/config/app-url';
 
 export interface CreateNotificationInput {
   recipientUserId: string;
@@ -75,10 +76,8 @@ async function sendEmailNotification(
       return;
     }
 
-    // Build action URL from route key
-    const actionUrl = routeKey
-      ? `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}${routeKey}`
-      : undefined;
+    // Build action URL from route key using canonical helper
+    const actionUrl = routeKey ? buildFullUrl(routeKey) : undefined;
 
     // Extract actor email from metadata (if available)
     // This is the actual homeowner or installer email that triggered the notification
