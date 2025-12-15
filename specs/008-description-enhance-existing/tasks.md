@@ -1,3 +1,28 @@
+## Phase 4.16 — Written Quote (UI → Spec → Backend)
+
+Status: IN PROGRESS (UI-First)  
+Owner: Engineering  
+Source: DOC/Features/Written Quote/ImplementationPlan.md
+
+### Sprint 1 — UI-First (mock data only)
+- [ ] T-WQ-001: Add "Written Quote" tab UI (no logic) inside Review Bids modal shell (isolation view acceptable)
+- [ ] T-WQ-002: Components: `CurrentStateCard`, `HistoryList`, `ActionPanel` (installer/homeowner variants)
+- [ ] T-WQ-003: Empty states, timestamps, neutral copy, locale amount formatting
+- [ ] T-WQ-004: Multi-theme validation (Dark/Light/Purple) using tokens only; specs/007 6 checks → 0/0/0/0/0/0
+- [ ] T-WQ-005: Accessibility (keyboard/ARIA), no console warnings
+- [ ] T-WQ-006: UI review + approval (no backend yet)
+
+### Sprint 2 — Backend & Integration
+- [ ] T-WQ-101: Prisma models `WrittenQuote`, `WrittenQuoteEvent` (constraints, indexes)
+- [ ] T-WQ-102: API routes (start/offer/counter/done/get) with role checks + rate limiting
+- [ ] T-WQ-103: Notifications + SendGrid templates (offer, counter, done)
+- [ ] T-WQ-104: Wire UI to APIs; add feature flag; beta cohort enablement
+- [ ] T-WQ-105: Playwright e2e (Start → Offer → Counter → Done → Payment CTA)
+- [ ] T-WQ-106: Post-migration verification (specs/007) and multi-theme visual pass
+
+### Notes
+- Start at DOC/GUIDELINES & SOT/README.md → IMPLEMENTATION SOT/README.md → AI-IMPLEMENTATION-GUIDELINES.md.
+- Migration/build gates: specs/007-migration-and-build/spec.md & plan.md.
 ## Phase 13W — Written Quote Negotiation (MVP)
 - Status: Planned
 - Priority: P1

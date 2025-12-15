@@ -1,3 +1,4 @@
+9417705160ddbe943684897f9310327c494330aa | 2025-12-15 12:33:11 +0600 | Written Quote: research-aligned ImplementationPlan.md (pain-point driven, UI-first, specs/007-compliant)
 8cfbc32e08e8552d367f093af616af057010cc0e | 2025-12-15 12:11:17 +0600 | constitution.md: clarify migration/build standards scope, align with DOC index, eliminate ambiguity
 e71f8ce58a286254ec0a53292f7a0177751e8b1c | 2025-12-15 11:58:17 +0600 | Written Quote: commit and push all current changes
 e44a3944b1c3dabf98b2b251378a92dd0bb3ec6e | 2025-12-15 11:53:46 +0600 | DOC/GUIDELINES & SOT: audit, fix, and validate all documentation structure, authority, and references

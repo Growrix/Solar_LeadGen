@@ -3313,7 +3313,7 @@ Follow the
 
 ---------------------------------------------------------------------------------------------
 
-Based on this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\Written Quote\WRITTEN-QUOTE-AUDIT-2025-12-14.md file , I want you to implement the Written Quote flow e2e as per the audit findings and instructions mentioned in the above file.
+Based on this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\Written Quote\ImplementationPlan.md file , I want you to implement the Written Quote flow e2e as per the plan mentioned in the above file.
 
 ***Strickt rules***  
 Follow the
@@ -3321,6 +3321,6 @@ Follow the
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
 
 ### Implementation Phase:
-Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
 
 --------------------------------------------------------------------------------------
