@@ -1,0 +1,382 @@
+openapi: 3.0.3
+info:
+  title: SolarMatch - Quotes API
+  description: |
+    API for quote submission and management between installers and homeowners.
+    Supports different workflows for Call/Visit quotes (immediate visibility) and Written quotes (admin review required).
+  version: 1.0.0
+  contact:
+    name: SolarMatch API Support
+    email: api@solarmatch.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://solarmatch.com/api
+    description: Production server
+
+tags:
+  - name: Quotes
+    description: Quote submission and management endpoints
+
+paths:
+  /quotes:
+    post:
+      tags:
+        - Quotes
+      summary: Submit a quote
+      description: |
+        Installer submits a quote for a purchased lead.
+        - Call/Visit quotes: Immediate visibility to homeowner
+        - Written quotes: Requires admin review before homeowner visibility
+      operationId: submitQuote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - leadId
+                - price
+                - description
+              properties:
+                leadId:
+                  type: string
+                  example: 'clxyz123abc'
+                  description: Lead ID (must be purchased by installer)
+                price:
+                  type: integer
+                  minimum: 0
+                  example: 1250000
+                  description: Quoted price in pence (£12,500.00)
+                description:
+                  type: string
+                  minLength: 50
+                  maxLength: 5000
+                  example: 'Complete solar installation with 15 panels, 5kW inverter, battery storage...'
+                  description: Detailed quote description
+                attachmentUrls:
+                  type: array
+                  items:
+                    type: string
+                    format: uri
+                  example: ['https://s3.amazonaws.com/solarmatch/quotes/quote-123.pdf']
+                  description: Array of attachment URLs (S3 presigned URLs)
+      responses:
+        '201':
+          description: Quote submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        '400':
+          description: Invalid quote data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - must be authenticated installer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - lead not purchased or not authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  /quotes/{id}:
+    get:
+      tags:
+        - Quotes
+      summary: Get quote details
+      description: |
+        Retrieves quote details.
+        - Homeowners can view their own quotes (if approved or Call/Visit type)
+        - Installers can view quotes they submitted
+        - Admins can view all quotes
+      operationId: getQuote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Quote ID
+          example: 'clqt123abc'
+      responses:
+        '200':
+          description: Quote retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - not authorized to view this quote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Quote not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  /quotes/{id}/approve:
+    post:
+      tags:
+        - Quotes
+      summary: Approve quote (Admin or Homeowner)
+      description: |
+        Approves a quote.
+        - Admin approval: Required for Written quotes before homeowner visibility
+        - Homeowner approval: Accepts the quote for installation
+      operationId: approveQuote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Quote ID
+          example: 'clqt123abc'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                  maxLength: 1000
+                  example: 'Quote looks good, approved for homeowner'
+                  description: Optional approval notes
+      responses:
+        '200':
+          description: Quote approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - not authorized to approve
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Quote not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  /quotes/{id}/reject:
+    post:
+      tags:
+        - Quotes
+      summary: Reject quote (Admin or Homeowner)
+      description: |
+        Rejects a quote.
+        - Admin rejection: Written quote rejected, installer can resubmit
+        - Homeowner rejection: Quote declined
+      operationId: rejectQuote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Quote ID
+          example: 'clqt123abc'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  minLength: 10
+                  maxLength: 1000
+                  example: 'Price too high compared to market rates'
+                  description: Rejection reason
+      responses:
+        '200':
+          description: Quote rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        '400':
+          description: Invalid rejection reason
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - not authorized to reject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Quote not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    Quote:
+      type: object
+      required:
+        - id
+        - leadId
+        - installerId
+        - quoteType
+        - price
+        - description
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: 'clqt123abc'
+          description: Unique quote ID
+        leadId:
+          type: string
+          example: 'clxyz123abc'
+          description: Lead ID
+        installerId:
+          type: string
+          example: 'clusr456def'
+          description: Installer's user ID
+        installerName:
+          type: string
+          example: 'ABC Solar Ltd'
+          description: Installer's company name
+        quoteType:
+          type: string
+          enum: [CallVisit, WrittenQuote]
+          example: 'WrittenQuote'
+          description: Quote type (determines approval workflow)
+        price:
+          type: integer
+          example: 1250000
+          description: Quoted price in pence (£12,500.00)
+        description:
+          type: string
+          example: 'Complete solar installation with 15 panels, 5kW inverter...'
+          description: Detailed quote description
+        attachmentUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          example: ['https://s3.amazonaws.com/solarmatch/quotes/quote-123.pdf']
+          description: Array of attachment URLs
+        status:
+          type: string
+          enum:
+            - Draft
+            - Submitted
+            - AdminApproved
+            - AdminRejected
+            - HomeownerApproved
+            - HomeownerRejected
+          example: 'Submitted'
+          description: Quote status
+        adminNotes:
+          type: string
+          nullable: true
+          example: 'Quote looks good, approved for homeowner'
+          description: Admin notes (for rejections or approvals)
+        rejectionReason:
+          type: string
+          nullable: true
+          example: 'Price too high compared to market rates'
+          description: Rejection reason (if rejected)
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-10-15T12:34:56Z'
+          description: Submission timestamp
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-10-15T14:20:00Z'
+          description: Approval timestamp
+        rejectedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2025-10-15T15:30:00Z'
+          description: Rejection timestamp
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-10-15T12:00:00Z'
+          description: Creation timestamp
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: 'Quote not found'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from NextAuth session

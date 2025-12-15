@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: SolarMatch - Notifications API
+  description: |
+    Real-time notification system for lead lifecycle events.
+    Supports in-app notifications, email alerts, and real-time delivery via Pusher.
+  version: 1.0.0
+  contact:
+    name: SolarMatch API Support
+    email: api@solarmatch.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://solarmatch.com/api
+    description: Production server
+
+tags:
+  - name: Notifications
+    description: Notification management endpoints
+
+paths:
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get user notifications
+      description: |
+        Retrieves notifications for the authenticated user.
+        Supports filtering by read status and pagination.
+      operationId: getNotifications
+      parameters:
+        - name: read
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by read status (true=read, false=unread, omit=all)
+          example: false
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of notifications to return
+          example: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of notifications to skip (for pagination)
+          example: 0
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  totalCount:
+                    type: integer
+                    example: 45
+                    description: Total number of notifications (before pagination)
+                  unreadCount:
+                    type: integer
+                    example: 12
+                    description: Number of unread notifications
+        '401':
+          description: Unauthorized - must be authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  /notifications/{id}/read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark notification as read
+      description: Marks a specific notification as read
+      operationId: markNotificationAsRead
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Notification ID
+          example: 'clntf123abc'
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  notification:
+                    $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+  /notifications/mark-all-read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      description: Marks all unread notifications for the authenticated user as read
+      operationId: markAllNotificationsAsRead
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  updatedCount:
+                    type: integer
+                    example: 12
+                    description: Number of notifications marked as read
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    Notification:
+      type: object
+      required:
+        - id
+        - userId
+        - type
+        - title
+        - message
+        - read
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: 'clntf123abc'
+          description: Unique notification ID
+        userId:
+          type: string
+          example: 'clusr456def'
+          description: User ID
+        type:
+          type: string
+          enum:
+            - lead_created
+            - lead_approved
+            - lead_purchased
+            - lead_status_changed
+            - chat_message
+            - quote_received
+            - quote_approved
+            - quote_rejected
+            - verification_complete
+          example: 'lead_purchased'
+          description: Notification type
+        title:
+          type: string
+          example: 'Lead Purchased'
+          description: Notification title
+        message:
+          type: string
+          example: 'An installer has purchased your lead for 123 Main St'
+          description: Notification message
+        data:
+          type: object
+          nullable: true
+          description: Additional context data (JSON)
+          example:
+            leadId: 'clxyz123abc'
+            installerId: 'clusr789ghi'
+        read:
+          type: boolean
+          example: false
+          description: Whether notification has been read
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-10-15T12:34:56Z'
+          description: Notification timestamp
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: 'Notification not found'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from NextAuth session

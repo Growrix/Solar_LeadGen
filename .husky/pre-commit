@@ -1,0 +1,3 @@
+# T020: Pre-commit hook for className validation
+# Validates staged files only (must complete <3 seconds)
+npx tsx scripts/validate-classnames.ts

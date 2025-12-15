@@ -1,0 +1,492 @@
+openapi: 3.0.3
+info:
+  title: Lead Countdown Timer API
+  description: API endpoints for managing lead expiry countdown timers
+  version: 1.0.0
+  contact:
+    name: SolarMatch API Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://solarmatch.com/api
+    description: Production server
+
+tags:
+  - name: Lead Approval
+    description: Lead approval operations with countdown timer options
+  - name: Countdown Management
+    description: Admin countdown timer management operations
+  - name: Lead Reactivation
+    description: Reactivate expired leads with new countdown timers
+  - name: Cron Jobs
+    description: Scheduled tasks for auto-expiry
+
+paths:
+  /leads/{id}/approve:
+    post:
+      tags:
+        - Lead Approval
+      summary: Approve lead with optional countdown timer
+      description: |
+        Admin approves a lead and optionally enables a countdown timer.
+        If countdown is enabled, lead will auto-expire after specified days.
+        Default countdown: 7 days (configurable: 1-90 days).
+      operationId: approveLead
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Lead ID to approve
+          schema:
+            type: string
+            example: "clxyz123456789"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: number
+                  description: Lead price (optional, uses default if not provided)
+                  example: 50.00
+                assignTo:
+                  type: string
+                  enum: ["ALL"]
+                  description: Assignment scope (ALL = public marketplace)
+                  example: "ALL"
+                isHot:
+                  type: boolean
+                  description: Mark as hot lead (priority)
+                  example: false
+                enableCountdown:
+                  type: boolean
+                  description: Enable countdown timer for lead expiry
+                  default: true
+                  example: true
+                countdownDays:
+                  type: integer
+                  description: Countdown duration in days (1-90 range)
+                  minimum: 1
+                  maximum: 90
+                  default: 7
+                  example: 7
+      responses:
+        '200':
+          description: Lead approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  lead:
+                    $ref: '#/components/schemas/ApprovedLead'
+                  countdown:
+                    $ref: '#/components/schemas/CountdownTimer'
+                    nullable: true
+        '400':
+          description: Invalid request (e.g., invalid countdown duration)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid countdown duration. Must be between 1 and 90 days."
+        '401':
+          description: Unauthorized (not authenticated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Authentication required"
+        '403':
+          description: Forbidden (not admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Admin access required"
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Lead not found"
+
+  /leads/{id}/countdown:
+    patch:
+      tags:
+        - Countdown Management
+      summary: Reset countdown timer to new duration
+      description: |
+        Admin resets an active countdown timer to a new duration.
+        Lead must have status APPROVED or PURCHASED (BIDDING only).
+      operationId: resetCountdown
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Lead ID
+          schema:
+            type: string
+            example: "clxyz123456789"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - countdownDays
+              properties:
+                countdownDays:
+                  type: integer
+                  description: New countdown duration in days (1-90 range)
+                  minimum: 1
+                  maximum: 90
+                  example: 14
+                reason:
+                  type: string
+                  description: Optional reason for reset (audit trail)
+                  maxLength: 500
+                  example: "Homeowner requested extension"
+      responses:
+        '200':
+          description: Countdown timer reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    description: New expiry timestamp (UTC)
+                    example: "2025-11-05T12:00:00.000Z"
+                  countdown:
+                    $ref: '#/components/schemas/CountdownTimer'
+        '400':
+          description: Invalid countdown duration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (not admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Countdown Management
+      summary: Remove countdown timer from lead
+      description: |
+        Admin removes countdown timer from a lead (sets expiresAt to null).
+        Lead will not auto-expire and remains active indefinitely.
+      operationId: removeCountdown
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Lead ID
+          schema:
+            type: string
+            example: "clxyz123456789"
+      responses:
+        '200':
+          description: Countdown timer removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Countdown timer removed. Lead will not auto-expire."
+        '403':
+          description: Forbidden (not admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /leads/{id}/reactivate:
+    post:
+      tags:
+        - Lead Reactivation
+      summary: Reactivate expired lead with new countdown timer
+      description: |
+        Admin reactivates an expired lead (status EXPIRED) back to APPROVED
+        with a new countdown timer. Visibility restored to PUBLIC.
+      operationId: reactivateLead
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Expired lead ID
+          schema:
+            type: string
+            example: "clxyz123456789"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countdownDays:
+                  type: integer
+                  description: Countdown duration for reactivated lead (1-90 days)
+                  minimum: 1
+                  maximum: 90
+                  default: 7
+                  example: 7
+                reason:
+                  type: string
+                  description: Optional reason for reactivation (audit trail)
+                  maxLength: 500
+                  example: "Installer requested more time to submit quote"
+      responses:
+        '200':
+          description: Lead reactivated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  lead:
+                    $ref: '#/components/schemas/ReactivatedLead'
+                  countdown:
+                    $ref: '#/components/schemas/CountdownTimer'
+        '400':
+          description: Invalid request (e.g., lead not expired, invalid countdown)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Cannot reactivate lead with status APPROVED. Only EXPIRED leads can be reactivated."
+        '403':
+          description: Forbidden (not admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /cron/expire-leads:
+    get:
+      tags:
+        - Cron Jobs
+      summary: Auto-expire leads with expired countdown timers
+      description: |
+        Scheduled cron job (runs hourly) that checks for leads with
+        expired countdown timers and transitions them to EXPIRED status.
+        Protected by CRON_SECRET environment variable.
+      operationId: expireLeads
+      security:
+        - cronSecret: []
+      responses:
+        '200':
+          description: Cron job executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  expiredCount:
+                    type: integer
+                    description: Number of leads expired in this run
+                    example: 3
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Cron execution timestamp (UTC)
+                    example: "2025-10-22T14:00:00.000Z"
+        '401':
+          description: Unauthorized (invalid cron secret)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Unauthorized"
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: NextAuth session cookie (JWT)
+    cronSecret:
+      type: http
+      scheme: bearer
+      description: Bearer token with CRON_SECRET value
+
+  schemas:
+    ApprovedLead:
+      type: object
+      description: Lead after approval with countdown timer
+      properties:
+        id:
+          type: string
+          example: "clxyz123456789"
+        status:
+          type: string
+          enum: ["APPROVED"]
+          example: "APPROVED"
+        visibility:
+          type: string
+          enum: ["PUBLIC", "PRIVATE"]
+          example: "PUBLIC"
+        approvedAt:
+          type: string
+          format: date-time
+          example: "2025-10-22T12:00:00.000Z"
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Countdown expiry timestamp (null if countdown disabled)
+          example: "2025-10-29T12:00:00.000Z"
+        leadPrice:
+          type: number
+          example: 50.00
+        quoteType:
+          type: string
+          enum: ["CALL_VISIT", "WRITTEN_QUOTE", "BIDDING"]
+          example: "CALL_VISIT"
+    
+    ReactivatedLead:
+      type: object
+      description: Lead after reactivation
+      properties:
+        id:
+          type: string
+          example: "clxyz123456789"
+        status:
+          type: string
+          enum: ["APPROVED"]
+          example: "APPROVED"
+        visibility:
+          type: string
+          enum: ["PUBLIC"]
+          example: "PUBLIC"
+        approvedAt:
+          type: string
+          format: date-time
+          description: Reset to current timestamp on reactivation
+          example: "2025-10-22T12:00:00.000Z"
+        expiresAt:
+          type: string
+          format: date-time
+          description: New countdown expiry timestamp
+          example: "2025-10-29T12:00:00.000Z"
+    
+    CountdownTimer:
+      type: object
+      description: Countdown timer state and display information
+      properties:
+        leadId:
+          type: string
+          description: Lead ID this countdown belongs to
+          example: "clxyz123456789"
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiry timestamp (UTC)
+          example: "2025-10-29T12:00:00.000Z"
+        isExpired:
+          type: boolean
+          description: Whether countdown has reached zero
+          example: false
+        daysRemaining:
+          type: integer
+          description: Days remaining (rounded down)
+          example: 7
+        hoursRemaining:
+          type: integer
+          description: Hours remaining in current day
+          example: 4
+        millisecondsRemaining:
+          type: integer
+          description: Total milliseconds remaining
+          example: 604800000
+        displayText:
+          type: string
+          description: Human-readable display text
+          example: "7 days left"
+        colorClass:
+          type: string
+          enum: ["green", "yellow", "red"]
+          description: Color class for visual feedback (green=6+, yellow=3-5, red=1-2 days)
+          example: "green"
+        progressPercent:
+          type: integer
+          description: Progress percentage (0-100) for progress bar
+          minimum: 0
+          maximum: 100
+          example: 100
+    
+    Error:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid countdown duration"
+        details:
+          type: string
+          description: Optional additional error details
+          example: "Countdown duration must be between 1 and 90 days."

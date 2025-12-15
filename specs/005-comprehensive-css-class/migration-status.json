@@ -1,0 +1,736 @@
+{
+  "components": [
+    {
+      "componentName": "VerifiedBadge",
+      "filePath": "src\\components\\VerifiedBadge.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "TopBar",
+      "filePath": "src\\components\\TopBar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "ThemeProvider",
+      "filePath": "src\\components\\ThemeProvider.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "SavingsChart",
+      "filePath": "src\\components\\SavingsChart.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "RebateCalculatorForm",
+      "filePath": "src\\components\\RebateCalculatorForm.tsx",
+      "status": "not-started",
+      "priority": "P5",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "QuoteSuccessModal",
+      "filePath": "src\\components\\QuoteSuccessModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "QuoteOptionsModal",
+      "filePath": "src\\components\\QuoteOptionsModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "QuoteBuilderModal",
+      "filePath": "src\\components\\QuoteBuilderModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "ProfileManagement",
+      "filePath": "src\\components\\ProfileManagement.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "OTPVerificationModal",
+      "filePath": "src\\components\\OTPVerificationModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "NextAuthProvider",
+      "filePath": "src\\components\\NextAuthProvider.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "NewsletterSignup",
+      "filePath": "src\\components\\NewsletterSignup.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "NewQuoteRequestModal",
+      "filePath": "src\\components\\NewQuoteRequestModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "MessagingModal",
+      "filePath": "src\\components\\MessagingModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "LiveCountdownBar",
+      "filePath": "src\\components\\LiveCountdownBar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "LayoutContent",
+      "filePath": "src\\components\\LayoutContent.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstantQuoteForm",
+      "filePath": "src\\components\\InstantQuoteForm.tsx",
+      "status": "not-started",
+      "priority": "P5",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerSignupModal",
+      "filePath": "src\\components\\InstallerSignupModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerSignInModal",
+      "filePath": "src\\components\\InstallerSignInModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerPurchasedLeads",
+      "filePath": "src\\components\\InstallerPurchasedLeads.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerMobileSidebarMenu",
+      "filePath": "src\\components\\InstallerMobileSidebarMenu.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerMessagingModal",
+      "filePath": "src\\components\\InstallerMessagingModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerMarketplace",
+      "filePath": "src\\components\\InstallerMarketplace.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerLeadFeed",
+      "filePath": "src\\components\\InstallerLeadFeed.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerEligibilityModal",
+      "filePath": "src\\components\\InstallerEligibilityModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerBottomNavBar",
+      "filePath": "src\\components\\InstallerBottomNavBar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "HomeownerSignupModal",
+      "filePath": "src\\components\\HomeownerSignupModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "HomeownerSignInModal",
+      "filePath": "src\\components\\HomeownerSignInModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "HomeownerMobileSidebarMenu",
+      "filePath": "src\\components\\HomeownerMobileSidebarMenu.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "HomeownerBottomNavBar",
+      "filePath": "src\\components\\HomeownerBottomNavBar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "Hero",
+      "filePath": "src\\components\\Hero.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "HeaderMenu",
+      "filePath": "src\\components\\HeaderMenu.tsx",
+      "status": "not-started",
+      "priority": "P4",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "Header",
+      "filePath": "src\\components\\Header.tsx",
+      "status": "not-started",
+      "priority": "P4",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "GuestBottomNavBar",
+      "filePath": "src\\components\\GuestBottomNavBar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "Footer",
+      "filePath": "src\\components\\Footer.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "DetailedQuoteAuthModal",
+      "filePath": "src\\components\\DetailedQuoteAuthModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "CountdownTimer",
+      "filePath": "src\\components\\CountdownTimer.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "BlogSection",
+      "filePath": "src\\components\\BlogSection.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminSignInModal",
+      "filePath": "src\\components\\AdminSignInModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminSidebar",
+      "filePath": "src\\components\\AdminSidebar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminMobileSidebarMenu",
+      "filePath": "src\\components\\AdminMobileSidebarMenu.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminLayout",
+      "filePath": "src\\components\\AdminLayout.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminHomeownersList",
+      "filePath": "src\\components\\AdminHomeownersList.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminHomeownersAnalytics",
+      "filePath": "src\\components\\AdminHomeownersAnalytics.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminHeader",
+      "filePath": "src\\components\\AdminHeader.tsx",
+      "status": "not-started",
+      "priority": "P4",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AdminBottomNavBar",
+      "filePath": "src\\components\\AdminBottomNavBar.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerThemeSwitcher",
+      "filePath": "src\\components\\installer\\InstallerThemeSwitcher.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerAssignedLeads",
+      "filePath": "src\\components\\installer\\InstallerAssignedLeads.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "SimplifiedQuoteFormModal",
+      "filePath": "src\\components\\homeowner\\SimplifiedQuoteFormModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "SimplifiedQuoteForm",
+      "filePath": "src\\components\\homeowner\\SimplifiedQuoteForm.tsx",
+      "status": "not-started",
+      "priority": "P5",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "RequestMoreQuotesCTA",
+      "filePath": "src\\components\\homeowner\\RequestMoreQuotesCTA.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "QuoteTypeDistributionModal",
+      "filePath": "src\\components\\homeowner\\QuoteTypeDistributionModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "LeadPreviewModal",
+      "filePath": "src\\components\\homeowner\\LeadPreviewModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "LeadEditModal",
+      "filePath": "src\\components\\homeowner\\LeadEditModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "FirstQuoteSuccessModal",
+      "filePath": "src\\components\\homeowner\\FirstQuoteSuccessModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "ContactVerificationModal",
+      "filePath": "src\\components\\homeowner\\ContactVerificationModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "QuoteDataDisplay",
+      "filePath": "src\\components\\admin\\QuoteDataDisplay.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "NewsletterTable",
+      "filePath": "src\\components\\admin\\NewsletterTable.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallersTable",
+      "filePath": "src\\components\\admin\\InstallersTable.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "InstallerSelectorModal",
+      "filePath": "src\\components\\admin\\InstallerSelectorModal.tsx",
+      "status": "not-started",
+      "priority": "P7",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    },
+    {
+      "componentName": "AssignmentHistoryTable",
+      "filePath": "src\\components\\admin\\AssignmentHistoryTable.tsx",
+      "status": "not-started",
+      "priority": "P10",
+      "logicPreservationChecklist": [],
+      "testingStatus": {
+        "visualRegression": "pending",
+        "accessibility": "pending",
+        "interaction": "pending"
+      }
+    }
+  ]
+}

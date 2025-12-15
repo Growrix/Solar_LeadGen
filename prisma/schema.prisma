@@ -1,0 +1,858 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  subscribedAt   DateTime  @default(now())
+  isActive       Boolean   @default(true)
+  unsubscribedAt DateTime?
+
+  @@map("newsletter_subscribers")
+}
+
+model GuestInstantQuote {
+  id                    String    @id @default(cuid())
+  sessionId             String?
+  ipAddress             String?
+  userAgent             String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  quoteType             String
+  postcode              String
+  location              String
+  state                 String
+  electricityUsageType  String
+  roofType              String
+  budgetRange           String
+  panelOrientation      String
+  roofTilt              String
+  shadingLevel          String
+  desiredOffset         Int
+  usagePattern          String?
+  batteryIncluded       Boolean   @default(false)
+  batteryCapacity       String?
+  batteryBrand          String?
+  batteryUsage          String?
+  includeVPP            Boolean   @default(false)
+  peakDemand            String?
+  isThreePhase          Boolean   @default(false)
+  projectPriority       String?
+  retailer              String?
+  tariffPlan            String?
+  customRetailRate      String?
+  customFeedInRate      String?
+  panelBrand            String?
+  includeOptimizers     Boolean   @default(false)
+  includeMicroinverters Boolean   @default(false)
+  includeEVCharging     Boolean   @default(false)
+  includeSmartHome      Boolean   @default(false)
+  includeGridServices   Boolean   @default(false)
+  hasExistingSystem     Boolean   @default(false)
+  existingSystemSize    String?
+  systemSizeOverride    String?
+  results               Json
+  adminNotes            String?
+  isConverted           Boolean   @default(false)
+  conversionDate        DateTime?
+  electricityValue      Float
+  additionalArrays      Json?
+  backupCritical        String?
+  customBatteryCapacity String?
+
+  @@index([createdAt])
+  @@index([state])
+  @@index([quoteType])
+  @@index([sessionId])
+  @@map("guest_instant_quotes")
+}
+
+model User {
+  id                    String                   @id @default(cuid())
+  email                 String                   @unique
+  emailVerified         DateTime?
+  emailVerifiedAt       DateTime? // Auth Part A+B: track verification timestamp
+  password              String?
+  role                  UserRole                 @default(HOMEOWNER)
+  isActive              Boolean                  @default(true)
+  name                  String?
+  phone                 String?
+  image                 String?
+  companyName           String?
+  businessAddress       String?
+  postcode              String?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  lastLoginAt           DateTime?
+  installerVerified     Boolean                  @default(false)
+  leadSubmissionCount   Int                      @default(0)
+  phoneVerified         Boolean                  @default(false)
+  leadSubmissionLimit   Int                      @default(5)
+  biddingLeadsSubmitted Int                      @default(0)
+  biddingLeadsLimit     Int                      @default(1) // Phase 13S.2: Adjustable bidding lead quota
+  profileComplete       Boolean                  @default(false) // Auth Part A+B: installer onboarding gate
+  sessionVersion        Int                      @default(0) // Auth Part A+B: invalidate sessions on password reset
+  signupIp              String? // Phase 21: IP address captured at registration
+  signupUserAgent       String? // Phase 21: Browser/device info at registration
+  lastLoginIp           String? // Phase 21: Most recent login IP (future use)
+  accounts              Account[]
+  leadsAsHomeowner      Lead[]                   @relation("homeowner_leads")
+  leadsAsInstaller      Lead[]                   @relation("installer_leads")
+  phoneVerifications    PhoneVerification[]
+  quotesAsInstaller     Quote[]                  @relation("installer_quotes")
+  bidsAsInstaller       Bid[]                    @relation("installer_bids")
+  writtenQuotesAsInstaller WrittenQuote[]        @relation("installer_written_quotes")
+  writtenQuotesAsHomeowner WrittenQuote[]        @relation("homeowner_written_quotes")
+  writtenQuoteEvents    WrittenQuoteEvent[]      @relation("written_quote_events")
+  sessions              Session[]
+  installerAssignments  LeadAssignment[]         @relation("installer_assignments")
+  adminAssignments      LeadAssignment[]         @relation("admin_assignments")
+  installerProfile      InstallerProfile? // Auth Part A+B: installer onboarding data
+  verificationTokens    EmailVerificationToken[] // Auth Part A+B: email verification
+  passwordResetTokens   PasswordResetToken[] // Auth Part A+B: password reset
+  installerVerification InstallerVerification?
+  installerPreferences  InstallerPreferences?
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Lead {
+  id                    String            @id @default(cuid())
+  homeownerId           String
+  installerId           String?
+  status                LeadStatus        @default(DRAFT)
+  visibility            LeadVisibility    @default(HIDDEN)
+  phoneVerified         Boolean           @default(false)
+  phoneNumber           String?
+  name                  String? // Phase 12: Homeowner name for contact purposes
+  projectType           String
+  propertyType          String
+  postcode              String
+  location              String
+  state                 String
+  address               String?
+  energyBill            Float
+  billType              String
+  roofType              String
+  budgetRange           String
+  desiredOffset         Int
+  batteryRequired       Boolean           @default(false)
+  batteryCapacity       String?
+  timeframe             String?
+  additionalNotes       String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  approvedAt            DateTime?
+  purchasedAt           DateTime?
+  expiresAt             DateTime?
+  adminNotes            String?
+  flaggedReason         String?
+  moderatedBy           String?
+  moderatedAt           DateTime?
+  leadPrice             Float?
+  purchaseStatus        PurchaseStatus?
+  stripePaymentIntentId String?
+  quoteData             Json?
+  quoteType             LeadQuoteType     @default(CALL_VISIT)
+  cancelledAt           DateTime?
+  cancelledBy           String?
+  cancelledReason       String?
+  archivedAt            DateTime?
+  assignedAt            DateTime?
+  assignedBy            String?
+  assignmentNotes       String?
+  auditLogs             AuditLog[]
+  chatMessages          ChatMessage[]
+  documents             InstallDocument[]
+  feedback              LeadFeedback?
+  homeowner             User              @relation("homeowner_leads", fields: [homeownerId], references: [id], onDelete: Cascade)
+  installer             User?             @relation("installer_leads", fields: [installerId], references: [id])
+  quotes                Quote[]
+  bids                  Bid[]
+  writtenQuotes         WrittenQuote[]
+  assignments           LeadAssignment[]  @relation("lead_assignments")
+
+  @@index([homeownerId])
+  @@index([installerId])
+  @@index([status])
+  @@index([visibility])
+  @@index([quoteType])
+  @@index([postcode])
+  @@index([state])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@map("leads")
+}
+
+model LeadAssignment {
+  id          String   @id @default(cuid())
+  leadId      String
+  installerId String
+  assignedBy  String
+  assignedAt  DateTime @default(now())
+  notes       String?
+  notified    Boolean  @default(false)
+
+  lead      Lead @relation("lead_assignments", fields: [leadId], references: [id], onDelete: Cascade)
+  installer User @relation("installer_assignments", fields: [installerId], references: [id], onDelete: Cascade)
+  admin     User @relation("admin_assignments", fields: [assignedBy], references: [id])
+
+  @@unique([leadId, installerId])
+  @@index([leadId])
+  @@index([installerId])
+  @@index([assignedBy])
+  @@map("lead_assignments")
+}
+
+model PhoneVerification {
+  id              String    @id @default(cuid())
+  phoneNumber     String
+  verificationSid String?
+  attempts        Int       @default(0)
+  lastAttemptAt   DateTime?
+  verifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime
+  code            String
+  status          String    @default("PENDING")
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phoneNumber])
+  @@index([userId])
+  @@index([status])
+  @@map("phone_verifications")
+}
+
+model InstallDocument {
+  id           String   @id @default(cuid())
+  leadId       String
+  documentType String
+  fileName     String
+  fileSize     Int
+  contentType  String
+  s3Key        String
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@map("install_documents")
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  leadId     String
+  senderId   String
+  senderRole UserRole
+  message    String
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  lead       Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+model Quote {
+  id               String    @id @default(cuid())
+  leadId           String
+  installerId      String
+  quoteType        QuoteType
+  systemSize       Float
+  panelBrand       String?
+  inverterBrand    String?
+  batteryBrand     String?
+  batteryCapacity  Float?
+  totalPrice       Float
+  federalRebate    Float?
+  stateRebate      Float?
+  finalPrice       Float
+  description      String?
+  paybackYears     Float?
+  annualSavings    Float?
+  warranty         String?
+  installTimeline  String?
+  attachmentS3Keys String[]
+  status           String    @default("pending")
+  acceptedAt       DateTime?
+  rejectedAt       DateTime?
+  rejectionReason  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  expiresAt        DateTime
+  installer        User      @relation("installer_quotes", fields: [installerId], references: [id], onDelete: Cascade)
+  lead             Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([installerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("quotes")
+}
+
+model Bid {
+  id                  String    @id @default(cuid())
+  leadId              String
+  installerId         String
+  amount              Float
+  capacityOffer       Float?
+  expectedInstallDate DateTime?
+  notes               String?
+  panelBrand          String?
+  inverterBrand       String?
+  batteryBrand        String?
+  batteryCapacity     String?
+  includeGst          Boolean   @default(true)
+  gstPercent          Float     @default(10.0)
+  gstAmount           Float     @default(0)
+  includeIncentive    Boolean   @default(false)
+  incentiveAmount     Float     @default(0)
+  finalTotal          Float
+  status              String    @default("SUBMITTED")
+  selectedAt          DateTime?
+  purchasedAt         DateTime?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Phase 13 - Comprehensive Quote Builder data (JSON fields)
+  systemData       Json? // System capacity, type, solar panels array
+  productsData     Json? // Panel, inverter, battery details with brands/models
+  lineItems        Json? // Pricing engine 9 categories with itemized breakdown
+  assumptions      Json? // Feed-in tariff, usage, offset, payback assumptions
+  roofData         Json? // Roof type, pitch, arrays, orientations, shading, site details
+  calculations     Json? // Total cost, GST, incentive, final total, payback calculations
+  importMeta       Json? // Prefilled fields, import source, import timestamp
+  installerContact Json? // Installer name, email, phone for homeowner to contact
+
+  lead      Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  installer User @relation("installer_bids", fields: [installerId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, installerId])
+  @@index([leadId])
+  @@index([installerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bids")
+}
+
+model WrittenQuote {
+  id                  String              @id @default(cuid())
+  leadId              String
+  installerId         String
+  homeownerId         String
+  currentPrice        Float
+  currentStatus       String              @default("DRAFT") // DRAFT, INSTALLER_TURN, HOMEOWNER_TURN, ACCEPTED, REJECTED
+  lastActionBy        String? // "installer" or "homeowner"
+  lastActionAt        DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  acceptedAt          DateTime?
+  rejectedAt          DateTime?
+
+  // Mirrors Bid model JSON fields for quote data
+  systemData          Json? // System capacity, type, solar panels array
+  productsData        Json? // Panel, inverter, battery details with brands/models
+  lineItems           Json? // Pricing engine 9 categories with itemized breakdown
+  assumptions         Json? // Feed-in tariff, usage, offset, payback assumptions
+  roofData            Json? // Roof type, pitch, arrays, orientations, shading, site details
+  calculations        Json? // Total cost, GST, incentive, final total, payback calculations
+  importMeta          Json? // Prefilled fields, import source, import timestamp
+  installerContact    Json? // Installer name, email, phone for homeowner to contact
+
+  lead                Lead                @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  installer           User                @relation("installer_written_quotes", fields: [installerId], references: [id], onDelete: Cascade)
+  homeowner           User                @relation("homeowner_written_quotes", fields: [homeownerId], references: [id], onDelete: Cascade)
+  events              WrittenQuoteEvent[]
+
+  @@unique([leadId, installerId])
+  @@index([leadId])
+  @@index([installerId])
+  @@index([homeownerId])
+  @@index([currentStatus])
+  @@index([createdAt])
+  @@map("written_quotes")
+}
+
+model WrittenQuoteEvent {
+  id              String   @id @default(cuid())
+  writtenQuoteId  String
+  actorId         String
+  actorRole       String // "installer" or "homeowner"
+  action          String // "start", "offer", "counter", "accept", "reject"
+  priceOffered    Float?
+  notes           String?
+  timestamp       DateTime @default(now())
+
+  writtenQuote    WrittenQuote @relation(fields: [writtenQuoteId], references: [id], onDelete: Cascade)
+  actor           User         @relation("written_quote_events", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([writtenQuoteId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("written_quote_events")
+}
+
+model LeadFeedback {
+  id                    String   @id @default(cuid())
+  leadId                String   @unique
+  overallRating         Int
+  communicationRating   Int?
+  timelinessRating      Int?
+  professionalismRating Int?
+  comments              String?
+  wouldRecommend        Boolean?
+  createdAt             DateTime @default(now())
+  lead                  Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([overallRating])
+  @@map("lead_feedback")
+}
+
+model LeadPurchase {
+  id               String    @id @default(cuid())
+  leadId           String
+  installerId      String
+  amount           Float
+  paymentIntentId  String?
+  purchasedAt      DateTime  @default(now())
+  refundedAt       DateTime?
+  refundReason     String?
+
+  @@index([leadId])
+  @@index([installerId])
+  @@index([purchasedAt])
+  @@map("lead_purchases")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  leadId     String?
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  lead       Lead?    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String
+  role          UserRole?
+  type          NotificationType
+  title         String
+  message       String
+  messageKey    String?
+  routeKey      String?
+  routeParams   Json?
+  // Legacy field for backward compatibility (deprecated)
+  actionUrl     String?
+  metadata      Json?
+  isRead        Boolean          @default(false)
+  readAt        DateTime?
+  createdAt     DateTime         @default(now())
+
+  @@index([userId])
+  @@index([role])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// Email Delivery Audit Log
+// Purpose: Track email delivery outcomes for compliance and debugging
+// Authority: DOC/AUDIT-REPORTS/System/UNIVERSAL-SYSTEM-AUDIT-2025-12-14.md (Phase 4)
+model EmailDelivery {
+  id                String   @id @default(cuid())
+  
+  // Recipient info
+  recipientEmail    String
+  recipientRole     UserRole?
+  recipientUserId   String?
+  
+  // Message info
+  subject           String
+  messageType       String   // 'notification', 'verification', 'password-reset', 'lead-alert', etc.
+  notificationId    String?  // Link to Notification if applicable
+  
+  // Delivery status
+  status            EmailDeliveryStatus @default(PENDING)
+  provider          String   @default("sendgrid") // 'sendgrid', 'resend', 'smtp'
+  providerMessageId String?  // SendGrid/Resend message ID
+  
+  // Timestamps
+  sentAt            DateTime @default(now())
+  deliveredAt       DateTime?
+  bouncedAt         DateTime?
+  spamReportedAt    DateTime?
+  
+  // Error tracking
+  errorMessage      String?
+  errorCode         String?
+  
+  // Metadata
+  metadata          Json?    // Original request details, template used, etc.
+  
+  @@index([recipientEmail])
+  @@index([recipientUserId])
+  @@index([status])
+  @@index([messageType])
+  @@index([notificationId])
+  @@index([sentAt])
+  @@map("email_deliveries")
+}
+
+model Settings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@index([key])
+  @@map("settings")
+}
+
+enum UserRole {
+  GUEST
+  HOMEOWNER
+  INSTALLER
+  ADMIN
+}
+
+enum LeadQuoteType {
+  CALL_VISIT
+  WRITTEN_QUOTE
+  BIDDING
+}
+
+enum LeadStatus {
+  DRAFT
+  PENDING_PHONE
+  PENDING_APPROVAL
+  APPROVED
+  PURCHASED
+  QUOTED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+  FLAGGED
+}
+
+enum LeadVisibility {
+  HIDDEN
+  PUBLIC
+  PRIVATE
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  // Admin actions
+  ASSIGNMENT_WINDOW_STARTED
+  ASSIGNMENT_WINDOW_ENDED
+  LEAD_CONFIG_UPDATED
+  
+  // Installer actions
+  NEW_OPPORTUNITY
+  BID_WON
+  BID_OUTCOME_NOT_SELECTED
+  DATA_UPDATE
+  LEAD_PURCHASED
+  PURCHASE_CONFIRMED
+  BID_PURCHASE_COMPLETED
+  
+  // Homeowner actions
+  REQUEST_RECEIVED
+  RESPONSES_AVAILABLE
+  SELECTION_CONFIRMED
+  APPOINTMENT_SUGGESTED
+  INSTALLER_RESPONDED
+  
+  // Legacy types (deprecated but kept for migration)
+  NEW_LEAD
+  LEAD_APPROVED
+  LEAD_REJECTED
+  NEW_QUOTE
+  NEW_MESSAGE
+  QUOTE_ACCEPTED
+  QUOTE_REJECTED
+  PAYMENT_RECEIVED
+  SYSTEM
+  LEAD_ASSIGNED
+  LEAD_REASSIGNED
+  LEAD_RESOLD
+  ASSIGNMENT_REMOVED
+  ASSIGNMENT_ACCEPTED_COMPETITIVE
+  BID_LOST
+  BID_SUBMITTED
+  PAYMENT_FAILED
+}
+
+enum EmailDeliveryStatus {
+  PENDING       // Email queued or being sent
+  SENT          // Successfully sent to provider
+  DELIVERED     // Confirmed delivered by provider
+  BOUNCED       // Hard/soft bounce
+  SPAM_REPORT   // Recipient marked as spam
+  FAILED        // Send failed (auth, quota, etc.)
+}
+
+// ============================================================================
+// AUTH PART A+B MODELS
+// ============================================================================
+
+model InstallerProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName       String
+  businessAddress   String
+  postcode          String
+  operationalStatus String   @default("ACTIVE") // ACTIVE | PAUSED | INACTIVE
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("installer_profiles")
+}
+
+model EmailVerificationToken {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashedToken String
+  expires     DateTime
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([expires])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashedToken String
+  expires     DateTime
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([expires])
+  @@map("password_reset_tokens")
+}
+
+// ============================================================================
+// INSTALLER VERIFICATION MODELS
+// ============================================================================
+
+model InstallerVerification {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName        String
+  representativeName String
+  designation        String
+  email              String
+  phone              String
+  address            String?
+  abnOrLicense       String
+  establishedYear    Int
+  employeeCount      Int
+  services           String[]
+  serviceAreas       String[]
+  postcodes          String[]
+  website            String?
+  socialLinks        Json?
+  companyDescription String?
+  licenseDocKey      String?
+  abnDocKey          String?
+  logoKey            String?
+  status             String   @default("PENDING") // PENDING | APPROVED | REJECTED | MORE_INFO
+  adminNotes         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("installer_verifications")
+}
+
+model InstallerVerificationLog {
+  id        String   @id @default(cuid())
+  userId    String
+  adminId   String
+  action    String // SUBMITTED | APPROVED | REJECTED | REQUEST_INFO
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([createdAt])
+  @@map("installer_verification_logs")
+}
+
+model InstallerPreferences {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertNewLead             Boolean  @default(true)
+  alertLeadUpdates         Boolean  @default(true)
+  alertAdminMessages       Boolean  @default(true)
+  alertVerificationUpdates Boolean  @default(true)
+  alertAccountActivity     Boolean  @default(true)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([userId])
+  @@map("installer_preferences")
+}
+
+enum QuoteType {
+  FORMAL
+  INFORMAL
+}
+
+// Domain Events for Auditability (Constitution Article VII)
+model DomainEvent {
+  id         String   @id @default(cuid())
+  eventType  String   // e.g., "LEAD_PURCHASED", "BID_SUBMITTED", "SELECTION_CONFIRMED"
+  entityType String   // e.g., "Lead", "Bid", "Purchase"
+  entityId   String   // The ID of the entity that changed
+  actorId    String?  // User who performed the action
+  actorRole  String?  // Role of the actor (ADMIN, INSTALLER, HOMEOWNER)
+  metadata   Json     // Event-specific data
+  timestamp  DateTime @default(now())
+
+  @@index([eventType])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("domain_events")
+}
+
+// Immutable Mutation History (Constitution Article IV.3)
+model LeadHistory {
+  id             String   @id @default(cuid())
+  leadId         String
+  actorId        String?
+  actorRole      String?
+  previousState  String?
+  nextState      String
+  reason         String?
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([leadId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("lead_history")
+}
+
+model BidHistory {
+  id             String   @id @default(cuid())
+  bidId          String
+  actorId        String?
+  actorRole      String?
+  previousState  String?
+  nextState      String
+  reason         String?
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([bidId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("bid_history")
+}
+
+model PurchaseHistory {
+  id             String   @id @default(cuid())
+  purchaseId     String
+  actorId        String?
+  actorRole      String?
+  previousState  String?
+  nextState      String
+  reason         String?
+  metadata       Json?
+  timestamp      DateTime @default(now())
+
+  @@index([purchaseId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@map("purchase_history")
+}

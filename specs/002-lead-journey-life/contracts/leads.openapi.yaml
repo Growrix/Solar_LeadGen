@@ -1,0 +1,635 @@
+openapi: 3.0.3
+info:
+  title: Lead Management API
+  description: API for managing solar leads - creation, approval, purchase, and lifecycle
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://yourdomain.com/api
+    description: Production server
+
+paths:
+  /leads:
+    get:
+      summary: List leads
+      description: Get leads based on user role (homeowner sees their leads, installer sees available/purchased leads, admin sees all)
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [NEW, PENDING, IN_PROGRESS, DEAL_CLOSED, VOID, NO_RESPONSE, ARCHIVED]
+        - name: quoteType
+          in: query
+          schema:
+            type: string
+            enum: [CALL_VISIT, WRITTEN_QUOTE]
+        - name: postcode
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of leads
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create new lead
+      description: Homeowner creates a new quote request
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLeadRequest'
+      responses:
+        '201':
+          description: Lead created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Lead limit reached or not verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Lead limit reached. Please verify your phone number."
+
+  /leads/{id}:
+    get:
+      summary: Get lead details
+      description: Get specific lead (permissions checked based on role)
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lead details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update lead
+      description: Update lead details (admin only for most fields)
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLeadRequest'
+      responses:
+        '200':
+          description: Lead updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete lead
+      description: Admin only - soft delete (archive)
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Lead deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /leads/{id}/purchase:
+    post:
+      summary: Purchase lead
+      description: Installer purchases a lead to unlock contact details
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lead purchased successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lead:
+                    $ref: '#/components/schemas/Lead'
+                  purchase:
+                    $ref: '#/components/schemas/Purchase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not verified or already purchased
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Account verification required to purchase leads"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /leads/{id}/status:
+    patch:
+      summary: Update lead status
+      description: Update lead lifecycle status (with validation)
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [NEW, PENDING, IN_PROGRESS, DEAL_CLOSED, VOID, NO_RESPONSE, ARCHIVED]
+                reason:
+                  type: string
+              required:
+                - status
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid status transition from IN_PROGRESS to NEW"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /leads/{id}/assign:
+    post:
+      summary: Assign lead to installers
+      description: Admin assigns lead to specific installers or makes available to all
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visibility:
+                  type: string
+                  enum: [ALL, SPECIFIC]
+                installerIds:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - visibility
+      responses:
+        '200':
+          description: Lead assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /leads/{id}/resell:
+    post:
+      summary: Resell purchased lead
+      description: Admin makes a purchased lead available again
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lead marked for resale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /leads/{id}/archive:
+    post:
+      summary: Archive lead
+      description: Admin closes lead lifecycle
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lead archived
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /leads/{id}/audit:
+    get:
+      summary: Get lead audit trail
+      description: Get full audit history for a lead
+      tags:
+        - Leads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audit trail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auditLogs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLog'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Lead:
+      type: object
+      properties:
+        id:
+          type: string
+        homeownerId:
+          type: string
+        homeowner:
+          $ref: '#/components/schemas/UserSummary'
+        quoteType:
+          type: string
+          enum: [CALL_VISIT, WRITTEN_QUOTE]
+        propertyAddress:
+          type: string
+        propertyPostcode:
+          type: string
+        propertyType:
+          type: string
+        roofType:
+          type: string
+        roofArea:
+          type: number
+        energyUsage:
+          type: number
+        budget:
+          type: number
+        notes:
+          type: string
+        status:
+          type: string
+          enum: [NEW, PENDING, IN_PROGRESS, DEAL_CLOSED, VOID, NO_RESPONSE, ARCHIVED]
+        priority:
+          type: boolean
+        visibility:
+          type: string
+          enum: [ALL, SPECIFIC]
+        assignedTo:
+          type: array
+          items:
+            type: string
+        customPrice:
+          type: number
+        purchasedBy:
+          type: string
+        purchasedAt:
+          type: string
+          format: date-time
+        purchaseAmount:
+          type: number
+        purchaseStatus:
+          type: string
+          enum: [PENDING, PAID, REFUNDED, FAILED]
+        homeownerVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        archivedAt:
+          type: string
+          format: date-time
+
+    CreateLeadRequest:
+      type: object
+      properties:
+        quoteType:
+          type: string
+          enum: [CALL_VISIT, WRITTEN_QUOTE]
+        propertyAddress:
+          type: string
+        propertyPostcode:
+          type: string
+        propertyType:
+          type: string
+        roofType:
+          type: string
+        roofArea:
+          type: number
+        energyUsage:
+          type: number
+        budget:
+          type: number
+        notes:
+          type: string
+      required:
+        - quoteType
+        - propertyAddress
+        - propertyPostcode
+
+    UpdateLeadRequest:
+      type: object
+      properties:
+        customPrice:
+          type: number
+        priority:
+          type: boolean
+        notes:
+          type: string
+
+    Purchase:
+      type: object
+      properties:
+        leadId:
+          type: string
+        installerId:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, PAID, REFUNDED, FAILED]
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        leadId:
+          type: string
+        userId:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        action:
+          type: string
+          enum: [CREATED, APPROVED, REJECTED, PURCHASED, STATUS_CHANGED, CHAT_SENT, QUOTE_SUBMITTED, QUOTE_APPROVED, QUOTE_REJECTED, ASSIGNED, RESOLD, ARCHIVED, PRICE_UPDATED]
+        data:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [HOMEOWNER, INSTALLER, ADMIN]
+        phoneVerified:
+          type: boolean
+        accountVerified:
+          type: boolean
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Authentication required"
+
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Insufficient permissions"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Lead not found"

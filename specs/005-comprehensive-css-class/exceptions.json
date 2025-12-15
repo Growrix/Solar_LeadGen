@@ -1,0 +1,20 @@
+{
+  "exceptions": [
+    {
+      "componentName": "ThemeProvider",
+      "reason": "System component that manages theme state",
+      "justification": "Uses data-theme attribute for theme switching, requires special handling",
+      "workaround": "Uses CSS variables for theming",
+      "approvedBy": "Architecture Team",
+      "approvalDate": "2025-10-30"
+    },
+    {
+      "componentName": "Storybook decorators",
+      "reason": "Third-party integration",
+      "justification": "Storybook requires specific className patterns for its UI",
+      "workaround": "Isolated in .storybook/ directory",
+      "approvedBy": "Dev Team",
+      "approvalDate": "2025-10-30"
+    }
+  ]
+}

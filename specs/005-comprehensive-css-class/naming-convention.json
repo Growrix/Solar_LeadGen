@@ -1,0 +1,76 @@
+{
+  "allowedPatterns": {
+    "colors": [
+      "bg-primary",
+      "bg-secondary",
+      "bg-background",
+      "bg-surface",
+      "bg-card",
+      "bg-muted",
+      "bg-accent",
+      "bg-destructive",
+      "text-foreground",
+      "text-primary",
+      "text-muted-foreground",
+      "text-card-foreground",
+      "border-border",
+      "border-primary"
+    ],
+    "typography": [
+      "text-heading-1",
+      "text-heading-2",
+      "text-heading-3",
+      "text-heading-4",
+      "text-body",
+      "text-body-large",
+      "text-body-small",
+      "text-caption",
+      "text-label",
+      "text-button"
+    ],
+    "icons": [
+      "icon-xs",
+      "icon-sm",
+      "icon-md",
+      "icon-lg",
+      "icon-xl"
+    ],
+    "animations": [
+      "transition-colors",
+      "transition-shadow",
+      "transition-transform",
+      "transition-opacity",
+      "duration-fast",
+      "duration-normal",
+      "duration-slow"
+    ]
+  },
+  "forbiddenPatterns": {
+    "hardcodedColors": [
+      "bg-(red|blue|green|yellow|purple|pink|indigo|teal|orange|cyan|lime|emerald|violet|fuchsia|rose|sky|amber)-\\d+",
+      "text-(red|blue|green|yellow|purple|pink|indigo|teal|orange|cyan|lime|emerald|violet|fuchsia|rose|sky|amber)-\\d+",
+      "border-(red|blue|green|yellow|purple|pink|indigo|teal|orange|cyan|lime|emerald|violet|fuchsia|rose|sky|amber)-\\d+"
+    ],
+    "rawTypography": [
+      "text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)",
+      "font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)"
+    ],
+    "forbiddenUtilities": [
+      "transition-all"
+    ]
+  },
+  "examples": {
+    "correct": [
+      "className=\"bg-primary text-foreground\"",
+      "className=\"text-heading-1 font-bold\"",
+      "className=\"icon-md text-primary\"",
+      "className=\"transition-colors duration-normal\""
+    ],
+    "incorrect": [
+      "className=\"bg-teal-600 text-white\"",
+      "className=\"text-2xl font-bold\"",
+      "className=\"h-5 w-5\"",
+      "className=\"transition-all\""
+    ]
+  }
+}
