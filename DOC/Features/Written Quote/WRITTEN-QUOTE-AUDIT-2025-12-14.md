@@ -30,7 +30,7 @@ Purpose: Establish current status, gaps, and an actionable e2e plan to implement
 ---
 
 ## Constraints & Rules
-- Follow DOC/Guidelines/README.md authority hierarchy and AI-IMPLEMENTATION-GUIDELINES.md.
+- Follow D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md authority hierarchy and AI-IMPLEMENTATION-GUIDELINES.md.
 - UI displays state only; backend validates and enforces rules (limits, closure).
 - Multi-theme and accessibility standards apply; no business logic in UI.
 
