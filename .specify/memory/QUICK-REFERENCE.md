@@ -1,8 +1,11 @@
 # UI-First Workflow Quick Reference
+Aligned with DOC/GUIDELINES & SOT (Canonical Entry)
 
 **Version**: 1.0  
 **Created**: October 28, 2025  
 **Purpose**: One-page quick reference for UI-first, spec-driven development
+**Start Here**: DOC/GUIDELINES & SOT/README.md → IMPLEMENTATION SOT/README.md → AI-IMPLEMENTATION-GUIDELINES.md
+**Standards**: specs/007-migration-and-build/spec.md (MANDATORY)
 
 ---
 
@@ -14,6 +17,7 @@ Phase 1: UI/UX FIRST → Phase 2: SPEC ALIGNMENT → Phase 3: BACKEND
 ```
 
 **Rule**: UI → Spec Update → Backend → NEVER Backend First
+Authority Chain: System Constitution → Technical Documentation → AI Implementation Guidelines
 
 ---
 
@@ -27,11 +31,11 @@ Phase 1: UI/UX FIRST → Phase 2: SPEC ALIGNMENT → Phase 3: BACKEND
 3. Review with stakeholder (5-10% time)
 4. Iterate based on feedback (30-50% time)
 
-**Tools**: Storybook, mock JSON, faker.js
+**Tools**: Storybook (optional), mock JSON, faker.js, specs/007 verification commands
 
 **Output**: ✅ Approved UI with all interactions working
 
-**Approval Gate**: No backend until UI explicitly approved
+**Approval Gate**: No backend until UI explicitly approved; run specs/007 verification after migrations.
 
 ---
 
@@ -44,7 +48,7 @@ Phase 1: UI/UX FIRST → Phase 2: SPEC ALIGNMENT → Phase 3: BACKEND
 2. Update `tasks.md`: List backend tasks (5 min)
 3. Update `execution-plan.md`: Adjust timeline (10 min)
 
-**Output**: ✅ Specs reflect approved UI
+**Output**: ✅ Specs reflect approved UI; references updated to canonical DOC/GUIDELINES & SOT paths.
 
 **Approval Gate**: No backend until specs updated
 
@@ -60,13 +64,14 @@ Phase 1: UI/UX FIRST → Phase 2: SPEC ALIGNMENT → Phase 3: BACKEND
 3. Integrate with UI (15-20% time)
 4. Test all scenarios (10-15% time)
 
-**Rule**: If backend needs UI changes, **return to Phase 1**
+**Rule**: If backend needs UI changes, **return to Phase 1**. Entry reminder: DOC/GUIDELINES & SOT/README.md.
 
 **Output**: ✅ Working feature (UI + backend integrated)
 
 ---
 
 ## SpecKit Updates: Three-Tier System
+Follow canonical docs: DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/README.md for mapping tasks.
 
 ### Tier 1: Real-Time (30 seconds)
 **When**: Every task change  

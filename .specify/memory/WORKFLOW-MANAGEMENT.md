@@ -1,8 +1,11 @@
 # SpecKit Workflow Management System
+Aligned with DOC/GUIDELINES & SOT (Canonical Authority)
 
 **Version**: 1.0  
 **Created**: October 28, 2025  
 **Purpose**: Practical workflow for maintaining SpecKit alignment when plans change frequently
+**Start Here**: DOC/GUIDELINES & SOT/README.md → IMPLEMENTATION SOT/README.md → AI-IMPLEMENTATION-GUIDELINES.md
+**Standards**: specs/007-migration-and-build/spec.md & plan.md (MANDATORY for migration/build)
 
 ---
 
@@ -24,6 +27,7 @@
 ---
 
 ## The Solution: Lightweight Spec Maintenance
+Refer to DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/README.md to map tasks to architecture/testing/ops.
 
 ### Core Philosophy
 
@@ -39,6 +43,7 @@
 ## Three-Tier Workflow System
 
 ### Tier 1: Real-Time Updates (Immediate - 30 seconds)
+Path alias reminder: DOC/Guidelines/* equals DOC/GUIDELINES & SOT/*.
 
 **When**: Every time you complete a task, discover new work, or fix an error
 
@@ -68,6 +73,7 @@
 ---
 
 ### Tier 2: Quick Context Updates (Daily - 2 minutes)
+Note: Update canonical links to DOC/GUIDELINES & SOT if referenced.
 
 **When**: End of each work session or when something significant changes
 
@@ -105,6 +111,7 @@
 ---
 
 ### Tier 3: Weekly Spec Sync (Weekly - 30 minutes)
+Include verification: Run specs/007 post-migration checks before marking work complete.
 
 **When**: End of week or before starting new phase
 
@@ -171,6 +178,7 @@ cat changelog.md | head -50
 ---
 
 ## Handling Common Scenarios
+Always begin changes by consulting DOC/GUIDELINES & SOT/README.md.
 
 ### Scenario 1: Fresh Plan → Modifications On-The-Go
 

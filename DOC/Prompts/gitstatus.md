@@ -1,3 +1,4 @@
+e71f8ce58a286254ec0a53292f7a0177751e8b1c | 2025-12-15 11:58:17 +0600 | Written Quote: commit and push all current changes
 e44a3944b1c3dabf98b2b251378a92dd0bb3ec6e | 2025-12-15 11:53:46 +0600 | DOC/GUIDELINES & SOT: audit, fix, and validate all documentation structure, authority, and references
 2025-12-14 17:06:13 | b9b455936f7514d3ccd4bf80cfd8f26ce1b537cc | Phase 13S.2 Gap Fixes: Admin bidding UI + Modal dynamic limits
 8e82209|2025-12-14 12:31:57|Migration + Cleanup: Applied email_deliveries migration (safe/additive). Removed deprecated notification-service.ts + .DEPRECATED.md (412 lines). Updated verify-otp + lead-state to use createLegacyNotification wrapper. Clean structure: zero duplicates. TypeScript: 0 errors. Breaking: NONE.

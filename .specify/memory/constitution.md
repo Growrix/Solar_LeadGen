@@ -1,9 +1,26 @@
 # SolarMatch Constitution
+Alignment with DOC/GUIDELINES & SOT and Spec-Driven Workflow
+
 **Solar Lead Generation Platform - Technical Standards & Principles**
 
 ---
 
 ## Core Principles
+
+### - Authority & Entry Points (Canonical)
+- Primary entry: DOC/GUIDELINES & SOT/README.md (project control index)
+- Workflow details: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
+- AI safety & workflow: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
+- Highest authority: DOC/GUIDELINES & SOT/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md
+- Technical index: DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/README.md
+- Path alias: any DOC/Guidelines/* refers to DOC/GUIDELINES & SOT/*
+
+### - Migration & Build Standards (Scope-Clarified)
+- Applicability: These standards apply ONLY to migration and build tasks. Regular feature development still follows the UI → Spec → Backend workflow defined below.
+- Required References: specs/007-migration-and-build/spec.md and specs/007-migration-and-build/plan.md.
+- Verification: Post-migration checks MUST return 0/0/0/0/0/0 across the six commands to confirm no hardcoded values or theme violations.
+- Multi-Theme: Validate in Dark, Light, and Purple before marking a component complete.
+- Entry Reminder: Begin at DOC/GUIDELINES & SOT/README.md to confirm authority and workflow before executing migrations.
 
 ### 0. Development Workflow (UI-First, Spec-Driven)
 
@@ -15,6 +32,7 @@
 - **Approval Gate**: Developer confirms UI/UX meets requirements before proceeding
 
 **Phase 2: Spec Alignment - MANDATORY**
+Reference: specs/007-migration-and-build/spec.md for verification gates.
 - Update ALL SpecKit files BEFORE backend implementation:
   - `spec.md`: Update functional requirements, success criteria
   - `tasks.md`: Update task status, add new tasks as discovered
@@ -30,6 +48,7 @@
 - Backend changes that affect UI require returning to Phase 1
 
 **Workflow Rule**: UI → Spec Update → Backend → Never Backend First
+Entry reminder: Start at DOC/GUIDELINES & SOT/README.md, then IMPLEMENTATION SOT/README.md.
 
 ### I. Next.js App Router First
 **All features must use Next.js 14+ App Router architecture**
