@@ -2,20 +2,22 @@
 
 Purpose: Single authoritative entry for humans and AI to operate this repository. This file defines document authority, navigation flow, and operational behavior. It references existing documents only and does not duplicate their content.
 
+Note: For technical documentation index (architecture, coding standards, testing, operations), see TECHNICAL DOCUMENTATIONS/README.md in this folder.
+
 ---
 
 ## Authority Hierarchy
 
 Conflicts are resolved by higher authority. Follow this order strictly:
 
-1. System Constitution — DOC/Guidelines/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md
-2. System Design Blueprint — DOC/Guidelines/SYSTEM DESIGN/Blueprint.md
-3. Universal SaaS System Audit Prompt — DOC/Guidelines/SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md
-4. AI Implementation Guidelines — DOC/Guidelines/AI-IMPLEMENTATION-GUIDELINES.md
-5. Design System SOT — DOC/Guidelines/DESIGN-SYSTEM-SOT.md
-6. UI/UX Layout & Routing Standards — DOC/Guidelines/UI-UX-Layout-and-Routing-Standards.md
+1. System Constitution — SYSTEM DESIGN/SYSTEM_CONSTITUTION.md
+2. System Design Blueprint — SYSTEM DESIGN/Blueprint.md
+3. Universal SaaS System Audit Prompt — SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md
+4. AI Implementation Guidelines — IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
+5. Design System SOT — IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md
+6. UI/UX Layout & Routing Standards — IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md
 7. Feature Specs & Tasks — specs/** (feature-specific plans and phases)
-8. Operational Docs — docs/** (architecture, devops, security, testing, theming)
+8. Technical Docs — TECHNICAL DOCUMENTATIONS/** (architecture, devops, security, testing, theming)
 9. Audit Reports — DOC/AUDIT-REPORTS/** (issue-specific analysis and outcomes)
 
 Rule: If any instruction conflicts, the higher-level document overrides lower levels. If something is not defined by the Constitution/Blueprint, it must not exist in code.
@@ -26,18 +28,19 @@ Rule: If any instruction conflicts, the higher-level document overrides lower le
 
 Read in this order before any task:
 
-- Start: SYSTEM_CONSTITUTION.md → Blueprint.md → AI-IMPLEMENTATION-GUIDELINES.md
+ - Start: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md → SYSTEM DESIGN/Blueprint.md → IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
 - Then: Choose relevant standards based on task type:
   - Design/UI: DESIGN-SYSTEM-SOT.md, UI-UX-Layout-and-Routing-Standards.md
-  - Architecture/Domain: docs/architecture/** and Blueprint.md
-  - Security/Access: SYSTEM_CONSTITUTION.md, docs/security/**
-  - Testing/E2E: docs/testing/**, AI-IMPLEMENTATION-GUIDELINES.md
-  - Theming: docs/theming/**, DESIGN-SYSTEM-SOT.md
+  - Architecture/Domain: TECHNICAL DOCUMENTATIONS/architecture/** and SYSTEM DESIGN/Blueprint.md
+  - Security/Access: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md, TECHNICAL DOCUMENTATIONS/security/**
+  - Testing/E2E: TECHNICAL DOCUMENTATIONS/testing/**, IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
+  - Theming: TECHNICAL DOCUMENTATIONS/theming/**, IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md
 - Finally: Locate feature-specific materials in specs/** and any related DOC/AUDIT-REPORTS/** entries.
 
 Token discipline:
 - Load only the minimum set of documents required for the current task.
 - Do not preload unrelated files; reference paths here to fetch precisely.
+ - Design tokens source of truth is DESIGN-SYSTEM-SOT.md; other docs must reference it (do not redefine).
 
 Assumption policy:
 - Do not infer undocumented behavior.
@@ -47,14 +50,14 @@ Assumption policy:
 
 ## Document Map by Use-Case
 
-- Architecture decisions: SYSTEM_CONSTITUTION.md, Blueprint.md, docs/architecture/**
-- Feature implementation rules: AI-IMPLEMENTATION-GUIDELINES.md, specs/**
-- Auditing & debugging: UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md, DOC/AUDIT-REPORTS/**
-- Refactoring: Blueprint.md (boundaries), AI-IMPLEMENTATION-GUIDELINES.md (workflow)
-- UI/UX decisions: DESIGN-SYSTEM-SOT.md, UI-UX-Layout-and-Routing-Standards.md
-- Error handling & incidents: AI-IMPLEMENTATION-GUIDELINES.md (failure handling), DOC/AUDIT-REPORTS/**
-- Security & permissions: SYSTEM_CONSTITUTION.md (Articles VI, VII), docs/security/**
-- Testing standards: docs/testing/**, AI-IMPLEMENTATION-GUIDELINES.md (GATE 0, zero-warnings policy)
+- Architecture decisions: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md, SYSTEM DESIGN/Blueprint.md, TECHNICAL DOCUMENTATIONS/architecture/**
+- Feature implementation rules: IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md, specs/**
+- Auditing & debugging: SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md, DOC/AUDIT-REPORTS/**
+- Refactoring: SYSTEM DESIGN/Blueprint.md (boundaries), IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md (workflow)
+- UI/UX decisions: IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md, IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md
+- Error handling & incidents: IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md (failure handling), DOC/AUDIT-REPORTS/**
+- Security & permissions: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md (Articles VI, VII), TECHNICAL DOCUMENTATIONS/security/**
+- Testing standards: TECHNICAL DOCUMENTATIONS/testing/**, IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md (GATE 0, zero-warnings policy)
 
 ---
 

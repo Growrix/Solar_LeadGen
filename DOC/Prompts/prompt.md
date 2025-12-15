@@ -1733,7 +1733,7 @@ Add release notes in CHANGELOG.md:
 
 Each new developer must:
 
-Read /docs/constitution.md and follow system philosophy.
+Read DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/constitution.md and follow system philosophy.
 
 Clone project, run docker compose up -d, then npm run dev.
 
@@ -3289,5 +3289,23 @@ Follow the
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\README.md. 
 ### Audit Report: 
  After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\SendGrid folder .
+### Implementation Phase:
+ After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.
+
+ --------------------------------------------------------------------------------------
+
+ I want to complete the Written Quote flow e2e . But I am out of Idea. as I already has call/visit and bidding lead, so I thought this written quote can a quote where the Installer will send Quotes masked and homeowers can negotiation with the price , but the negotiation has limitations e.g installer gave price 5000, homeowner can only edit ammount to any amount they want , If the installer Press "Done deal" button then the deal is done, if the installer give another price then it will be considered as last price , so if the homeowner press "Done deal" then the deal will be closed and the installers will have to pay and then the process continues as per the normal flow.
+
+- The review bid modal from homeowners side can be used for this purpose with some modifications. so that we do not need to build another modal from scratch. 
+
+***Instructions*** I want you to design the initial plan based on the Written Quote flow e2e as per the above instructions. so that the homeowners can negotiation with the price with some limitations as per the above instructions. and come up with a comprehensive implementation plan for this Written Quote flow e2e.
+- You have to understand the current exact status of this written quote flow e2e first. then based on that you have to design the initial plan accordingly.
+
+***Strickt rules***  
+Follow the 
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Guidelines\README.md. 
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder .
 ### Implementation Phase:
  After that create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and make sure to stay aligned with the specks as well. Make sure to follow the backend frontend rules in the guidelines. Also the testing instructions as well. Must include playwright e2e testing for SendGrid email notifications as well to ensure everything is working perfectly in realtime without any issues.

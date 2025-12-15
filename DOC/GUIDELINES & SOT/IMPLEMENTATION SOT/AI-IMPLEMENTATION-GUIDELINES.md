@@ -88,11 +88,11 @@
 **These files contain detailed standards. Read the relevant ones BEFORE starting work:**
 
 ### For ALL Tasks:
-- `docs/constitution.md` - Core principles, quality gates, 12-step audit workflow
+- `DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/constitution.md` - Core principles, quality gates, 12-step audit workflow
 
 ### For UI/Design Work:
-- `DOC/Guidelines/DESIGN-SYSTEM-SOT.md` - Design tokens, color system, migration patterns, verification commands
-- `DOC/Guidelines/UI-UX-Layout-and-Routing-Standards.md` - Layout patterns, component structure, routing conventions
+- `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md` - Design tokens, color system, migration patterns, verification commands
+- `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md` - Layout patterns, component structure, routing conventions
 
 ### For Current Task:
 - D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\007-call-visit-lead\tasks.md - Specific task structure, testing protocols, phase details
@@ -536,7 +536,7 @@ Before marking complete:
 
 ## 🎨 DESIGN SYSTEM COMPLIANCE
 
-**For ALL UI work, reference**: `DOC/Guidelines/DESIGN-SYSTEM-SOT.md`
+**For ALL UI work, reference**: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md`
 
 That file contains:
 - Design token reference (colors, spacing, typography)
@@ -572,7 +572,7 @@ That file contains:
 ## 🔐 BACKEND IMPLEMENTATION PATTERNS
 
 **For database schema**: Reference `prisma/schema.prisma`
-**For API structure**: See `docs/constitution.md` for patterns
+**For API structure**: See `DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/constitution.md` for patterns
 
 ### ⚠️ CRITICAL: Pre-Backend Implementation Checklist
 

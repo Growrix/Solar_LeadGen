@@ -1,3 +1,40 @@
+## Phase 13W — Written Quote Negotiation (MVP)
+- Status: Planned
+- Priority: P1
+- References:
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-AUDIT-2025-12-14.md
+  - Guidelines: DOC/Guidelines/README.md, AI-IMPLEMENTATION-GUIDELINES.md
+
+### T13W-1: Data Model & Migrations
+- Define `WrittenQuote` and `WrittenQuoteEvent` models in Prisma.
+- One OPEN negotiation per (leadId, installerId).
+- Migration scripts prepared and applied.
+
+### T13W-2: API Endpoints
+- Start negotiation, offer, counter, done-deal, and fetch endpoints.
+- Role validation (installer/homeowner), input validation, audit logs.
+
+### T13W-3: UI — Reuse Review Bids Modal
+- Add "Written Quote" tab in homeowner Review Bids modal.
+- Show masked installer price, homeowner counter, compact history, actions.
+- Keep right panel collapsible with InstantQuote details.
+
+### T13W-4: Notifications & Emails (SendGrid)
+- Event-driven notifications: OFFER → homeowner, COUNTER → installer, DONE_DEAL → both.
+- Neutral messaging for homeowners (no “lead/purchase/paid”).
+
+### T13W-5: E2E + SendGrid Tests
+- Playwright scenarios covering offer→counter→done→payment CTA.
+- Assert `EmailDelivery` entries, in-app notifications, and role access.
+
+### T13W-6: Validation & Build
+- `npx tsc --noEmit`, `npm run build`.
+- Multi-theme visual verification unaffected; UI-only changes follow standards.
+
+### T13W-7: Commit & Documentation
+- Atomic commits per component/endpoint.
+- Update DOC/Prompts/gitstatus.md with commit IDs and summary.
+
 # Tasks – Quote Builder Modal Enhancement (Existing)
 
 Feature: `008-description-enhance-existing`

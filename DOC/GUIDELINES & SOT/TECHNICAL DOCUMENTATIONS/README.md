@@ -2,6 +2,8 @@
 
 Concise navigation & usage instructions for human and AI contributors. Always load only the minimum relevant files for a task to preserve context quality.
 
+Note: For system authority, workflow rules, and AI navigation controller, start at IMPLEMENTATION SOT/README.md.
+
 ## Quick Purpose Map
 | Need | Read These First | Optional Follow-ups |
 |------|------------------|---------------------|

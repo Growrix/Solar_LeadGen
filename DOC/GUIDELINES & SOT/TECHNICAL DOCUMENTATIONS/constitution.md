@@ -1,5 +1,7 @@
 # SaaS Project Constitution
 
+Note: This document operates under the higher authority of SYSTEM DESIGN/SYSTEM_CONSTITUTION.md. For day-to-day implementation workflow and safety rules, defer to IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md.
+
 Authoritative operating manual for all human and AI contributors. Every change, line of code, architectural decision, and audit MUST align with this constitution. Non‑compliant work is rejected.
 
 ## 1. Core Principles
