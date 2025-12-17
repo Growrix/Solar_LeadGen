@@ -90,7 +90,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify lead is available for written quote
-    if (lead.status === 'CANCELLED' || lead.status === 'ARCHIVED') {
+    // Note: LeadStatus enum doesn't have CANCELLED or ARCHIVED - these were from old schema
+    if (lead.status === 'FLAGGED' || lead.status === 'EXPIRED') {
       logger.warn('Lead not available', { leadId: body.leadId, status: lead.status, correlationId });
       return NextResponse.json(
         { error: 'This lead is not available for written quotes' },
@@ -154,21 +155,21 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Notify homeowner
-    await createNotification({
-      userId: lead.homeownerId,
-      type: NotificationType.LEAD_UPDATE,
-      title: 'New Written Quote Received',
-      message: `An installer has sent you a written quote for $${body.initialPrice.toLocaleString()}. Review and respond in your dashboard.`,
-      actionUrl: `/homeowner/leads/${body.leadId}`,
-      actionLabel: 'Review Quote',
-      metadata: {
-        leadId: body.leadId,
-        writtenQuoteId: writtenQuote.id,
-        installerId: auth.userId,
-        price: body.initialPrice
-      }
-    });
+    // TODO: Refactor to use new notification service interface (recipientUserId, role, actionType, messageKey, routeKey)
+    // await createNotification({
+    //   userId: lead.homeownerId,
+    //   type: NotificationType.LEAD_UPDATE,
+    //   title: 'New Written Quote Received',
+    //   message: `An installer has sent you a written quote for $${body.initialPrice.toLocaleString()}. Review and respond in your dashboard.`,
+    //   actionUrl: `/homeowner/leads/${body.leadId}`,
+    //   actionLabel: 'Review Quote',
+    //   metadata: {
+    //     leadId: body.leadId,
+    //     writtenQuoteId: writtenQuote.id,
+    //     installerId: auth.userId,
+    //     price: body.initialPrice
+    //   }
+    // });
 
     logger.info('Written quote created successfully', {
       writtenQuoteId: writtenQuote.id,

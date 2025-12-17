@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, DollarSign, MessageSquare, CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
 /**
@@ -52,7 +52,8 @@ export function WrittenQuoteNegotiationPanel({
     (role === 'installer' && status === 'installer_turn') ||
     (role === 'homeowner' && status === 'homeowner_turn');
 
-  const canNegotiate = isMyTurn && !disabled && status !== 'accepted' && status !== 'rejected';
+  const isFinalStatus = (status === 'accepted' || status === 'rejected');
+  const canNegotiate = isMyTurn && !disabled && !isFinalStatus;
 
   const handleSubmitOffer = async () => {
     const price = parseFloat(newPrice);
@@ -107,9 +108,9 @@ export function WrittenQuoteNegotiationPanel({
       case 'pending':
         return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-surface-secondary text-muted-foreground"><Clock className="h-3 w-3" /> Pending</span>;
       case 'installer_turn':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary-subtle text-primary"><MessageSquare className="h-3 w-3" /> Installer's Turn</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary-subtle text-primary"><MessageSquare className="h-3 w-3" /> Installer&apos;s Turn</span>;
       case 'homeowner_turn':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary-subtle text-primary"><MessageSquare className="h-3 w-3" /> Homeowner's Turn</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary-subtle text-primary"><MessageSquare className="h-3 w-3" /> Homeowner&apos;s Turn</span>;
       case 'accepted':
         return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-success-subtle text-success"><CheckCircle2 className="h-3 w-3" /> Accepted</span>;
       case 'rejected':
@@ -137,13 +138,13 @@ export function WrittenQuoteNegotiationPanel({
           </div>
 
           {status === 'installer_turn' && role === 'homeowner' && (
-            <p className="text-body-small text-muted-foreground">Waiting for installer's counter-offer...</p>
+            <p className="text-body-small text-muted-foreground">Waiting for installer&apos;s counter-offer...</p>
           )}
           {status === 'homeowner_turn' && role === 'installer' && (
-            <p className="text-body-small text-muted-foreground">Waiting for homeowner's response...</p>
+            <p className="text-body-small text-muted-foreground">Waiting for homeowner&apos;s response...</p>
           )}
           {canNegotiate && (
-            <p className="text-label text-primary">It's your turn to respond</p>
+            <p className="text-label text-primary">It&apos;s your turn to respond</p>
           )}
         </div>
       </Card>
@@ -171,7 +172,7 @@ export function WrittenQuoteNegotiationPanel({
                       {new Date(event.timestamp).toLocaleString()}
                     </span>
                   </div>
-                  <p className="text-body-small text-body">
+                  <p className="text-body-small">
                     {event.action === 'start' && 'Started written quote'}
                     {event.action === 'offer' && `Offered ${event.priceOffered?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}`}
                     {event.action === 'counter' && `Counter-offered ${event.priceOffered?.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}`}
@@ -179,7 +180,7 @@ export function WrittenQuoteNegotiationPanel({
                     {event.action === 'reject' && 'Rejected the quote'}
                   </p>
                   {event.notes && (
-                    <p className="text-body-small text-muted-foreground mt-1 italic">"{event.notes}"</p>
+                    <p className="text-body-small text-muted-foreground mt-1 italic">&ldquo;{event.notes}&rdquo;</p>
                   )}
                 </div>
               ))}
@@ -242,7 +243,7 @@ export function WrittenQuoteNegotiationPanel({
                   <Button
                     onClick={handleAccept}
                     disabled={isSubmitting}
-                    variant="success"
+                    variant="primary"
                     className="flex-1"
                   >
                     <CheckCircle2 className="h-4 w-4" />
@@ -260,7 +261,7 @@ export function WrittenQuoteNegotiationPanel({
                   <Button
                     onClick={handleReject}
                     disabled={isSubmitting}
-                    variant="danger"
+                    variant="destructive"
                     className="flex-1"
                   >
                     <XCircle className="h-4 w-4" />

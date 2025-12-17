@@ -139,21 +139,22 @@ export async function POST(
       ? `Great news! The homeowner has accepted your written quote of $${quote.currentPrice.toLocaleString()}. You can now proceed with the installation.`
       : `The homeowner has declined your written quote. Thank you for your participation.`;
 
-    await createNotification({
-      userId: quote.installerId,
-      type: body.action === 'accept' ? NotificationType.LEAD_UPDATE : NotificationType.LEAD_UPDATE,
-      title: notificationTitle,
-      message: notificationMessage,
-      actionUrl: `/installer/leads/${quote.leadId}`,
-      actionLabel: body.action === 'accept' ? 'View Details' : 'View Lead',
-      metadata: {
-        leadId: quote.leadId,
-        writtenQuoteId: quoteId,
-        homeownerId: auth.userId,
-        finalPrice: quote.currentPrice,
-        action: body.action
-      }
-    });
+    // TODO: Refactor to use new notification service interface (recipientUserId, role, actionType, messageKey, routeKey)
+    // await createNotification({
+    //   userId: quote.installerId,
+    //   type: body.action === 'accept' ? NotificationType.LEAD_UPDATE : NotificationType.LEAD_UPDATE,
+    //   title: notificationTitle,
+    //   message: notificationMessage,
+    //   actionUrl: `/installer/leads/${quote.leadId}`,
+    //   actionLabel: body.action === 'accept' ? 'View Details' : 'View Lead',
+    //   metadata: {
+    //     leadId: quote.leadId,
+    //     writtenQuoteId: quoteId,
+    //     homeownerId: auth.userId,
+    //     finalPrice: quote.currentPrice,
+    //     action: body.action
+    //   }
+    // });
 
     logger.info('Written quote finalized successfully', {
       quoteId,
