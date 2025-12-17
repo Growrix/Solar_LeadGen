@@ -1,3 +1,4 @@
+e1f0250 | 2025-12-17 | feat(written-quote): enable notifications in API routes + add E2E tests - Fixed notification calls in start, offer, counter, done API routes - Added 5 new message keys to message-catalog.ts for written quote notifications - Created 3 comprehensive E2E test suites: installer flow, homeowner flow, full negotiation - All tests follow Playwright patterns with proper cleanup and assertions
 9417705160ddbe943684897f9310327c494330aa | 2025-12-15 12:33:11 +0600 | Written Quote: research-aligned ImplementationPlan.md (pain-point driven, UI-first, specs/007-compliant)
 8cfbc32e08e8552d367f093af616af057010cc0e | 2025-12-15 12:11:17 +0600 | constitution.md: clarify migration/build standards scope, align with DOC index, eliminate ambiguity
 e71f8ce58a286254ec0a53292f7a0177751e8b1c | 2025-12-15 11:58:17 +0600 | Written Quote: commit and push all current changes
