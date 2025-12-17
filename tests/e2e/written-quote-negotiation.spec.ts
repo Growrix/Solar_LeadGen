@@ -19,8 +19,8 @@ test.describe('Written Quote - Full Negotiation Flow', () => {
     try {
       // Step 1: Installer submits initial quote ($9,000)
       await installerPage.goto('/login');
-      await installerPage.fill('input[type="email"]', 'installer@test.com');
-      await installerPage.fill('input[type="password"]', 'password');
+      await installerPage.fill('input[name="email"]', 'installer@test.com');
+      await installerPage.fill('input[name="password"]', 'password');
       await installerPage.click('button[type="submit"]');
       await installerPage.waitForURL('**/installer/**');
 
@@ -45,8 +45,8 @@ test.describe('Written Quote - Full Negotiation Flow', () => {
 
       // Step 2: Homeowner counters ($8,500)
       await homeownerPage.goto('/login');
-      await homeownerPage.fill('input[type="email"]', 'homeowner@test.com');
-      await homeownerPage.fill('input[type="password"]', 'password');
+      await homeownerPage.fill('input[name="email"]', 'homeowner@test.com');
+      await homeownerPage.fill('input[name="password"]', 'password');
       await homeownerPage.click('button[type="submit"]');
       await homeownerPage.waitForURL('**/homeowner/**');
 
@@ -121,8 +121,8 @@ test.describe('Written Quote - Full Negotiation Flow', () => {
 
     // Login as homeowner
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'homeowner@test.com');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[name="email"]', 'homeowner@test.com');
+    await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
 
     // Navigate to completed quote
@@ -158,8 +158,8 @@ test.describe('Written Quote - Full Negotiation Flow', () => {
     test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data');
 
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'homeowner@test.com');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[name="email"]', 'homeowner@test.com');
+    await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
 
     await page.goto('/homeowner/dashboard');

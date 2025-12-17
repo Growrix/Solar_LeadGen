@@ -9,8 +9,8 @@ test.describe('Written Quote - Installer Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login as installer (adjust credentials based on your test data)
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'installer@test.com');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[name="email"]', 'installer@test.com');
+    await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/installer/**');
   });

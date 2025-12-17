@@ -1,6 +1,309 @@
+## Phase 4.16.4 — Written Quote E2E Completion & Quality Gates
+
+**Status:** IN PROGRESS  
+**Priority:** P0 (Sprint 2F Blocker)  
+**Owner:** Engineering  
+**Created:** 2025-12-17  
+**Source:** Written Quote Status Audit + Conversation History Analysis  
+**Authority:** System Constitution → Blueprint → AI Implementation Guidelines
+
+### Context
+Sprint 2F (Written Quote E2E testing) is blocked by schema drift and test infrastructure issues. Notifications are implemented, E2E tests are created, but execution fails due to:
+1. **Schema Drift**: `WrittenQuoteEvent.actorRole` column missing in database
+2. **E2E Login Selectors**: Tests use wrong selectors (`input[type="email"]` vs `input[name="email"]`)
+3. **Missing Seed Data**: No test users, leads, or written quotes exist
+4. **Quality Standards**: Playwright artifacts committed, lint warnings present
+
+This phase focuses on systematic resolution and achieving "0 problems/warnings pass" standard.
+
+### Success Criteria
+- [ ] Database schema aligned with Prisma (actorRole column added)
+- [ ] Seed script runs successfully (creates 2 users + 1 lead + 1 written quote)
+- [ ] E2E tests pass: All 3 test files (installer/homeowner/negotiation)
+- [ ] Build succeeds: `npm run build` with 0 warnings
+- [ ] TypeScript check: `npx tsc --noEmit` returns 0 errors
+- [ ] Playwright artifacts removed from git
+- [ ] All commits pushed to `WrittenQuote_e2e` branch
+- [ ] DB backup taken before schema changes
+
+---
+
+### Sprint 4.16.4.1 — Schema Drift Resolution (30 min)
+
+**T-WQ-400: Pre-Migration Database Backup**
+- [ ] Verify Docker container running: `docker ps | Select-String "solarmatch"`
+- [ ] Create backup: `docker exec solarmatch-db-1 pg_dump -U postgres solarmatch > backup/backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')_pre_actor_role.sql`
+- [ ] Verify backup created: `Get-ChildItem backup/*.sql | Sort-Object LastWriteTime -Descending | Select-Object -First 1`
+- **Success:** Backup file exists in `/backup` directory
+- **Authority:** DOC/Prompts/Instructions.md (DB backup before significant changes)
+
+**T-WQ-401: Add actorRole Column to written_quote_events**
+- [ ] Create migration: `npx prisma migrate dev --name add-actor-role-to-written-quote-events`
+- [ ] Verify migration created in `prisma/migrations/`
+- [ ] Check migration SQL contains: `ALTER TABLE "written_quote_events" ADD COLUMN "actor_role" TEXT NOT NULL;`
+- [ ] Apply migration (auto-applied by migrate dev)
+- [ ] **VALIDATE:** Check column exists: 
+   ```powershell
+   docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "\d written_quote_events"
+   ```
+- **Success:** Column `actor_role` appears in table schema
+- **Rollback:** If fails, restore backup: `docker exec -i solarmatch-db-1 psql -U postgres solarmatch < backup/[latest].sql`
+
+**T-WQ-402: Regenerate Prisma Client**
+- [ ] Close all PowerShell terminals in VS Code (unlock query engine DLL)
+- [ ] Kill any running Node processes: `Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force`
+- [ ] Regenerate client: `npx prisma generate`
+- [ ] **VALIDATE:** Check for success message: "✔ Generated Prisma Client"
+- [ ] **VALIDATE:** TypeScript check: `npx tsc --noEmit prisma/seed-written-quote-tests.ts`
+- **Success:** Prisma client regenerated, no TypeScript errors
+- **Blocker:** If EPERM error persists, restart VS Code and retry
+
+---
+
+### Sprint 4.16.4.2 — E2E Test Infrastructure (1 hour)
+
+**T-WQ-410: Run Seed Script Successfully**
+- [ ] Execute seed: `npx tsx prisma/seed-written-quote-tests.ts`
+- [ ] **VALIDATE:** Check output contains "✅ SEED COMPLETE!"
+- [ ] **VALIDATE:** Verify users created:
+   ```powershell
+   docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT email, role FROM users WHERE email IN ('installer@test.com', 'homeowner@test.com');"
+   ```
+- [ ] **VALIDATE:** Verify lead created:
+   ```powershell
+   docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT id, status, postcode FROM leads WHERE postcode = '3000';"
+   ```
+- [ ] **VALIDATE:** Verify written quote created:
+   ```powershell
+   docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT id, current_status, current_price FROM written_quotes;"
+   ```
+- [ ] **VALIDATE:** Verify events created (should have 3 events with actor_role values):
+   ```powershell
+   docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT id, actor_role, action, price_offered FROM written_quote_events ORDER BY timestamp;"
+   ```
+- **Success:** All validations pass, seed data exists in DB
+- **Blocker:** If fails, check Prisma schema vs DB schema alignment
+
+**T-WQ-411: Fix E2E Login Selectors**
+- [ ] Update `tests/e2e/written-quote-installer.spec.ts`:
+  - Line 12: Change `input[type="email"]` to `input[name="email"]`
+  - Line 13: Change `input[type="password"]` to `input[name="password"]`
+- [ ] Update `tests/e2e/written-quote-homeowner.spec.ts`:
+  - Line 12: Change `input[type="email"]` to `input[name="email"]`
+  - Line 13: Change `input[type="password"]` to `input[name="password"]`
+- [ ] Update `tests/e2e/written-quote-negotiation.spec.ts`:
+  - Line 23: Change `input[type="email"]` to `input[name="email"]`
+  - Line 24: Change `input[type="password"]` to `input[name="password"]`
+  - Line 49: Change `input[type="email"]` to `input[name="email"]`
+  - Line 50: Change `input[type="password"]` to `input[name="password"]`
+  - Line 125: Change `input[type="email"]` to `input[name="email"]`
+  - Line 126: Change `input[type="password"]` to `input[name="password"]`
+  - Line 162: Change `input[type="email"]` to `input[name="email"]`
+  - Line 163: Change `input[type="password"]` to `input[name="password"]`
+- **Success:** All login selectors match actual app markup
+- **Validation:** Run grep to verify no `input[type="email"]` remains in written-quote specs
+
+**T-WQ-412: Remove TEST_WITH_SEED_DATA Guards**
+- [ ] Update `tests/e2e/written-quote-installer.spec.ts`:
+  - Remove line 60: `test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data');`
+  - Remove line 106: `test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data');`
+- [ ] Update `tests/e2e/written-quote-homeowner.spec.ts`:
+  - Remove similar skip guards if present
+- **Success:** All tests will run without env var requirement
+- **Rationale:** Seed data now exists, guards no longer needed
+
+---
+
+### Sprint 4.16.4.3 — Test Execution & Validation (1-2 hours)
+
+**T-WQ-420: Run Written Quote E2E Tests**
+- [ ] Start dev server in background: `npm run dev` (separate terminal)
+- [ ] Wait for server ready: "ready on http://localhost:3000"
+- [ ] Run written quote tests: `npx playwright test tests/e2e/written-quote-*.spec.ts`
+- [ ] **VALIDATE:** Check test output for pass/fail counts
+- [ ] If failures occur:
+  - Check Playwright trace: `npx playwright show-trace test-results/[failed-test]/trace.zip`
+  - Fix issues incrementally
+  - Rerun tests after each fix
+- **Success:** All written quote E2E tests pass (target: 11 tests passing)
+- **Blocker:** If login still fails, manually verify /login route and form fields exist
+
+**T-WQ-421: Build & TypeScript Validation**
+- [ ] Run TypeScript check: `npx tsc --noEmit`
+- [ ] **VALIDATE:** Output contains "Found 0 errors"
+- [ ] Run production build: `npm run build`
+- [ ] **VALIDATE:** Build succeeds (exit code 0)
+- [ ] Check for warnings: `npm run build 2>&1 | Select-String "warn"`
+- [ ] Document any warnings (target: 0 warnings, but lint warnings acceptable if not new)
+- **Success:** TypeScript 0 errors, build succeeds
+- **Acceptable:** Lint warnings from existing code (not introduced by this phase)
+
+**T-WQ-422: Run All 6 Verification Commands**
+Run on written-quote test files to ensure no hardcoded values introduced:
+```powershell
+# Command 1: Hardcoded gray/slate
+Select-String -Path "tests\e2e\written-quote-*.spec.ts" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-"
+
+# Command 2: Dark mode classes
+Select-String -Path "tests\e2e\written-quote-*.spec.ts" -Pattern "dark:"
+
+# Command 3: RGB/HEX colors
+Select-String -Path "tests\e2e\written-quote-*.spec.ts" -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}"
+
+# Command 4: Hardcoded white/black
+Select-String -Path "tests\e2e\written-quote-*.spec.ts" -Pattern "text-white|bg-white|text-black|bg-black"
+
+# Command 5: Hardcoded typography
+Select-String -Path "tests\e2e\written-quote-*.spec.ts" -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold"
+
+# Command 6: Manual responsive
+Select-String -Path "tests\e2e\written-quote-*.spec.ts" -Pattern "sm:text-|md:text-|lg:text-"
+```
+- [ ] Execute all 6 commands
+- [ ] **VALIDATE:** All return 0 matches (E2E tests don't contain style classes)
+- **Success:** 0/0/0/0/0/0 achieved for test files
+- **Note:** Test files are JavaScript/TypeScript, not styling files
+
+---
+
+### Sprint 4.16.4.4 — Quality Gates & Cleanup (30 min)
+
+**T-WQ-430: Remove Committed Playwright Artifacts**
+- [ ] Delete Playwright report: `Remove-Item -Recurse -Force playwright-report/`
+- [ ] Delete test results: `Remove-Item -Recurse -Force test-results/`
+- [ ] Add to .gitignore (verify already present):
+   ```
+   # Playwright
+   playwright-report/
+   test-results/
+   ```
+- [ ] Stage deletions: `git add .`
+- [ ] Commit: `git commit -m "chore: remove playwright artifacts from git"`
+- **Success:** Artifacts removed, .gitignore prevents future commits
+- **Authority:** Best practice - don't commit test artifacts
+
+**T-WQ-431: Remove Premature Completion Documentation**
+- [ ] Delete incorrect completion report:
+   ```powershell
+   Remove-Item "DOC\AUDIT-REPORTS\System\PHASE-4.16.2-COMPLETION-REPORT.md"
+   ```
+- [ ] Delete premature continuation prompt:
+   ```powershell
+   Remove-Item "DOC\Prompts\CONTINUATION-PROMPT-PHASE-4.16.2-COMPLETE.md"
+   ```
+- [ ] Stage deletions: `git add .`
+- [ ] Commit: `git commit -m "chore: remove premature completion docs (phase not actually complete)"`
+- **Success:** Incorrect documentation removed
+- **Rationale:** Phase wasn't complete (tests failing, quality gates unmet)
+
+**T-WQ-432: Update gitstatus.md**
+- [ ] Open `DOC/Prompts/gitstatus.md`
+- [ ] Add new section for Phase 4.16.4 commits:
+   ```markdown
+   ## Phase 4.16.4 — Written Quote E2E Completion (2025-12-17)
+   
+   **Branch:** WrittenQuote_e2e
+   
+   ### Commits:
+   - [timestamp] - fix: add actorRole column to written_quote_events (schema drift resolution)
+   - [timestamp] - test: run seed script successfully (test data created)
+   - [timestamp] - fix: correct E2E login selectors (input[name] vs input[type])
+   - [timestamp] - test: all written quote E2E tests passing
+   - [timestamp] - chore: remove playwright artifacts from git
+   - [timestamp] - chore: remove premature completion docs
+   - [timestamp] - docs: update gitstatus.md with Phase 4.16.4 completion
+   ```
+- [ ] Save file
+- **Success:** gitstatus.md updated with all phase commits
+- **Authority:** DOC/Prompts/Instructions.md (git workflow tracking)
+
+---
+
+### Sprint 4.16.4.5 — Final Validation & Completion (15 min)
+
+**T-WQ-440: Final Comprehensive Check**
+- [ ] Run full test suite: `npx playwright test`
+- [ ] **VALIDATE:** All tests pass (or only pre-existing failures)
+- [ ] Run build: `npm run build`
+- [ ] **VALIDATE:** Build succeeds
+- [ ] Check VS Code Problems panel
+- [ ] **VALIDATE:** 0 new errors (pre-existing warnings acceptable)
+- [ ] Review git status: `git status`
+- [ ] **VALIDATE:** No uncommitted changes (everything clean)
+- **Success:** All validation gates pass
+- **Achievement:** "0 problems/warnings pass" standard met
+
+**T-WQ-441: Push All Commits to Branch**
+- [ ] Verify branch: `git branch --show-current` → should be `WrittenQuote_e2e`
+- [ ] Push all commits: `git push origin WrittenQuote_e2e`
+- [ ] **VALIDATE:** Check output for successful push
+- [ ] **VALIDATE:** All commits pushed (no "ahead by X commits")
+- **Success:** All phase work backed up to remote
+- **Authority:** DOC/Prompts/Instructions.md (commit/push workflow)
+
+**T-WQ-442: Create Phase 4.16.4 Completion Report**
+- [ ] Create file: `DOC/AUDIT-REPORTS/System/PHASE-4.16.4-COMPLETION-REPORT.md`
+- [ ] Document:
+   - Schema drift resolution (actorRole column added)
+   - Seed script success (2 users + 1 lead + 1 written quote)
+   - E2E test results (X passing, Y failing with reasons)
+   - Quality gates status (build success, lint status, artifact cleanup)
+   - Known issues (if any)
+   - Next steps (if Phase 4.16.2 still incomplete)
+- [ ] Commit: `git commit -m "docs: Phase 4.16.4 completion report"`
+- [ ] Push: `git push origin WrittenQuote_e2e`
+- **Success:** Phase completion documented
+- **Deliverable:** Comprehensive status report for stakeholders
+
+---
+
+### Validation Checkpoints
+
+**After T-WQ-401 (Schema Migration):**
+- Database column exists (verified via psql)
+- Backup created before migration
+- Can rollback if needed
+
+**After T-WQ-410 (Seed Script):**
+- Seed completes without errors
+- All data verified in database
+- Test credentials work (manual login test)
+
+**After T-WQ-420 (E2E Tests):**
+- All written quote tests pass
+- No flaky tests (run 3 times to verify)
+- Test traces available for debugging
+
+**Before T-WQ-442 (Completion):**
+- Build succeeds
+- TypeScript check passes
+- Git status clean
+- All commits pushed
+
+---
+
+### Risk Mitigation
+
+**Risk:** Schema migration fails  
+**Mitigation:** DB backup before migration (T-WQ-400), rollback procedure documented
+
+**Risk:** Seed script fails on re-run (duplicate emails)  
+**Mitigation:** Seed uses `upsert` for users, checks for existing lead before creating
+
+**Risk:** E2E tests still fail after fixes  
+**Mitigation:** Manual testing of login flow, verify dev server running, check for auth issues
+
+**Risk:** Quality standards still unmet  
+**Mitigation:** Document all remaining issues in completion report, plan follow-up phase if needed
+
+**Risk:** Breaking existing features  
+**Mitigation:** Only touch written-quote-related files, full test suite run at end
+
+---
+
 ## Phase 4.16.3 — System Recovery & Sprint 2F Completion
 
-**Status:** CRITICAL - IN PROGRESS  
+**Status:** COMPLETED (superseded by Phase 4.16.4)
 **Priority:** P0 (Blocking all other work)  
 **Owner:** Engineering  
 **Source:** DOC/AUDIT-REPORTS/System/RECOVERY-AUDIT-2025-12-15.md  

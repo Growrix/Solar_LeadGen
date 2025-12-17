@@ -9,8 +9,8 @@ test.describe('Written Quote - Homeowner Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login as homeowner (adjust credentials based on your test data)
     await page.goto('/login');
-    await page.fill('input[type="email"]', 'homeowner@test.com');
-    await page.fill('input[type="password"]', 'password');
+    await page.fill('input[name="email"]', 'homeowner@test.com');
+    await page.fill('input[name="password"]', 'password');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/homeowner/**');
   });
