@@ -14,7 +14,12 @@ export type MessageKey =
   | 'homeowner.system.limit_updated'
   | 'homeowner.system.bidding_limit_updated' // Phase 13S.2
   | 'homeowner.lead.purchased'
+  | 'homeowner.written_quote.received' // Written Quote
+  | 'homeowner.written_quote.counter_offer' // Written Quote
   // Installer messages (professional tone)
+  | 'installer.written_quote.counter_received' // Written Quote
+  | 'installer.written_quote.accepted' // Written Quote
+  | 'installer.written_quote.rejected' // Written Quote
   | 'installer.new.opportunity'
   | 'installer.bid.won'
   | 'installer.bid.outcome.other'
@@ -161,6 +166,27 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'admin.assignment.accepted': {
     title: 'Assignment Accepted',
     message: 'Installer accepted a lead assignment. Track progress in dashboard.',
+  },
+  // Written Quote messages
+  'homeowner.written_quote.received': {
+    title: 'New Written Quote Received',
+    message: 'An installer has sent you a written quote. Review and respond in your dashboard.',
+  },
+  'homeowner.written_quote.counter_offer': {
+    title: 'Counter-Offer Received',
+    message: 'The installer has sent a counter-offer. Review the updated quote.',
+  },
+  'installer.written_quote.counter_received': {
+    title: 'Homeowner Counter-Offer',
+    message: 'The homeowner has sent a counter-offer. Review and respond to continue negotiation.',
+  },
+  'installer.written_quote.accepted': {
+    title: 'Written Quote Accepted! 🎉',
+    message: 'Great news! The homeowner has accepted your written quote. You can now proceed with the installation.',
+  },
+  'installer.written_quote.rejected': {
+    title: 'Written Quote Declined',
+    message: 'The homeowner has declined your written quote. Thank you for your participation.',
   },
 };
 

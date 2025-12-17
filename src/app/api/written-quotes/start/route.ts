@@ -155,21 +155,21 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // TODO: Refactor to use new notification service interface (recipientUserId, role, actionType, messageKey, routeKey)
-    // await createNotification({
-    //   userId: lead.homeownerId,
-    //   type: NotificationType.LEAD_UPDATE,
-    //   title: 'New Written Quote Received',
-    //   message: `An installer has sent you a written quote for $${body.initialPrice.toLocaleString()}. Review and respond in your dashboard.`,
-    //   actionUrl: `/homeowner/leads/${body.leadId}`,
-    //   actionLabel: 'Review Quote',
-    //   metadata: {
-    //     leadId: body.leadId,
-    //     writtenQuoteId: writtenQuote.id,
-    //     installerId: auth.userId,
-    //     price: body.initialPrice
-    //   }
-    // });
+    // Notify homeowner of new written quote
+    await createNotification({
+      recipientUserId: lead.homeownerId,
+      role: 'HOMEOWNER' as any,
+      actionType: 'NEW_QUOTE' as any,
+      messageKey: 'homeowner.written_quote.received' as any,
+      routeKey: 'homeowner.requests' as any,
+      routeParams: { leadId: body.leadId },
+      metadata: {
+        leadId: body.leadId,
+        writtenQuoteId: writtenQuote.id,
+        installerId: auth.userId,
+        price: body.initialPrice
+      }
+    });
 
     logger.info('Written quote created successfully', {
       writtenQuoteId: writtenQuote.id,

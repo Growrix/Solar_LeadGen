@@ -139,22 +139,22 @@ export async function POST(
       ? `Great news! The homeowner has accepted your written quote of $${quote.currentPrice.toLocaleString()}. You can now proceed with the installation.`
       : `The homeowner has declined your written quote. Thank you for your participation.`;
 
-    // TODO: Refactor to use new notification service interface (recipientUserId, role, actionType, messageKey, routeKey)
-    // await createNotification({
-    //   userId: quote.installerId,
-    //   type: body.action === 'accept' ? NotificationType.LEAD_UPDATE : NotificationType.LEAD_UPDATE,
-    //   title: notificationTitle,
-    //   message: notificationMessage,
-    //   actionUrl: `/installer/leads/${quote.leadId}`,
-    //   actionLabel: body.action === 'accept' ? 'View Details' : 'View Lead',
-    //   metadata: {
-    //     leadId: quote.leadId,
-    //     writtenQuoteId: quoteId,
-    //     homeownerId: auth.userId,
-    //     finalPrice: quote.currentPrice,
-    //     action: body.action
-    //   }
-    // });
+    // Notify installer of final decision
+    await createNotification({
+      recipientUserId: quote.installerId,
+      role: 'INSTALLER' as any,
+      actionType: body.action === 'accept' ? ('QUOTE_ACCEPTED' as any) : ('QUOTE_REJECTED' as any),
+      messageKey: body.action === 'accept' ? ('installer.written_quote.accepted' as any) : ('installer.written_quote.rejected' as any),
+      routeKey: 'installer.leads' as any,
+      routeParams: { leadId: quote.leadId },
+      metadata: {
+        leadId: quote.leadId,
+        writtenQuoteId: quoteId,
+        homeownerId: auth.userId,
+        finalPrice: quote.currentPrice,
+        action: body.action
+      }
+    });
 
     logger.info('Written quote finalized successfully', {
       quoteId,

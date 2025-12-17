@@ -118,21 +118,21 @@ export async function POST(
       }
     });
 
-    // TODO: Refactor to use new notification service interface (recipientUserId, role, actionType, messageKey, routeKey)
-    // await createNotification({
-    //   userId: quote.installerId,
-    //   type: NotificationType.LEAD_UPDATE,
-    //   title: 'Homeowner Counter-Offer',
-    //   message: `The homeowner has counter-offered at $${body.price.toLocaleString()}. Review and respond to continue negotiation.`,
-    //   actionUrl: `/installer/leads/${quote.leadId}`,
-    //   actionLabel: 'Review Counter',
-    //   metadata: {
-    //     leadId: quote.leadId,
-    //     writtenQuoteId: quoteId,
-    //     homeownerId: auth.userId,
-    //     price: body.price
-    //   }
-    // });
+    // Notify installer of homeowner counter-offer
+    await createNotification({
+      recipientUserId: quote.installerId,
+      role: 'INSTALLER' as any,
+      actionType: 'NEW_QUOTE' as any,
+      messageKey: 'installer.written_quote.counter_received' as any,
+      routeKey: 'installer.leads' as any,
+      routeParams: { leadId: quote.leadId },
+      metadata: {
+        leadId: quote.leadId,
+        writtenQuoteId: quoteId,
+        homeownerId: auth.userId,
+        price: body.price
+      }
+    });
 
     logger.info('Homeowner counter-offer submitted successfully', {
       quoteId,
