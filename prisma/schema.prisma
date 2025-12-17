@@ -399,8 +399,8 @@ model WrittenQuote {
   lastActionAt        DateTime?
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
-  // acceptedAt          DateTime?
-  // rejectedAt          DateTime?
+  acceptedAt          DateTime?
+  rejectedAt          DateTime?
 
   // Mirrors Bid model JSON fields for quote data
   systemData          Json? // System capacity, type, solar panels array

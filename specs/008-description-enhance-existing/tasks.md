@@ -1,3 +1,416 @@
+## Phase 4.16.6 — NextAuth E2E Debug & Schema Alignment (Production Readiness)
+
+**Status:** IN PROGRESS  
+**Priority:** P0 (Blocks Production Deployment)  
+**Owner:** Engineering  
+**Created:** 2025-12-17  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-E2E-AUTH-SCHEMA-AUDIT-2025-12-17.md`  
+**Authority:** System Constitution → Blueprint → AI Implementation Guidelines
+
+### Context
+
+Written Quote E2E tests fail at authentication despite correct modal-based login implementation. Comprehensive audit reveals:
+1. **NextAuth Session Creation Failure**: `signIn('credentials')` succeeds but `/api/auth/session` never returns expected role
+2. **Schema Drift**: `acceptedAt`/`rejectedAt` commented out in Prisma; violates Constitution Article VI (Auditability)
+3. **Blocker Impact**: Cannot validate production readiness; feature incomplete per quality gates
+
+### Success Criteria (GATE 0 Compliance)
+- [ ] `npx tsc --noEmit` → Empty output (0 errors + 0 warnings)
+- [ ] `npm run build` → "Compiled successfully" (NO warning lines)
+- [ ] Playwright auth helpers create valid sessions with correct roles
+- [ ] Written Quote E2E suite passes (11 tests: 11 passing, 0 failing)
+- [ ] Schema aligned: DB ↔ Prisma match (no commented fields)
+- [ ] Acceptance/rejection timestamps persist per Constitution requirements
+
+---
+
+### Sprint 4.16.6.1 — Pre-Implementation GATE 0 Check (15 min)
+
+**T-WQ-600: System Health Verification**
+- [ ] Run TypeScript check: `npx tsc --noEmit`
+  - **Expected:** Empty output (no errors, no warnings)
+  - **Action if fails:** Document all errors/warnings; fix before proceeding
+- [ ] Run build check: `npm run build`
+  - **Expected:** "Compiled successfully" (no yellow warning text)
+  - **Action if fails:** Fix all build warnings; do not proceed until clean
+- [ ] Verify `.git` folder exists: `Test-Path ".git"`
+  - **Expected:** True
+  - **Action if fails:** STOP - repository integrity compromised
+- [ ] Check Prisma schema: `npx prisma validate`
+  - **Expected:** "The schema is valid"
+  - **Action if fails:** Fix schema errors first
+- [ ] Verify Docker DB running: `docker ps | Select-String "solarmatch-db-1"`
+  - **Expected:** Container running
+  - **Action if fails:** Start DB: `docker-compose up -d`
+
+**Success Criteria:** ALL checks pass. If ANY fail, STOP and fix before continuing.
+
+---
+
+### Sprint 4.16.6.2 — Seed Data Verification & Debug Setup (30 min)
+
+**T-WQ-610: Verify Test Users in Database**
+- [ ] Query test users:
+  ```powershell
+  docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT id, email, role, password, is_active FROM users WHERE email IN ('installer@test.com', 'homeowner@test.com');"
+  ```
+- [ ] Verify output shows both users with correct roles
+- [ ] Note password hashes for comparison with bcrypt
+- [ ] Check `isActive = true` for both users
+- **Success:** Both users exist, roles correct, active status true
+
+**T-WQ-611: Manual Authentication Test (Baseline)**
+- [ ] Open browser: `http://localhost:3000`
+- [ ] Click "Partner Sign In" (TopBar button)
+- [ ] Enter: `installer@test.com` / `password`
+- [ ] Click "Sign In"
+- [ ] Verify redirect to `/installer/leads`
+- [ ] Check `/api/auth/session` in DevTools Network tab shows `role: 'INSTALLER'`
+- [ ] Repeat for homeowner: "Login" button → `homeowner@test.com` / `password` → `/homeowner/dashboard`
+- **Success:** Both manual logins work correctly; session API returns correct roles
+
+**T-WQ-612: Enable Playwright Trace & Detailed Logging**
+- [ ] Update `playwright.config.ts`: set `trace: 'on'` (capture all runs)
+- [ ] Add to E2E helper: console.log session response before throwing timeout error
+- [ ] Git commit: `git commit -m "debug: enable Playwright trace for auth debugging"`
+- **Success:** Trace will capture full auth flow for analysis
+
+---
+
+### Sprint 4.16.6.3 — NextAuth E2E Authentication Debug (2-3 hours)
+
+**T-WQ-620: Add Explicit Session Debugging to Helper**
+- [ ] Edit `tests/e2e/helpers/auth.ts` → `waitForRoleSession()` function
+- [ ] Add detailed logging:
+  ```typescript
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const response = await page.request.get('/api/auth/session');
+    const sessionData = await response.json();
+    console.log(`[Auth Debug] Attempt ${attempt + 1}: Status ${response.status()}, Data:`, JSON.stringify(sessionData, null, 2));
+    
+    const role = sessionData?.user?.role as string | undefined;
+    if (role === expectedRole) return;
+    
+    await page.waitForTimeout(delayMs);
+  }
+  ```
+- [ ] Run single installer test: `npx playwright test tests/e2e/written-quote-installer.spec.ts:14 --reporter=line`
+- [ ] Check console output for session response details
+- **Success:** Console shows exact session API responses; identify if null/empty/wrong role
+
+**T-WQ-621: Compare Browser Cookies (Manual vs E2E)**
+- [ ] During manual test (T-WQ-611): Open DevTools → Application → Cookies → Note `next-auth.session-token` value
+- [ ] During Playwright run: Add to helper after signIn:
+  ```typescript
+  const cookies = await page.context().cookies();
+  console.log('[Auth Debug] Cookies after signIn:', cookies);
+  ```
+- [ ] Compare cookie names, values, domains between manual and E2E
+- **Success:** Identify if session cookie is missing/malformed in E2E
+
+**T-WQ-622: Test Direct Session API in Playwright**
+- [ ] Add before `waitForRoleSession()` call:
+  ```typescript
+  console.log('[Auth Debug] Testing direct session fetch...');
+  const directResponse = await page.goto('/api/auth/session');
+  const directText = await directResponse?.text();
+  console.log('[Auth Debug] Direct session response:', directText);
+  ```
+- [ ] Run test again; check if direct navigation returns session
+- **Success:** Determine if issue is with `page.request.get()` vs `page.goto()`
+
+**T-WQ-623: Implement Fix Based on Findings**
+
+**If Issue: CSRF Token Missing**
+- [ ] Fetch CSRF before signIn:
+  ```typescript
+  const csrfRes = await page.request.get('/api/auth/csrf');
+  const { csrfToken } = await csrfRes.json();
+  await signIn('credentials', { ..., csrfToken });
+  ```
+
+**If Issue: Session Cookie Not Shared**
+- [ ] Replace `page.request.get()` with `page.evaluate()`:
+  ```typescript
+  const sessionData = await page.evaluate(async () => {
+    const res = await fetch('/api/auth/session');
+    return res.json();
+  });
+  ```
+
+**If Issue: Role Enforcement in authorize()**
+- [ ] Check `src/lib/auth.ts` line 39-42: verify test credentials pass correct role
+- [ ] Ensure seed script creates users with exact role strings: 'INSTALLER', 'HOMEOWNER'
+
+**T-WQ-624: Validate Fix**
+- [ ] Run full installer test suite: `npx playwright test tests/e2e/written-quote-installer.spec.ts`
+- [ ] Verify: Login succeeds, redirects to dashboard, tests proceed past beforeEach
+- [ ] Run homeowner suite: `npx playwright test tests/e2e/written-quote-homeowner.spec.ts`
+- [ ] Check Playwright trace: auth flow shows successful session creation
+- **Success:** Both test suites complete beforeEach without timeout errors
+
+---
+
+### Sprint 4.16.6.4 — Schema Drift Resolution (1-2 hours)
+
+**T-WQ-630: Choose Schema Direction (Constitution-Aligned)**
+- [ ] Read Constitution Article VI (Auditability) requirements
+- [ ] Decision: **Option A — Add DB Columns** (Recommended)
+  - Rationale: Timestamps enable efficient queries; align with Constitution
+  - Approval: Document in audit report and this phase
+- [ ] Alternative Decision: **Option B — Events Only**
+  - Rationale: Events table is sufficient; no denormalization needed
+  - Requirement: Ensure no code ever references `acceptedAt`/`rejectedAt`
+
+**Selected Direction:** [ ] Option A  [ ] Option B
+
+---
+
+**T-WQ-631: Implement Option A (Add DB Columns)**
+- [ ] Uncomment `acceptedAt` and `rejectedAt` in `prisma/schema.prisma`:
+  ```prisma
+  model WrittenQuote {
+    // ... existing fields
+    acceptedAt          DateTime?
+    rejectedAt          DateTime?
+    // ... relations
+  }
+  ```
+- [ ] Create migration: `npx prisma migrate dev --name add-written-quote-acceptance-timestamps`
+- [ ] Verify migration created in `prisma/migrations/` folder
+- [ ] Check migration SQL contains:
+  ```sql
+  ALTER TABLE "written_quotes" ADD COLUMN "accepted_at" TIMESTAMP(3);
+  ALTER TABLE "written_quotes" ADD COLUMN "rejected_at" TIMESTAMP(3);
+  ```
+- [ ] Regenerate Prisma client: `npx prisma generate`
+- [ ] Verify success: "✔ Generated Prisma Client"
+- **Success:** Migration applied, Prisma client regenerated without errors
+
+**T-WQ-632: Update Written Quote API to Set Timestamps**
+- [ ] Edit `src/app/api/written-quotes/[id]/done/route.ts`
+- [ ] Locate `prisma.writtenQuote.update()` call
+- [ ] Add timestamp logic:
+  ```typescript
+  const updateData: any = {
+    currentStatus: status === 'accept' ? 'ACCEPTED' : 'REJECTED',
+    lastActionBy: 'homeowner',
+    lastActionAt: new Date(),
+  };
+  
+  if (status === 'accept') {
+    updateData.acceptedAt = new Date();
+  } else {
+    updateData.rejectedAt = new Date();
+  }
+  
+  await prisma.writtenQuote.update({
+    where: { id: writtenQuoteId },
+    data: updateData,
+  });
+  ```
+- [ ] Save file
+- [ ] Run TypeScript check: `npx tsc --noEmit` → Must be empty
+- **Success:** API route updated; TypeScript validates without errors
+
+**T-WQ-633: Update Seed Script for New Schema**
+- [ ] Edit `prisma/seed-written-quote-tests.ts`
+- [ ] Add `acceptedAt: null, rejectedAt: null` to WrittenQuote creation
+- [ ] Run seed: `npx tsx prisma/seed-written-quote-tests.ts`
+- [ ] Verify: "✅ SEED COMPLETE!" without errors
+- [ ] Query DB to confirm:
+  ```powershell
+  docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT id, current_status, accepted_at, rejected_at FROM written_quotes;"
+  ```
+- **Success:** Seed runs; DB shows timestamp columns (null for pending quotes)
+
+---
+
+**T-WQ-634: Implement Option B (Events Only) — ALTERNATIVE PATH**
+- [ ] Delete commented lines from `prisma/schema.prisma` (lines with `// acceptedAt` and `// rejectedAt`)
+- [ ] Grep codebase to ensure no references:
+  ```powershell
+  Select-String -Path "src/**/*.ts" -Pattern "acceptedAt|rejectedAt"
+  ```
+- [ ] If any matches found (outside schema): Remove or refactor to use events
+- [ ] Regenerate Prisma client: `npx prisma generate`
+- [ ] Run seed: `npx tsx prisma/seed-written-quote-tests.ts`
+- **Success:** Schema clean; no references; seed works; Prisma client regenerated
+
+---
+
+### Sprint 4.16.6.5 — GATE 0 Validation & E2E Suite Execution (1 hour)
+
+**T-WQ-640: GATE 0 Re-Check (Zero Warnings Policy)**
+- [ ] TypeScript: `npx tsc --noEmit` → **MUST be empty output**
+- [ ] Build: `npm run build` → **MUST show "Compiled successfully" (no warnings)**
+- [ ] Prisma: `npx prisma validate` → "The schema is valid"
+- [ ] Prisma migration status: `npx prisma migrate status` → "Database schema is up to date"
+- **Success:** ALL checks pass with ZERO errors and ZERO warnings
+
+**T-WQ-641: Run Full Written Quote E2E Suite**
+- [ ] Start dev server in background: `npm run dev` (separate terminal)
+- [ ] Run full suite:
+  ```powershell
+  npx playwright test tests/e2e/written-quote-installer.spec.ts tests/e2e/written-quote-homeowner.spec.ts tests/e2e/written-quote-negotiation.spec.ts --reporter=line
+  ```
+- [ ] Monitor terminal for real-time pass/fail status
+- [ ] Target: **11 tests passing, 0 failures, 0 skipped**
+- [ ] If any failures: Check Playwright HTML report for details
+- [ ] Open report: `npx playwright show-report`
+- **Success:** All 11 tests pass; HTML report shows green checkmarks
+
+**T-WQ-642: Manual E2E Verification (Confidence Check)**
+- [ ] Open browser: `http://localhost:3000`
+- [ ] Log in as `installer@test.com` / `password`
+- [ ] Navigate to `/installer/leads`
+- [ ] Open lead with written quote (seed data)
+- [ ] Submit counter-offer (new price)
+- [ ] Check DB immediately:
+  ```powershell
+  docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "SELECT id, current_price, current_status, last_action_at FROM written_quotes ORDER BY updated_at DESC LIMIT 1;"
+  ```
+- [ ] Verify: Price updated, status changed, timestamp current
+- [ ] Open browser console: Check for NO errors or warnings
+- **Success:** Manual flow works; DB updates correctly; no console errors
+
+**T-WQ-643: Playwright Trace Analysis (If Failures Exist)**
+- [ ] Open Playwright trace viewer: `npx playwright show-trace test-results/[failed-test]/trace.zip`
+- [ ] Review network tab for `/api/auth/session` calls
+- [ ] Check cookies in trace: verify `next-auth.session-token` present
+- [ ] Identify exact failure point (auth vs API vs UI assertion)
+- [ ] Document findings in audit report; adjust implementation accordingly
+- **Success:** Root cause identified if tests fail; actionable fix planned
+
+---
+
+### Sprint 4.16.6.6 — Git Commit & Documentation (30 min)
+
+**T-WQ-650: Commit Authentication Fix**
+- [ ] Stage auth changes: `git add tests/e2e/helpers/auth.ts src/lib/auth.ts playwright.config.ts`
+- [ ] Commit: `git commit -m "fix(e2e): NextAuth session creation in Playwright E2E"`
+- [ ] Push: `git push origin WrittenQuote_e2e`
+- **Success:** Auth fix committed with descriptive message
+
+**T-WQ-651: Commit Schema Alignment**
+- [ ] Stage schema changes: `git add prisma/schema.prisma prisma/migrations/ prisma/seed-written-quote-tests.ts`
+- [ ] Stage API changes (if Option A): `git add src/app/api/written-quotes/[id]/done/route.ts`
+- [ ] Commit: `git commit -m "fix(schema): add acceptedAt/rejectedAt timestamps for auditability"`
+  - OR (if Option B): `git commit -m "refactor(schema): remove commented timestamp fields - events-only approach"`
+- [ ] Push: `git push origin WrittenQuote_e2e`
+- **Success:** Schema alignment committed; migration history preserved
+
+**T-WQ-652: Commit E2E Test Validation**
+- [ ] Stage any test updates: `git add tests/e2e/`
+- [ ] Commit: `git commit -m "test(e2e): all Written Quote E2E tests passing (11/11)"`
+- [ ] Push: `git push origin WrittenQuote_e2e`
+- **Success:** Test validation committed
+
+**T-WQ-653: Update Phase Completion Report**
+- [ ] Create or update: `DOC/AUDIT-REPORTS/System/PHASE-4.16.6-COMPLETION-REPORT.md`
+- [ ] Include:
+  - Auth debug findings and fix implemented
+  - Schema direction chosen (Option A or B) with rationale
+  - E2E test results (11/11 passing)
+  - GATE 0 validation results (all checks passed)
+  - Manual verification outcomes
+  - Lessons learned for future E2E development
+- [ ] Commit: `git commit -m "docs: Phase 4.16.6 completion report"`
+- [ ] Push: `git push origin WrittenQuote_e2e`
+- **Success:** Completion report documented; audit trail complete
+
+---
+
+### Final Validation Checklist
+
+Before marking phase complete, verify ALL criteria met:
+
+**GATE 0 Compliance:**
+- [ ] `npx tsc --noEmit` → Empty (0 errors + 0 warnings)
+- [ ] `npm run build` → "Compiled successfully" (NO warnings)
+- [ ] No VSCode Problems (Ctrl+Shift+M → 0 problems)
+
+**E2E Authentication:**
+- [ ] `loginAsInstaller()` creates valid session with role='INSTALLER'
+- [ ] `loginAsHomeowner()` creates valid session with role='HOMEOWNER'
+- [ ] Playwright trace shows successful auth flow (cookies present)
+
+**Schema Alignment:**
+- [ ] Prisma schema matches DB (no drift warnings)
+- [ ] No commented fields in production code
+- [ ] `npx prisma migrate status` → "up to date"
+
+**E2E Suite:**
+- [ ] 11 Written Quote tests: 11 passing, 0 failing
+- [ ] Playwright HTML report: all green
+- [ ] Manual verification: installer + homeowner flows work end-to-end
+
+**Documentation:**
+- [ ] Audit report created: `WRITTEN-QUOTE-E2E-AUTH-SCHEMA-AUDIT-2025-12-17.md`
+- [ ] Completion report created: `PHASE-4.16.6-COMPLETION-REPORT.md`
+- [ ] All commits pushed to `WrittenQuote_e2e` branch
+
+**Constitution Compliance:**
+- [ ] Article VI (Auditability): Acceptance timestamps persisted
+- [ ] Article IX (Quality Gates): Zero warnings achieved
+- [ ] Blueprint separation: UI displays, backend validates
+
+---
+
+## Phase 4.16.5 — Written Quote Deep Audit & E2E Hardening
+
+**Status:** COMPLETED (Superseded by Phase 4.16.6)  
+**Priority:** P0 (Production Readiness)  
+**Owner:** Engineering  
+**Created:** 2025-12-17  
+**Source:** System deep audit report  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-DEEP-AUDIT-2025-12-17.md`
+
+### Context
+Written Quote E2E tests are failing due to an auth routing mismatch: the app uses modal-based sign-in on `/` (NextAuth `pages.signIn: '/'`), and there is no `/login` route.
+
+Additionally, Prisma↔DB drift exists around `written_quotes.acceptedAt` / `rejectedAt`, which blocks seeds and undermines auditable state transitions.
+
+### Success Criteria
+- [ ] Playwright specs authenticate using the real UI (homepage + modals), not `/login`
+- [ ] Written Quote E2E specs pass end-to-end (installer + homeowner + negotiation)
+- [ ] Auth/login logic in tests is centralized (no duplicated per-file login flows)
+- [ ] Prisma schema and DB are aligned for accepted/rejected timestamps (explicit choice + implementation)
+
+---
+
+### Sprint 4.16.5.1 — Fix Playwright Authentication (30–60 min)
+
+**T-WQ-450: Add Playwright auth helpers**
+- [ ] Create helper module: `tests/e2e/helpers/auth.ts`
+- [ ] Implement `loginAsInstaller(page, email, password)` using “Partner Sign In” modal
+- [ ] Implement `loginAsHomeowner(page, email, password)` using “Login” modal
+- **Success:** Both helpers log in reliably without hardcoded routes
+
+**T-WQ-451: Update E2E specs to use helpers**
+- [ ] Replace all `page.goto('/login')` usage in E2E with helper-based login
+- [ ] Update Written Quote specs + notification spec to use the shared helpers
+- **Success:** No remaining references to `/login` in E2E
+
+---
+
+### Sprint 4.16.5.2 — Resolve accepted/rejected Schema Direction (30–60 min)
+
+**T-WQ-460: Decide source-of-truth for acceptance timestamps**
+- [ ] Option A: Add DB columns + Prisma migration (keep schema fields)
+- [ ] Option B: Remove fields from Prisma permanently (events-only)
+- **Success:** Seeds and runtime match the chosen model with zero drift
+
+---
+
+### Sprint 4.16.5.3 — Validation (30–60 min)
+
+**T-WQ-470: Run Written Quote E2E**
+- [ ] Start dev server and run Written Quote specs
+- [ ] Confirm passing results
+
+---
+
 ## Phase 4.16.4 — Written Quote E2E Completion & Quality Gates
 
 **Status:** IN PROGRESS  
