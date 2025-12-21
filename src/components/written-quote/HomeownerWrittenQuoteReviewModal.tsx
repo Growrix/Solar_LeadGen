@@ -5,8 +5,10 @@ import { X, Loader, AlertCircle } from 'lucide-react';
 import { QuoteSystemSpecsCard } from '@/components/quote-display/QuoteSystemSpecsCard';
 import { QuoteEquipmentCard } from '@/components/quote-display/QuoteEquipmentCard';
 import { QuoteFinancialCard } from '@/components/quote-display/QuoteFinancialCard';
+import { QuoteCalculationsSummary } from '@/components/quote-display/QuoteCalculationsSummary';
 import { QuoteLineItemsTable } from '@/components/quote-display/QuoteLineItemsTable';
 import { WrittenQuoteNegotiationPanel, WQEvent } from '@/components/written-quote/WrittenQuoteNegotiationPanel';
+import SavingsChart from '@/components/SavingsChart';
 import type { BidSystemData, BidProductsData, BidLineItem, BidCalculations, BidAssumptions, BidRoofData } from '@/types/bid';
 
 /**
@@ -268,12 +270,32 @@ export default function HomeownerWrittenQuoteReviewModal({
                   <QuoteEquipmentCard productsData={writtenQuote.productsData || {}} />
                 )}
 
+                {/* Price Breakdown (NEW) */}
+                {writtenQuote.calculations && (
+                  <QuoteCalculationsSummary
+                    calculations={writtenQuote.calculations}
+                    fallbackAmount={writtenQuote.currentPrice}
+                  />
+                )}
+
                 {/* Financial Details */}
                 {writtenQuote.calculations && (
                   <QuoteFinancialCard
                     calculations={writtenQuote.calculations || {}}
                     fallbackAmount={writtenQuote.currentPrice}
                   />
+                )}
+
+                {/* Savings Graph (NEW) */}
+                {writtenQuote.calculations?.estimatedAnnualSavings && (
+                  <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
+                    <h3 className="text-heading-3 mb-4">Annual Savings Projection</h3>
+                    <SavingsChart
+                      finalPrice={writtenQuote.currentPrice}
+                      annualSavings={writtenQuote.calculations.estimatedAnnualSavings}
+                      currentAnnualBill={2000}
+                    />
+                  </div>
                 )}
 
                 {/* Line Items Table */}

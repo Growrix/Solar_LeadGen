@@ -3553,3 +3553,63 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-----------------------------------------------------------------------------------------
+
+If you think the replacement is wolring fine and now we are on the clea state of the bidding lead, then move forward. I want you to audit the frondend, backend , API , prisma etc and make sure everything is well alligned And there is no legacy of conditional written Quote things that where in the previous implimentation. 
+
+- You can restore all the relevant files from the last clean commit before starting the written Quote implimentation. so that you can have a clean state of the bidding lead type. 
+
+***Instructions*** I want you to audit the frondend, backend , API , prisma etc and make sure everything is well alligned And there is no legacy of conditional written Quote things that where in the previous implimentation. THe goal is to make sure that we have a clean state of the bidding lead type without any legacy of written Quote things. Enhance and fix wherever necessary to achieve the goal. Update the tasks.md file accordingly after completing the audit.
+You should import this branch "System_Enhancement" into your local system as a backup folder to perform the audit and necessary fixes. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Update the phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-------------------------------------------------------------------------------------------
+
+***Review Written QUote - Installer ***
+- The Homeowners are unable to negotiatie the written quotes properly as per the written quote flow. so I want you to enhance the Review Written QUote - Installer modal as per the written quote flow. so that the installers can review and negotiate the written quotes properly without any issues. You have to audit frontend,backend, API , etc deeply and identify the missing gaps.
+
+- ALso the review modal "description" section has no proper calcuations. and also there is no Graph as the bidding lead has. Should Show the graph as well . 
+
+- now the installers Email and phone is showing maybe the demo data. I want you to make sure to show the correct email and phone of the installer in the Review Written QUote - Installer modal. But the condition is, The contact details should be masked always until the installer purchased the lead finally. 
+
+***Instructions*** I want you to enhance the Review Written QUote - Installer modal as per the above instructions. so that the installers can review and negotiate the written quotes properly without any issues. You have to audit frontend,backend, API , etc deeply and identify the missing gaps. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+
+----------------------------------------------------------------------------------------------
+
+I have tested it visually and I can see everything as just remained as before, I cant see any change visually on the mentioned modals in the last prompt given to you. I have doubt on your implimentations.
+
+You have to audit back all the fronentend, backend, API, Prisma etc regarding to written QUote and its functionality and check back you implimentation vs the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System\INSTALLER-WRITTEN-QUOTE-MODAL-AUDIT-2025-12-21.md
+. and comeup with the plan that what is missing and what needs to be fixed/enhanced to achieve the goal as per the last prompt given to you.          
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
