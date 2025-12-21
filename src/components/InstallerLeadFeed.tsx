@@ -538,7 +538,7 @@ const LeadCard: React.FC<{
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
   const [isBidEvaluationOpen, setIsBidEvaluationOpen] = useState(false);
-  const [quoteMode, setQuoteMode] = useState<'quote' | 'bid'>('quote'); // Track if opening for quote or bid
+  const [quoteMode, setQuoteMode] = useState<'quote' | 'bid' | 'written-quote'>('quote'); // Track mode: quote, bid, or written-quote
   
   const isUnlockedByInstaller = lead.isUnlocked;
   const isPurchasedByAnother = lead.isPurchasedByAnother || false;
@@ -549,8 +549,12 @@ const LeadCard: React.FC<{
   const isPaid = lead.status === 'PURCHASED' && lead.purchasedAt;
   const isLoser = myBid?.status === 'REJECTED';
   
+  // T-WQ-905: Written quote leads are ASSIGNED to installer - they're always unlocked when assigned
+  // For written leads, if it's in the assigned leads list, installer can submit quotes
+  const isAssignedWritten = lead.type === 'written';
+  
   const canUnlock = lead.type === 'call_visit' && !isUnlockedByInstaller && !isPurchasedByAnother && lead.status === 'new';
-  const canQuote = lead.type === 'written' || isUnlockedByInstaller;
+  const canQuote = isAssignedWritten || isUnlockedByInstaller;
   // T13I-2: Hide "Place Bid" button for purchased bidding leads
   const canBid = lead.type === 'bidding' && !isPaid; // Bidding leads allow bids ONLY if not yet purchased
 
@@ -594,7 +598,10 @@ const LeadCard: React.FC<{
 
   return (
     <>
-      <div className={`theme-card border-l-4 ${getPriorityColor()} p-6 transition-colors duration-200 ${isPurchasedByAnother ? 'opacity-50' : ''}`}>
+      <div 
+        data-testid="lead-card"
+        className={`theme-card border-l-4 ${getPriorityColor()} p-6 transition-colors duration-200 ${isPurchasedByAnother ? 'opacity-50' : ''}`}
+      >
       
       {/* T196: Winner banner - shown when installer won but hasn't paid yet */}
       {isWinner && !isPaid && (
@@ -843,7 +850,9 @@ const LeadCard: React.FC<{
         {canQuote && (
           <Button
             onClick={() => {
-              setQuoteMode('quote');
+              // T-WQ-905: Set mode to 'written-quote' for ASSIGNED written quote leads (approved/purchased status)
+              const modalMode = isAssignedWritten ? 'written-quote' : 'quote';
+              setQuoteMode(modalMode);
               setIsQuoteModalOpen(true);
             }}
             variant="primary"

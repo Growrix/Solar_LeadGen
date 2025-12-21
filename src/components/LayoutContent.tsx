@@ -110,6 +110,23 @@ export default function LayoutContent({ children }: LayoutContentProps) {
     setIsInstallerSignInModalOpen(true);
   };
 
+  const getRoleFromFreshSession = async (maxAttempts = 10, delayMs = 200): Promise<string | null> => {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const response = await fetch('/api/auth/session', { cache: 'no-store' });
+        const sessionData = await response.json();
+        const role = sessionData?.user?.role as string | undefined;
+        if (role) return role;
+      } catch (error) {
+        console.error('Error fetching session:', error);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+
+    return null;
+  };
+
   const handleEligible = () => {
     setIsEligibilityModalOpen(false);
     setIsInstallerSignupModalOpen(true);
@@ -118,61 +135,49 @@ export default function LayoutContent({ children }: LayoutContentProps) {
   const handleInstallerSignupSuccess = async () => {
     setIsInstallerSignupModalOpen(false);
     console.log('Installer signed up successfully');
-    
-    // Fetch fresh session to get updated role
-    try {
-      const response = await fetch('/api/auth/session');
-      const sessionData = await response.json();
-      const role = sessionData?.user?.role;
-      
-      console.log('User role from fresh session after signup:', role);
-      
-      // Redirect based on actual role (should be INSTALLER)
-      if (role === 'INSTALLER') {
-        router.push('/installer/leads');
-      } else if (role === 'HOMEOWNER') {
-        router.push('/homeowner/dashboard');
-      } else if (role === 'ADMIN') {
-        router.push('/admin/dashboard');
-      } else {
-        // Fallback
-        router.push('/installer/leads');
-      }
-    } catch (error) {
-      console.error('Error fetching session after signup:', error);
-      // Fallback to installer dashboard
+
+    const role = await getRoleFromFreshSession();
+    console.log('User role from fresh session after signup:', role);
+
+    if (role === 'INSTALLER') {
       router.push('/installer/leads');
+      return;
     }
+    if (role === 'HOMEOWNER') {
+      router.push('/homeowner/dashboard');
+      return;
+    }
+    if (role === 'ADMIN') {
+      router.push('/admin/dashboard');
+      return;
+    }
+
+    // If session isn't ready yet, avoid redirecting into protected routes.
+    console.error('Session role unavailable after installer signup; staying on current page');
   };
 
   const handleInstallerSignInSuccess = async () => {
     setIsInstallerSignInModalOpen(false);
     console.log('Installer signed in successfully');
-    
-    // Fetch fresh session to get updated role
-    try {
-      const response = await fetch('/api/auth/session');
-      const sessionData = await response.json();
-      const role = sessionData?.user?.role;
-      
-      console.log('User role from fresh session:', role);
-      
-      // Redirect based on actual role
-      if (role === 'INSTALLER') {
-        router.push('/installer/leads');
-      } else if (role === 'HOMEOWNER') {
-        router.push('/homeowner/dashboard');
-      } else if (role === 'ADMIN') {
-        router.push('/admin/dashboard');
-      } else {
-        // Fallback
-        router.push('/installer/leads');
-      }
-    } catch (error) {
-      console.error('Error fetching session:', error);
-      // Fallback to installer dashboard
+
+    const role = await getRoleFromFreshSession();
+    console.log('User role from fresh session:', role);
+
+    if (role === 'INSTALLER') {
       router.push('/installer/leads');
+      return;
     }
+    if (role === 'HOMEOWNER') {
+      router.push('/homeowner/dashboard');
+      return;
+    }
+    if (role === 'ADMIN') {
+      router.push('/admin/dashboard');
+      return;
+    }
+
+    // If session isn't ready yet, avoid redirecting into protected routes.
+    console.error('Session role unavailable after installer sign-in; staying on current page');
   };
 
   const handleSwitchToInstallerSignIn = () => {
@@ -192,31 +197,24 @@ export default function LayoutContent({ children }: LayoutContentProps) {
   const handleHomeownerSignupSuccess = async () => {
     setIsHomeownerSignupModalOpen(false);
     console.log('Homeowner signed up successfully');
-    
-    // Fetch fresh session to get updated role
-    try {
-      const response = await fetch('/api/auth/session');
-      const sessionData = await response.json();
-      const role = sessionData?.user?.role;
-      
-      console.log('User role from fresh session after signup:', role);
-      
-      // Redirect based on actual role (should be HOMEOWNER)
-      if (role === 'HOMEOWNER') {
-        router.push('/homeowner/dashboard');
-      } else if (role === 'INSTALLER') {
-        router.push('/installer/leads');
-      } else if (role === 'ADMIN') {
-        router.push('/admin/dashboard');
-      } else {
-        // Fallback
-        router.push('/homeowner/dashboard');
-      }
-    } catch (error) {
-      console.error('Error fetching session after signup:', error);
-      // Fallback to homeowner dashboard
+
+    const role = await getRoleFromFreshSession();
+    console.log('User role from fresh session after signup:', role);
+
+    if (role === 'HOMEOWNER') {
       router.push('/homeowner/dashboard');
+      return;
     }
+    if (role === 'INSTALLER') {
+      router.push('/installer/leads');
+      return;
+    }
+    if (role === 'ADMIN') {
+      router.push('/admin/dashboard');
+      return;
+    }
+
+    console.error('Session role unavailable after homeowner signup; staying on current page');
   };
 
   const handleHomeownerSignInSuccess = async () => {
@@ -231,30 +229,23 @@ export default function LayoutContent({ children }: LayoutContentProps) {
       window.history.replaceState({}, '', window.location.pathname);
       window.location.reload();
     } else {
-      // Fetch fresh session to get updated role
-      try {
-        const response = await fetch('/api/auth/session');
-        const sessionData = await response.json();
-        const role = sessionData?.user?.role;
-        
-        console.log('User role from fresh session:', role);
-        
-        // Redirect based on actual role
-        if (role === 'INSTALLER') {
-          router.push('/installer/leads');
-        } else if (role === 'HOMEOWNER') {
-          router.push('/homeowner/dashboard');
-        } else if (role === 'ADMIN') {
-          router.push('/admin/dashboard');
-        } else {
-          // Fallback to homeowner
-          router.push('/homeowner/dashboard');
-        }
-      } catch (error) {
-        console.error('Error fetching session:', error);
-        // Fallback to homeowner dashboard
-        router.push('/homeowner/dashboard');
+      const role = await getRoleFromFreshSession();
+      console.log('User role from fresh session:', role);
+
+      if (role === 'INSTALLER') {
+        router.push('/installer/leads');
+        return;
       }
+      if (role === 'HOMEOWNER') {
+        router.push('/homeowner/dashboard');
+        return;
+      }
+      if (role === 'ADMIN') {
+        router.push('/admin/dashboard');
+        return;
+      }
+
+      console.error('Session role unavailable after homeowner sign-in; staying on current page');
     }
   };
 

@@ -12,6 +12,7 @@ import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerIn
 import LeadTechnicalDetails from '@/components/quote-builder/LeadTechnicalDetails';
 import InstantQuoteResult from '@/components/quote-builder/InstantQuoteResult';
 import { WrittenQuoteNegotiationPanel, WQEvent } from '@/components/written-quote/WrittenQuoteNegotiationPanel';
+import { WrittenQuoteDetailsDisplay } from '@/components/written-quote/WrittenQuoteDetailsDisplay';
 
 // Type alias for individual bid with full data
 type BidWithFullData = GetBidsResponse['bids'][number] & {
@@ -28,6 +29,7 @@ interface HomeownerBiddingReviewModalProps {
   propertyAddress: string;
   bids: BidWithFullData[];
   onSelectWinner?: (bidId: string) => Promise<void>;
+  defaultTab?: 'bids' | 'written-quote';
 }
 
 export default function HomeownerBiddingReviewModal({
@@ -36,10 +38,11 @@ export default function HomeownerBiddingReviewModal({
   leadId,
   propertyAddress,
   bids: initialBids,
-  onSelectWinner
+  onSelectWinner,
+  defaultTab = 'bids'
 }: HomeownerBiddingReviewModalProps) {
   // State management
-  const [activeTab, setActiveTab] = useState<'bids' | 'written-quote'>('bids');
+  const [activeTab, setActiveTab] = useState<'bids' | 'written-quote'>(defaultTab);
   const [selectedBidId, setSelectedBidId] = useState<string>('');
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isLoadingLead, setIsLoadingLead] = useState(false);
@@ -337,35 +340,85 @@ export default function HomeownerBiddingReviewModal({
 
         {/* Body */}
         <div className="flex-grow overflow-auto p-4 md:p-6">
-          {isLoadingBids ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <Loader className="h-16 w-16 animate-spin text-primary mb-4" />
-              <h3 className="text-heading-4 text-foreground mb-2">Loading Bids...</h3>
-              <p className="text-body text-muted-foreground max-w-md">
-                Please wait while we fetch all submitted bids for this lead.
-              </p>
-            </div>
-          ) : bidsError ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <Info className="h-16 w-16 text-error mb-4" />
-              <h3 className="text-heading-4 text-foreground mb-2">Error Loading Bids</h3>
-              <p className="text-body text-muted-foreground max-w-md mb-4">
-                {bidsError}
-              </p>
-              <Button onClick={fetchBids} variant="primary">
-                Retry
-              </Button>
-            </div>
-          ) : sortedBids.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <Award className="h-16 w-16 text-muted mb-4" />
-              <h3 className="text-heading-4 text-foreground mb-2">No Bids Received Yet</h3>
-              <p className="text-body text-muted-foreground max-w-md">
-                Installers are preparing their quotes. You&apos;ll be notified when bids are submitted for your review.
-              </p>
-            </div>
+          {/* Written Quote Tab Content */}
+          {activeTab === 'written-quote' ? (
+            isLoadingWrittenQuote ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Loader className="h-16 w-16 animate-spin text-primary mb-4" />
+                <h3 className="text-heading-4 text-foreground mb-2">Loading Written Quote...</h3>
+                <p className="text-body text-muted-foreground max-w-md">
+                  Please wait while we fetch the written quote details.
+                </p>
+              </div>
+            ) : writtenQuoteError ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Info className="h-16 w-16 text-error mb-4" />
+                <h3 className="text-heading-4 text-foreground mb-2">Error Loading Written Quote</h3>
+                <p className="text-body text-muted-foreground max-w-md mb-4">
+                  {writtenQuoteError}
+                </p>
+                <Button onClick={() => window.location.reload()} variant="primary">
+                  Retry
+                </Button>
+              </div>
+            ) : !writtenQuote ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Info className="h-16 w-16 text-muted mb-4" />
+                <h3 className="text-heading-4 text-foreground mb-2">No Written Quote Yet</h3>
+                <p className="text-body text-muted-foreground max-w-md">
+                  The installer hasn't submitted a written quote for this lead yet. You'll be notified when they do.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-6">
+                {/* LEFT COLUMN: Quote Details */}
+                <div className="overflow-y-auto max-h-[calc(80vh-200px)]">
+                  <WrittenQuoteDetailsDisplay quote={writtenQuote} />
+                </div>
+
+                {/* RIGHT COLUMN: Negotiation Panel */}
+                <div className="overflow-y-auto max-h-[calc(80vh-200px)]">
+                  <WrittenQuoteNegotiationPanel
+                    role="homeowner"
+                    currentPrice={writtenQuote.currentPrice}
+                    status={writtenQuote.currentStatus.toLowerCase() as 'draft' | 'pending' | 'installer_turn' | 'homeowner_turn' | 'accepted' | 'rejected'}
+                    history={writtenQuote.events || []}
+                    onAction={handleWrittenQuoteAction}
+                  />
+                </div>
+              </div>
+            )
           ) : (
-            <>
+            /* Bidding Tab Content */
+            isLoadingBids ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Loader className="h-16 w-16 animate-spin text-primary mb-4" />
+                <h3 className="text-heading-4 text-foreground mb-2">Loading Bids...</h3>
+                <p className="text-body text-muted-foreground max-w-md">
+                  Please wait while we fetch all submitted bids for this lead.
+                </p>
+              </div>
+            ) : bidsError ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Info className="h-16 w-16 text-error mb-4" />
+                <h3 className="text-heading-4 text-foreground mb-2">Error Loading Bids</h3>
+                <p className="text-body text-muted-foreground max-w-md mb-4">
+                  {bidsError}
+                </p>
+                <Button onClick={fetchBids} variant="primary">
+                  Retry
+                </Button>
+              </div>
+            ) : sortedBids.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Award className="h-16 w-16 text-muted mb-4" />
+                <h3 className="text-heading-4 text-foreground mb-2">No Bids Received Yet</h3>
+                <p className="text-body text-muted-foreground max-w-md">
+                  Installers are preparing their quotes. You&apos;ll be notified when bids are submitted for your review.
+                </p>
+              </div>
+            ) : (
+              <>
               {/* Installer Selector Dropdown */}
               <div className="mb-6 space-y-2">
                 <label className="text-label text-foreground block">
@@ -841,6 +894,7 @@ export default function HomeownerBiddingReviewModal({
                 </div>
               )}
             </>
+            )
           )}
         </div>
 

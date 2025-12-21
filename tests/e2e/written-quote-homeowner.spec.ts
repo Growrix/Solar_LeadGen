@@ -3,17 +3,13 @@ import { test, expect } from '@playwright/test';
 /**
  * Written Quote E2E Tests - Homeowner Flow
  * Tests homeowner's ability to review, counter, and accept written quotes
+ * 
+ * Authentication: Uses Playwright storage state (tests/e2e/.auth/homeowner.json)
+ * Session is pre-established via auth.setup.ts
  */
 
 test.describe('Written Quote - Homeowner Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login as homeowner (adjust credentials based on your test data)
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'homeowner@test.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/homeowner/**');
-  });
+  // No login needed - storage state provides authenticated session
 
   test('Homeowner can view written quote in tab switcher', async ({ page }) => {
     test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data');

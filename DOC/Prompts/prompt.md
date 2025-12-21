@@ -3359,3 +3359,127 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+----------------------------------------------------------------------------------------------
+
+what should I do now? suggest and recommend next steps . Do you think the written quote feature is done and production ready? If yes them let me know what to test. If not then, Lets do a deep audit and do another phase .
+We have faced a lot of issues since we applied the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\MODAL-REUSE-STRATEGY-2025-12-15.md . You have done a lot of fixes and changes based on my previous promts. Also Need to check deeply for unnecessary code duplications and redundant code while building this feature e2e . also need to check and validatate all the user flows end to end for this feature e2e . The bidding feature was done e2e and also it was working fine, As the writtenQuote also re-using the same modals that used in bidding feature, I think we need to do a deep audit on this written quote feature e2e to ensure everything is working perfectly without any issues.
+
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+--------------------------------------------------------------------------------------------
+I want you to do as per your recommendations, but you have to go through the Strickt rules to avoid confusion and mess by getting clear picture. 
+Next Steps (Beyond Current Scope)
+Debug NextAuth credentials flow in Playwright (check /api/auth/callback/credentials in browser DevTools / network log)
+Decide schema direction for acceptedAt/rejectedAt (add columns + migration vs remove from Prisma)
+Re-run full Written Quote suite once login helper works end-to-end
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+------------------------------------------------------------------------------------------------
+
+Everything is now going wrong in insane level. So I have done a audit on the chat and here is the audit report  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System\writtenQuote_chat.md . I am pissed off and I became patientless. I need a fresh and clean start but without restoring any batch. Frest start means here , Undertand everything e2e first then only decide the task and move forward. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+-------------------------------------------------------------------------------------------------
+
+
+You have been doing this playwrigt testing since last 3 days and consumed a lot of AI tokens and still you are failing and it seems to continue forever. Audit the entire Implimentations , audit the frondend and backend files to understand what is going wrong , what is done so far. Let me know if there is anything to test manually . I am pissed off with your performance . You are overcomplicating things. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-------------------------------------------------------------------------------------------------
+
+
+The Homeowners are failing to generate any leads now > so I do not have any options to test further for admins and installers side. And All the existing leads are gone from the site, Maybe it was gone after the site restoration. I have no idea what to do next.  The site should work as it was before the restoration. We were only working with the written Quote , and everything else was working fine. 
+
+***Instructions*** Audit the frontend and backend deeply for all the lead types and let me know what is going on. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+---------------------------------------------------------------------------------------------------
+
+
+Now the call/visit and bidding lead is working as per before. But your 3 days working on the written quote has no such actions to submit quote > Homeowner's review and negotiate etc flow that you were building so far. 
+
+***Instructions*** Audit the frontend and backend and give me the clear audit report and also you get the clear picture and udnerstand what have you done vs what gone wrong and why this are not going as per implimentations. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+--------------------------------------------------------------------------------------------
+
+
+***Quote review & Negotiation Modal*** 
+- there is no QuoteReview for the Written Quote Type leads. As we are re-using the same modals from the bidding lead type, The Import fields from the Quote builder is the same for both type leads , just actions are different. I think you can add condition for bidding and written and show the Submitted quote details accordingly in the Quote review modal. 
+
+- now the negotiation modal is showing up for the written quote type leads as well. but the actions are not working as per the written quote flow. e.g when the installer is submitting the written quote > the homeowner counter amount does not impact in the next flow and also doest not update in the written quote builder Negotiation panel as well. So the installers side are unable to take any action further . 
+
+- I want the homeowners written QUote view modal should have 2 column design . the left show the submitted quote details and the right colum show the negotiation panel where the homeowner can counter the amount.
+
+***Instructions*** I want you to enhance the Quote review & Negotiation Modal as per the above instructions. so that the homeowners can review and negotiate the written quotes properly without any issues. You have to audit frontend,backend, API , etc deeply and identify the missing gaps. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 

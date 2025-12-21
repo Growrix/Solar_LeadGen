@@ -467,7 +467,11 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
 
   // Submit handler
   const handleSubmit = async () => {
-    if (!lead) return;
+    console.log('[QuoteBuilder] handleSubmit called', { leadId: lead?.id, mode });
+    if (!lead) {
+      console.warn('[QuoteBuilder] No lead provided, aborting submit');
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -617,6 +621,7 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
         alert(`Bid submitted successfully! Bid ID: ${data.bidId}`);
         onClose();
       } else if (mode === 'written-quote') {
+        console.log('[QuoteBuilder] Processing written-quote submission', { leadId: lead.id });
         // Written Quote submission via API (T-WQ-214)
         const subtotal = quoteDraft.pricing.lineItems.reduce(
           (acc, item) => acc + item.qty * item.unitPrice,
@@ -729,13 +734,24 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
           }
         };
 
+        console.log('[QuoteBuilder] Calling /api/written-quotes/start', { 
+          leadId: writtenQuotePayload.leadId, 
+          initialPrice: writtenQuotePayload.initialPrice 
+        });
+        
         const response = await fetch('/api/written-quotes/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(writtenQuotePayload)
         });
 
+        console.log('[QuoteBuilder] API response received', { 
+          status: response.status, 
+          ok: response.ok 
+        });
+        
         const data = await response.json();
+        console.log('[QuoteBuilder] API response data', data);
 
         if (!response.ok) {
           throw new Error(data.error || 'Failed to submit written quote');

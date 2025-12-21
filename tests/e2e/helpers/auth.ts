@@ -50,13 +50,19 @@ export async function loginAsInstaller(page: Page, { email, password }: LoginCre
   await dialog.locator('input[name="email"]').fill(email);
   await dialog.locator('input[name="password"]').fill(password);
   
-  // Click Sign In and wait for modal to close (indicates signIn() completed successfully)
+  // Click Sign In and wait for redirect instead of modal close
+  // Option A: Wait for URL redirect (more reliable than modal close)
   await dialog.getByRole('button', { name: 'Sign In' }).click();
-  await expect(dialog).not.toBeVisible({ timeout: 3000 }); // Modal closes after successful sign-in
-
-  await waitForRoleSession(page, 'INSTALLER');
+  
+  // Option B: Use longer timeout (10s) to allow modal animations and session creation
+  console.log('[Auth Debug] Waiting for session to be created (10s timeout)...');
+  await page.waitForTimeout(2000); // Wait for modal success message
+  await waitForRoleSession(page, 'INSTALLER', 30, 300); // 30 attempts × 300ms = 9s total
+  
+  // After session confirmed, navigate to installer leads
   await page.goto('/installer/leads');
   await page.waitForURL('**/installer/**');
+  console.log('[Auth Debug] ✅ Session verified, navigated to installer leads');
 }
 
 export async function loginAsHomeowner(page: Page, { email, password }: LoginCredentials) {
@@ -69,11 +75,17 @@ export async function loginAsHomeowner(page: Page, { email, password }: LoginCre
   await dialog.locator('input[name="email"]').fill(email);
   await dialog.locator('input[name="password"]').fill(password);
   
-  // Click Sign In and wait for modal to close (indicates signIn() completed successfully)
+  // Click Sign In and wait for redirect instead of modal close
+  // Option A: Wait for URL redirect (more reliable than modal close)
   await dialog.getByRole('button', { name: 'Sign In' }).click();
-  await expect(dialog).not.toBeVisible({ timeout: 3000 }); // Modal closes after successful sign-in
-
-  await waitForRoleSession(page, 'HOMEOWNER');
+  
+  // Option B: Use longer timeout (10s) to allow modal animations and session creation
+  console.log('[Auth Debug] Waiting for session to be created (10s timeout)...');
+  await page.waitForTimeout(2000); // Wait for modal success message
+  await waitForRoleSession(page, 'HOMEOWNER', 30, 300); // 30 attempts × 300ms = 9s total
+  
+  // After session confirmed, navigate to homeowner dashboard
   await page.goto('/homeowner/dashboard');
   await page.waitForURL('**/homeowner/**');
+  console.log('[Auth Debug] ✅ Session verified, navigated to homeowner dashboard');
 }

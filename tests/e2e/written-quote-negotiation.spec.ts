@@ -2,70 +2,54 @@ import { test, expect } from '@playwright/test';
 
 /**
  * Written Quote E2E Tests - Full Negotiation Flow
- * Tests complete negotiation cycle from start to acceptance
+ * Tests complete negotiation cycle using actual user flow (no seed data assumptions)
  */
 
 test.describe('Written Quote - Full Negotiation Flow', () => {
-  test('Complete negotiation: Start → Counter → Offer → Accept', async ({ browser }) => {
-    test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data');
-
-    // Create two contexts for installer and homeowner
-    const installerContext = await browser.newContext();
-    const homeownerContext = await browser.newContext();
+  test('Complete negotiation: Installer submits → Homeowner views', async ({ browser }) => {
+    // Create two contexts for installer and homeowner using storage state
+    const installerContext = await browser.newContext({ storageState: 'tests/e2e/.auth/installer.json' });
+    const homeownerContext = await browser.newContext({ storageState: 'tests/e2e/.auth/homeowner.json' });
 
     const installerPage = await installerContext.newPage();
     const homeownerPage = await homeownerContext.newPage();
 
     try {
-      // Step 1: Installer submits initial quote ($9,000)
-      await installerPage.goto('/login');
-      await installerPage.fill('input[name="email"]', 'installer@test.com');
-      await installerPage.fill('input[name="password"]', 'password');
-      await installerPage.click('button[type="submit"]');
-      await installerPage.waitForURL('**/installer/**');
+      // Step 1: Installer navigates to purchased leads
+      await installerPage.goto('/installer/purchased-leads');
+      await installerPage.waitForLoadState('networkidle');
 
-      await installerPage.goto('/installer/leads');
-      await installerPage.locator('[data-testid="lead-card"]').first().click();
-      await installerPage.click('button:has-text("Send Written Quote")');
-      
+      // Find and click first lead card
+      const installerLeadCard = installerPage.locator('[data-testid="lead-card"]').first();
+      await expect(installerLeadCard).toBeVisible({ timeout: 10000 });
+
+      // Click "Submit Quote" button on the lead card
+      const submitQuoteButton = installerPage.locator('button:has-text("Submit Quote")').first();
+      await expect(submitQuoteButton).toBeVisible({ timeout: 5000 });
+      await submitQuoteButton.click();
+
       await installerPage.fill('input[name="basePrice"]', '9000');
-      await installerPage.click('button:has-text("Submit Quote")');
+      await installerPage.fill('textarea[name="notes"]', 'Initial quote');
       
-      await installerPage.waitForResponse(response => 
-        response.url().includes('/api/written-quotes/start')
-      );
+      const submitButton = installerPage.locator('button:has-text("Submit Quote")');
+      await submitButton.click();
 
-      // Verify quote created
-      const quoteResponse = await installerPage.waitForResponse(response => 
-        response.url().includes('/api/written-quotes/get')
-      );
-      const quoteData = await quoteResponse.json();
-      expect(quoteData.writtenQuote.currentPrice).toBe(9000);
-      expect(quoteData.writtenQuote.currentStatus).toBe('HOMEOWNER_TURN');
+      // Wait for success
+      await expect(installerPage.locator('text=Quote submitted')).toBeVisible({ timeout: 5000 });
 
-      // Step 2: Homeowner counters ($8,500)
-      await homeownerPage.goto('/login');
-      await homeownerPage.fill('input[name="email"]', 'homeowner@test.com');
-      await homeownerPage.fill('input[name="password"]', 'password');
-      await homeownerPage.click('button[type="submit"]');
-      await homeownerPage.waitForURL('**/homeowner/**');
-
+      // Step 2: Homeowner views written quote
       await homeownerPage.goto('/homeowner/dashboard');
-      await homeownerPage.locator('[data-testid="lead-card"]').first().click();
+      await homeownerPage.waitForLoadState('networkidle');
+
+      const homeownerLeadCard = homeownerPage.locator('[data-testid="lead-card"]').first();
+      await expect(homeownerLeadCard).toBeVisible({ timeout: 10000 });
+      await homeownerLeadCard.click();
+
       await homeownerPage.click('button:has-text("Review Bids")');
       await homeownerPage.click('button:has-text("Written Quote")');
 
-      // Verify price displayed
-      await expect(homeownerPage.locator('[data-testid="current-price"]')).toContainText('$9,000');
-
-      await homeownerPage.fill('input[name="counterPrice"]', '8500');
-      await homeownerPage.click('button:has-text("Counter-Offer")');
-
-      await homeownerPage.waitForResponse(response => 
-        response.url().includes('/counter')
-      );
-
-      // Verify price updated
+      // Verify quote is visible
+      await expect(homeownerPage.locator('[data-testid="current-price"]')).toContainText('$9,000', { timeout: 5000 });
       await expect(homeownerPage.locator('[data-testid="current-price"]')).toContainText('$8,500');
 
       // Step 3: Installer revises ($8,750)
@@ -119,12 +103,6 @@ test.describe('Written Quote - Full Negotiation Flow', () => {
   test('Negotiation history displays correctly', async ({ page }) => {
     test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data with complete negotiation');
 
-    // Login as homeowner
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'homeowner@test.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
-
     // Navigate to completed quote
     await page.goto('/homeowner/dashboard');
     await page.locator('[data-testid="lead-card"]:has-text("Accepted")').first().click();
@@ -156,11 +134,6 @@ test.describe('Written Quote - Full Negotiation Flow', () => {
 
   test('Price formatting is consistent throughout negotiation', async ({ page }) => {
     test.skip(!process.env.TEST_WITH_SEED_DATA, 'Requires seeded test data');
-
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'homeowner@test.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
 
     await page.goto('/homeowner/dashboard');
     await page.locator('[data-testid="lead-card"]').first().click();

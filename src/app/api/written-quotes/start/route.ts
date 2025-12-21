@@ -40,11 +40,14 @@ interface StartWrittenQuoteRequest {
  * @returns 201 Created + WrittenQuote ID
  */
 export async function POST(request: NextRequest) {
+  console.log('🔥 [API] /api/written-quotes/start HIT - Request received');
   const correlationId = request.headers.get('x-correlation-id') || `wq-start-${Date.now()}`;
   
   try {
     const auth = await requireRole('INSTALLER');
+    console.log('🔥 [API] Auth passed, installer:', auth.userId);
     const body: StartWrittenQuoteRequest = await request.json();
+    console.log('🔥 [API] Request body:', { leadId: body.leadId, initialPrice: body.initialPrice });
     
     logger.info('Written quote start initiated', { 
       leadId: body.leadId, 

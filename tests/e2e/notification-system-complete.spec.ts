@@ -13,6 +13,7 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
+import { loginAsHomeowner, loginAsInstaller } from './helpers/auth';
 
 // Test user credentials
 const ADMIN_CREDENTIALS = {
@@ -32,19 +33,22 @@ const INSTALLER_CREDENTIALS = {
 
 // Helper: Login function
 async function login(page: Page, email: string, password: string, role: 'admin' | 'installer' | 'homeowner') {
-  await page.goto('/login');
+  if (role === 'installer') {
+    await loginAsInstaller(page, { email, password });
+    return;
+  }
+
+  if (role === 'homeowner') {
+    await loginAsHomeowner(page, { email, password });
+    return;
+  }
+
+  // Admin login is a dedicated public page: /admin
+  await page.goto('/admin');
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
-  await page.click('button[type="submit"]');
-  
-  // Wait for redirect to dashboard
-  if (role === 'admin') {
-    await page.waitForURL('/admin/dashboard');
-  } else if (role === 'installer') {
-    await page.waitForURL('/installer/dashboard');
-  } else {
-    await page.waitForURL('/homeowner/dashboard');
-  }
+  await page.getByRole('button', { name: 'Sign In' }).click();
+  await page.waitForURL('**/admin/dashboard');
 }
 
 // Helper: Get notification count

@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -25,4 +25,43 @@ export default defineConfig({
     video: 'retain-on-failure'
   },
   reporter: [ ['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }] ],
+  
+  // Setup projects for authentication storage state
+  projects: [
+    // Setup: Run auth setup before all tests
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    
+    // Tests that use homeowner auth
+    {
+      name: 'homeowner-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/homeowner.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*homeowner\.spec\.ts/,
+    },
+    
+    // Tests that use installer auth
+    {
+      name: 'installer-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/installer.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /.*installer\.spec\.ts/,
+    },
+    
+    // Tests that need negotiation (both roles)
+    {
+      name: 'negotiation-tests',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Negotiation tests will use helpers to switch between roles
+      },
+      dependencies: ['setup'],
+      testMatch: /.*negotiation\.spec\.ts/,
+    },
+  ],
 });

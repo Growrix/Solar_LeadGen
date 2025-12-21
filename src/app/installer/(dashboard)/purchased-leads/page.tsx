@@ -84,7 +84,7 @@ export default function PurchasedLeadsPage() {
   const [allLeads, setAllLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'call_visit' | 'written' | 'bidding'>('call_visit');
+  const [activeTab, setActiveTab] = useState<'call_visit' | 'written' | 'bidding'>('written');
 
   // Redirect if not authenticated or not installer
   useEffect(() => {

@@ -1,0 +1,256 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - button "SolarMatch" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+          - generic [ref=e14]: SolarMatch
+        - button "Collapse sidebar" [ref=e15] [cursor=pointer]:
+          - img [ref=e16]
+      - navigation [ref=e18]:
+        - link "Lead Feed 5" [ref=e19] [cursor=pointer]:
+          - /url: /installer/leads
+          - button "Lead Feed 5" [ref=e20]:
+            - img [ref=e22]
+            - generic [ref=e24]: Lead Feed
+            - generic [ref=e25]: "5"
+        - link "Purchased Leads" [ref=e26] [cursor=pointer]:
+          - /url: /installer/purchased-leads
+          - button "Purchased Leads" [ref=e27]:
+            - img [ref=e29]
+            - generic [ref=e33]: Purchased Leads
+        - link "Profile" [ref=e34] [cursor=pointer]:
+          - /url: /installer/profile
+          - button "Profile" [ref=e35]:
+            - img [ref=e37]
+            - generic [ref=e40]: Profile
+      - button "Logout" [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - generic [ref=e46]: Logout
+    - generic [ref=e47]:
+      - banner [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - textbox "Search leads..."
+            - button "Toggle search" [ref=e52] [cursor=pointer]:
+              - img [ref=e53]
+          - generic [ref=e56]:
+            - button "Switch to Dark theme" [ref=e57] [cursor=pointer]:
+              - generic [ref=e58]: 🌙
+            - button "Switch to Light theme" [ref=e59] [cursor=pointer]:
+              - generic [ref=e60]: ☀️
+            - button "Switch to Purple theme" [ref=e61] [cursor=pointer]:
+              - generic [ref=e62]: �️
+          - button "Help" [ref=e63] [cursor=pointer]:
+            - img [ref=e64]
+          - button "Notifications" [ref=e68] [cursor=pointer]:
+            - img [ref=e69]
+          - button "User profile" [ref=e72] [cursor=pointer]:
+            - img "Installer Avatar" [ref=e73]
+      - main [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - heading "Purchased Leads" [level=1] [ref=e77]
+            - paragraph [ref=e78]: View and manage leads you've purchased
+          - generic [ref=e80]:
+            - button "Call/Visit" [ref=e81] [cursor=pointer]:
+              - generic [ref=e83]: Call/Visit
+            - button "Written Quotes 1" [ref=e84] [cursor=pointer]:
+              - generic [ref=e85]:
+                - generic [ref=e86]: Written Quotes
+                - generic [ref=e87]: "1"
+            - button "Bidding" [ref=e88] [cursor=pointer]:
+              - generic [ref=e90]: Bidding
+          - generic [ref=e91]:
+            - generic [ref=e92]:
+              - generic [ref=e93]:
+                - heading "Lead Feed" [level=1] [ref=e94]
+                - paragraph [ref=e95]: Available leads for Test Installer
+              - generic [ref=e96]:
+                - button "Refresh" [ref=e97] [cursor=pointer]:
+                  - generic [ref=e98]:
+                    - img [ref=e99]
+                    - generic [ref=e104]: Refresh
+                - generic [ref=e105]: "Updated: 12:25:48 PM"
+            - generic [ref=e106]:
+              - generic [ref=e108]:
+                - generic [ref=e109]:
+                  - paragraph [ref=e110]: Available Leads
+                  - paragraph [ref=e111]: "1"
+                - img [ref=e113]
+              - generic [ref=e117]:
+                - generic [ref=e118]:
+                  - paragraph [ref=e119]: Unlocked Today
+                  - paragraph [ref=e120]: "3"
+                - img [ref=e122]
+              - generic [ref=e126]:
+                - generic [ref=e127]:
+                  - paragraph [ref=e128]: Credit Balance
+                  - paragraph [ref=e129]: $1000
+                - img [ref=e131]
+              - generic [ref=e134]:
+                - generic [ref=e135]:
+                  - paragraph [ref=e136]: Success Rate
+                  - paragraph [ref=e137]: 85%
+                - img [ref=e139]
+            - generic [ref=e143]:
+              - generic [ref=e144]:
+                - img [ref=e145]
+                - textbox "Search by location, system size, or property type..." [ref=e148]
+              - generic [ref=e149]:
+                - combobox [ref=e150]:
+                  - option "All Types" [selected]
+                  - option "Call/Visit"
+                  - option "Written"
+                  - option "Competitive Bidding"
+                - combobox [ref=e151]:
+                  - option "All Status" [selected]
+                  - option "New"
+                  - option "Unlocked"
+                  - option "Submitted"
+                - textbox "Postcode" [ref=e152]
+                - combobox [ref=e153]:
+                  - option "All Time" [selected]
+                  - option "Today"
+                  - option "This Week"
+                  - option "This Month"
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - generic [ref=e156]:
+                  - generic [ref=e158]:
+                    - img [ref=e159]
+                    - generic [ref=e162]: Written Quote Lead
+                  - generic [ref=e163]:
+                    - generic [ref=e164]: PURCHASED
+                    - generic [ref=e165]: 2h ago
+                - generic [ref=e166]:
+                  - generic [ref=e167]:
+                    - generic [ref=e168]:
+                      - img [ref=e169]
+                      - generic [ref=e172]: Melbourne VIC, 3000, VIC
+                    - generic [ref=e173]:
+                      - img [ref=e174]
+                      - generic [ref=e176]: SOLAR � TILE Roof
+                    - generic [ref=e177]:
+                      - img [ref=e178]
+                      - generic [ref=e180]: "Budget: 8000-10000"
+                  - generic [ref=e182]:
+                    - img [ref=e183]
+                    - generic [ref=e186]: 0 quotes received
+                - generic [ref=e187]:
+                  - generic [ref=e188]:
+                    - img [ref=e189]
+                    - generic [ref=e192]: Contact Details Unlocked
+                  - generic [ref=e193]:
+                    - generic [ref=e194]: Name:John Smith
+                    - generic [ref=e195]: Phone:N/A
+                    - generic [ref=e196]: Email:homeowner@test.com
+                - generic [ref=e197]:
+                  - button "Submit Quote" [active] [ref=e198] [cursor=pointer]:
+                    - generic [ref=e199]:
+                      - img [ref=e200]
+                      - generic [ref=e203]: Submit Quote
+                  - button "Start Chat" [ref=e204] [cursor=pointer]:
+                    - generic [ref=e205]:
+                      - img [ref=e206]
+                      - generic [ref=e208]: Start Chat
+              - generic [ref=e210]:
+                - generic [ref=e211]:
+                  - img [ref=e212]
+                  - generic [ref=e215]: Draft restored from previous session (v1)
+                - generic [ref=e216]:
+                  - generic [ref=e217]:
+                    - generic [ref=e218]:
+                      - img [ref=e220]
+                      - generic [ref=e223]:
+                        - 'heading "Quote Builder: John Smith" [level=2] [ref=e224]'
+                        - generic [ref=e225]:
+                          - generic [ref=e226]: "Lead #test-lead-written-quote"
+                          - generic [ref=e227]: Melbourne VIC, VIC 3000
+                          - generic [ref=e228]:
+                            - text: "Status:"
+                            - generic [ref=e229]: Draft
+                          - generic [ref=e230]: Saving...
+                    - generic [ref=e231]:
+                      - button "Lead Details" [ref=e232] [cursor=pointer]:
+                        - generic [ref=e233]:
+                          - img [ref=e234]
+                          - text: Lead Details
+                      - button "Preview" [ref=e236] [cursor=pointer]:
+                        - generic [ref=e237]:
+                          - img [ref=e238]
+                          - text: Preview
+                      - button "Save Draft" [ref=e241] [cursor=pointer]:
+                        - generic [ref=e242]:
+                          - img [ref=e243]
+                          - text: Save Draft
+                      - button "Send Quote" [ref=e247] [cursor=pointer]:
+                        - generic [ref=e248]:
+                          - img [ref=e249]
+                          - text: Send Quote
+                      - button [ref=e252] [cursor=pointer]:
+                        - img [ref=e254]
+                  - generic [ref=e257]:
+                    - generic [ref=e258]: "Quick Presets:"
+                    - button "Economy Package" [ref=e259] [cursor=pointer]:
+                      - generic [ref=e260]: Economy Package
+                    - button "Balanced Package" [ref=e261] [cursor=pointer]:
+                      - generic [ref=e262]: Balanced Package
+                    - button "Premium Package" [ref=e263] [cursor=pointer]:
+                      - generic [ref=e264]: Premium Package
+                - generic [ref=e265]:
+                  - generic [ref=e266]:
+                    - generic [ref=e267]:
+                      - button "System Selection" [ref=e268] [cursor=pointer]:
+                        - generic [ref=e269]: System Selection
+                        - img [ref=e270]
+                      - generic [ref=e273]:
+                        - heading "System Selection" [level=3] [ref=e274]:
+                          - img [ref=e275]
+                          - text: System Selection
+                        - generic [ref=e277]:
+                          - generic [ref=e278]:
+                            - generic [ref=e279]: Project Type
+                            - combobox [ref=e280] [cursor=pointer]:
+                              - option "Residential" [selected]
+                              - option "Commercial"
+                          - generic [ref=e281]:
+                            - generic [ref=e282]: System Type
+                            - combobox [ref=e283] [cursor=pointer]:
+                              - option "Grid-Connected Solar" [selected]
+                              - option "Hybrid (Solar + Battery)"
+                              - option "Off-Grid System"
+                              - option "Battery Only"
+                              - option "EV Charger Add-on"
+                              - option "Add Panels to Existing"
+                              - option "Replace Inverter"
+                          - generic [ref=e284]:
+                            - generic [ref=e285]: System Size (kW)
+                            - generic [ref=e286]:
+                              - button "Decrease by 0.5 kW" [ref=e287] [cursor=pointer]:
+                                - img [ref=e288]
+                              - spinbutton [ref=e289]: "6.6"
+                              - button "Increase by 0.5 kW" [ref=e290] [cursor=pointer]:
+                                - img [ref=e291]
+                              - generic [ref=e292]: kW
+                    - button "Roof & Site Details" [ref=e294] [cursor=pointer]:
+                      - generic [ref=e295]: Roof & Site Details
+                      - img [ref=e296]
+                    - button "Product Configuration" [ref=e299] [cursor=pointer]:
+                      - generic [ref=e300]: Product Configuration
+                      - img [ref=e301]
+                    - button "Pricing Engine" [ref=e304] [cursor=pointer]:
+                      - generic [ref=e305]: Pricing Engine
+                      - img [ref=e306]
+                    - button "Compliance Documents" [ref=e309] [cursor=pointer]:
+                      - generic [ref=e310]: Compliance Documents
+                      - img [ref=e311]
+                  - button "Customer Preview" [ref=e316] [cursor=pointer]:
+                    - generic [ref=e317]: Customer Preview
+                    - img [ref=e318]
+  - region "Notifications alt+T"
+  - alert [ref=e320]
+```

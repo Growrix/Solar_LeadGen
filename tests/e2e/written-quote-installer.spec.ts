@@ -3,17 +3,11 @@ import { test, expect } from '@playwright/test';
 /**
  * Written Quote E2E Tests - Installer Flow
  * Tests installer's ability to submit written quotes
+ * 
+ * Authentication: Uses Playwright storage state (tests/e2e/.auth/installer.json)
  */
 
 test.describe('Written Quote - Installer Flow', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login as installer (adjust credentials based on your test data)
-    await page.goto('/login');
-    await page.fill('input[name="email"]', 'installer@test.com');
-    await page.fill('input[name="password"]', 'password');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/installer/**');
-  });
 
   test('Installer can submit written quote', async ({ page }) => {
     // Navigate to assigned lead
