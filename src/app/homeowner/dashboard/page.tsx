@@ -15,6 +15,7 @@ import SimplifiedQuoteFormModal from '@/components/homeowner/SimplifiedQuoteForm
 import QuoteOptionsModal from '@/components/QuoteOptionsModal';
 import QuoteTypeDistributionModal from '@/components/homeowner/QuoteTypeDistributionModal';
 import HomeownerBiddingReviewModal from '@/components/homeowner/HomeownerBiddingReviewModal'; // Phase 3: Bidding review
+import HomeownerWrittenQuoteReviewModal from '@/components/written-quote/HomeownerWrittenQuoteReviewModal'; // Phase 4.16.13: Written quote review
 import HomeownersInfoForm from '@/components/HomeownersInfoForm'; // ✅ Phase 12: Reuse guest flow component for consistency
 import MessagingModal from '@/components/MessagingModal';
 import ProfileManagement from '@/components/ProfileManagement';
@@ -344,6 +345,11 @@ interface DashboardOverviewContentProps {
   onLimitReached?: () => void;
   setSelectedBiddingLeadId: (id: string) => void;
   setIsBiddingReviewModalOpen: (open: boolean) => void;
+  // Phase 4.16.13.4: Written quote modal setters
+  setSelectedWrittenQuoteLeadId: (id: string) => void;
+  setSelectedWrittenQuoteId: (id: string) => void;
+  setSelectedInstallerName: (name: string) => void;
+  setIsWrittenQuoteReviewModalOpen: (open: boolean) => void;
 }
 
 const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
@@ -358,6 +364,11 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
   onLimitReached,
   setSelectedBiddingLeadId,
   setIsBiddingReviewModalOpen,
+  // Phase 4.16.13.4: Written quote modal setters
+  setSelectedWrittenQuoteLeadId,
+  setSelectedWrittenQuoteId,
+  setSelectedInstallerName,
+  setIsWrittenQuoteReviewModalOpen,
 }) => {
   const StatCard: React.FC<{ 
     icon: React.ReactNode; 
@@ -636,19 +647,28 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                                 </Button>
                               )}
                               
-                              {/* Phase 3: Review Bids button for BIDDING leads (APPROVED or PURCHASED) */}
-                              {lead.quoteType === 'BIDDING' && [LeadStatusEnum.APPROVED as string, LeadStatusEnum.PURCHASED as string].includes(lead.status) && (
+                              {/* Phase 3 & 4.16.13.4: Review Bids/Quote button for BIDDING and WRITTEN_QUOTE leads (APPROVED or PURCHASED) */}
+                              {(lead.quoteType === 'BIDDING' || lead.quoteType === 'WRITTEN_QUOTE') && [LeadStatusEnum.APPROVED as string, LeadStatusEnum.PURCHASED as string].includes(lead.status) && (
                                 <Button
                                   onClick={() => {
-                                    setSelectedBiddingLeadId(lead.id);
-                                    setIsBiddingReviewModalOpen(true);
+                                    if (lead.quoteType === 'WRITTEN_QUOTE') {
+                                      // Phase 4.16.13.4: Open written quote review modal
+                                      setSelectedWrittenQuoteLeadId(lead.id);
+                                      setSelectedWrittenQuoteId(lead.id); // TODO: Use actual writtenQuoteId from lead data
+                                      setSelectedInstallerName('Installer'); // Will be fetched by modal
+                                      setIsWrittenQuoteReviewModalOpen(true);
+                                    } else {
+                                      // Phase 3: Open bidding review modal
+                                      setSelectedBiddingLeadId(lead.id);
+                                      setIsBiddingReviewModalOpen(true);
+                                    }
                                   }}
                                   variant="minimal"
                                   className="flex items-center gap-1 px-2 py-1 text-caption text-warning hover:text-warning/80 bg-transparent shadow-none"
-                                  title="Review bids from installers"
+                                  title={lead.quoteType === 'WRITTEN_QUOTE' ? 'Review written quote' : 'Review bids from installers'}
                                 >
                                   <TrophyIcon />
-                                  <span className="hidden sm:inline">Review Bids</span>
+                                  <span className="hidden sm:inline">{lead.quoteType === 'WRITTEN_QUOTE' ? 'Review Quote' : 'Review Bids'}</span>
                                 </Button>
                               )}
                               {canEdit && (
@@ -759,7 +779,12 @@ export default function HomeownerDashboardPage() {
   const [isQuoteTypeDistributionModalOpen, setIsQuoteTypeDistributionModalOpen] = useState(false);
   const [isDetailedInfoModalOpen, setIsDetailedInfoModalOpen] = useState(false); // ✅ Phase 12: Added for first-quote contact info
   const [isBiddingReviewModalOpen, setIsBiddingReviewModalOpen] = useState(false); // Phase 3: Bidding review modal
-  const [selectedBiddingLeadId, setSelectedBiddingLeadId] = useState<string | null>(null); // Phase 3: Track which lead to review
+  const [selectedBiddingLeadId, setSelectedBiddingLeadId] = useState<string | null>(null);
+  // Phase 4.16.13.4: Written quote review modal state
+  const [isWrittenQuoteReviewModalOpen, setIsWrittenQuoteReviewModalOpen] = useState(false);
+  const [selectedWrittenQuoteLeadId, setSelectedWrittenQuoteLeadId] = useState<string | null>(null);
+  const [selectedWrittenQuoteId, setSelectedWrittenQuoteId] = useState<string | null>(null);
+  const [selectedInstallerName, setSelectedInstallerName] = useState<string>(''); // Phase 3: Track which lead to review
   const [homeownerInfo, setHomeownerInfo] = useState<{ name: string; phone: string; address: string } | null>(null); // ✅ Phase 12: Store homeowner contact info
   const [isMessagingModalOpen, setIsMessagingModalOpen] = useState(false);
   const [showContactVerificationModal, setShowContactVerificationModal] = useState(false);
@@ -1207,6 +1232,10 @@ export default function HomeownerDashboardPage() {
             onLimitReached={() => setIsLeadLimitModalOpen(true)}
             setSelectedBiddingLeadId={setSelectedBiddingLeadId}
             setIsBiddingReviewModalOpen={setIsBiddingReviewModalOpen}
+            setSelectedWrittenQuoteLeadId={setSelectedWrittenQuoteLeadId}
+            setSelectedWrittenQuoteId={setSelectedWrittenQuoteId}
+            setSelectedInstallerName={setSelectedInstallerName}
+            setIsWrittenQuoteReviewModalOpen={setIsWrittenQuoteReviewModalOpen}
           />
         );
       case 'Call/Visit Quotes':
@@ -1235,6 +1264,10 @@ export default function HomeownerDashboardPage() {
             onLimitReached={() => setIsLeadLimitModalOpen(true)}
             setSelectedBiddingLeadId={setSelectedBiddingLeadId}
             setIsBiddingReviewModalOpen={setIsBiddingReviewModalOpen}
+            setSelectedWrittenQuoteLeadId={setSelectedWrittenQuoteLeadId}
+            setSelectedWrittenQuoteId={setSelectedWrittenQuoteId}
+            setSelectedInstallerName={setSelectedInstallerName}
+            setIsWrittenQuoteReviewModalOpen={setIsWrittenQuoteReviewModalOpen}
           />
         );
     }
@@ -1584,6 +1617,22 @@ export default function HomeownerDashboardPage() {
               throw error; // Re-throw so modal handles loading state
             }
           }}
+        />
+      )}
+
+      {/* Phase 4.16.13.4: Homeowner Written Quote Review Modal */}
+      {isWrittenQuoteReviewModalOpen && selectedWrittenQuoteLeadId && selectedWrittenQuoteId && (
+        <HomeownerWrittenQuoteReviewModal
+          isOpen={isWrittenQuoteReviewModalOpen}
+          onClose={() => {
+            setIsWrittenQuoteReviewModalOpen(false);
+            setSelectedWrittenQuoteLeadId(null);
+            setSelectedWrittenQuoteId(null);
+            setSelectedInstallerName('');
+          }}
+          leadId={selectedWrittenQuoteLeadId}
+          writtenQuoteId={selectedWrittenQuoteId}
+          installerName={selectedInstallerName}
         />
       )}
     </>
