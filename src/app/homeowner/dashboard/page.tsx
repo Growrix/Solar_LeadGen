@@ -343,7 +343,6 @@ interface DashboardOverviewContentProps {
   onCancelLead: (lead: RecentLeadSummary) => void;
   onLimitReached?: () => void;
   setSelectedBiddingLeadId: (id: string) => void;
-  setSelectedLeadQuoteType: (type: 'BIDDING' | 'WRITTEN_QUOTE') => void;
   setIsBiddingReviewModalOpen: (open: boolean) => void;
 }
 
@@ -358,7 +357,6 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
   onCancelLead,
   onLimitReached,
   setSelectedBiddingLeadId,
-  setSelectedLeadQuoteType,
   setIsBiddingReviewModalOpen,
 }) => {
   const StatCard: React.FC<{ 
@@ -591,7 +589,6 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
               return (
                     <div
                       key={lead.id}
-                      data-testid="lead-card"
                       className="flex items-center gap-3 p-3 rounded-full bg-background shadow-neu-outset transition-colors duration-normal min-h-[80px]"
                       style={{ position: 'relative' }}
                     >
@@ -644,7 +641,6 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                                 <Button
                                   onClick={() => {
                                     setSelectedBiddingLeadId(lead.id);
-                                    setSelectedLeadQuoteType('BIDDING');
                                     setIsBiddingReviewModalOpen(true);
                                   }}
                                   variant="minimal"
@@ -653,23 +649,6 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                                 >
                                   <TrophyIcon />
                                   <span className="hidden sm:inline">Review Bids</span>
-                                </Button>
-                              )}
-                              
-                              {/* Phase 4.16.9: Review Quote button for WRITTEN_QUOTE leads (APPROVED or PURCHASED) */}
-                              {lead.quoteType === 'WRITTEN_QUOTE' && [LeadStatusEnum.APPROVED as string, LeadStatusEnum.PURCHASED as string].includes(lead.status) && (
-                                <Button
-                                  onClick={() => {
-                                    setSelectedBiddingLeadId(lead.id);
-                                    setSelectedLeadQuoteType('WRITTEN_QUOTE');
-                                    setIsBiddingReviewModalOpen(true);
-                                  }}
-                                  variant="minimal"
-                                  className="flex items-center gap-1 px-2 py-1 text-caption text-primary hover:text-primary/80 bg-transparent shadow-none"
-                                  title="Review written quote from installer"
-                                >
-                                  <FileSignatureIcon />
-                                  <span className="hidden sm:inline">Review Quote</span>
                                 </Button>
                               )}
                               {canEdit && (
@@ -781,7 +760,6 @@ export default function HomeownerDashboardPage() {
   const [isDetailedInfoModalOpen, setIsDetailedInfoModalOpen] = useState(false); // ✅ Phase 12: Added for first-quote contact info
   const [isBiddingReviewModalOpen, setIsBiddingReviewModalOpen] = useState(false); // Phase 3: Bidding review modal
   const [selectedBiddingLeadId, setSelectedBiddingLeadId] = useState<string | null>(null); // Phase 3: Track which lead to review
-  const [selectedLeadQuoteType, setSelectedLeadQuoteType] = useState<'BIDDING' | 'WRITTEN_QUOTE' | null>(null); // Phase 4.16.9: Track lead type for modal default tab
   const [homeownerInfo, setHomeownerInfo] = useState<{ name: string; phone: string; address: string } | null>(null); // ✅ Phase 12: Store homeowner contact info
   const [isMessagingModalOpen, setIsMessagingModalOpen] = useState(false);
   const [showContactVerificationModal, setShowContactVerificationModal] = useState(false);
@@ -1228,7 +1206,6 @@ export default function HomeownerDashboardPage() {
             onCancelLead={handleCancelLead}
             onLimitReached={() => setIsLeadLimitModalOpen(true)}
             setSelectedBiddingLeadId={setSelectedBiddingLeadId}
-            setSelectedLeadQuoteType={setSelectedLeadQuoteType}
             setIsBiddingReviewModalOpen={setIsBiddingReviewModalOpen}
           />
         );
@@ -1257,7 +1234,6 @@ export default function HomeownerDashboardPage() {
             onCancelLead={handleCancelLead}
             onLimitReached={() => setIsLeadLimitModalOpen(true)}
             setSelectedBiddingLeadId={setSelectedBiddingLeadId}
-            setSelectedLeadQuoteType={setSelectedLeadQuoteType}
             setIsBiddingReviewModalOpen={setIsBiddingReviewModalOpen}
           />
         );
@@ -1555,13 +1531,10 @@ export default function HomeownerDashboardPage() {
           onClose={() => {
             setIsBiddingReviewModalOpen(false);
             setSelectedBiddingLeadId(null);
-            setSelectedLeadQuoteType(null);
           }}
           leadId={selectedBiddingLeadId}
           propertyAddress="Loading..." 
           bids={[]}
-          leadType={selectedLeadQuoteType || 'BIDDING'} // Sprint 4.16.12.3: Pass leadType
-          defaultTab={selectedLeadQuoteType === 'WRITTEN_QUOTE' ? 'written-quote' : 'bids'}
           onSelectWinner={async (bidId: string) => {
             try {
               console.log('[Phase 13G] Selecting winner bid:', bidId);

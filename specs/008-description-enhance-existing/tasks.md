@@ -28,58 +28,135 @@
 - Apply correct terminology ("Written Quote", "Negotiate", "Accept")
 - Restore `HomeownerBiddingReviewModal` to bidding-only (remove conditionals)
 
-**Estimated Time**: 3.5 hours (7 sprints)
+## Phase 4.16.13 — Build Separate Written Quote Review Modal
+
+**Status:** 🟢 IN PROGRESS - Step 1/3 Complete (Backup & Planning Done)  
+**Priority:** P0 (User Confusion - UX Critical)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-AUDIT-2025-12-21.md`  
+**Reference Plan:** `DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md`  
+**Authority:** System Constitution → Blueprint → MODAL-REUSE-STRATEGY → AI Implementation Guidelines
+
+### Context
+
+**User Feedback**: "The reuse of the review bids modal for the written quote review modal is causing a lot of issues and complications. Users will be confused to see the modal, because now written Quote is showing up on bidding tabs as well."
+
+**Root Cause**: Conditional modal reuse creates user confusion  
+- **Current State**: Written quotes displayed under "Marketplace Bids" tab with bidding terminology
+- **User Impact**: Homeowners see "Review Solar Bids" title when reviewing custom quotes, confusing competitive bidding with 1:1 negotiation
+- **Screenshot Evidence**: "Marketplace Bids (1)" tab showing written quote data, separate "Written Quote" tab with placeholder message
+
+**Professional Assessment** (Per Audit Report):
+- ✅ Conditional reuse is **technically functional** (all 8 JSON fields display correctly)
+- ❌ Conditional reuse causes **user confusion** (wrong terminology, mental model mismatch)
+- ❌ Violates **strategy intent** (strategy meant separate tab views, not conditional entire modal)
+- ✅ Separate modals recommended for **distinct user journeys** (bidding = selection; written quote = negotiation)
+
+**Updated Strategy**: **RESTORE BIDDING MODAL FROM CLEAN GIT COMMIT** + Build Separate Modal
+- **Rationale**: Restoring from git is safer and faster than manual refactoring
+- **Approach**: Use `git checkout <commit> -- <files>` to restore pre-written-quote state
+- **Benefit**: Guaranteed clean state, no risk of missing subtle bugs, clear git history
+
+**Estimated Time**: 3 hours (revised from 3.5 hours with restoration efficiency)
 
 ---
 
-### Sprint 4.16.13.1 — Revert Conditional Logic from Bidding Modal (30 min)
+### Sprint 4.16.13.0 — Restore Bidding Modal from Clean Commit (20 min) ✅ NEXT
 
-**T-WQ-1301: Remove WRITTEN_QUOTE conditionals from HomeownerBiddingReviewModal**
+**T-WQ-1300: Restore HomeownerBiddingReviewModal and related files from pre-written-quote commit**
 
-**Objective**: Restore bidding modal to its original purpose (competitive bid selection only).
+**Objective**: Use git to restore bidding modal to its last known-good state before written quote refactoring.
 
-**Changes:**
+**Step 1: Identify Clean Commit (5 min)**
 
-1. **Remove leadType prop**
-   - File: `src/components/homeowner/HomeownerBiddingReviewModal.tsx`
-   - Delete: `leadType: 'BIDDING' | 'WRITTEN_QUOTE'` from interface
-   - Delete: `transformWrittenQuoteToBid()` helper function
-   - Delete: `writtenQuote` state variable
-
-2. **Restore fetchBids function**
-   - Replace conditional `fetchQuoteData()` with original `fetchBids()`
-   - Remove written quote API call logic
-   - Update useEffect to call `fetchBids()` directly
-
-3. **Remove conditional UI rendering**
-   - Remove: `{leadType === 'BIDDING' && (...)}` wrappers
-   - Restore: Installer selector dropdown (always visible)
-   - Restore: "Select Winner" button (always visible for non-winner bids)
-   - Remove: WrittenQuoteNegotiationPanel from right column
-
-4. **Restore right column**
-   - Replace conditional right column with original lead details only
-   - Remove: `{leadType === 'WRITTEN_QUOTE' ? ... : ...}` ternary
-
-5. **Update callsites**
-   - File: `src/app/homeowner/dashboard/page.tsx`
-   - Remove: `leadType={selectedLeadQuoteType || 'BIDDING'}` prop
-   - Keep modal for BIDDING leads only (will update trigger logic in Sprint 4.16.13.4)
-
-**Verification:**
+Find the last commit before Phase 4.16.12 conditional refactoring:
 ```powershell
+git log --oneline --all --grep="bidding" --grep="Phase 4.16" --before="2025-12-21"
+```
+
+**Target Commit**: Look for commit before written quote modal work began (likely around 230303f or earlier).
+
+**Step 2: Restore Files from Clean Commit (10 min)**
+
+Restore the following files from the identified clean commit:
+```powershell
+# Replace <clean-commit-hash> with the identified commit
+git checkout <clean-commit-hash> -- src/components/homeowner/HomeownerBiddingReviewModal.tsx
+git checkout <clean-commit-hash> -- src/app/homeowner/dashboard/page.tsx
+
+# Optional: Restore related types if they were modified
+git checkout <clean-commit-hash> -- src/types/bid.ts
+```
+
+**Step 3: Verify Restoration (5 min)**
+
+```powershell
+# Check git status to see restored files
+git status
+
+# Verify TypeScript compilation
 npx tsc --noEmit
-npm run build
+
+# Quick visual inspection
+code src/components/homeowner/HomeownerBiddingReviewModal.tsx
+# Confirm: No leadType prop, no transformWrittenQuoteToBid(), no conditional rendering
 ```
 
 **Success Criteria:**
+- ✅ Files restored from clean commit
+- ✅ No leadType prop in HomeownerBiddingReviewModal interface
+- ✅ No transformWrittenQuoteToBid() helper function
+- ✅ No conditional UI rendering (leadType === 'BIDDING')
 - ✅ TypeScript compiles with 0 errors
-- ✅ Bidding modal opens and displays marketplace bids correctly
-- ✅ Installer dropdown works
-- ✅ "Select Winner" button visible
-- ✅ No written quote logic remaining
+- ✅ Git shows files as modified (ready to stage)
 
-**Time**: 30 minutes
+**Time**: 20 minutes
+
+---
+
+### Sprint 4.16.13.1 — Test Restored Bidding Modal (15 min)
+
+**T-WQ-1301: Verify bidding flow works after restoration**
+
+**Objective**: Ensure restored bidding modal functions correctly before building written quote modal.
+
+**Manual Tests:**
+
+1. **Open Bidding Lead**
+   - Navigate to homeowner dashboard
+   - Find a BIDDING lead (quoteType !== 'WRITTEN_QUOTE')
+   - Click "Review Bids" button
+
+2. **Verify Modal Display**
+   - ✅ Modal title: "Review Solar Bids" (correct for bidding)
+   - ✅ Installer dropdown visible (multiple bids)
+   - ✅ All bid details display correctly
+   - ✅ "Select Winner" button visible for non-winner bids
+   - ✅ Right column shows InstantQuote context
+
+3. **Test Interactions**
+   - ✅ Switch between installers in dropdown
+   - ✅ Click "Select Winner" → confirm it triggers correctly
+   - ✅ Close modal → state resets
+
+**Verification Commands:**
+```powershell
+# TypeScript check
+npx tsc --noEmit
+
+# Build check (optional, can skip for speed)
+# npm run build
+```
+
+**Success Criteria:**
+- ✅ Bidding modal opens without errors
+- ✅ All bidding-specific features work (dropdown, select winner)
+- ✅ No console errors in browser DevTools
+- ✅ TypeScript compiles cleanly
+- ✅ Ready to commit restored state
+
+**Time**: 15 minutes
 
 ---
 
