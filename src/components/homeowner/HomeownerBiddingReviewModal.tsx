@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Award, DollarSign, TrendingUp, Calendar, Battery, Zap, 
   CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader 
@@ -11,7 +11,6 @@ import { LeadData } from '@/types/lead';
 import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerInstantQuoteDetails';
 import LeadTechnicalDetails from '@/components/quote-builder/LeadTechnicalDetails';
 import InstantQuoteResult from '@/components/quote-builder/InstantQuoteResult';
-import { WrittenQuoteNegotiationPanel, WQEvent } from '@/components/written-quote/WrittenQuoteNegotiationPanel';
 
 // Type alias for individual bid with full data
 type BidWithFullData = GetBidsResponse['bids'][number] & {
@@ -39,7 +38,6 @@ export default function HomeownerBiddingReviewModal({
   onSelectWinner
 }: HomeownerBiddingReviewModalProps) {
   // State management
-  const [activeTab, setActiveTab] = useState<'bids' | 'written-quote'>('bids');
   const [selectedBidId, setSelectedBidId] = useState<string>('');
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isLoadingLead, setIsLoadingLead] = useState(false);
@@ -49,11 +47,6 @@ export default function HomeownerBiddingReviewModal({
   const [bidsError, setBidsError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
-  
-  // Written Quote state (T-WQ-216)
-  const [writtenQuote, setWrittenQuote] = useState<any | null>(null);
-  const [isLoadingWrittenQuote, setIsLoadingWrittenQuote] = useState(false);
-  const [writtenQuoteError, setWrittenQuoteError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     instantQuote: true,
     technical: false,
@@ -68,7 +61,7 @@ export default function HomeownerBiddingReviewModal({
   }, [bids, selectedBidId]);
 
   // Fetch bids for the lead
-  const fetchBids = useCallback(async () => {
+  const fetchBids = React.useCallback(async () => {
     if (!leadId) return;
     setIsLoadingBids(true);
     setBidsError(null);
@@ -121,7 +114,7 @@ export default function HomeownerBiddingReviewModal({
   }, [isOpen, leadId, fetchBids]);
 
   // Fetch full lead data when modal opens
-  const fetchLeadData = useCallback(async () => {
+  const fetchLeadData = React.useCallback(async () => {
     if (!leadId) return;
     setIsLoadingLead(true);
     setLeadError(null);
@@ -143,76 +136,6 @@ export default function HomeownerBiddingReviewModal({
       fetchLeadData();
     }
   }, [isOpen, leadId, fetchLeadData]);
-
-  // Fetch written quote for the lead (T-WQ-216)
-  const fetchWrittenQuote = useCallback(async () => {
-    if (!leadId) return;
-    setIsLoadingWrittenQuote(true);
-    setWrittenQuoteError(null);
-    try {
-      const response = await fetch(`/api/written-quotes/get?leadId=${leadId}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setWrittenQuote(null);
-          return;
-        }
-        throw new Error('Failed to fetch written quote');
-      }
-      const data = await response.json();
-      setWrittenQuote(data.quote);
-    } catch (error) {
-      console.error('[HomeownerBiddingReviewModal] Error fetching written quote:', error);
-      setWrittenQuoteError(error instanceof Error ? error.message : 'Failed to load written quote');
-    } finally {
-      setIsLoadingWrittenQuote(false);
-    }
-  }, [leadId]);
-
-  useEffect(() => {
-    if (isOpen && leadId && activeTab === 'written-quote') {
-      fetchWrittenQuote();
-    }
-  }, [isOpen, leadId, activeTab, fetchWrittenQuote]);
-
-  // Handle written quote actions (T-WQ-215)
-  const handleWrittenQuoteAction = async (
-    action: 'counter' | 'accept' | 'reject',
-    data: { price?: number; notes?: string }
-  ) => {
-    if (!writtenQuote) return;
-    
-    try {
-      let response;
-      
-      if (action === 'counter') {
-        response = await fetch(`/api/written-quotes/${writtenQuote.id}/counter`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ price: data.price, notes: data.notes })
-        });
-      } else {
-        response = await fetch(`/api/written-quotes/${writtenQuote.id}/done`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, notes: data.notes })
-        });
-      }
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || `Failed to ${action} written quote`);
-      }
-      
-      // Refresh written quote data
-      await fetchWrittenQuote();
-      
-      alert(result.message || `${action} successful`);
-    } catch (error) {
-      console.error(`[HomeownerBiddingReviewModal] Error ${action} written quote:`, error);
-      alert(error instanceof Error ? error.message : `Failed to ${action} written quote`);
-    }
-  };
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -311,31 +234,7 @@ export default function HomeownerBiddingReviewModal({
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex gap-2 px-4 md:px-6 pt-4 border-b border-border">
-          <button
-            onClick={() => setActiveTab('bids')}
-            className={`px-4 py-2 text-label transition-colors border-b-2 -mb-px ${
-              activeTab === 'bids'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Marketplace Bids ({bids.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('written-quote')}
-            className={`px-4 py-2 text-label transition-colors border-b-2 -mb-px ${
-              activeTab === 'written-quote'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Written Quote
-          </button>
-        </div>
-
-        {/* Body */}
+        {/* Body - 2 Column Layout */}
         <div className="flex-grow overflow-auto p-4 md:p-6">
           {isLoadingBids ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
@@ -845,93 +744,6 @@ export default function HomeownerBiddingReviewModal({
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 border-t border-border gap-4">
-          <div className="text-body-small text-muted-foreground">
-            {selectedBid && (
-              <>
-                Reviewing: {selectedBid.installerName} • 
-                ${selectedBid.finalTotal.toLocaleString()} • 
-                {selectedBid.systemData?.capacityKw || 0} kW
-              </>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="secondary" 
-              onClick={onClose}
-            >
-              Close
-            </Button>
-            
-            {selectedBid && (
-              <Button 
-                variant="primary" 
-                onClick={handleSelectWinnerClick}
-                disabled={selectedBid.isWinner || isSelecting}
-              >
-                {selectedBid.isWinner ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Winner Selected
-                  </>
-                ) : isSelecting ? (
-                  <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
-                    Selecting...
-                  </>
-                ) : (
-                  <>
-                    <Award className="h-4 w-4 mr-2" />
-                    Select as Winner
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Confirmation Modal */}
-            <div className="max-w-2xl mx-auto">
-              {isLoadingWrittenQuote ? (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <Loader className="h-12 w-12 animate-spin text-primary mb-4" />
-                  <p className="text-body text-muted-foreground">Loading written quote...</p>
-                </div>
-              ) : writtenQuoteError ? (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <Info className="h-12 w-12 text-error mb-4" />
-                  <h3 className="text-heading-4 text-foreground mb-2">Error Loading Quote</h3>
-                  <p className="text-body text-muted-foreground max-w-md mb-4">
-                    {writtenQuoteError}
-                  </p>
-                  <Button onClick={fetchWrittenQuote} variant="primary">
-                    Retry
-                  </Button>
-                </div>
-              ) : !writtenQuote ? (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <Info className="h-12 w-12 text-muted mb-4" />
-                  <h3 className="text-heading-4 text-foreground mb-2">No Written Quote Yet</h3>
-                  <p className="text-body text-muted-foreground max-w-md">
-                    No installer has sent you a written quote for this lead yet. Written quotes allow direct negotiation with installers.
-                  </p>
-                </div>
-              ) : (
-                <WrittenQuoteNegotiationPanel
-                  role="homeowner"
-                  currentPrice={writtenQuote.currentPrice}
-                  status={writtenQuote.currentStatus.toLowerCase().replace(/_/g, '_')}
-                  history={writtenQuote.events || []}
-                  onAction={handleWrittenQuoteAction}
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Footer - T-WQ-204: Moved outside ternary to appear on both tabs */}
         <div className="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 border-t border-border gap-4">
           <div className="text-body-small text-muted-foreground">
             {selectedBid && (

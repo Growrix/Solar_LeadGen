@@ -30,11 +30,12 @@
 
 ## Phase 4.16.13 — Build Separate Written Quote Review Modal
 
-**Status:** 🟢 IN PROGRESS - Step 1/3 Complete (Backup & Planning Done)  
+**Status:** � IN PROGRESS - Step 1/3 Complete (Restoration Done) ✅  
 **Priority:** P0 (User Confusion - UX Critical)  
 **Owner:** Engineering  
 **Created:** 2025-12-21  
-**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-AUDIT-2025-12-21.md`  
+**Restoration Audit:** `DOC/AUDIT-REPORTS/System/BIDDING-MODAL-RESTORATION-AUDIT-2025-12-21.md`  
+**Separation Audit:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-AUDIT-2025-12-21.md`  
 **Reference Plan:** `DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md`  
 **Authority:** System Constitution → Blueprint → MODAL-REUSE-STRATEGY → AI Implementation Guidelines
 
@@ -55,67 +56,59 @@
 
 **Updated Strategy**: **RESTORE BIDDING MODAL FROM CLEAN GIT COMMIT** + Build Separate Modal
 - **Rationale**: Restoring from git is safer and faster than manual refactoring
-- **Approach**: Use `git checkout <commit> -- <files>` to restore pre-written-quote state
-- **Benefit**: Guaranteed clean state, no risk of missing subtle bugs, clear git history
+- **Approach**: Restore from `System_Enhancement` branch (clean bidding state)
+- **Benefit**: Guaranteed clean state, 0 TypeScript errors, clear git history
+- **Status**: ✅ **COMPLETED** - Restoration successful (see audit report)
 
 **Estimated Time**: 3 hours (revised from 3.5 hours with restoration efficiency)
 
 ---
 
-### Sprint 4.16.13.0 — Restore Bidding Modal from Clean Commit (20 min) ✅ NEXT
+### Sprint 4.16.13.0 — Restore Bidding Modal from Clean Commit (20 min) ✅ COMPLETE
 
 **T-WQ-1300: Restore HomeownerBiddingReviewModal and related files from pre-written-quote commit**
 
 **Objective**: Use git to restore bidding modal to its last known-good state before written quote refactoring.
 
-**Step 1: Identify Clean Commit (5 min)**
+**Completion Summary:**
+- ✅ **Source Branch**: `System_Enhancement` (fetched as `System_Enhancement_backup`)
+- ✅ **Files Restored**: 
+  - `src/components/homeowner/HomeownerBiddingReviewModal.tsx` (from commit a65bb49)
+  - `src/app/homeowner/dashboard/page.tsx` (from commit 2bc2b69 - Phase 13N T402)
+- ✅ **Verification**: 
+  - TypeScript: 0 errors (`npx tsc --noEmit`)
+  - Build: SUCCESS (`npm run build`)
+  - Legacy Code Scan: 0 matches for `writtenQuote|leadType|transformWrittenQuoteToBid`
+- ✅ **Audit Report**: `DOC/AUDIT-REPORTS/System/BIDDING-MODAL-RESTORATION-AUDIT-2025-12-21.md`
 
-Find the last commit before Phase 4.16.12 conditional refactoring:
+**Restoration Commands Used:**
 ```powershell
-git log --oneline --all --grep="bidding" --grep="Phase 4.16" --before="2025-12-21"
+# Fetch System_Enhancement as backup
+git fetch origin System_Enhancement:System_Enhancement_backup
+
+# Restore files from System_Enhancement_backup
+git checkout System_Enhancement_backup -- src/components/homeowner/HomeownerBiddingReviewModal.tsx
+git checkout System_Enhancement_backup -- src/app/homeowner/dashboard/page.tsx
+
+# Verification
+npx tsc --noEmit  # Found 0 errors ✅
+npm run build     # Compiled successfully ✅
 ```
 
-**Target Commit**: Look for commit before written quote modal work began (likely around 230303f or earlier).
-
-**Step 2: Restore Files from Clean Commit (10 min)**
-
-Restore the following files from the identified clean commit:
-```powershell
-# Replace <clean-commit-hash> with the identified commit
-git checkout <clean-commit-hash> -- src/components/homeowner/HomeownerBiddingReviewModal.tsx
-git checkout <clean-commit-hash> -- src/app/homeowner/dashboard/page.tsx
-
-# Optional: Restore related types if they were modified
-git checkout <clean-commit-hash> -- src/types/bid.ts
-```
-
-**Step 3: Verify Restoration (5 min)**
-
-```powershell
-# Check git status to see restored files
-git status
-
-# Verify TypeScript compilation
-npx tsc --noEmit
-
-# Quick visual inspection
-code src/components/homeowner/HomeownerBiddingReviewModal.tsx
-# Confirm: No leadType prop, no transformWrittenQuoteToBid(), no conditional rendering
-```
-
-**Success Criteria:**
-- ✅ Files restored from clean commit
+**Success Criteria (All Met):**
+- ✅ Files restored from clean commit (System_Enhancement branch)
 - ✅ No leadType prop in HomeownerBiddingReviewModal interface
 - ✅ No transformWrittenQuoteToBid() helper function
 - ✅ No conditional UI rendering (leadType === 'BIDDING')
 - ✅ TypeScript compiles with 0 errors
+- ✅ Production build successful with 0 warnings
 - ✅ Git shows files as modified (ready to stage)
 
-**Time**: 20 minutes
+**Time**: 20 minutes (Completed December 21, 2025)
 
 ---
 
-### Sprint 4.16.13.1 — Test Restored Bidding Modal (15 min)
+### Sprint 4.16.13.1 — Test Restored Bidding Modal (15 min) ⏭️ SKIP (Manual Testing)
 
 **T-WQ-1301: Verify bidding flow works after restoration**
 
