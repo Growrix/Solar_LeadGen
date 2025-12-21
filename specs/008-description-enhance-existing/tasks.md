@@ -1,6 +1,715 @@
+## Phase 4.16.17 — Fix Critical Gaps (Masking, Negotiation, Grand Total) 🚨
+
+**Status:** 🔴 IN PROGRESS  
+**Priority:** P0 (CRITICAL - Security + Broken Functionality)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/HOMEOWNER-WRITTEN-QUOTE-MODAL-CRITICAL-GAPS-AUDIT-2025-12-21.md`  
+**Authority:** System Constitution → AI Implementation Guidelines → Audit Report
+
+### Context
+
+**User Feedback** (Post-Phase 4.16.16): "In this modal, the Installer's contact should be masked. The condition is not applied properly. And the negotiation is not done. And I have no idea for this section 'Savings Projection Unavailable'. And there is no grand total in the description section. Your enhancement is not good. More focus on the negotiation part. It should work e2e. Now there is no option for the homeowners to propose any price."
+
+**Critical Issues Identified**:
+1. 🔴 **SECURITY VIOLATION**: Installer contact (email, phone, company) is EXPOSED before lead purchase
+2. 🔴 **BROKEN FUNCTIONALITY**: Negotiation panel UI exists but homeowner cannot submit counter-offers
+3. 🟡 **MISSING UX**: No grand total shown in line items table
+4. 🟡 **CONFUSING MESSAGE**: "Savings Projection Unavailable" not explained properly
+5. 🟡 **DATA INCONSISTENCY**: `installerContact` JSON vs `installer` relation confusion
+
+**Root Causes**:
+- No `LeadPurchase` check in backend API → installer contact always visible
+- Status never set to `'HOMEOWNER_TURN'` → negotiation panel disabled
+- `QuoteLineItemsTable` has no `<tfoot>` with grand total
+- Warning badge instead of info badge for missing savings
+
+**Phase 4.16.17 Goals**:
+1. Mask installer contact until lead is purchased (security fix)
+2. Fix status flow so negotiation works end-to-end (functionality fix)
+3. Add grand total to line items table (UX improvement)
+4. Improve savings unavailable messaging (UX clarity)
+5. E2E testing of complete negotiation flow
+
+**Estimated Time**: 155 minutes (~2.5 hours)
+
+---
+
+### Sprint 4.16.17.0 — Add Masking Logic for Installer Contact (45 min)
+
+**Objective**: Mask installer email/phone/company until installer purchases the lead
+
+**Security Issue**:
+```tsx
+// ❌ CURRENT: Contact always visible
+{writtenQuote.installer && (
+  <p>{writtenQuote.installer.companyName}</p>
+  <a href={`mailto:${writtenQuote.installer.email}`}>
+    {writtenQuote.installer.email}  {/* ← EXPOSED */}
+  </a>
+  <a href={`tel:${writtenQuote.installer.phone}`}>
+    {writtenQuote.installer.phone}  {/* ← EXPOSED */}
+  </a>
+)}
+```
+
+**Fix Implementation**:
+
+**Backend** (`src/app/api/written-quotes/get/route.ts`):
+```typescript
+// Add JOIN to check if installer purchased this lead
+const quote = await prisma.writtenQuote.findUnique({
+  where: { id: quoteId },
+  include: {
+    installer: {
+      select: {
+        id: true,
+        companyName: true,
+        email: true,
+        phone: true
+      }
+    },
+    lead: {
+      include: {
+        purchases: {
+          where: {
+            installerId: quote.installerId,
+            refundedAt: null  // Not refunded
+          },
+          select: {
+            id: true,
+            purchasedAt: true
+          }
+        }
+      }
+    },
+    // ... other relations
+  }
+});
+
+// Derive leadPurchased boolean
+const leadPurchased = quote && quote.lead && quote.lead.purchases.length > 0;
+
+return NextResponse.json({
+  quote: {
+    ...quote,
+    leadPurchased  // ✅ NEW: Send to frontend
+  }
+});
+```
+
+**Frontend** (`HomeownerWrittenQuoteReviewModal.tsx`):
+```tsx
+// Add interface field
+interface WrittenQuoteData {
+  // ... existing fields
+  leadPurchased?: boolean;  // ✅ NEW
+}
+
+// Add masking UI (lines 228-280)
+{writtenQuote.installer && (
+  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
+    <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+      <Building className="h-5 w-5 text-primary" />
+      Installer Information
+    </h3>
+    
+    {!writtenQuote.leadPurchased ? (
+      {/* ❌ NOT PURCHASED - MASKED */}
+      <div className="space-y-4">
+        {/* Blurred placeholder */}
+        <div className="relative">
+          <div className="blur-md select-none pointer-events-none opacity-50">
+            <div className="space-y-3">
+              <p className="text-body">Company: Green Energy Solutions</p>
+              <p className="text-body">Email: contact@greenenergy.com</p>
+              <p className="text-body">Phone: (555) 123-4567</p>
+            </div>
+          </div>
+          {/* Lock icon overlay */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Lock className="h-10 w-10 text-muted-foreground" />
+          </div>
+        </div>
+        
+        {/* Warning message */}
+        <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-body-small text-warning">Contact Details Hidden</p>
+              <p className="text-body-small text-warning/80 mt-1">
+                Installer contact information will be revealed after you accept this quote and the installer purchases the lead.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : (
+      {/* ✅ PURCHASED - SHOW REAL CONTACT */}
+      <div className="space-y-3">
+        <div>
+          <p className="text-label text-muted-foreground mb-1">Company</p>
+          <p className="text-body text-foreground">
+            {writtenQuote.installer.companyName || 'Not provided'}
+          </p>
+        </div>
+        <div>
+          <p className="text-label text-muted-foreground mb-1">Email</p>
+          <a 
+            href={`mailto:${writtenQuote.installer.email}`}
+            className="text-body text-primary hover:underline flex items-center gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            {writtenQuote.installer.email}
+          </a>
+        </div>
+        {writtenQuote.installer.phone && (
+          <div>
+            <p className="text-label text-muted-foreground mb-1">Phone</p>
+            <a 
+              href={`tel:${writtenQuote.installer.phone}`}
+              className="text-body text-primary hover:underline flex items-center gap-2"
+            >
+              <Phone className="h-4 w-4" />
+              {writtenQuote.installer.phone}
+            </a>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+)}
+```
+
+**Files to Modify**:
+1. `src/app/api/written-quotes/get/route.ts`:
+   - Add `purchases` relation in `lead.include`
+   - Calculate `leadPurchased` boolean
+   - Add to response JSON
+
+2. `src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx`:
+   - Line 1: Add `Lock` import from lucide-react
+   - Line 65: Add `leadPurchased?: boolean` to WrittenQuoteData interface
+   - Lines 228-280: Replace installer info section with masking logic
+
+**Testing Checklist**:
+- [ ] When lead NOT purchased → contact is blurred + lock icon shown + warning message
+- [ ] When lead IS purchased → contact is visible and clickable
+- [ ] TypeScript: 0 errors
+- [ ] Build: SUCCESS
+
+**Acceptance Criteria**:
+✅ Installer contact masked when `leadPurchased = false`  
+✅ Installer contact visible when `leadPurchased = true`  
+✅ Warning message explains when contact will be revealed
+
+---
+
+### Sprint 4.16.17.1 — Fix Negotiation Status Flow (50 min)
+
+**Objective**: Fix status transitions so homeowner can actually submit counter-offers
+
+**Current Problem**:
+```tsx
+// WrittenQuoteNegotiationPanel.tsx:118-120
+const canNegotiate = isMyTurn && !disabled && !isFinalStatus;
+
+// isMyTurn requires status = 'HOMEOWNER_TURN'
+// But status is stuck at 'pending' → canNegotiate = false → UI disabled
+```
+
+**Root Cause**: When installer submits quote from Quote Builder, status is set to `'DRAFT'` or `'PENDING'` instead of `'HOMEOWNER_TURN'`.
+
+**Fix Implementation**:
+
+**Step 1**: Find Quote Builder submission endpoint
+```bash
+# Search for where WrittenQuote is created:
+grep -r "writtenQuote.create" src/app/api/
+```
+
+Likely locations:
+- `src/app/api/written-quotes/create/route.ts`
+- `src/app/api/quote-builder/submit/route.ts`
+- `src/app/api/installer/leads/[id]/quote/submit/route.ts`
+
+**Step 2**: Fix initial status when quote is submitted
+
+Assuming endpoint is `/api/written-quotes/create`:
+```typescript
+// BEFORE (wrong):
+const newQuote = await prisma.writtenQuote.create({
+  data: {
+    leadId,
+    installerId: session.user.id,
+    homeownerId: lead.homeownerId,
+    currentPrice: calculations.grandTotal,
+    currentStatus: 'PENDING',  // ❌ WRONG
+    systemData,
+    productsData,
+    // ...
+  }
+});
+
+// AFTER (correct):
+const newQuote = await prisma.writtenQuote.create({
+  data: {
+    leadId,
+    installerId: session.user.id,
+    homeownerId: lead.homeownerId,
+    currentPrice: calculations.grandTotal,
+    currentStatus: 'HOMEOWNER_TURN',  // ✅ CORRECT - Homeowner can now respond
+    lastActionBy: 'installer',
+    lastActionAt: new Date(),
+    systemData,
+    productsData,
+    // ...
+  }
+});
+
+// Also create initial event
+await prisma.writtenQuoteEvent.create({
+  data: {
+    writtenQuoteId: newQuote.id,
+    actorId: session.user.id,
+    actorRole: 'installer',
+    action: 'offer',  // Initial submission is installer's offer
+    priceOffered: calculations.grandTotal,
+    notes: 'Initial written quote submission',
+    timestamp: new Date()
+  }
+});
+```
+
+**Step 3**: Verify status transitions in counter/offer APIs
+
+**Counter API** (`/api/written-quotes/[id]/counter/route.ts`):
+```typescript
+// Line 100-120: Should transition HOMEOWNER_TURN → INSTALLER_TURN
+const updatedQuote = await prisma.writtenQuote.update({
+  where: { id: quoteId },
+  data: {
+    currentPrice: body.priceOffered,
+    currentStatus: 'INSTALLER_TURN',  // ✅ Flip turn to installer
+    lastActionBy: 'homeowner',
+    lastActionAt: new Date()
+  }
+});
+```
+
+**Offer API** (`/api/written-quotes/[id]/offer/route.ts`):
+```typescript
+// Should transition INSTALLER_TURN → HOMEOWNER_TURN
+const updatedQuote = await prisma.writtenQuote.update({
+  where: { id: quoteId },
+  data: {
+    currentPrice: body.priceOffered,
+    currentStatus: 'HOMEOWNER_TURN',  // ✅ Flip turn to homeowner
+    lastActionBy: 'installer',
+    lastActionAt: new Date()
+  }
+});
+```
+
+**Done API** (`/api/written-quotes/[id]/done/route.ts`):
+```typescript
+// Should set to ACCEPTED or REJECTED
+const updatedQuote = await prisma.writtenQuote.update({
+  where: { id: quoteId },
+  data: {
+    currentStatus: body.action === 'accept' ? 'ACCEPTED' : 'REJECTED',
+    acceptedAt: body.action === 'accept' ? new Date() : null,
+    rejectedAt: body.action === 'reject' ? new Date() : null,
+    lastActionBy: session.user.role === 'INSTALLER' ? 'installer' : 'homeowner',
+    lastActionAt: new Date()
+  }
+});
+```
+
+**Status Transition Matrix**:
+| Current Status | Actor | Action | New Status | Notes |
+|---|---|---|---|---|
+| DRAFT | Installer | Submit | HOMEOWNER_TURN | Initial quote submission |
+| HOMEOWNER_TURN | Homeowner | Accept | ACCEPTED | Quote accepted at current price |
+| HOMEOWNER_TURN | Homeowner | Reject | REJECTED | Quote rejected |
+| HOMEOWNER_TURN | Homeowner | Counter | INSTALLER_TURN | Homeowner proposes new price |
+| INSTALLER_TURN | Installer | Accept | ACCEPTED | Installer accepts homeowner's counter |
+| INSTALLER_TURN | Installer | Reject | REJECTED | Installer rejects counter |
+| INSTALLER_TURN | Installer | Counter | HOMEOWNER_TURN | Installer proposes new counter |
+
+**Files to Check/Modify**:
+1. Find Quote Builder submit endpoint (grep search)
+2. `src/app/api/written-quotes/[id]/counter/route.ts` - Verify transition logic
+3. `src/app/api/written-quotes/[id]/offer/route.ts` - Verify transition logic
+4. `src/app/api/written-quotes/[id]/done/route.ts` - Verify final status
+
+**Testing Checklist**:
+- [ ] Installer submits quote → status = 'HOMEOWNER_TURN'
+- [ ] Homeowner sees counter-offer UI (enabled, not disabled)
+- [ ] Homeowner submits counter → status = 'INSTALLER_TURN'
+- [ ] Installer sees counter-offer UI (enabled)
+- [ ] Installer accepts → status = 'ACCEPTED'
+- [ ] Homeowner rejects → status = 'REJECTED'
+- [ ] Full negotiation flow works end-to-end (offer → counter → counter → accept)
+
+**Acceptance Criteria**:
+✅ Homeowner can submit counter-offer when status = 'HOMEOWNER_TURN'  
+✅ Installer can submit counter-offer when status = 'INSTALLER_TURN'  
+✅ Status transitions match matrix above  
+✅ Negotiation panel UI enables/disables correctly based on turn
+
+---
+
+### Sprint 4.16.17.2 — Add Grand Total to Line Items Table (20 min)
+
+**Objective**: Display grand total at bottom of line items table
+
+**Current Problem**:
+```tsx
+// QuoteLineItemsTable.tsx (assumed structure)
+<table>
+  <tbody>
+    {lineItems.map(item => (
+      <tr>
+        <td>{item.description}</td>
+        <td>{item.quantity}</td>
+        <td>${item.unitPrice}</td>
+        <td>${item.total}</td>
+      </tr>
+    ))}
+  </tbody>
+  {/* ❌ NO FOOTER - No grand total */}
+</table>
+```
+
+**Fix Implementation**:
+
+**Option A**: Calculate from line items
+```tsx
+// src/components/quote-display/QuoteLineItemsTable.tsx
+import { DollarSign } from 'lucide-react';
+
+export function QuoteLineItemsTable({ lineItems }: { lineItems: BidLineItem[] }) {
+  // Calculate grand total
+  const grandTotal = lineItems.reduce((sum, item) => sum + (item.total || 0), 0);
+
+  return (
+    <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
+      <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+        <List className="h-5 w-5 text-primary" />
+        Description
+      </h3>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left text-label text-muted-foreground px-3 py-2">Description</th>
+              <th className="text-right text-label text-muted-foreground px-3 py-2">Qty</th>
+              <th className="text-right text-label text-muted-foreground px-3 py-2">Unit Price</th>
+              <th className="text-right text-label text-muted-foreground px-3 py-2">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lineItems.map((item, idx) => (
+              <tr key={idx} className="border-b border-border/50 last:border-b-0">
+                <td className="text-body text-foreground px-3 py-2.5">{item.description}</td>
+                <td className="text-body text-foreground text-right px-3 py-2.5">{item.quantity}</td>
+                <td className="text-body text-foreground text-right px-3 py-2.5">
+                  ${item.unitPrice.toLocaleString()}
+                </td>
+                <td className="text-body text-foreground text-right px-3 py-2.5">
+                  ${item.total.toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {/* ✅ NEW: Grand Total Footer */}
+          <tfoot>
+            <tr className="border-t-2 border-primary">
+              <td colSpan={3} className="text-heading-4 text-foreground text-right px-3 py-3">
+                <DollarSign className="inline h-5 w-5 text-primary mr-1" />
+                Grand Total:
+              </td>
+              <td className="text-heading-2 text-primary text-right px-3 py-3">
+                ${grandTotal.toLocaleString()}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+```
+
+**Option B**: Pass grandTotal prop (use currentPrice)
+```tsx
+// HomeownerWrittenQuoteReviewModal.tsx
+{writtenQuote.lineItems && writtenQuote.lineItems.length > 0 && (
+  <QuoteLineItemsTable
+    lineItems={writtenQuote.lineItems}
+    grandTotal={writtenQuote.currentPrice}  // ✅ Use currentPrice as authoritative total
+  />
+)}
+```
+
+**Recommendation**: Use **Option A** (calculate from line items) if line items are complete breakdown. Verify that `sum(lineItems.total) === writtenQuote.currentPrice`. If they don't match, display warning and use `currentPrice` as authoritative.
+
+**Files to Modify**:
+1. `src/components/quote-display/QuoteLineItemsTable.tsx`:
+   - Import `DollarSign` from lucide-react
+   - Calculate `grandTotal` from line items
+   - Add `<tfoot>` with grand total row
+   - Style: `border-t-2 border-primary`, `text-heading-2 text-primary`
+
+**Testing Checklist**:
+- [ ] Grand total row appears at bottom of table
+- [ ] Grand total = sum of all line item totals
+- [ ] Grand total is styled prominently (large text, primary color)
+- [ ] Grand total updates when line items change
+
+**Acceptance Criteria**:
+✅ Grand total displayed in table footer  
+✅ Total calculated correctly from line items  
+✅ Styled prominently (heading-2, primary color, bold)
+
+---
+
+### Sprint 4.16.17.3 — Improve Savings Unavailable Message (15 min)
+
+**Objective**: Change warning badge to info badge with helpful context
+
+**Current Problem**:
+```tsx
+// HomeownerWrittenQuoteReviewModal.tsx:340-352
+{!writtenQuote.calculations?.estimatedAnnualSavings ? (
+  <div className="bg-warning/10 border border-warning/20...">
+    <AlertCircle className="text-warning" />
+    <p className="text-warning">Savings Projection Unavailable</p>
+    <p className="text-warning/80">
+      The installer has not provided savings estimates yet. Contact them for details.
+    </p>
+  </div>
+) : (
+  <SavingsChart ... />
+)}
+```
+
+**User Confusion**: "I have no idea for this section" - Why is it showing? Is this an error?
+
+**Fix Implementation**:
+```tsx
+{!writtenQuote.calculations?.estimatedAnnualSavings ? (
+  <div className="bg-info/5 border border-info/20 rounded-xl p-6">
+    <div className="flex items-start gap-3">
+      <Info className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <h4 className="text-heading-xs text-info mb-2">Savings Estimate Not Included</h4>
+        <p className="text-body-small text-foreground-secondary mb-3">
+          This quote doesn't include annual savings projections. This is optional and some installers provide it separately during negotiations.
+        </p>
+        
+        {/* Helpful tips */}
+        <div className="bg-surface rounded-lg p-4 border-l-4 border-info">
+          <p className="text-label text-foreground-secondary flex items-center gap-2 mb-2">
+            <Lightbulb className="h-4 w-4 text-info" />
+            What you can do:
+          </p>
+          <ul className="text-body-small text-muted-foreground space-y-1.5 list-disc list-inside">
+            <li>Request a savings breakdown when you contact the installer</li>
+            <li>Ask for estimated monthly bill reduction based on your energy usage</li>
+            <li>Compare system output (kWh/year) with your current consumption</li>
+            <li>Inquire about payback period and return on investment</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
+    <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+      <TrendingUp className="h-5 w-5 text-success" />
+      Annual Savings Projection
+    </h3>
+    <SavingsChart
+      finalPrice={writtenQuote.currentPrice}
+      annualSavings={writtenQuote.calculations.estimatedAnnualSavings}
+      currentAnnualBill={2000}
+    />
+  </div>
+)}
+```
+
+**Files to Modify**:
+1. `src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx`:
+   - Line 4: Add `Info, Lightbulb, TrendingUp` imports from lucide-react
+   - Lines 340-380: Replace savings section with improved messaging
+
+**Testing Checklist**:
+- [ ] Info badge (not warning) when savings missing
+- [ ] Helpful tips displayed (actionable advice)
+- [ ] TrendingUp icon when savings graph shown
+- [ ] Message is clear and non-alarming
+
+**Acceptance Criteria**:
+✅ Info badge (blue) instead of warning badge (yellow)  
+✅ Explains WHY savings is optional  
+✅ Provides actionable tips for homeowner  
+✅ Message is clear and helpful (not confusing)
+
+---
+
+### Sprint 4.16.17.4 — Build Verification (15 min)
+
+**Objective**: Ensure all changes compile and pass validation
+
+**Verification Steps**:
+
+1. **TypeScript Check**:
+```powershell
+npx tsc --noEmit
+# Expected: Silent (0 errors)
+```
+
+2. **Production Build**:
+```powershell
+npm run build
+# Expected: "✓ Compiled successfully"
+```
+
+3. **6-Command Verification** (HomeownerWrittenQuoteReviewModal.tsx):
+```powershell
+# Command 1: Hardcoded gray/slate colors
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-"
+# Expected: 0 matches
+
+# Command 2: Dark mode classes
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "dark:"
+# Expected: 0 matches
+
+# Command 3: RGB/HEX colors
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}"
+# Expected: 0 matches
+
+# Command 4: Hardcoded white/black
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-white|bg-white|text-black|bg-black"
+# Expected: 0 matches (or only bg-white for cards)
+
+# Command 5: Hardcoded typography
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold"
+# Expected: 0 matches
+
+# Command 6: Manual responsive classes
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "sm:text-|md:text-|lg:text-"
+# Expected: 0 matches
+```
+
+4. **Manual Visual Test**:
+- Navigate to http://localhost:3000/homeowner/dashboard
+- Click "Review written quote" on a WRITTEN_QUOTE lead
+- Verify:
+  - Installer contact is masked (blur + lock icon) if not purchased
+  - Counter-offer UI is enabled if status = 'HOMEOWNER_TURN'
+  - Grand total appears at bottom of line items table
+  - Savings message is info (blue) not warning (yellow)
+
+**Acceptance Criteria**:
+✅ TypeScript: 0 errors  
+✅ Build: SUCCESS  
+✅ 6-command verification: 0 violations (or only allowed exceptions)  
+✅ Manual test: All features work as expected
+
+---
+
+### Sprint 4.16.17.5 — Git Commit & Push (10 min)
+
+**Objective**: Commit changes with descriptive message and push to remote
+
+**Commit Message Format**:
+```
+fix(written-quote): Critical fixes - masking, negotiation, grand total (Phase 4.16.17)
+
+PROBLEM:
+1. 🔴 SECURITY: Installer contact exposed before lead purchase
+2. 🔴 BROKEN: Negotiation panel UI exists but disabled (status stuck at 'pending')
+3. 🟡 MISSING: No grand total in line items table
+4. 🟡 CONFUSING: "Savings Unavailable" warning not explained
+
+SOLUTION:
+Sprint 4.16.17.0:
+- Backend: Add LeadPurchase JOIN in /api/written-quotes/get
+- Backend: Return leadPurchased boolean
+- Frontend: Mask installer contact with blur + lock icon when not purchased
+- Frontend: Show warning "Contact revealed after quote accepted + lead purchased"
+
+Sprint 4.16.17.1:
+- Backend: Set status = 'HOMEOWNER_TURN' when installer submits quote
+- Backend: Verify status transitions (HOMEOWNER_TURN ↔ INSTALLER_TURN ↔ ACCEPTED/REJECTED)
+- Frontend: Negotiation panel now enables when status matches turn
+
+Sprint 4.16.17.2:
+- Frontend: Calculate grand total from line items (reduce sum)
+- Frontend: Add <tfoot> with grand total row in QuoteLineItemsTable
+- Style: text-heading-2, text-primary, border-t-2
+
+Sprint 4.16.17.3:
+- Frontend: Change warning badge to info badge (bg-info/5)
+- Frontend: Add helpful tips (actionable advice for homeowner)
+- Frontend: Add Lightbulb icon + context "why savings optional"
+
+IMPACT:
+✅ SECURITY FIX: Installer contact masked until lead purchased
+✅ FUNCTIONALITY FIX: Homeowner can now submit counter-offers
+✅ UX IMPROVEMENT: Grand total visible in line items table
+✅ UX CLARITY: Savings message is helpful, not alarming
+
+FILES CHANGED:
+- Modified: src/app/api/written-quotes/get/route.ts (LeadPurchase JOIN)
+- Modified: src/app/api/written-quotes/[id]/submit/route.ts (status = HOMEOWNER_TURN)
+- Modified: src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx (masking logic)
+- Modified: src/components/quote-display/QuoteLineItemsTable.tsx (grand total footer)
+
+TESTING:
+✅ TypeScript: 0 errors
+✅ Build: SUCCESS
+✅ 6-command verification: PASS
+✅ Manual test: Masking works, negotiation works, grand total shows, savings message clear
+
+Per specs/008-description-enhance-existing/tasks.md Phase 4.16.17
+Implements DOC/AUDIT-REPORTS/System/HOMEOWNER-WRITTEN-QUOTE-MODAL-CRITICAL-GAPS-AUDIT-2025-12-21.md
+```
+
+**Git Commands**:
+```powershell
+# Stage all changes
+git add -A
+
+# Commit with message
+git commit -m "fix(written-quote): Critical fixes - masking, negotiation, grand total (Phase 4.16.17)
+
+[Full message above]"
+
+# Push to remote branch
+git push origin WrittenQuote_SeparateFlow
+```
+
+**Update tasks.md**:
+- Mark Phase 4.16.17 as ✅ COMPLETE
+- Add completion timestamp
+- Add link to commit hash
+
+**Acceptance Criteria**:
+✅ Commit message follows PROBLEM/SOLUTION/IMPACT format  
+✅ All files staged and committed  
+✅ Pushed to WrittenQuote_SeparateFlow branch  
+✅ tasks.md updated with completion status
+
+---
+
 ## Phase 4.16.16 — Enhance Homeowner Written Quote Modal (Live Data + Visual Polish)
 
-**Status:** 🟡 IN PROGRESS  
+**Status:** ✅ COMPLETE (2025-12-21)  
 **Priority:** P0 (User Reported Mock Data + Missing Features)  
 **Owner:** Engineering  
 **Created:** 2025-12-21  

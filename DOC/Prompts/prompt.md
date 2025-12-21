@@ -3631,3 +3631,25 @@ Create a comprehensive enhancement plan in the D:\Desktop Mass\SOLAR LEAD GEN PR
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+
+-----------------------------------------------------------------------------------------
+
+In this modal , the Installers contact should be masked . The condition is not aplied properly. And the neotiation is not done. And I have no Idea for this section "Savings Projection Unavailable
+
+The installer has not provided savings estimates yet. Contact them for details."
+
+And there is no grand total in the description section. it is still very amature Quote. Your enhancemnet is not good.
+
+- more focus on the negotiation part. It should work e2e. Now there is no option for the homeowners to propose any price. I do not want any mock data or hardcoded data, everything should reflect with the real data. 
+
+***instructions*** I want you to enhance the Review Written QUote - Installer modal as per the above instructions. so that the installers can review and negotiate the written quotes properly without any issues. You have to audit frontend,backend, API , etc deeply and identify the missing gaps.
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.

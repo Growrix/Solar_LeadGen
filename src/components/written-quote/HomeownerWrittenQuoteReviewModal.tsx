@@ -145,7 +145,7 @@ export default function HomeownerWrittenQuoteReviewModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action,
-          priceOffered: data.price,
+          price: data.price,  // Backend expects 'price' not 'priceOffered'
           notes: data.notes
         })
       });
