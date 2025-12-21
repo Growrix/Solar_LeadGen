@@ -4,49 +4,33 @@ const prisma = new PrismaClient();
 
 async function fixQuotas() {
   try {
-    console.log('🔧 Fixing homeowner quota values...\n');
+    console.log('🔧 Checking homeowner quota values...\n');
 
-    // Get all homeowners with undefined quotas
+    // Get all homeowners (these fields have defaults so can't be null)
+    // Just verify they exist
     const homeowners = await prisma.user.findMany({
       where: {
         role: 'HOMEOWNER',
-        OR: [
-          { quoteLimit: null },
-          { biddingQuoteLimit: null },
-        ],
+      },
+      select: {
+        id: true,
+        email: true,
+        leadSubmissionLimit: true,
+        biddingLeadsLimit: true,
       },
     });
 
-    console.log(`Found ${homeowners.length} homeowners with undefined quotas:\n`);
+    console.log(`Found ${homeowners.length} homeowners:\n`);
     
+    // Since these fields have @default values in schema, they can't be null
+    // Just display current values
     for (const user of homeowners) {
       console.log(`📧 ${user.email}`);
-      console.log(`   Current: quoteLimit=${user.quoteLimit}, biddingQuoteLimit=${user.biddingQuoteLimit}`);
-      
-      // Update with defaults
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          quoteLimit: user.quoteLimit ?? 5,
-          biddingQuoteLimit: user.biddingQuoteLimit ?? 1,
-        },
-      });
-      
-      console.log(`   ✅ Updated: quoteLimit=5, biddingQuoteLimit=1\n`);
+      console.log(`   leadSubmissionLimit=${user.leadSubmissionLimit}, biddingLeadsLimit=${user.biddingLeadsLimit}\n`);
     }
 
-    // Verify the fix
-    const fixed = await prisma.user.findMany({
-      where: { role: 'HOMEOWNER' },
-      select: {
-        email: true,
-        quoteLimit: true,
-        biddingQuoteLimit: true,
-      },
-    });
-
-    console.log('\n✅ All homeowners after fix:');
-    console.table(fixed);
+    console.log('\n✅ All homeowner quotas:');
+    console.table(homeowners);
 
   } catch (error) {
     console.error('❌ Error fixing quotas:', error);

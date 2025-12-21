@@ -17,8 +17,8 @@ async function check() {
     console.log('✅ Homeowner found:', {
       email: homeowner.email,
       name: homeowner.name,
-      quoteLimit: homeowner.quoteLimit,
-      biddingQuoteLimit: homeowner.biddingQuoteLimit,
+      leadSubmissionLimit: homeowner.leadSubmissionLimit,
+      biddingLeadsLimit: homeowner.biddingLeadsLimit,
       leadSubmissionCount: homeowner.leadSubmissionCount,
     });
 
@@ -46,7 +46,7 @@ async function check() {
     console.log(`WRITTEN_QUOTE: ${writtenLeads}`);
 
     // Check if bidding quota exceeded
-    const biddingLimit = homeowner.biddingQuoteLimit || 1;
+    const biddingLimit = homeowner.biddingLeadsLimit || 1;
     console.log(`\n🚦 Bidding Quota: ${biddingLeads}/${biddingLimit}`);
     if (biddingLeads >= biddingLimit) {
       console.log('❌ BIDDING QUOTA EXCEEDED!');

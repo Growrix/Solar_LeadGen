@@ -609,7 +609,7 @@ const LeadCard: React.FC<{
           <div className="flex items-start space-x-3">
             <TrophyIcon className="h-8 w-8 text-warning flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h4 className="text-h6 text-success mb-1">
+              <h4 className="text-heading-6 text-success mb-1">
                 🎉 Congratulations! You won this bid!
               </h4>
               <p className="text-body text-muted-foreground mb-3">

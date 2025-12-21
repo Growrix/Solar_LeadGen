@@ -13384,3 +13384,474 @@ Add `'SYSTEM'` to the email whitelist + optional email template enhancements.
 **Quick Win**: This is a **15-minute fix** (T701 only) that significantly improves user communication.
 
 **END OF PHASE 13T**
+
+---
+
+## Phase 4.16.11 — TypeScript Warnings Resolution (Zero-Warnings Enforcement)
+
+**Status:** 🟢 READY TO IMPLEMENT  
+**Priority:** P0 (BLOCKER - Zero-Warnings Policy)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/TYPESCRIPT-WARNINGS-AUDIT-2025-12-21.md`  
+**Authority:** AI-IMPLEMENTATION-GUIDELINES.md (GATE 0, Zero-Warnings Policy) → System Constitution
+
+### Context
+
+**Discovery**: 30 TypeScript errors detected across 6 files, blocking production deployment.
+
+**Root Causes**:
+1. **Prisma Schema Misalignment** (13 errors): Files reference `quoteLimit` and `biddingQuoteLimit` fields that don't exist in User model
+2. **Invalid Tailwind Classes** (12 errors): Components use non-existent design token classes
+3. **Type Mismatches** (5 errors): JWT type missing required fields, action type incompatibility, ESLint warnings
+
+**Impact**:
+- ❌ **GATE 0 FAILURE**: Cannot proceed per AI-IMPLEMENTATION-GUIDELINES.md
+- ❌ **Build Blocked**: `npm run build` will fail
+- ❌ **Design System Violated**: Invalid CSS classes bypass centralized tokens
+- ❌ **Pre-commit Hook Failed**: Husky validation detected violations
+
+**Authority Alignment**:
+- ✅ AI-IMPLEMENTATION-GUIDELINES.md: "Zero-warnings policy: TypeScript must compile with 0 errors"
+- ✅ specs/007-migration-and-build/plan.md: "Post-migration verification MUST return 0/0/0/0/0/0"
+- ✅ DESIGN-SYSTEM-SOT.md: "100% semantic design tokens required"
+
+---
+
+### Sprint 4.16.11.1 — Fix Prisma Schema Misalignment (1 hour)
+
+**T-TS-1101: Update check-homeowner-quota.ts to use existing schema fields**
+
+**File**: `check-homeowner-quota.ts`
+
+**Changes**:
+```typescript
+// BEFORE (line 13)
+select: {
+  id: true,
+  email: true,
+  name: true,
+  quoteLimit: true,              // ❌ Does not exist
+  biddingQuoteLimit: true,       // ❌ Does not exist
+  leadSubmissionCount: true,
+}
+
+// AFTER
+select: {
+  id: true,
+  email: true,
+  name: true,
+  leadSubmissionLimit: true,     // ✅ Actual field (Int @default(5))
+  biddingLeadsLimit: true,       // ✅ Actual field (Int @default(1))
+  leadSubmissionCount: true,
+}
+```
+
+**Validation**: 
+```powershell
+npx tsc --noEmit check-homeowner-quota.ts
+# Expected: 0 errors
+```
+
+---
+
+**T-TS-1102: Update check-quota-simple.ts to use existing schema fields**
+
+**File**: `check-quota-simple.ts`
+
+**Changes**:
+```typescript
+// BEFORE (lines 20-21)
+console.log('✅ Homeowner found:', {
+  email: homeowner.email,
+  name: homeowner.name,
+  quoteLimit: homeowner.quoteLimit,              // ❌ Does not exist
+  biddingQuoteLimit: homeowner.biddingQuoteLimit,// ❌ Does not exist
+  leadSubmissionCount: homeowner.leadSubmissionCount,
+});
+
+// AFTER
+console.log('✅ Homeowner found:', {
+  email: homeowner.email,
+  name: homeowner.name,
+  leadSubmissionLimit: homeowner.leadSubmissionLimit,     // ✅ Actual field
+  biddingLeadsLimit: homeowner.biddingLeadsLimit,         // ✅ Actual field
+  leadSubmissionCount: homeowner.leadSubmissionCount,
+});
+
+// BEFORE (line 49)
+const biddingLimit = homeowner.biddingQuoteLimit || 1;  // ❌
+
+// AFTER
+const biddingLimit = homeowner.biddingLeadsLimit || 1;  // ✅
+```
+
+**Validation**: Same as T-TS-1101
+
+---
+
+**T-TS-1103: Update fix-homeowner-quotas.ts to use existing schema fields**
+
+**File**: `fix-homeowner-quotas.ts`
+
+**Changes**:
+```typescript
+// BEFORE (lines 14-15)
+OR: [
+  { quoteLimit: null },           // ❌ Does not exist
+  { biddingQuoteLimit: null },    // ❌ Does not exist
+]
+
+// AFTER
+OR: [
+  { leadSubmissionLimit: null },  // ✅ Actual field
+  { biddingLeadsLimit: null },    // ✅ Actual field
+]
+
+// BEFORE (line 24)
+console.log(`   Current: quoteLimit=${user.quoteLimit}, biddingQuoteLimit=${user.biddingQuoteLimit}`);
+
+// AFTER
+console.log(`   Current: leadSubmissionLimit=${user.leadSubmissionLimit}, biddingLeadsLimit=${user.biddingLeadsLimit}`);
+
+// BEFORE (lines 30-31)
+data: {
+  quoteLimit: user.quoteLimit ?? 5,           // ❌
+  biddingQuoteLimit: user.biddingQuoteLimit ?? 1, // ❌
+}
+
+// AFTER
+data: {
+  leadSubmissionLimit: user.leadSubmissionLimit ?? 5,    // ✅
+  biddingLeadsLimit: user.biddingLeadsLimit ?? 1,        // ✅
+}
+
+// BEFORE (line 43)
+select: {
+  email: true,
+  quoteLimit: true,           // ❌
+  biddingQuoteLimit: true,    // ❌
+}
+
+// AFTER
+select: {
+  email: true,
+  leadSubmissionLimit: true,  // ✅
+  biddingLeadsLimit: true,    // ✅
+}
+```
+
+**Validation**: Same as T-TS-1101
+
+**Sprint Outcome**: 13 errors resolved ✅
+
+---
+
+### Sprint 4.16.11.2 — Fix Invalid Tailwind CSS Classes (1.5 hours)
+
+**T-TS-1104: Fix WrittenQuoteNegotiationPanel design token violations**
+
+**File**: `src/components/written-quote/WrittenQuoteNegotiationPanel.tsx`
+
+**Changes** (based on Design Token Mapping from audit report):
+
+```typescript
+// BEFORE (lines 107, 109)
+className="... bg-surface-secondary ..."  // ❌ Does not exist
+
+// AFTER
+className="... bg-background-alt ..."     // ✅ Semantic token (alternate background)
+
+// BEFORE (lines 111, 113)
+className="... bg-primary-subtle ..."     // ❌ Does not exist
+
+// AFTER
+className="... bg-primary/10 ..."         // ✅ Primary with 10% opacity
+
+// BEFORE (line 115)
+className="... bg-success-subtle ..."     // ❌ Does not exist
+
+// AFTER
+className="... bg-success/10 ..."         // ✅ Success with 10% opacity
+
+// BEFORE (line 117)
+className="... bg-danger-subtle text-danger ..."  // ❌ Neither exist
+
+// AFTER
+className="... bg-error/10 text-error ..." // ✅ Semantic error tokens
+
+// BEFORE (line 135)
+className="... text-heading-primary ..."  // ❌ Does not exist
+
+// AFTER
+className="... text-foreground ..."       // ✅ Primary text hierarchy
+
+// BEFORE (lines 170, 202, 223)
+className="... text-heading-secondary ..." // ❌ Does not exist
+
+// AFTER
+className="... text-foreground-secondary ..." // ✅ Secondary text hierarchy
+
+// BEFORE (line 289)
+className="neu-card p-4 bg-surface-secondary" // ❌
+
+// AFTER
+className="neu-card p-4 bg-background-alt"    // ✅
+```
+
+**Validation**:
+```powershell
+# Run all 6 verification commands (must return 0)
+Select-String -Path "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-"
+# Expected: 0 matches
+
+Select-String -Path "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx" -Pattern "dark:"
+# Expected: 0 matches (use CSS vars instead)
+
+Select-String -Path "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx" -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}"
+# Expected: 0 matches
+
+Select-String -Path "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx" -Pattern "text-white|bg-white|text-black|bg-black"
+# Expected: 0 matches
+
+Select-String -Path "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx" -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold"
+# Expected: 0 matches
+
+Select-String -Path "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx" -Pattern "sm:text-|md:text-|lg:text-"
+# Expected: 0 matches
+```
+
+---
+
+**T-TS-1105: Fix InstallerLeadFeed design token violation**
+
+**File**: `src/components/InstallerLeadFeed.tsx`
+
+**Changes**:
+```typescript
+// BEFORE (line 612)
+className="text-h6 text-success mb-1"  // ❌ text-h6 does not exist
+
+// AFTER
+className="text-heading-6 text-success mb-1"  // ✅ Correct token (exists in config)
+```
+
+**Validation**: Same 6-command check as T-TS-1104
+
+**Sprint Outcome**: 12 errors resolved ✅
+
+---
+
+### Sprint 4.16.11.3 — Fix Type Mismatches (30 minutes)
+
+**T-TS-1106: Fix HomeownerBiddingReviewModal action type mismatch**
+
+**File**: `src/components/homeowner/HomeownerBiddingReviewModal.tsx`
+
+**Changes**:
+```typescript
+// BEFORE (handleWrittenQuoteAction signature - line ~350)
+const handleWrittenQuoteAction = async (
+  action: 'counter' | 'accept' | 'reject',  // ❌ Missing 'offer'
+  data: { price?: number; notes?: string }
+) => { ... }
+
+// AFTER
+const handleWrittenQuoteAction = async (
+  action: 'offer' | 'counter' | 'accept' | 'reject',  // ✅ Includes all actions
+  data: { price?: number; notes?: string }
+) => { ... }
+
+// Add handler for 'offer' action inside function
+switch (action) {
+  case 'offer':
+    // Handle installer sending new offer (if needed, or just pass through)
+    break;
+  case 'counter':
+    // Existing counter logic...
+    break;
+  // ...
+}
+
+// BEFORE (line 369 - ESLint warnings)
+The installer hasn't submitted a written quote for this lead yet. You'll be notified when they do.
+
+// AFTER
+The installer hasn&apos;t submitted a written quote for this lead yet. You&apos;ll be notified when they do.
+```
+
+**Validation**: ESLint should pass, TypeScript should compile
+
+---
+
+**T-TS-1107: Fix auth.setup.ts JWT type mismatch**
+
+**File**: `tests/e2e/setup/auth.setup.ts`
+
+**Changes**:
+```typescript
+// BEFORE (line 26)
+token: {
+  id: homeowner.id,
+  email: homeowner.email,
+  name: homeowner.name || 'Test Homeowner',
+  role: homeowner.role,
+  leadSubmissionCount: homeowner.leadSubmissionCount,
+  quoteLimit: homeowner.leadSubmissionLimit,
+  phoneVerified: false,
+  sessionVersion: homeowner.sessionVersion,
+  profileComplete: true,
+  // ❌ Missing: phone, installerVerified
+}
+
+// AFTER
+token: {
+  id: homeowner.id,
+  email: homeowner.email,
+  name: homeowner.name || 'Test Homeowner',
+  role: homeowner.role,
+  phone: homeowner.phone || '',             // ✅ Add required field
+  installerVerified: false,                 // ✅ Add required field
+  leadSubmissionCount: homeowner.leadSubmissionCount,
+  quoteLimit: homeowner.leadSubmissionLimit,
+  phoneVerified: false,
+  sessionVersion: homeowner.sessionVersion,
+  profileComplete: true,
+}
+
+// BEFORE (line 82 - installer token)
+token: {
+  id: installer.id,
+  email: installer.email,
+  name: installer.name || 'Test Installer',
+  role: installer.role,
+  leadSubmissionCount: installer.leadSubmissionCount,
+  quoteLimit: installer.leadSubmissionLimit,
+  phoneVerified: true,
+  installerVerified: true,
+  sessionVersion: installer.sessionVersion,
+  profileComplete: true,
+  // ❌ Missing: phone
+}
+
+// AFTER
+token: {
+  id: installer.id,
+  email: installer.email,
+  name: installer.name || 'Test Installer',
+  role: installer.role,
+  phone: installer.phone || '+61412345678',  // ✅ Add required field
+  leadSubmissionCount: installer.leadSubmissionCount,
+  quoteLimit: installer.leadSubmissionLimit,
+  phoneVerified: true,
+  installerVerified: true,
+  sessionVersion: installer.sessionVersion,
+  profileComplete: true,
+}
+```
+
+**Validation**: TypeScript test compilation should pass
+
+**Sprint Outcome**: 5 errors resolved ✅
+
+---
+
+### Final Validation (Phase 4.16.11 Complete)
+
+**T-TS-1108: Run comprehensive validation suite**
+
+**Commands**:
+```powershell
+# 1. TypeScript compilation
+npx tsc --noEmit
+# Expected: Found 0 errors
+
+# 2. Build validation
+npm run build
+# Expected: Compiled successfully
+
+# 3. PowerShell verification (all 6 commands for all affected files)
+$files = @(
+  "src/components/written-quote/WrittenQuoteNegotiationPanel.tsx",
+  "src/components/InstallerLeadFeed.tsx"
+)
+
+foreach ($file in $files) {
+  Write-Host "`n=== Checking $file ===" -ForegroundColor Cyan
+  
+  # Command 1: Hardcoded colors
+  $result1 = (Select-String -Path $file -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-").Count
+  Write-Host "Hardcoded gray/slate: $result1" -ForegroundColor $(if ($result1 -eq 0) { "Green" } else { "Red" })
+  
+  # Command 2: Dark mode classes
+  $result2 = (Select-String -Path $file -Pattern "dark:").Count
+  Write-Host "Dark mode classes: $result2" -ForegroundColor $(if ($result2 -eq 0) { "Green" } else { "Red" })
+  
+  # Command 3: RGB/HEX
+  $result3 = (Select-String -Path $file -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}").Count
+  Write-Host "RGB/HEX colors: $result3" -ForegroundColor $(if ($result3 -eq 0) { "Green" } else { "Red" })
+  
+  # Command 4: Hardcoded white/black
+  $result4 = (Select-String -Path $file -Pattern "text-white|bg-white|text-black|bg-black").Count
+  Write-Host "Hardcoded white/black: $result4" -ForegroundColor $(if ($result4 -eq 0) { "Green" } else { "Red" })
+  
+  # Command 5: Hardcoded typography
+  $result5 = (Select-String -Path $file -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold").Count
+  Write-Host "Hardcoded typography: $result5" -ForegroundColor $(if ($result5 -eq 0) { "Green" } else { "Red" })
+  
+  # Command 6: Manual responsive
+  $result6 = (Select-String -Path $file -Pattern "sm:text-|md:text-|lg:text-").Count
+  Write-Host "Manual responsive: $result6" -ForegroundColor $(if ($result6 -eq 0) { "Green" } else { "Red" })
+}
+
+# 4. Pre-commit hook test
+git add .
+git commit -m "Test: Verify className validation passes"
+# Expected: ✅ No violations found! All className usage follows standards.
+```
+
+**Success Criteria**:
+- ✅ TypeScript: 0 errors, 0 warnings
+- ✅ Build: Compiled successfully
+- ✅ All 6 verification commands: 0/0/0/0/0/0 for all files
+- ✅ Pre-commit hook: PASS
+- ✅ All 30 original errors resolved
+
+---
+
+### Rollback Plan
+
+**If validation fails**:
+1. Check which sprint failed (Prisma/CSS/Types)
+2. Revert specific files using git:
+   ```powershell
+   git checkout HEAD -- <file-path>
+   ```
+3. Re-run audit to identify remaining issues
+4. Apply fixes incrementally
+
+**Rollback Time**: < 5 minutes per file  
+**Impact**: Minimal (errors remain but no new issues introduced)
+
+---
+
+### Phase 4.16.11 - READY TO IMPLEMENT ✅
+
+**Priority**: P0 - BLOCKER  
+**Status**: 🟢 Ready to Implement  
+**Estimated Time**: 3 hours total  
+**Risk Level**: Low (changes are straightforward field renames and class replacements)
+
+**Key Benefits**:
+- Unblocks production deployment
+- Enforces design system integrity
+- Aligns codebase with Prisma schema
+- Maintains zero-warnings policy
+
+**Execution Order**:
+1. Sprint 4.16.11.1 (Prisma fixes) → Commit
+2. Sprint 4.16.11.2 (CSS fixes) → Commit
+3. Sprint 4.16.11.3 (Type fixes) → Commit
+4. Final validation → Push to WrittenQuote_e2e branch
+
+**END OF PHASE 4.16.11**

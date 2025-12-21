@@ -28,6 +28,8 @@ setup('authenticate as homeowner', async ({ page, context }) => {
       email: 'homeowner@test.com',
       name: 'John Smith',
       role: 'HOMEOWNER',
+      phone: '',  // Required by JWT type
+      installerVerified: false,  // Required by JWT type
       leadSubmissionCount: 0,
       quoteLimit: 5,
       phoneVerified: false,
@@ -84,6 +86,7 @@ setup('authenticate as installer', async ({ page, context }) => {
       email: 'installer@test.com',
       name: 'Test Installer',
       role: 'INSTALLER',
+      phone: '+61412345678',  // Required by JWT type
       leadSubmissionCount: 0,
       quoteLimit: 999,
       phoneVerified: true,

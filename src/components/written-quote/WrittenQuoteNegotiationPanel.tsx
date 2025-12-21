@@ -104,17 +104,17 @@ export function WrittenQuoteNegotiationPanel({
   const getStatusBadge = () => {
     switch (status) {
       case 'draft':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-surface-secondary text-muted-foreground"><Clock className="h-3 w-3" /> Draft</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-background-alt text-muted-foreground"><Clock className="h-3 w-3" /> Draft</span>;
       case 'pending':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-surface-secondary text-muted-foreground"><Clock className="h-3 w-3" /> Pending</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-background-alt text-muted-foreground"><Clock className="h-3 w-3" /> Pending</span>;
       case 'installer_turn':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary-subtle text-primary"><MessageSquare className="h-3 w-3" /> Installer&apos;s Turn</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary/10 text-primary"><MessageSquare className="h-3 w-3" /> Installer&apos;s Turn</span>;
       case 'homeowner_turn':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary-subtle text-primary"><MessageSquare className="h-3 w-3" /> Homeowner&apos;s Turn</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-primary/10 text-primary"><MessageSquare className="h-3 w-3" /> Homeowner&apos;s Turn</span>;
       case 'accepted':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-success-subtle text-success"><CheckCircle2 className="h-3 w-3" /> Accepted</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-success/10 text-success"><CheckCircle2 className="h-3 w-3" /> Accepted</span>;
       case 'rejected':
-        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-danger-subtle text-danger"><XCircle className="h-3 w-3" /> Rejected</span>;
+        return <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-caption bg-error/10 text-error"><XCircle className="h-3 w-3" /> Rejected</span>;
       default:
         return null;
     }
@@ -132,7 +132,7 @@ export function WrittenQuoteNegotiationPanel({
         <div className="space-y-2">
           <div className="flex items-baseline gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            <span className="text-heading-1 text-heading-primary">
+            <span className="text-heading-1 text-foreground">
               {currentPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })}
             </span>
           </div>
@@ -167,7 +167,7 @@ export function WrittenQuoteNegotiationPanel({
               {history.map((event) => (
                 <div key={event.id} className="border-l-2 border-border pl-3 py-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-label text-heading-secondary">{event.actorName}</span>
+                    <span className="text-label text-foreground-secondary">{event.actorName}</span>
                     <span className="text-caption text-muted-foreground">
                       {new Date(event.timestamp).toLocaleString()}
                     </span>
@@ -199,7 +199,7 @@ export function WrittenQuoteNegotiationPanel({
           <div className="space-y-3">
             {/* Price Input (Installer or Homeowner Counter) */}
             <div>
-              <label htmlFor="wq-price-input" className="block text-label text-heading-secondary mb-1">
+              <label htmlFor="wq-price-input" className="block text-label text-foreground-secondary mb-1">
                 {role === 'installer' ? 'Counter-Offer Price' : 'Your Counter Price'}
               </label>
               <div className="relative">
@@ -220,7 +220,7 @@ export function WrittenQuoteNegotiationPanel({
 
             {/* Notes (Optional) */}
             <div>
-              <label htmlFor="wq-notes-input" className="block text-label text-heading-secondary mb-1">
+              <label htmlFor="wq-notes-input" className="block text-label text-foreground-secondary mb-1">
                 Notes (Optional)
               </label>
               <textarea
@@ -286,7 +286,7 @@ export function WrittenQuoteNegotiationPanel({
 
       {/* Read-Only State (Not Your Turn or Completed) */}
       {!canNegotiate && status !== 'draft' && (
-        <Card className="neu-card p-4 bg-surface-secondary">
+        <Card className="neu-card p-4 bg-background-alt">
           <p className="text-body-small text-muted-foreground text-center">
             {status === 'accepted' && 'This quote has been accepted'}
             {status === 'rejected' && 'This quote has been rejected'}

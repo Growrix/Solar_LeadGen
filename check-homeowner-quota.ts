@@ -10,8 +10,8 @@ async function main() {
       id: true,
       email: true,
       name: true,
-      quoteLimit: true,
-      biddingQuoteLimit: true,
+      leadSubmissionLimit: true,
+      biddingLeadsLimit: true,
       leadSubmissionCount: true,
     },
   });

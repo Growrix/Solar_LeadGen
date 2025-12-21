@@ -179,7 +179,7 @@ export default function HomeownerBiddingReviewModal({
 
   // Handle written quote actions (T-WQ-215)
   const handleWrittenQuoteAction = async (
-    action: 'counter' | 'accept' | 'reject',
+    action: 'offer' | 'counter' | 'accept' | 'reject',
     data: { price?: number; notes?: string }
   ) => {
     if (!writtenQuote) return;
@@ -193,6 +193,10 @@ export default function HomeownerBiddingReviewModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ price: data.price, notes: data.notes })
         });
+      } else if (action === 'offer') {
+        // Homeowners don't make offers, only installers do - pass through
+        console.warn('[HomeownerBiddingReviewModal] Homeowners cannot make offers');
+        return;
       } else {
         response = await fetch(`/api/written-quotes/${writtenQuote.id}/done`, {
           method: 'POST',
@@ -366,7 +370,7 @@ export default function HomeownerBiddingReviewModal({
                 <Info className="h-16 w-16 text-muted mb-4" />
                 <h3 className="text-heading-4 text-foreground mb-2">No Written Quote Yet</h3>
                 <p className="text-body text-muted-foreground max-w-md">
-                  The installer hasn't submitted a written quote for this lead yet. You'll be notified when they do.
+                  The installer hasn&apos;t submitted a written quote for this lead yet. You&apos;ll be notified when they do.
                 </p>
               </div>
             ) : (
