@@ -3613,3 +3613,21 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+
+---------------------------------------------------------------------------------
+The description part is still unfinished . And the negotiation part is still same as before. The contact are is still showing mock data. I have no idea what have you implimented. You should audit back and identify the reason and also comeup with the overall enhancement idea that will make this review modal more professional and logical, now it does not look so well organized . 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+
+### Enhancement Plan : 
+Create a comprehensive enhancement plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote ,to enhance the Review Written QUote - Installer modal as per the above instructions. so that the installers can review and negotiate the written quotes properly without any issues. You have to audit frontend,backend, API , etc deeply and identify the missing gaps.
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.

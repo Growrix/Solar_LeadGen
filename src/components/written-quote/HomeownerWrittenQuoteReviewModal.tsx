@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Loader, AlertCircle } from 'lucide-react';
+import { X, Loader, AlertCircle, Building, Mail, Phone, FileText, Zap, Package, Calculator, DollarSign, List } from 'lucide-react';
 import { QuoteSystemSpecsCard } from '@/components/quote-display/QuoteSystemSpecsCard';
 import { QuoteEquipmentCard } from '@/components/quote-display/QuoteEquipmentCard';
 import { QuoteFinancialCard } from '@/components/quote-display/QuoteFinancialCard';
@@ -222,8 +222,59 @@ export default function HomeownerWrittenQuoteReviewModal({
             <div className="grid grid-cols-3 gap-6">
               {/* LEFT COLUMN (60% - 2/3 of grid) - Quote Details */}
               <div className="col-span-2 space-y-6">
+                {/* INSTALLER INFO - MOVED TO TOP (Sprint 4.16.16.0) */}
+                {writtenQuote.installer && (
+                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
+                    <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+                      <Building className="h-5 w-5 text-primary" />
+                      Installer Information
+                    </h3>
+                    <div className="space-y-3">
+                      {/* Company Name */}
+                      <div>
+                        <p className="text-label text-muted-foreground mb-1">Company</p>
+                        <p className="text-body text-foreground">
+                          {writtenQuote.installer.companyName || 'Not provided'}
+                        </p>
+                      </div>
+                      
+                      {/* Email */}
+                      {writtenQuote.installer.email && (
+                        <div>
+                          <p className="text-label text-muted-foreground mb-1">Email</p>
+                          <a 
+                            href={`mailto:${writtenQuote.installer.email}`}
+                            className="text-body text-primary hover:underline flex items-center gap-2"
+                          >
+                            <Mail className="h-4 w-4" />
+                            {writtenQuote.installer.email}
+                          </a>
+                        </div>
+                      )}
+                      
+                      {/* Phone */}
+                      {writtenQuote.installer.phone && (
+                        <div>
+                          <p className="text-label text-muted-foreground mb-1">Phone</p>
+                          <a 
+                            href={`tel:${writtenQuote.installer.phone}`}
+                            className="text-body text-primary hover:underline flex items-center gap-2"
+                          >
+                            <Phone className="h-4 w-4" />
+                            {writtenQuote.installer.phone}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Quote Metadata */}
                 <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
+                  <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Quote Details
+                  </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-label text-muted-foreground">Quote #</p>
@@ -270,7 +321,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                   <QuoteEquipmentCard productsData={writtenQuote.productsData || {}} />
                 )}
 
-                {/* Price Breakdown (NEW) */}
+                {/* Price Breakdown */}
                 {writtenQuote.calculations && (
                   <QuoteCalculationsSummary
                     calculations={writtenQuote.calculations}
@@ -286,8 +337,18 @@ export default function HomeownerWrittenQuoteReviewModal({
                   />
                 )}
 
-                {/* Savings Graph (NEW) */}
-                {writtenQuote.calculations?.estimatedAnnualSavings && (
+                {/* Savings Graph with Empty State (Sprint 4.16.16.1) */}
+                {!writtenQuote.calculations?.estimatedAnnualSavings ? (
+                  <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-body-small text-warning">Savings Projection Unavailable</p>
+                      <p className="text-body-small text-warning/80 mt-1">
+                        The installer has not provided savings estimates yet. Contact them for details.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
                   <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
                     <h3 className="text-heading-3 mb-4">Annual Savings Projection</h3>
                     <SavingsChart
@@ -303,37 +364,6 @@ export default function HomeownerWrittenQuoteReviewModal({
                   <QuoteLineItemsTable
                     lineItems={writtenQuote.lineItems}
                   />
-                )}
-
-                {/* Installer Contact (if available) */}
-                {writtenQuote.installerContact && (
-                  <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
-                    <h3 className="text-heading-4 text-foreground mb-4">Installer Contact</h3>
-                    <div className="space-y-2">
-                      {writtenQuote.installerContact.primaryContactName && (
-                        <p className="text-body text-foreground">
-                          <span className="text-muted-foreground">Contact:</span>{' '}
-                          {writtenQuote.installerContact.primaryContactName}
-                        </p>
-                      )}
-                      {writtenQuote.installerContact.email && (
-                        <p className="text-body text-foreground">
-                          <span className="text-muted-foreground">Email:</span>{' '}
-                          <a href={`mailto:${writtenQuote.installerContact.email}`} className="text-primary hover:underline">
-                            {writtenQuote.installerContact.email}
-                          </a>
-                        </p>
-                      )}
-                      {writtenQuote.installerContact.phone && (
-                        <p className="text-body text-foreground">
-                          <span className="text-muted-foreground">Phone:</span>{' '}
-                          <a href={`tel:${writtenQuote.installerContact.phone}`} className="text-primary hover:underline">
-                            {writtenQuote.installerContact.phone}
-                          </a>
-                        </p>
-                      )}
-                    </div>
-                  </div>
                 )}
               </div>
 

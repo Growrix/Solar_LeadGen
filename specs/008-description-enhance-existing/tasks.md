@@ -1,6 +1,480 @@
+## Phase 4.16.16 — Enhance Homeowner Written Quote Modal (Live Data + Visual Polish)
+
+**Status:** 🟡 IN PROGRESS  
+**Priority:** P0 (User Reported Mock Data + Missing Features)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/HOMEOWNER-WRITTEN-QUOTE-MODAL-CRITICAL-AUDIT-2025-12-21.md`  
+**Enhancement Plan:** `DOC/Features/Written Quote/HOMEOWNER-MODAL-ENHANCEMENT-PLAN-2025-12-21.md`  
+**Authority:** System Constitution → Blueprint → Enhancement Plan → AI Implementation Guidelines
+
+### Context
+
+**User Feedback** (Post-Phase 4.16.15): "The description part is still unfinished. And the negotiation part is still same as before. The contact area is still showing mock data. I have no idea what have you implemented. You should audit back and identify the reason and also come up with the overall enhancement idea that will make this review modal more professional and logical, now it does not look so well organized."
+
+**Root Cause Analysis** (Per Audit):
+1. ❌ **Mock Data in Installer Contact**: Displays `installer@example.com`, `(555) 123-4567` from Quote Builder JSON instead of live User table data
+2. ❌ **Missing Savings Data**: `estimatedAnnualSavings = 0` causes savings graph to hide
+3. ❌ **Vague Negotiation Messages**: "Waiting for the other party..." not clear/action-oriented
+4. ❌ **Layout Disorganized**: 8 cards in left column, no clear visual hierarchy
+
+**What Phase 4.16.15 Actually Did**:
+- ✅ Created `QuoteCalculationsSummary` component (correctly maps BidCalculations)
+- ✅ Added SavingsChart support (conditional on estimatedAnnualSavings)
+- ✅ TypeScript 0 errors, Build SUCCESS
+- ❌ User saw NO visual changes (because data missing + wrong data source)
+
+**Phase 4.16.16 Goals** (Keeping 2-Column Layout):
+1. Fix installer contact to use live `writtenQuote.installer` relation data
+2. Add visual enhancements (icons, badges, better spacing)
+3. Improve negotiation panel messaging (clear status, action-oriented)
+4. Add data validation & empty states for missing fields
+5. Polish UI without changing 2-column structure
+
+---
+
+### Sprint 4.16.16.0 — Replace Installer Contact with Live Data (45 min)
+
+**Objective**: Fix installer contact card to display LIVE User table data instead of demo JSON
+
+**Current Problem**:
+```typescript
+// Uses installerContact JSON field (hardcoded from Quote Builder)
+{writtenQuote.installerContact && (
+  <p>Email: {writtenQuote.installerContact.email}</p>  // installer@example.com
+  <p>Phone: {writtenQuote.installerContact.phone}</p>  // (555) 123-4567
+)}
+```
+
+**Fix Implementation**:
+```typescript
+// Use installer relation (live User table data)
+{writtenQuote.installer && (
+  <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
+    <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+      <Building className="h-5 w-5 text-primary" />
+      Installer Information
+    </h3>
+    <div className="space-y-3">
+      {/* Company Name */}
+      <div>
+        <p className="text-label text-muted-foreground mb-1">Company</p>
+        <p className="text-body text-foreground font-medium">
+          {writtenQuote.installer.companyName || 'Not provided'}
+        </p>
+      </div>
+      
+      {/* Email */}
+      <div>
+        <p className="text-label text-muted-foreground mb-1">Email</p>
+        <a 
+          href={`mailto:${writtenQuote.installer.email}`}
+          className="text-body text-primary hover:underline flex items-center gap-2"
+        >
+          <Mail className="h-4 w-4" />
+          {writtenQuote.installer.email}
+        </a>
+      </div>
+      
+      {/* Phone */}
+      <div>
+        <p className="text-label text-muted-foreground mb-1">Phone</p>
+        <a 
+          href={`tel:${writtenQuote.installer.phone}`}
+          className="text-body text-primary hover:underline flex items-center gap-2"
+        >
+          <Phone className="h-4 w-4" />
+          {writtenQuote.installer.phone}
+        </a>
+      </div>
+    </div>
+  </div>
+)}
+```
+
+**Files to Modify**:
+1. `src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx`
+   - Lines 1-10: Add imports: `Building, Mail, Phone` from lucide-react
+   - Lines 309-337: Replace entire installer contact section with new implementation
+   - Use `writtenQuote.installer` instead of `writtenQuote.installerContact`
+
+**Success Criteria**:
+- ✅ Installer contact displays live company name from User table
+- ✅ Email displays actual installer email (not installer@example.com)
+- ✅ Phone displays actual installer phone (not (555) 123-4567)
+- ✅ Icons added for visual clarity (Building, Mail, Phone)
+- ✅ Links are clickable (mailto:, tel:)
+
+**Time**: 45 minutes
+
+---
+
+### Sprint 4.16.16.1 — Add Visual Enhancements & Polish (45 min)
+
+**Objective**: Improve visual hierarchy and professional appearance WITHOUT changing 2-column layout
+
+**Enhancements**:
+
+1. **Move Installer Card to Top** (most important info first):
+```typescript
+<div className="col-span-2 space-y-6">
+  {/* 1. INSTALLER INFO - MOVED TO TOP */}
+  {writtenQuote.installer && <InstallerContactCard />}
+  
+  {/* 2. Quote Metadata */}
+  <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
+    <h3 className="text-heading-4 mb-4 flex items-center gap-2">
+      <FileText className="h-5 w-5 text-primary" />
+      Quote Details
+    </h3>
+    {/* ... existing metadata ... */}
+  </div>
+  
+  {/* 3. System & Equipment */}
+  {/* ... rest of cards ... */}
+</div>
+```
+
+2. **Add Icons to All Card Headers**:
+- System Specs: `<Zap className="h-5 w-5 text-primary" />`
+- Equipment: `<Package className="h-5 w-5 text-primary" />`
+- Price Breakdown: `<Calculator className="h-5 w-5 text-primary" />`
+- Financial: `<DollarSign className="h-5 w-5 text-primary" />`
+- Line Items: `<List className="h-5 w-5 text-primary" />`
+
+3. **Add Empty State for Missing Savings**:
+```typescript
+{!writtenQuote.calculations?.estimatedAnnualSavings ? (
+  <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 flex items-start gap-3">
+    <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
+    <div>
+      <p className="text-body-small text-warning font-medium">Savings Projection Unavailable</p>
+      <p className="text-body-small text-warning/80 mt-1">
+        The installer hasn't provided savings estimates yet. Contact them for details.
+      </p>
+    </div>
+  </div>
+) : (
+  <SavingsChart {...} />
+)}
+```
+
+4. **Improve Card Consistency**:
+- All cards use same shadow: `shadow-neu-inset`
+- All cards use same padding: `p-6`
+- All headers use same style: `text-heading-4 mb-4 flex items-center gap-2`
+
+**Files to Modify**:
+1. `src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx`
+   - Lines 1-10: Add icon imports
+   - Lines 220-340: Reorder cards (installer first)
+   - Add icons to all card headers
+   - Add empty state for missing savings
+
+**Success Criteria**:
+- ✅ Installer info at top of left column
+- ✅ All cards have icons in headers
+- ✅ Empty state shows when savings data missing
+- ✅ Consistent spacing, padding, shadows across all cards
+- ✅ Layout remains 60/40 two-column
+
+**Time**: 45 minutes
+
+---
+
+### Sprint 4.16.16.2 — Enhance Negotiation Panel Messaging (30 min)
+
+**Objective**: Improve clarity of negotiation status messages and action buttons
+
+**Current Problem**: "Waiting for the other party to respond..." is vague
+
+**Enhanced Messages**:
+```typescript
+const getStatusMessage = (status: string, role: string) => {
+  switch (status) {
+    case 'pending':
+      return {
+        icon: <Clock className="h-5 w-5 text-primary" />,
+        title: 'Quote Received',
+        message: 'The installer has submitted their quote. Review the details above.',
+        variant: 'info' as const
+      };
+    
+    case 'installer_turn':
+      return role === 'homeowner' ? {
+        icon: <CheckCircle className="h-5 w-5 text-success" />,
+        title: 'Counter-Offer Sent!',
+        message: 'Your counter-offer has been sent. The installer will respond soon.',
+        variant: 'success' as const
+      } : {
+        icon: <Clock className="h-5 w-5 text-warning" />,
+        title: 'Homeowner Response Pending',
+        message: 'Waiting for homeowner to review your counter-offer.',
+        variant: 'warning' as const
+      };
+    
+    case 'homeowner_turn':
+      return role === 'homeowner' ? {
+        icon: <Clock className="h-5 w-5 text-warning" />,
+        title: 'Installer Responded',
+        message: 'The installer has made a new offer. Review and respond below.',
+        variant: 'warning' as const
+      } : {
+        icon: <CheckCircle className="h-5 w-5 text-success" />,
+        title: 'Offer Sent!',
+        message: 'Your offer has been sent. Waiting for homeowner response.',
+        variant: 'success' as const
+      };
+    
+    case 'accepted':
+      return {
+        icon: <CheckCircle className="h-5 w-5 text-success" />,
+        title: 'Quote Accepted!',
+        message: 'This quote has been accepted. Proceed to project planning.',
+        variant: 'success' as const
+      };
+    
+    case 'rejected':
+      return {
+        icon: <XCircle className="h-5 w-5 text-error" />,
+        title: 'Quote Declined',
+        message: 'This quote has been declined. No further action needed.',
+        variant: 'error' as const
+      };
+    
+    default:
+      return {
+        icon: <AlertCircle className="h-5 w-5 text-muted-foreground" />,
+        title: 'Unknown Status',
+        message: 'Please refresh the page.',
+        variant: 'default' as const
+      };
+  }
+};
+```
+
+**Enhanced Status Display**:
+```typescript
+const statusInfo = getStatusMessage(writtenQuote.currentStatus, 'homeowner');
+
+<div className={`bg-${statusInfo.variant}/10 border border-${statusInfo.variant}/20 rounded-xl p-4 mb-4`}>
+  <div className="flex items-start gap-3">
+    {statusInfo.icon}
+    <div>
+      <h4 className={`text-heading-4 text-${statusInfo.variant} mb-1`}>
+        {statusInfo.title}
+      </h4>
+      <p className={`text-body-small text-${statusInfo.variant}/80`}>
+        {statusInfo.message}
+      </p>
+    </div>
+  </div>
+</div>
+```
+
+**Files to Modify**:
+1. `src/components/written-quote/WrittenQuoteNegotiationPanel.tsx`
+   - Add `getStatusMessage` helper function
+   - Replace generic status display with enhanced version
+   - Add icon imports
+
+**Success Criteria**:
+- ✅ Status messages are action-oriented and clear
+- ✅ Icons added for visual clarity
+- ✅ Color-coded badges (success=green, warning=yellow, error=red)
+- ✅ Different messages for homeowner vs installer perspective
+- ✅ Messages explain what happened and what's next
+
+**Time**: 30 minutes
+
+---
+
+### Sprint 4.16.16.3 — Build Verification & Testing (20 min)
+
+**Objective**: Verify all changes work correctly
+
+**Tasks**:
+
+1. **TypeScript Compilation**:
+```bash
+npx tsc --noEmit
+# Expected: 0 errors
+```
+
+2. **Production Build**:
+```bash
+npm run build
+# Expected: Compiled successfully
+```
+
+3. **6-Command Verification** (PowerShell):
+```powershell
+# Command 1: Hardcoded colors
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-"
+
+# Command 2: Dark mode classes
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "dark:"
+
+# Command 3: RGB/HEX colors
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}"
+
+# Command 4: Hardcoded white/black
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-white|bg-white|text-black|bg-black"
+
+# Command 5: Hardcoded typography
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold"
+
+# Command 6: Manual responsive classes
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "sm:text-|md:text-|lg:text-"
+
+# Expected: 0/0/0/1/0/0 (only bg-white allowed from original)
+```
+
+4. **Manual Visual Test**:
+- Open homeowner dashboard
+- Click "Review written quote"
+- Verify installer contact shows LIVE data (not demo)
+- Verify icons appear in all card headers
+- Verify status message is clear
+- Test counter-offer action
+
+**Success Criteria**:
+- ✅ TypeScript: 0 errors
+- ✅ Build: SUCCESS
+- ✅ 6-cmd verification: 0/0/0/1/0/0
+- ✅ Visual test: All changes visible
+
+**Time**: 20 minutes
+
+---
+
+### Sprint 4.16.16.4 — Git Commit & Documentation (15 min)
+
+**Objective**: Commit changes with descriptive message
+
+**Tasks**:
+
+1. **Stage Files**:
+```bash
+git add src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx
+git add src/components/written-quote/WrittenQuoteNegotiationPanel.tsx
+git add specs/008-description-enhance-existing/tasks.md
+```
+
+2. **Commit**:
+```bash
+git commit -m "fix(written-quote): Replace mock installer contact with live data + visual enhancements (Phase 4.16.16)
+
+PROBLEM:
+- Installer contact showed demo data from Quote Builder JSON
+- No visual hierarchy (installer contact buried at bottom)
+- Vague negotiation status messages
+- Missing empty states for unavailable data
+
+SOLUTION:
+Sprint 4.16.16.0:
+- Replace installerContact JSON with installer relation (live User data)
+- Add icons to installer contact (Building, Mail, Phone)
+- Company name, email, phone now display actual installer data
+
+Sprint 4.16.16.1:
+- Move installer card to top of left column (most important)
+- Add icons to all card headers (Zap, Package, Calculator, etc.)
+- Add empty state for missing savings data (warning badge)
+- Improve card consistency (spacing, padding, shadows)
+
+Sprint 4.16.16.2:
+- Enhance negotiation status messages (action-oriented)
+- Add status icons (Clock, CheckCircle, XCircle)
+- Color-coded status badges (success/warning/error)
+- Different messages for homeowner vs installer perspective
+
+Sprint 4.16.16.3:
+- Build verification: TypeScript 0 errors, Build SUCCESS
+- 6-cmd verification: 0/0/0/1/0/0
+- Manual testing: All changes visible
+
+IMPACT:
+✅ Installer contact shows LIVE data (not demo)
+✅ Clear visual hierarchy (installer first)
+✅ Professional appearance (icons, consistent styling)
+✅ Clear negotiation messaging (what happened, what's next)
+✅ Better UX for missing data (empty states)
+✅ 2-column layout preserved (60/40)
+
+FILES CHANGED:
+- Modified: HomeownerWrittenQuoteReviewModal.tsx (installer contact, icons, reordering)
+- Modified: WrittenQuoteNegotiationPanel.tsx (status messages)
+- Updated: tasks.md (Phase 4.16.16)
+
+TESTING:
+✅ TypeScript compilation passed
+✅ npm run build succeeded
+✅ Multi-theme compliance verified
+✅ Manual visual test passed
+
+Per specs/008-description-enhance-existing/tasks.md Phase 4.16.16
+Implements DOC/AUDIT-REPORTS/System/HOMEOWNER-WRITTEN-QUOTE-MODAL-CRITICAL-AUDIT-2025-12-21.md
+Follows DOC/Features/Written Quote/HOMEOWNER-MODAL-ENHANCEMENT-PLAN-2025-12-21.md"
+```
+
+3. **Push**:
+```bash
+git push origin WrittenQuote_SeparateFlow
+```
+
+**Success Criteria**:
+- ✅ Commit message descriptive with full context
+- ✅ Pushed to remote branch
+- ✅ tasks.md updated
+
+**Time**: 15 minutes
+
+---
+
+## Phase 4.16.16 — Summary
+
+**Total Estimated Time:** 2 hours 35 minutes (155 minutes)
+
+**Sprint Breakdown:**
+| Sprint | Task | Duration |
+|--------|------|----------|
+| 4.16.16.0 | Replace installer contact with live data | 45 min |
+| 4.16.16.1 | Add visual enhancements & polish | 45 min |
+| 4.16.16.2 | Enhance negotiation panel messaging | 30 min |
+| 4.16.16.3 | Build verification & testing | 20 min |
+| 4.16.16.4 | Git commit & documentation | 15 min |
+| **TOTAL** | | **155 min (2.6 hrs)** |
+
+**Success Criteria:**
+- ✅ Installer contact displays live User table data (not demo JSON)
+- ✅ Icons added to all card headers for visual clarity
+- ✅ Installer info promoted to top of left column
+- ✅ Empty states for missing data (savings, etc.)
+- ✅ Negotiation status messages clear and action-oriented
+- ✅ 2-column layout preserved (60% left, 40% right)
+- ✅ TypeScript: 0 errors
+- ✅ Build: Production bundle optimized
+- ✅ Multi-theme compliance
+- ✅ Post-verification: 0/0/0/1/0/0
+
+**Deliverables:**
+- Enhanced HomeownerWrittenQuoteReviewModal (live data, icons, reordered)
+- Enhanced WrittenQuoteNegotiationPanel (better messaging)
+- Updated tasks.md
+- Git commit with comprehensive message
+
+**Next Steps After Completion:**
+1. User manual testing of live installer data
+2. Test counter-offer flow end-to-end
+3. Verify installer-side modal also works correctly
+4. Consider Phase 4.16.17 (Quote Builder calculation improvements) if savings still $0
+
+---
+
 ## Phase 4.16.13 — Build Separate Written Quote Review Modal
 
-**Status:** 🟢 READY TO START  
+**Status:** ✅ COMPLETED (2025-12-21)  
 **Priority:** P0 (User Confusion - UX Critical)  
 **Owner:** Engineering  
 **Created:** 2025-12-21  
