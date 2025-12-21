@@ -524,101 +524,32 @@ npx tsc --noEmit
 
 ---
 
-### Sprint 4.16.13.4 — Update Modal Trigger Points (15 min)
+### Sprint 4.16.13.4 — Update Modal Trigger Points (15 min) ✅ COMPLETE
 
 **T-WQ-1304: Route homeowners to correct modal based on lead type**
 
 **Objective**: Show HomeownerBiddingReviewModal for BIDDING leads, HomeownerWrittenQuoteReviewModal for WRITTEN_QUOTE leads.
 
+**Completion Summary:**
+- ✅ **Added import** for HomeownerWrittenQuoteReviewModal in dashboard
+- ✅ **Added state management**: isWrittenQuoteReviewModalOpen, selectedWrittenQuoteLeadId, selectedWrittenQuoteId, selectedInstallerName
+- ✅ **Updated Review button** to conditionally open correct modal based on lead.quoteType
+- ✅ **Button text changes**: "Review Bids" for BIDDING, "Review Quote" for WRITTEN_QUOTE
+- ✅ **Passed props** through DashboardOverviewContent component hierarchy
+- ✅ **Rendered both modals** with proper cleanup on close
+- ✅ **Verification**: TypeScript 0 errors, className validation passed
+
+**Why This Works:**
+- No modal routing confusion - each lead type has dedicated modal
+- Clear visual distinction with different button text
+- Clean separation - no conditional logic inside modals
+- Proper state cleanup prevents modal overlap
+
 **File**: `src/app/homeowner/dashboard/page.tsx`
-
-**Changes:**
-
-1. **Add Import**
-```typescript
-import { HomeownerWrittenQuoteReviewModal } from '@/components/written-quote/HomeownerWrittenQuoteReviewModal';
-```
-
-2. **Update Modal State**
-```typescript
-// Existing
-const [isBiddingReviewModalOpen, setIsBiddingReviewModalOpen] = useState(false);
-const [selectedBiddingLeadId, setSelectedBiddingLeadId] = useState<string | null>(null);
-
-// Add new
-const [isWrittenQuoteReviewModalOpen, setIsWrittenQuoteReviewModalOpen] = useState(false);
-const [selectedWrittenQuoteLeadId, setSelectedWrittenQuoteLeadId] = useState<string | null>(null);
-const [selectedWrittenQuoteId, setSelectedWrittenQuoteId] = useState<string | null>(null);
-const [selectedInstallerName, setSelectedInstallerName] = useState<string>('');
-```
-
-3. **Update Lead Card Click Handler**
-```typescript
-const handleReviewClick = (lead: Lead) => {
-  if (lead.quoteType === 'WRITTEN_QUOTE') {
-    setSelectedWrittenQuoteLeadId(lead.id);
-    setSelectedWrittenQuoteId(lead.writtenQuoteId); // Fetch from lead data
-    setSelectedInstallerName(lead.assignedInstaller?.companyName || 'Unknown');
-    setIsWrittenQuoteReviewModalOpen(true);
-  } else {
-    setSelectedBiddingLeadId(lead.id);
-    setSelectedLeadQuoteType('BIDDING');
-    setIsBiddingReviewModalOpen(true);
-  }
-};
-```
-
-4. **Render Both Modals**
-```typescript
-{/* Bidding Modal */}
-{isBiddingReviewModalOpen && selectedBiddingLeadId && (
-  <HomeownerBiddingReviewModal
-    isOpen={isBiddingReviewModalOpen}
-    onClose={() => {
-      setIsBiddingReviewModalOpen(false);
-      setSelectedBiddingLeadId(null);
-    }}
-    leadId={selectedBiddingLeadId}
-    propertyAddress="Loading..."
-    bids={[]}
-    onSelectWinner={handleSelectWinner}
-  />
-)}
-
-{/* Written Quote Modal */}
-{isWrittenQuoteReviewModalOpen && selectedWrittenQuoteLeadId && selectedWrittenQuoteId && (
-  <HomeownerWrittenQuoteReviewModal
-    isOpen={isWrittenQuoteReviewModalOpen}
-    onClose={() => {
-      setIsWrittenQuoteReviewModalOpen(false);
-      setSelectedWrittenQuoteLeadId(null);
-      setSelectedWrittenQuoteId(null);
-    }}
-    leadId={selectedWrittenQuoteLeadId}
-    writtenQuoteId={selectedWrittenQuoteId}
-    installerName={selectedInstallerName}
-  />
-)}
-```
-
-**Verification:**
-```powershell
-npx tsc --noEmit
-# Manual test: Click bidding lead → verify HomeownerBiddingReviewModal opens
-# Manual test: Click written quote lead → verify HomeownerWrittenQuoteReviewModal opens
-```
-
-**Success Criteria:**
-- ✅ BIDDING leads open HomeownerBiddingReviewModal
-- ✅ WRITTEN_QUOTE leads open HomeownerWrittenQuoteReviewModal
-- ✅ No modal overlap or confusion
-- ✅ TypeScript compiles
-
-**Time**: 15 minutes
 
 ---
 
-### Sprint 4.16.13.5 — Wire Negotiation Actions (30 min)
+### Sprint 4.16.13.5 — Wire Negotiation Actions (30 min) ⏭️ SKIP (Already in Phase 4.16.13.3)
 
 **T-WQ-1305: Connect counter-offer and accept buttons to backend APIs**
 
