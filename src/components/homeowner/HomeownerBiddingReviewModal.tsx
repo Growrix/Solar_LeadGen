@@ -11,6 +11,10 @@ import { LeadData } from '@/types/lead';
 import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerInstantQuoteDetails';
 import LeadTechnicalDetails from '@/components/quote-builder/LeadTechnicalDetails';
 import InstantQuoteResult from '@/components/quote-builder/InstantQuoteResult';
+import { QuoteSystemSpecsCard } from '@/components/quote-display/QuoteSystemSpecsCard';
+import { QuoteEquipmentCard } from '@/components/quote-display/QuoteEquipmentCard';
+import { QuoteFinancialCard } from '@/components/quote-display/QuoteFinancialCard';
+import { QuoteLineItemsTable } from '@/components/quote-display/QuoteLineItemsTable';
 
 // Type alias for individual bid with full data
 type BidWithFullData = GetBidsResponse['bids'][number] & {
@@ -344,153 +348,17 @@ export default function HomeownerBiddingReviewModal({
                     </div>
 
                     {/* System Specifications */}
-                    <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
-                      <h4 className="text-heading-4 text-foreground border-b border-border pb-2">
-                        Solar System Specifications
-                      </h4>
-                      <table className="w-full">
-                        <tbody className="divide-y divide-border">
-                          <tr>
-                            <td className="py-2 text-body text-muted-foreground">System Type</td>
-                            <td className="py-2 text-body text-foreground text-right">
-                              {selectedBid.systemData?.systemType || 'Grid-Tied'}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="py-2 text-body text-muted-foreground">System Size</td>
-                            <td className="py-2 text-body text-foreground text-right">
-                              {selectedBid.systemData?.capacityKw || 0} kW
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="py-2 text-body text-muted-foreground">Total Panels</td>
-                            <td className="py-2 text-body text-foreground text-right">
-                              {selectedBid.systemData?.solarPanelsArray?.reduce((sum, arr) => sum + arr.quantity, 0) || 0} panels
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="py-2 text-body text-muted-foreground">Annual Production (Est.)</td>
-                            <td className="py-2 text-body text-foreground text-right">
-                              {getAnnualProduction(selectedBid).toLocaleString()} kWh/year
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
+                    <QuoteSystemSpecsCard 
+                      systemData={{
+                        ...selectedBid.systemData,
+                        annualProduction: getAnnualProduction(selectedBid)
+                      }} 
+                    />
 
                     {/* Equipment Details */}
-                    <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
-                      <h4 className="text-heading-4 text-foreground border-b border-border pb-2">
-                        Equipment & Products
-                      </h4>
-                      
-                      {/* Solar Panels */}
-                      {selectedBid.productsData?.solarPanels && selectedBid.productsData.solarPanels.length > 0 && (
-                        <div className="space-y-2">
-                          <h5 className="text-label text-foreground flex items-center gap-2">
-                            <Zap className="h-4 w-4" />
-                            Solar Panels
-                          </h5>
-                          <table className="w-full">
-                            <tbody className="divide-y divide-border/50">
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Brand & Model</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.solarPanels[0].brand} {selectedBid.productsData.solarPanels[0].model}
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Wattage</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.solarPanels[0].wattage}W
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Quantity</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.solarPanels[0].quantity} panels
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Warranty</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.solarPanels[0].warranty}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
+                    <QuoteEquipmentCard productsData={selectedBid.productsData || {}} />
 
-                      {/* Inverter */}
-                      {selectedBid.productsData?.inverter && (
-                        <div className="space-y-2">
-                          <h5 className="text-label text-foreground">Inverter</h5>
-                          <table className="w-full">
-                            <tbody className="divide-y divide-border/50">
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Brand & Model</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.inverter.brand} {selectedBid.productsData.inverter.model}
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Type</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.inverter.type}
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Capacity</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.inverter.capacityKw} kW
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Warranty</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.inverter.warranty}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-
-                      {/* Battery (if included) */}
-                      {selectedBid.productsData?.battery && (
-                        <div className="space-y-2">
-                          <h5 className="text-label text-foreground flex items-center gap-2">
-                            <Battery className="h-4 w-4" />
-                            Battery Storage
-                          </h5>
-                          <table className="w-full">
-                            <tbody className="divide-y divide-border/50">
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Brand & Model</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.battery.brand} {selectedBid.productsData.battery.model}
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Capacity</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.battery.capacityKwh} kWh
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className="py-1.5 text-body-small text-muted-foreground">Warranty</td>
-                                <td className="py-1.5 text-body-small text-foreground text-right">
-                                  {selectedBid.productsData.battery.warranty}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Pricing Breakdown */}
+                    {/* Pricing Breakdown with Line Items */}
                     <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
                       <h4 className="text-heading-4 text-foreground border-b border-border pb-2">
                         Investment Breakdown
@@ -498,100 +366,43 @@ export default function HomeownerBiddingReviewModal({
                       
                       {/* Line Items Table */}
                       {selectedBid.lineItems && selectedBid.lineItems.length > 0 && (
-                        <div className="space-y-4">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b border-border">
-                                <th className="py-2 text-label text-muted-foreground text-left">Description</th>
-                                <th className="py-2 text-label text-muted-foreground text-right">Qty</th>
-                                <th className="py-2 text-label text-muted-foreground text-right">Unit Price</th>
-                                <th className="py-2 text-label text-muted-foreground text-right">Total</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/50">
-                              {selectedBid.lineItems.map((item: any, index: number) => (
-                                <tr key={index}>
-                                  <td className="py-2 text-body-small text-foreground">{item.description}</td>
-                                  <td className="py-2 text-body-small text-foreground text-right">{item.quantity}</td>
-                                  <td className="py-2 text-body-small text-foreground text-right">
-                                    ${item.unitPrice?.toLocaleString() || '0'}
-                                  </td>
-                                  <td className="py-2 text-body-small text-foreground text-right">
-                                    ${(item.totalPrice || item.total || 0).toLocaleString()}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-
-                          {/* Totals */}
-                          <div className="space-y-3 pt-4 border-t border-border">
-                            <div className="flex items-center justify-between">
-                              <span className="text-body text-muted-foreground">Subtotal</span>
-                              <span className="text-body text-foreground">
-                                ${(selectedBid.calculations?.subtotal || selectedBid.amount).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-body text-success">Incentives & Rebates</span>
-                              <span className="text-body text-success">
-                                -${(selectedBid.calculations?.incentiveAmount || 0).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between pt-3 border-t-2 border-primary/30">
-                              <span className="text-heading-4 text-foreground">Final Investment</span>
-                              <span className="text-heading-3 text-primary">
-                                ${(selectedBid.calculations?.finalTotal || selectedBid.amount).toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-caption text-muted-foreground">Price per Watt</span>
-                              <span className="text-caption text-foreground">
-                                ${(selectedBid.calculations?.pricePerWatt || 0).toFixed(2)}/W
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        <QuoteLineItemsTable lineItems={selectedBid.lineItems} />
                       )}
+                      
+                      {/* Totals */}
+                      <div className="space-y-3 pt-4 border-t border-border">
+                        <div className="flex items-center justify-between">
+                          <span className="text-body text-muted-foreground">Subtotal</span>
+                          <span className="text-body text-foreground">
+                            ${(selectedBid.calculations?.subtotal || selectedBid.amount).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body text-success">Incentives & Rebates</span>
+                          <span className="text-body text-success">
+                            -${(selectedBid.calculations?.incentiveAmount || 0).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-3 border-t-2 border-primary/30">
+                          <span className="text-heading-4 text-foreground">Final Investment</span>
+                          <span className="text-heading-3 text-primary">
+                            ${(selectedBid.calculations?.finalTotal || selectedBid.amount).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-caption text-muted-foreground">Price per Watt</span>
+                          <span className="text-caption text-foreground">
+                            ${(selectedBid.calculations?.pricePerWatt || 0).toFixed(2)}/W
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Financial Projections */}
-                    <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
-                      <h4 className="text-heading-4 text-foreground border-b border-border pb-2 flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5" />
-                        Financial Projections
-                      </h4>
-
-                      <div className="bg-success/10 border border-success/30 rounded-lg p-4 space-y-2">
-                        <div className="flex items-center gap-2 text-success">
-                          <DollarSign className="h-5 w-5" />
-                          <span className="text-label">Annual Savings</span>
-                        </div>
-                          <p className="text-heading-3 text-success">
-                            ${(selectedBid.calculations?.estimatedAnnualSavings || 0).toLocaleString()}/year
-                          </p>
-                      </div>
-
-                      <div className="bg-info/10 border border-info/30 rounded-lg p-4 space-y-2">
-                        <div className="flex items-center gap-2 text-info">
-                          <Calendar className="h-5 w-5" />
-                          <span className="text-label">Payback Period</span>
-                        </div>
-                        <p className="text-heading-3 text-foreground">
-                          {(selectedBid.calculations?.paybackYears || 0).toFixed(1)} years
-                        </p>
-                      </div>
-
-                      <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 space-y-2">
-                        <div className="flex items-center gap-2 text-primary">
-                          <Award className="h-5 w-5" />
-                          <span className="text-label">25-Year Savings</span>
-                        </div>
-                          <p className="text-heading-3 text-foreground">
-                            ${((selectedBid.calculations?.estimatedAnnualSavings || 0) * 25).toLocaleString()}
-                          </p>
-                      </div>
-                    </div>
+                    <QuoteFinancialCard 
+                      calculations={selectedBid.calculations || {}} 
+                      fallbackAmount={selectedBid.amount} 
+                    />
 
                     {/* Installation & Roof Details */}
                     <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
