@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import QuoteBuilderModal from './QuoteBuilderModal';
 import BidEvaluationModal from './BidEvaluationModal';
+import InstallerWrittenQuoteReviewModal from './installer/InstallerWrittenQuoteReviewModal';
 import BiddingStatusBadge from './BiddingStatusBadge';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
 import Button from '@/components/ui/button';
@@ -538,6 +539,7 @@ const LeadCard: React.FC<{
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
   const [isBidEvaluationOpen, setIsBidEvaluationOpen] = useState(false);
+  const [isWrittenQuoteReviewOpen, setIsWrittenQuoteReviewOpen] = useState(false);
   const [quoteMode, setQuoteMode] = useState<'quote' | 'bid' | 'written-quote'>('quote'); // Track mode: quote, bid, or written-quote
   
   const isUnlockedByInstaller = lead.isUnlocked;
@@ -848,19 +850,30 @@ const LeadCard: React.FC<{
         )}
 
         {canQuote && (
-          <Button
-            onClick={() => {
-              // T-WQ-905: Set mode to 'written-quote' for ASSIGNED written quote leads (approved/purchased status)
-              const modalMode = isAssignedWritten ? 'written-quote' : 'quote';
-              setQuoteMode(modalMode);
-              setIsQuoteModalOpen(true);
-            }}
-            variant="primary"
-            className="flex items-center space-x-2"
-          >
-            <SendIcon className="h-4 w-4" />
-            <span>Submit Quote</span>
-          </Button>
+          <>
+            {isAssignedWritten ? (
+              <Button
+                onClick={() => setIsWrittenQuoteReviewOpen(true)}
+                variant="primary"
+                className="flex items-center space-x-2"
+              >
+                <EyeIcon className="h-4 w-4" />
+                <span>Review Written Quote</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setQuoteMode('quote');
+                  setIsQuoteModalOpen(true);
+                }}
+                variant="primary"
+                className="flex items-center space-x-2"
+              >
+                <SendIcon className="h-4 w-4" />
+                <span>Submit Quote</span>
+              </Button>
+            )}
+          </>
         )}
 
         {canBid && (
@@ -952,6 +965,17 @@ const LeadCard: React.FC<{
         bids={[]}
         yourBidId={undefined}
         isPurchased={!!isPaid} // T13I-4: Pass purchase status as boolean
+      />
+
+      {/* Installer Written Quote Review Modal (Phase 4.16.14) */}
+      <InstallerWrittenQuoteReviewModal
+        isOpen={isWrittenQuoteReviewOpen}
+        onClose={() => setIsWrittenQuoteReviewOpen(false)}
+        leadId={String(lead.id)}
+        onQuoteUpdate={() => {
+          console.log('[InstallerLeadFeed] Quote updated');
+          // Optionally refresh lead data
+        }}
       />
 
       {/* View Details Modal */}
