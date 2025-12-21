@@ -101,6 +101,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if installer has purchased this lead (for contact masking)
+    const leadPurchase = await prisma.leadPurchase.findFirst({
+      where: {
+        leadId: quote.leadId,
+        installerId: quote.installerId,
+        refundedAt: null  // Not refunded
+      }
+    });
+
+    const leadPurchased = !!leadPurchase;
+
     // Transform events for frontend consumption
     const transformedEvents = quote.events.map(event => ({
       id: event.id,
@@ -117,6 +128,7 @@ export async function GET(request: NextRequest) {
       quoteId: quote.id,
       leadId,
       eventsCount: transformedEvents.length,
+      leadPurchased,
       correlationId
     });
 
@@ -145,7 +157,9 @@ export async function GET(request: NextRequest) {
         lead: quote.lead,
         installer: quote.installer,
         homeowner: quote.homeowner,
-        events: transformedEvents
+        events: transformedEvents,
+        // Masking flag for frontend
+        leadPurchased
       }
     });
 

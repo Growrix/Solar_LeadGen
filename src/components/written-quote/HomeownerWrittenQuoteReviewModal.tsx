@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Loader, AlertCircle, Building, Mail, Phone, FileText, Zap, Package, Calculator, DollarSign, List } from 'lucide-react';
+import { X, Loader, AlertCircle, Building, Mail, Phone, FileText, Zap, Package, Calculator, DollarSign, List, Lock } from 'lucide-react';
 import { QuoteSystemSpecsCard } from '@/components/quote-display/QuoteSystemSpecsCard';
 import { QuoteEquipmentCard } from '@/components/quote-display/QuoteEquipmentCard';
 import { QuoteFinancialCard } from '@/components/quote-display/QuoteFinancialCard';
@@ -66,6 +66,8 @@ interface WrittenQuoteData {
     email: string;
   };
   events: WQEvent[];
+  // Masking flag (Sprint 4.16.17.0)
+  leadPurchased?: boolean;
 }
 
 interface HomeownerWrittenQuoteReviewModalProps {
@@ -222,50 +224,94 @@ export default function HomeownerWrittenQuoteReviewModal({
             <div className="grid grid-cols-3 gap-6">
               {/* LEFT COLUMN (60% - 2/3 of grid) - Quote Details */}
               <div className="col-span-2 space-y-6">
-                {/* INSTALLER INFO - MOVED TO TOP (Sprint 4.16.16.0) */}
+                {/* INSTALLER INFO WITH MASKING (Sprint 4.16.17.0) */}
                 {writtenQuote.installer && (
                   <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
                     <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
                       <Building className="h-5 w-5 text-primary" />
                       Installer Information
                     </h3>
-                    <div className="space-y-3">
-                      {/* Company Name */}
-                      <div>
-                        <p className="text-label text-muted-foreground mb-1">Company</p>
-                        <p className="text-body text-foreground">
-                          {writtenQuote.installer.companyName || 'Not provided'}
-                        </p>
+                    
+                    {!writtenQuote.leadPurchased ? (
+                      /* ❌ NOT PURCHASED - MASKED */
+                      <div className="space-y-4">
+                        {/* Blurred placeholder */}
+                        <div className="relative">
+                          <div className="blur-md select-none pointer-events-none opacity-50">
+                            <div className="space-y-3">
+                              <div>
+                                <p className="text-label text-muted-foreground mb-1">Company</p>
+                                <p className="text-body">Green Energy Solutions Pty Ltd</p>
+                              </div>
+                              <div>
+                                <p className="text-label text-muted-foreground mb-1">Email</p>
+                                <p className="text-body">contact@greenenergy.com.au</p>
+                              </div>
+                              <div>
+                                <p className="text-label text-muted-foreground mb-1">Phone</p>
+                                <p className="text-body">(02) 9876 5432</p>
+                              </div>
+                            </div>
+                          </div>
+                          {/* Lock icon overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Lock className="h-10 w-10 text-muted-foreground" />
+                          </div>
+                        </div>
+                        
+                        {/* Warning message */}
+                        <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-body-small text-warning">Contact Details Hidden</p>
+                              <p className="text-body-small text-warning/80 mt-1">
+                                Installer contact information will be revealed after you accept this quote and the installer purchases the lead.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      
-                      {/* Email */}
-                      {writtenQuote.installer.email && (
+                    ) : (
+                      /* ✅ PURCHASED - SHOW REAL CONTACT */
+                      <div className="space-y-3">
+                        {/* Company Name */}
                         <div>
-                          <p className="text-label text-muted-foreground mb-1">Email</p>
-                          <a 
-                            href={`mailto:${writtenQuote.installer.email}`}
-                            className="text-body text-primary hover:underline flex items-center gap-2"
-                          >
-                            <Mail className="h-4 w-4" />
-                            {writtenQuote.installer.email}
-                          </a>
+                          <p className="text-label text-muted-foreground mb-1">Company</p>
+                          <p className="text-body text-foreground">
+                            {writtenQuote.installer.companyName || 'Not provided'}
+                          </p>
                         </div>
-                      )}
-                      
-                      {/* Phone */}
-                      {writtenQuote.installer.phone && (
-                        <div>
-                          <p className="text-label text-muted-foreground mb-1">Phone</p>
-                          <a 
-                            href={`tel:${writtenQuote.installer.phone}`}
-                            className="text-body text-primary hover:underline flex items-center gap-2"
-                          >
-                            <Phone className="h-4 w-4" />
-                            {writtenQuote.installer.phone}
-                          </a>
-                        </div>
-                      )}
-                    </div>
+                        
+                        {/* Email */}
+                        {writtenQuote.installer.email && (
+                          <div>
+                            <p className="text-label text-muted-foreground mb-1">Email</p>
+                            <a 
+                              href={`mailto:${writtenQuote.installer.email}`}
+                              className="text-body text-primary hover:underline flex items-center gap-2"
+                            >
+                              <Mail className="h-4 w-4" />
+                              {writtenQuote.installer.email}
+                            </a>
+                          </div>
+                        )}
+                        
+                        {/* Phone */}
+                        {writtenQuote.installer.phone && (
+                          <div>
+                            <p className="text-label text-muted-foreground mb-1">Phone</p>
+                            <a 
+                              href={`tel:${writtenQuote.installer.phone}`}
+                              className="text-body text-primary hover:underline flex items-center gap-2"
+                            >
+                              <Phone className="h-4 w-4" />
+                              {writtenQuote.installer.phone}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
