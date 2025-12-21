@@ -12,8 +12,11 @@ import {
   FileText,
   Phone,
   Mail,
-  User
+  User,
+  Calendar,
+  TrendingUp
 } from 'lucide-react';
+import { FinancialAssumptions } from '@/types/written-quote';
 
 /**
  * WrittenQuoteDetailsDisplay
@@ -69,7 +72,7 @@ export interface WrittenQuoteDetailsDisplayProps {
     systemData?: SystemData | null;
     productsData?: Product[] | null;
     lineItems?: LineItem[] | null;
-    assumptions?: string | null;
+    assumptions?: FinancialAssumptions | string | null;
     calculations?: any;
     installerContact?: InstallerContact | null;
   };
@@ -245,11 +248,63 @@ export function WrittenQuoteDetailsDisplay({ quote }: WrittenQuoteDetailsDisplay
         <Card className="neu-card p-4">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="h-5 w-5 text-primary" />
-            <h3 className="text-heading-4 text-foreground">Assumptions & Notes</h3>
+            <h3 className="text-heading-4 text-foreground">
+              {typeof quote.assumptions === 'object' ? 'Financial Assumptions' : 'Assumptions & Notes'}
+            </h3>
           </div>
-          <p className="text-body text-muted-foreground whitespace-pre-wrap">
-            {quote.assumptions}
-          </p>
+          
+          {typeof quote.assumptions === 'object' && quote.assumptions !== null ? (
+            // Structured display for object assumptions
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {(quote.assumptions as FinancialAssumptions).paybackYears && (
+                <InfoRow 
+                  label="Payback Period" 
+                  value={`${(quote.assumptions as FinancialAssumptions).paybackYears} years`}
+                  icon={<Calendar className="h-4 w-4" />}
+                />
+              )}
+              {(quote.assumptions as FinancialAssumptions).dailyUsageKWh && (
+                <InfoRow 
+                  label="Daily Usage" 
+                  value={`${(quote.assumptions as FinancialAssumptions).dailyUsageKWh} kWh/day`}
+                  icon={<Zap className="h-4 w-4" />}
+                />
+              )}
+              {(quote.assumptions as FinancialAssumptions).solarOffsetPercent && (
+                <InfoRow 
+                  label="Solar Offset" 
+                  value={`${(quote.assumptions as FinancialAssumptions).solarOffsetPercent}%`}
+                  icon={<Sun className="h-4 w-4" />}
+                />
+              )}
+              {(quote.assumptions as FinancialAssumptions).annualPriceIncrease && (
+                <InfoRow 
+                  label="Annual Price Increase" 
+                  value={`${(quote.assumptions as FinancialAssumptions).annualPriceIncrease}%`}
+                  icon={<TrendingUp className="h-4 w-4" />}
+                />
+              )}
+              {(quote.assumptions as FinancialAssumptions).systemLifespanYears && (
+                <InfoRow 
+                  label="System Lifespan" 
+                  value={`${(quote.assumptions as FinancialAssumptions).systemLifespanYears} years`}
+                  icon={<Settings className="h-4 w-4" />}
+                />
+              )}
+              {(quote.assumptions as FinancialAssumptions).feedInTariffCentsKWh && (
+                <InfoRow 
+                  label="Feed-in Tariff" 
+                  value={`${(quote.assumptions as FinancialAssumptions).feedInTariffCentsKWh}¢/kWh`}
+                  icon={<DollarSign className="h-4 w-4" />}
+                />
+              )}
+            </dl>
+          ) : (
+            // Legacy string assumptions (backward compatibility)
+            <p className="text-body text-muted-foreground whitespace-pre-wrap">
+              {String(quote.assumptions)}
+            </p>
+          )}
         </Card>
       )}
 

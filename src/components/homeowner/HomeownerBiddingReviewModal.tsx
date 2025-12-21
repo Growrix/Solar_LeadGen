@@ -12,7 +12,6 @@ import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerIn
 import LeadTechnicalDetails from '@/components/quote-builder/LeadTechnicalDetails';
 import InstantQuoteResult from '@/components/quote-builder/InstantQuoteResult';
 import { WrittenQuoteNegotiationPanel, WQEvent } from '@/components/written-quote/WrittenQuoteNegotiationPanel';
-import { WrittenQuoteDetailsDisplay } from '@/components/written-quote/WrittenQuoteDetailsDisplay';
 
 // Type alias for individual bid with full data
 type BidWithFullData = GetBidsResponse['bids'][number] & {
@@ -30,6 +29,48 @@ interface HomeownerBiddingReviewModalProps {
   bids: BidWithFullData[];
   onSelectWinner?: (bidId: string) => Promise<void>;
   defaultTab?: 'bids' | 'written-quote';
+  leadType: 'BIDDING' | 'WRITTEN_QUOTE'; // Per MODAL-REUSE-STRATEGY
+}
+
+/**
+ * Transform WrittenQuote to Bid format for unified display
+ * Per MODAL-REUSE-STRATEGY: Both use same 8 JSON fields
+ */
+function transformWrittenQuoteToBid(wq: any): BidWithFullData {
+  return {
+    id: wq.id,
+    leadId: wq.leadId,
+    installerId: wq.installerId,
+    installer: {
+      companyName: wq.installer?.companyName || wq.installerContact?.name || 'Unknown Installer',
+      email: wq.installer?.email || wq.installerContact?.email || '',
+      phone: wq.installer?.phone || wq.installerContact?.phone || '',
+      businessAddress: wq.installer?.businessAddress || ''
+    },
+    amount: wq.currentPrice,
+    finalTotal: wq.currentPrice,
+    status: 'SUBMITTED' as any,
+    createdAt: wq.createdAt,
+    updatedAt: wq.lastActionAt || wq.createdAt,
+    
+    // Pass through all 8 JSON fields from written quote
+    systemData: wq.systemData,
+    productsData: wq.productsData,
+    lineItems: wq.lineItems,
+    assumptions: wq.assumptions,
+    roofData: wq.roofData,
+    calculations: wq.calculations,
+    importMeta: wq.importMeta,
+    installerContact: wq.installerContact,
+    
+    // Metadata for display
+    installerName: wq.installer?.companyName || wq.installerContact?.name || 'Unknown',
+    installerRating: 4.5,
+    pricePerWatt: wq.systemData?.capacityKw
+      ? wq.currentPrice / wq.systemData.capacityKw / 1000
+      : 0,
+    isWinner: false
+  };
 }
 
 export default function HomeownerBiddingReviewModal({
@@ -39,7 +80,8 @@ export default function HomeownerBiddingReviewModal({
   propertyAddress,
   bids: initialBids,
   onSelectWinner,
-  defaultTab = 'bids'
+  defaultTab = 'bids',
+  leadType
 }: HomeownerBiddingReviewModalProps) {
   // State management
   const [activeTab, setActiveTab] = useState<'bids' | 'written-quote'>(defaultTab);
@@ -116,12 +158,54 @@ export default function HomeownerBiddingReviewModal({
     }
   }, [leadId]);
 
-  // Fetch bids when modal opens
+  // Conditional data fetching based on leadType (Per MODAL-REUSE-STRATEGY)
+  const fetchQuoteData = useCallback(async () => {
+    if (!leadId) return;
+    
+    if (leadType === 'BIDDING') {
+      // Fetch marketplace bids
+      fetchBids();
+    } else if (leadType === 'WRITTEN_QUOTE') {
+      // Fetch written quote and transform to bid format
+      setIsLoadingBids(true);
+      setBidsError(null);
+      try {
+        console.log('[HomeownerBiddingReviewModal] Fetching written quote for leadId:', leadId);
+        const response = await fetch(`/api/written-quotes/get?leadId=${leadId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setBids([]);
+            setWrittenQuote(null);
+            return;
+          }
+          throw new Error('Failed to fetch written quote');
+        }
+        const data = await response.json();
+        console.log('[HomeownerBiddingReviewModal] Written quote fetched:', data.quote?.id);
+        
+        if (data.quote) {
+          const transformedQuote = transformWrittenQuoteToBid(data.quote);
+          setBids([transformedQuote]);
+          setWrittenQuote(data.quote); // Store original for negotiation panel
+        } else {
+          setBids([]);
+          setWrittenQuote(null);
+        }
+      } catch (error) {
+        console.error('[HomeownerBiddingReviewModal] Error fetching written quote:', error);
+        setBidsError(error instanceof Error ? error.message : 'Failed to load written quote');
+      } finally {
+        setIsLoadingBids(false);
+      }
+    }
+  }, [leadId, leadType, fetchBids]);
+
+  // Fetch quote data when modal opens (bidding or written quote)
   useEffect(() => {
     if (isOpen && leadId) {
-      fetchBids();
+      fetchQuoteData();
     }
-  }, [isOpen, leadId, fetchBids]);
+  }, [isOpen, leadId, fetchQuoteData]);
 
   // Fetch full lead data when modal opens
   const fetchLeadData = useCallback(async () => {
@@ -375,9 +459,13 @@ export default function HomeownerBiddingReviewModal({
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-6">
-                {/* LEFT COLUMN: Quote Details */}
+                {/* LEFT COLUMN: Quote Details (Now using unified display from bidding tab) */}
                 <div className="overflow-y-auto max-h-[calc(80vh-200px)]">
-                  <WrittenQuoteDetailsDisplay quote={writtenQuote} />
+                  <div className="text-center py-8">
+                    <p className="text-body text-muted-foreground">
+                      Written quote details are now displayed in the Bids tab above for a unified review experience.
+                    </p>
+                  </div>
                 </div>
 
                 {/* RIGHT COLUMN: Negotiation Panel */}
@@ -423,28 +511,30 @@ export default function HomeownerBiddingReviewModal({
               </div>
             ) : (
               <>
-              {/* Installer Selector Dropdown */}
-              <div className="mb-6 space-y-2">
-                <label className="text-label text-foreground block">
-                  Select Installer to Review:
-                </label>
-                <select 
-                  value={selectedBidId} 
-                  onChange={(e) => setSelectedBidId(e.target.value)}
-                  className="w-full md:w-auto px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                >
-                  {sortedBids.map((bid, index) => (
-                    <option key={bid.id} value={bid.id}>
-                      {bid.isWinner && '🏆 '}
-                      {bid.status === 'shortlisted' && '⭐ '}
-                      {bid.installerName} - ${bid.finalTotal.toLocaleString()} ({bid.systemData?.capacityKw || 0} kW)
-                    </option>
-                  ))}
-                </select>
-                <p className="text-caption text-muted-foreground">
-                  {bids.length} bid{bids.length !== 1 ? 's' : ''} received • Compare installers side-by-side
-                </p>
-              </div>
+              {/* Installer Selector Dropdown - Hidden for written quotes (Sprint 4.16.12.2) */}
+              {leadType === 'BIDDING' && (
+                <div className="mb-6 space-y-2">
+                  <label className="text-label text-foreground block">
+                    Select Installer to Review:
+                  </label>
+                  <select 
+                    value={selectedBidId} 
+                    onChange={(e) => setSelectedBidId(e.target.value)}
+                    className="w-full md:w-auto px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                  >
+                    {sortedBids.map((bid, index) => (
+                      <option key={bid.id} value={bid.id}>
+                        {bid.isWinner && '🏆 '}
+                        {bid.status === 'shortlisted' && '⭐ '}
+                        {bid.installerName} - ${bid.finalTotal.toLocaleString()} ({bid.systemData?.capacityKw || 0} kW)
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-caption text-muted-foreground">
+                    {bids.length} bid{bids.length !== 1 ? 's' : ''} received • Compare installers side-by-side
+                  </p>
+                </div>
+              )}
 
               {/* 2 Column Grid */}
               {selectedBid && (
@@ -834,11 +924,34 @@ export default function HomeownerBiddingReviewModal({
                     </div>
                   )}
 
-                  {/* RIGHT COLUMN: Lead Details (InstantQuote Data) */}
+                  {/* RIGHT COLUMN: Conditional content based on leadType (Sprint 4.16.12.2) */}
                   <div className="space-y-6 lg:sticky lg:top-0 lg:h-fit">
-                    <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
-                      Original Lead Details
-                    </h3>
+                    {leadType === 'WRITTEN_QUOTE' ? (
+                      <>
+                        {/* Written Quote Negotiation Panel */}
+                        <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
+                          Quote Negotiation
+                        </h3>
+                        {writtenQuote && selectedBid && (
+                          <WrittenQuoteNegotiationPanel 
+                            role="homeowner"
+                            currentPrice={selectedBid.finalTotal}
+                            status={writtenQuote.status || 'pending'}
+                            history={writtenQuote.negotiationHistory || []}
+                            onAction={async (action, data) => {
+                              console.log('[HomeownerBiddingReviewModal] Negotiation action:', action, data);
+                              // TODO: Implement negotiation API call
+                            }}
+                            disabled={writtenQuote.status === 'accepted' || writtenQuote.status === 'rejected'}
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {/* Original Lead Details (BIDDING mode) */}
+                        <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
+                          Original Lead Details
+                        </h3>
 
                     {isLoadingLead ? (
                       <div className="bg-surface rounded-xl p-6 text-center">
@@ -894,6 +1007,8 @@ export default function HomeownerBiddingReviewModal({
                         </p>
                       </div>
                     )}
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -922,7 +1037,8 @@ export default function HomeownerBiddingReviewModal({
               Close
             </Button>
             
-            {selectedBid && (
+            {/* Select Winner Button - Hidden for written quotes (Sprint 4.16.12.2) */}
+            {leadType === 'BIDDING' && selectedBid && (
               <Button 
                 variant="primary" 
                 onClick={handleSelectWinnerClick}

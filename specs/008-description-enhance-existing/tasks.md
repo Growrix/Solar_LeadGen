@@ -1,6 +1,1899 @@
+## Phase 4.16.13 — Build Separate Written Quote Review Modal
+
+**Status:** 🟢 READY TO START  
+**Priority:** P0 (User Confusion - UX Critical)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-AUDIT-2025-12-21.md`  
+**Reference Plan:** `DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md`  
+**Authority:** System Constitution → Blueprint → MODAL-REUSE-STRATEGY → AI Implementation Guidelines
+
+### Context
+
+**User Feedback**: "The reuse of the review bids modal for the written quote review modal is causing a lot of issues and complications. Users will be confused to see the modal, because now written Quote is showing up on bidding tabs as well."
+
+**Root Cause**: Conditional modal reuse creates user confusion  
+- **Current State**: Written quotes displayed under "Marketplace Bids" tab with bidding terminology
+- **User Impact**: Homeowners see "Review Solar Bids" title when reviewing custom quotes, confusing competitive bidding with 1:1 negotiation
+- **Screenshot Evidence**: "Marketplace Bids (1)" tab showing written quote data, separate "Written Quote" tab with placeholder message
+
+**Professional Assessment** (Per Audit Report):
+- ✅ Conditional reuse is **technically functional** (all 8 JSON fields display correctly)
+- ❌ Conditional reuse causes **user confusion** (wrong terminology, mental model mismatch)
+- ❌ Violates **strategy intent** (strategy meant separate tab views, not conditional entire modal)
+- ✅ Separate modals recommended for **distinct user journeys** (bidding = selection; written quote = negotiation)
+
+**Decision**: Build dedicated `HomeownerWrittenQuoteReviewModal` component
+- Reuse shared subcomponents (system specs, equipment, financials)
+- Apply correct terminology ("Written Quote", "Negotiate", "Accept")
+- Restore `HomeownerBiddingReviewModal` to bidding-only (remove conditionals)
+
+**Estimated Time**: 3.5 hours (7 sprints)
+
+---
+
+### Sprint 4.16.13.1 — Revert Conditional Logic from Bidding Modal (30 min)
+
+**T-WQ-1301: Remove WRITTEN_QUOTE conditionals from HomeownerBiddingReviewModal**
+
+**Objective**: Restore bidding modal to its original purpose (competitive bid selection only).
+
+**Changes:**
+
+1. **Remove leadType prop**
+   - File: `src/components/homeowner/HomeownerBiddingReviewModal.tsx`
+   - Delete: `leadType: 'BIDDING' | 'WRITTEN_QUOTE'` from interface
+   - Delete: `transformWrittenQuoteToBid()` helper function
+   - Delete: `writtenQuote` state variable
+
+2. **Restore fetchBids function**
+   - Replace conditional `fetchQuoteData()` with original `fetchBids()`
+   - Remove written quote API call logic
+   - Update useEffect to call `fetchBids()` directly
+
+3. **Remove conditional UI rendering**
+   - Remove: `{leadType === 'BIDDING' && (...)}` wrappers
+   - Restore: Installer selector dropdown (always visible)
+   - Restore: "Select Winner" button (always visible for non-winner bids)
+   - Remove: WrittenQuoteNegotiationPanel from right column
+
+4. **Restore right column**
+   - Replace conditional right column with original lead details only
+   - Remove: `{leadType === 'WRITTEN_QUOTE' ? ... : ...}` ternary
+
+5. **Update callsites**
+   - File: `src/app/homeowner/dashboard/page.tsx`
+   - Remove: `leadType={selectedLeadQuoteType || 'BIDDING'}` prop
+   - Keep modal for BIDDING leads only (will update trigger logic in Sprint 4.16.13.4)
+
+**Verification:**
+```powershell
+npx tsc --noEmit
+npm run build
+```
+
+**Success Criteria:**
+- ✅ TypeScript compiles with 0 errors
+- ✅ Bidding modal opens and displays marketplace bids correctly
+- ✅ Installer dropdown works
+- ✅ "Select Winner" button visible
+- ✅ No written quote logic remaining
+
+**Time**: 30 minutes
+
+---
+
+### Sprint 4.16.13.2 — Extract Shared Quote Display Subcomponents (45 min)
+
+**T-WQ-1302: Create reusable subcomponents for quote data display**
+
+**Objective**: Eliminate code duplication by extracting common display logic into shared components.
+
+**New Folder Structure:**
+```
+src/components/quote-display/
+├── QuoteSystemSpecsCard.tsx
+├── QuoteEquipmentCard.tsx
+├── QuoteFinancialCard.tsx
+├── QuoteRoofDetailsCard.tsx
+└── QuoteLineItemsTable.tsx
+```
+
+**Component Interfaces:**
+
+```typescript
+// QuoteSystemSpecsCard.tsx
+interface QuoteSystemSpecsCardProps {
+  systemData: {
+    capacityKw: number;
+    systemType: string;
+    solarPanelsArray: Array<{ quantity: number }>;
+    annualProduction?: number;
+  };
+}
+
+// QuoteEquipmentCard.tsx
+interface QuoteEquipmentCardProps {
+  productsData: {
+    solarPanels?: Array<{ brand: string; model: string; wattage: number }>;
+    inverters?: Array<{ brand: string; model: string; type: string }>;
+    batteries?: Array<{ brand: string; model: string; capacity: number }>;
+  };
+}
+
+// QuoteFinancialCard.tsx
+interface QuoteFinancialCardProps {
+  calculations: {
+    paybackPeriod?: number;
+    roi?: number;
+    lifetimeSavings?: number;
+    firstYearSavings?: number;
+  };
+  assumptions?: {
+    electricityRate?: number;
+    escalationRate?: number;
+    discountRate?: number;
+  };
+}
+
+// QuoteRoofDetailsCard.tsx
+interface QuoteRoofDetailsCardProps {
+  roofData: {
+    roofType?: string;
+    roofPitch?: number;
+    roofOrientation?: string;
+    roofMaterial?: string;
+    shading?: string;
+  };
+}
+
+// QuoteLineItemsTable.tsx
+interface QuoteLineItemsTableProps {
+  lineItems: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>;
+  finalTotal: number;
+}
+```
+
+**Implementation:**
+
+1. **Extract from HomeownerBiddingReviewModal**
+   - Copy existing card rendering logic to new components
+   - Replace in modal with imports
+   - Pass selectedBid data as props
+
+2. **Apply Design Tokens**
+   - Use semantic tokens only (neu-card, text-*, bg-surface)
+   - Multi-theme compliance (Dark/Light/Purple)
+   - WCAG 2.1 AA contrast ratios
+
+3. **Update HomeownerBiddingReviewModal**
+```typescript
+import { QuoteSystemSpecsCard } from '@/components/quote-display/QuoteSystemSpecsCard';
+import { QuoteEquipmentCard } from '@/components/quote-display/QuoteEquipmentCard';
+import { QuoteFinancialCard } from '@/components/quote-display/QuoteFinancialCard';
+import { QuoteRoofDetailsCard } from '@/components/quote-display/QuoteRoofDetailsCard';
+import { QuoteLineItemsTable } from '@/components/quote-display/QuoteLineItemsTable';
+
+// In render:
+<QuoteSystemSpecsCard systemData={selectedBid.systemData} />
+<QuoteEquipmentCard productsData={selectedBid.productsData} />
+<QuoteFinancialCard 
+  calculations={selectedBid.calculations} 
+  assumptions={selectedBid.assumptions} 
+/>
+<QuoteRoofDetailsCard roofData={selectedBid.roofData} />
+<QuoteLineItemsTable 
+  lineItems={selectedBid.lineItems} 
+  finalTotal={selectedBid.finalTotal} 
+/>
+```
+
+**Verification:**
+```powershell
+npx tsc --noEmit
+npm run build
+# Open bidding modal, verify all cards display correctly
+```
+
+**Success Criteria:**
+- ✅ 5 new subcomponents created
+- ✅ HomeownerBiddingReviewModal uses subcomponents
+- ✅ Bidding modal displays identically to before
+- ✅ Zero TypeScript errors
+- ✅ Multi-theme compliance maintained
+
+**Time**: 45 minutes
+
+---
+
+### Sprint 4.16.13.3 — Build HomeownerWrittenQuoteReviewModal (60 min)
+
+**T-WQ-1303: Create dedicated written quote review modal**
+
+**Objective**: Build separate modal with written quote terminology and negotiation focus.
+
+**File**: `src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx`
+
+**Interface:**
+```typescript
+interface HomeownerWrittenQuoteReviewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  leadId: string;
+  writtenQuoteId: string;
+  installerName: string; // Display in modal title
+}
+```
+
+**Layout:**
+```
+┌──────────────────────────────────────────────────────────┐
+│ Review Written Quote - [Installer Name]           [×]     │
+├────────────────────────────────┬─────────────────────────┤
+│ LEFT COLUMN (60%)              │ RIGHT COLUMN (40%)      │
+│                                │                         │
+│ Quote # [ID]                   │ Quote Negotiation       │
+│ Submitted: [Date]              │ ═══════════════════     │
+│ [Installer Rating]             │ Current Price: $X,XXX   │
+│                                │ Status: [Status]        │
+│ ────────────────────────────── │ Last Update: [Time]     │
+│                                │ ─────────────────────   │
+│ [QuoteSystemSpecsCard]         │ Negotiation History (N) │
+│ [QuoteEquipmentCard]           │ ▼ Expandable            │
+│ [QuoteFinancialCard]           │ • [Timestamp] [Action]  │
+│ [QuoteRoofDetailsCard]         │ • [Timestamp] [Action]  │
+│ [QuoteLineItemsTable]          │ ─────────────────────   │
+│                                │ Your Actions:           │
+│                                │ Counter to: $[____]     │
+│                                │ [Counter] [Accept $X]   │
+└────────────────────────────────┴─────────────────────────┘
+│                         [Close]                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Implementation:**
+
+1. **Modal Header**
+```typescript
+<div className="flex items-center justify-between p-6 border-b border-border">
+  <h2 className="text-heading-3 text-foreground">
+    Review Written Quote - {installerName}
+  </h2>
+  <button onClick={onClose} className="p-2 hover:bg-surface-hover rounded-lg">
+    <X className="h-5 w-5 text-muted-foreground" />
+  </button>
+</div>
+```
+
+2. **Data Fetching**
+```typescript
+const [writtenQuote, setWrittenQuote] = useState<WrittenQuote | null>(null);
+const [isLoading, setIsLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+
+useEffect(() => {
+  if (!isOpen || !writtenQuoteId) return;
+  
+  const fetchQuote = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/get?id=${writtenQuoteId}`);
+      if (!response.ok) throw new Error('Failed to fetch quote');
+      const data = await response.json();
+      setWrittenQuote(data.quote);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load quote');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  fetchQuote();
+}, [isOpen, writtenQuoteId]);
+```
+
+3. **Left Column - Quote Details**
+```typescript
+{writtenQuote && (
+  <div className="space-y-6">
+    {/* Quote Metadata */}
+    <div className="bg-surface rounded-xl p-6 border border-border">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-label text-muted-foreground">Quote #</p>
+          <p className="text-body text-foreground">{writtenQuote.id.slice(0, 8).toUpperCase()}</p>
+        </div>
+        <div>
+          <p className="text-label text-muted-foreground">Submitted</p>
+          <p className="text-body text-foreground">
+            {new Date(writtenQuote.submittedAt).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    {/* Shared Subcomponents */}
+    <QuoteSystemSpecsCard systemData={writtenQuote.systemData} />
+    <QuoteEquipmentCard productsData={writtenQuote.productsData} />
+    <QuoteFinancialCard 
+      calculations={writtenQuote.calculations} 
+      assumptions={writtenQuote.assumptions} 
+    />
+    <QuoteRoofDetailsCard roofData={writtenQuote.roofData} />
+    <QuoteLineItemsTable 
+      lineItems={writtenQuote.lineItems} 
+      finalTotal={writtenQuote.currentPrice} 
+    />
+  </div>
+)}
+```
+
+4. **Right Column - WrittenQuoteNegotiationPanel**
+```typescript
+import { WrittenQuoteNegotiationPanel } from '@/components/written-quote/WrittenQuoteNegotiationPanel';
+
+{writtenQuote && (
+  <div className="sticky top-0 space-y-6">
+    <WrittenQuoteNegotiationPanel 
+      role="homeowner"
+      currentPrice={writtenQuote.currentPrice}
+      status={writtenQuote.status}
+      history={writtenQuote.negotiationHistory || []}
+      onAction={handleNegotiationAction}
+      disabled={writtenQuote.status === 'accepted' || writtenQuote.status === 'rejected'}
+    />
+  </div>
+)}
+```
+
+5. **Negotiation Action Handler**
+```typescript
+const [isActing, setIsActing] = useState(false);
+
+const handleNegotiationAction = async (
+  action: 'offer' | 'counter' | 'accept' | 'reject', 
+  data: { price?: number; notes?: string }
+) => {
+  setIsActing(true);
+  try {
+    const endpoint = action === 'accept' || action === 'reject'
+      ? `/api/written-quotes/${writtenQuoteId}/done`
+      : `/api/written-quotes/${writtenQuoteId}/counter`;
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        priceOffered: data.price,
+        notes: data.notes
+      })
+    });
+    
+    if (!response.ok) throw new Error('Action failed');
+    
+    // Refresh quote data
+    const updatedData = await response.json();
+    setWrittenQuote(updatedData.quote);
+    
+    // Show success notification
+    console.log(`[WrittenQuote] ${action} successful`);
+  } catch (err) {
+    console.error(`[WrittenQuote] ${action} failed:`, err);
+    setError(err instanceof Error ? err.message : 'Action failed');
+  } finally {
+    setIsActing(false);
+  }
+};
+```
+
+6. **Loading/Error States**
+```typescript
+{isLoading && (
+  <div className="flex items-center justify-center h-96">
+    <Loader className="h-8 w-8 animate-spin text-primary" />
+  </div>
+)}
+
+{error && (
+  <div className="bg-error/10 border border-error/20 rounded-xl p-6">
+    <p className="text-body text-error">{error}</p>
+  </div>
+)}
+```
+
+**Verification:**
+```powershell
+npx tsc --noEmit
+```
+
+**Success Criteria:**
+- ✅ Modal renders with "Review Written Quote - [Installer]" title
+- ✅ All 8 JSON fields displayed via shared subcomponents
+- ✅ WrittenQuoteNegotiationPanel shown in right column
+- ✅ No bidding terminology anywhere
+- ✅ TypeScript compiles with 0 errors
+- ✅ Design tokens only (no hardcoded values)
+
+**Time**: 60 minutes
+
+---
+
+### Sprint 4.16.13.4 — Update Modal Trigger Points (15 min)
+
+**T-WQ-1304: Route homeowners to correct modal based on lead type**
+
+**Objective**: Show HomeownerBiddingReviewModal for BIDDING leads, HomeownerWrittenQuoteReviewModal for WRITTEN_QUOTE leads.
+
+**File**: `src/app/homeowner/dashboard/page.tsx`
+
+**Changes:**
+
+1. **Add Import**
+```typescript
+import { HomeownerWrittenQuoteReviewModal } from '@/components/written-quote/HomeownerWrittenQuoteReviewModal';
+```
+
+2. **Update Modal State**
+```typescript
+// Existing
+const [isBiddingReviewModalOpen, setIsBiddingReviewModalOpen] = useState(false);
+const [selectedBiddingLeadId, setSelectedBiddingLeadId] = useState<string | null>(null);
+
+// Add new
+const [isWrittenQuoteReviewModalOpen, setIsWrittenQuoteReviewModalOpen] = useState(false);
+const [selectedWrittenQuoteLeadId, setSelectedWrittenQuoteLeadId] = useState<string | null>(null);
+const [selectedWrittenQuoteId, setSelectedWrittenQuoteId] = useState<string | null>(null);
+const [selectedInstallerName, setSelectedInstallerName] = useState<string>('');
+```
+
+3. **Update Lead Card Click Handler**
+```typescript
+const handleReviewClick = (lead: Lead) => {
+  if (lead.quoteType === 'WRITTEN_QUOTE') {
+    setSelectedWrittenQuoteLeadId(lead.id);
+    setSelectedWrittenQuoteId(lead.writtenQuoteId); // Fetch from lead data
+    setSelectedInstallerName(lead.assignedInstaller?.companyName || 'Unknown');
+    setIsWrittenQuoteReviewModalOpen(true);
+  } else {
+    setSelectedBiddingLeadId(lead.id);
+    setSelectedLeadQuoteType('BIDDING');
+    setIsBiddingReviewModalOpen(true);
+  }
+};
+```
+
+4. **Render Both Modals**
+```typescript
+{/* Bidding Modal */}
+{isBiddingReviewModalOpen && selectedBiddingLeadId && (
+  <HomeownerBiddingReviewModal
+    isOpen={isBiddingReviewModalOpen}
+    onClose={() => {
+      setIsBiddingReviewModalOpen(false);
+      setSelectedBiddingLeadId(null);
+    }}
+    leadId={selectedBiddingLeadId}
+    propertyAddress="Loading..."
+    bids={[]}
+    onSelectWinner={handleSelectWinner}
+  />
+)}
+
+{/* Written Quote Modal */}
+{isWrittenQuoteReviewModalOpen && selectedWrittenQuoteLeadId && selectedWrittenQuoteId && (
+  <HomeownerWrittenQuoteReviewModal
+    isOpen={isWrittenQuoteReviewModalOpen}
+    onClose={() => {
+      setIsWrittenQuoteReviewModalOpen(false);
+      setSelectedWrittenQuoteLeadId(null);
+      setSelectedWrittenQuoteId(null);
+    }}
+    leadId={selectedWrittenQuoteLeadId}
+    writtenQuoteId={selectedWrittenQuoteId}
+    installerName={selectedInstallerName}
+  />
+)}
+```
+
+**Verification:**
+```powershell
+npx tsc --noEmit
+# Manual test: Click bidding lead → verify HomeownerBiddingReviewModal opens
+# Manual test: Click written quote lead → verify HomeownerWrittenQuoteReviewModal opens
+```
+
+**Success Criteria:**
+- ✅ BIDDING leads open HomeownerBiddingReviewModal
+- ✅ WRITTEN_QUOTE leads open HomeownerWrittenQuoteReviewModal
+- ✅ No modal overlap or confusion
+- ✅ TypeScript compiles
+
+**Time**: 15 minutes
+
+---
+
+### Sprint 4.16.13.5 — Wire Negotiation Actions (30 min)
+
+**T-WQ-1305: Connect counter-offer and accept buttons to backend APIs**
+
+**Objective**: Enable homeowners to negotiate quotes via WrittenQuoteNegotiationPanel.
+
+**Prerequisite**: Verify API endpoints exist:
+- `POST /api/written-quotes/[id]/counter` (homeowner counter-offer)
+- `POST /api/written-quotes/[id]/done` (homeowner accept/reject)
+
+**Implementation** (Already in Sprint 4.16.13.3, verify functionality):
+
+1. **Test Counter-Offer**
+```typescript
+// In WrittenQuoteNegotiationPanel, homeowner enters $8,500
+// Submits counter → calls handleNegotiationAction('counter', { price: 8500 })
+// Backend updates WrittenQuote.currentPrice, status='countered', logs event
+// Modal refreshes, shows updated price and history
+```
+
+2. **Test Accept Quote**
+```typescript
+// Homeowner clicks "Accept $8,750"
+// Calls handleNegotiationAction('accept', {})
+// Backend sets status='accepted', logs event
+// Modal shows "Quote Accepted" state
+// Redirect to payment flow (reuse bidding payment logic)
+```
+
+3. **Add Loading States**
+```typescript
+// Show spinner on button during API call
+// Disable buttons while isActing=true
+// Show error toast if API fails
+```
+
+4. **Add Success Notifications**
+```typescript
+import { useNotification } from '@/hooks/useNotification';
+
+const { showNotification } = useNotification();
+
+// After successful action:
+showNotification({
+  type: 'success',
+  message: action === 'counter' 
+    ? `Counter-offer of $${data.price?.toLocaleString()} submitted` 
+    : 'Quote accepted successfully'
+});
+```
+
+**Verification:**
+```powershell
+# Manual test flow:
+# 1. Open written quote lead
+# 2. Enter counter-offer price
+# 3. Click "Counter" → verify API call succeeds
+# 4. Verify modal refreshes with new price + history event
+# 5. Click "Accept" → verify status changes to ACCEPTED
+# 6. Verify negotiation panel disabled (no further actions)
+```
+
+**Success Criteria:**
+- ✅ Counter-offer submits successfully, updates quote
+- ✅ Accept quote works, locks further negotiation
+- ✅ Negotiation history displays correctly
+- ✅ Loading states work
+- ✅ Error handling works
+- ✅ Success notifications show
+
+**Time**: 30 minutes
+
+---
+
+### Sprint 4.16.13.6 — Build Verification (15 min)
+
+**T-WQ-1306: Verify TypeScript, build, and multi-theme compliance**
+
+**Commands:**
+```powershell
+# TypeScript compilation
+npx tsc --noEmit
+
+# Production build
+npm run build
+
+# Post-migration verification (all 6 commands)
+# Command 1: Hardcoded gray/slate colors
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-gray-|text-slate-|bg-gray-|bg-slate-|border-gray-|border-slate-"
+
+# Command 2: Dark mode classes
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "dark:"
+
+# Command 3: RGB/HEX colors
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "rgba\(|rgb\(|#[0-9a-fA-F]{3,6}"
+
+# Command 4: Hardcoded white/black
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-white|bg-white|text-black|bg-black"
+
+# Command 5: Hardcoded typography
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "text-xs|text-sm|text-lg|text-xl|font-bold|font-semibold"
+
+# Command 6: Manual responsive classes
+Select-String -Path "src\components\written-quote\HomeownerWrittenQuoteReviewModal.tsx" -Pattern "sm:text-|md:text-|lg:text-"
+```
+
+**Required Result**: 0 matches for ALL 6 commands
+
+**Manual Testing Checklist:**
+
+1. **Multi-Theme Test**
+   - Dark theme: Verify neumorphic shadows, text contrast
+   - Light theme: Verify background colors, borders
+   - Purple theme: Verify accent colors, purple shadows
+
+2. **Responsive Test (5 breakpoints)**
+   - 320px (mobile portrait)
+   - 375px (mobile landscape)
+   - 768px (tablet)
+   - 1024px (desktop)
+   - 1440px (wide desktop)
+
+3. **Accessibility (WCAG 2.1 AA)**
+   - Keyboard navigation (Tab, Enter, Escape)
+   - ARIA labels on buttons
+   - Focus visible states
+   - Color contrast ratios (4.5:1 minimum)
+
+4. **Functional Test**
+   - Open written quote lead
+   - Verify all 8 JSON fields display
+   - Submit counter-offer
+   - Accept quote
+   - Close modal
+
+**Success Criteria:**
+- ✅ TypeScript: 0 errors
+- ✅ Build: Production bundle created
+- ✅ Post-migration verification: 0/0/0/0/0/0
+- ✅ Multi-theme: All 3 themes work
+- ✅ Responsive: All 5 breakpoints work
+- ✅ Accessibility: WCAG 2.1 AA compliant
+- ✅ Functional: Quote review and negotiation work end-to-end
+
+**Time**: 15 minutes
+
+---
+
+### Sprint 4.16.13.7 — Documentation & Cleanup (15 min)
+
+**T-WQ-1307: Document changes and commit**
+
+**Deliverables:**
+
+1. **Completion Report**
+   - File: `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-COMPLETION-2025-12-21.md`
+   - Summary of changes
+   - Before/After comparison
+   - Success metrics
+   - Known issues (if any)
+
+2. **Update tasks.md**
+   - Mark Phase 4.16.13 as ✅ COMPLETED
+   - Add completion timestamp
+   - Link to completion report
+
+3. **Git Commit**
+```bash
+git add src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx
+git add src/components/quote-display/*.tsx
+git add src/components/homeowner/HomeownerBiddingReviewModal.tsx
+git add src/app/homeowner/dashboard/page.tsx
+git add DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-*.md
+git add specs/008-description-enhance-existing/tasks.md
+
+git commit -m "feat(written-quote): Build separate review modal (Phase 4.16.13)
+
+PROBLEM:
+- Conditional modal reuse caused user confusion
+- Written quotes displayed under 'Marketplace Bids' with bidding terminology
+- Users confused competitive bidding with 1:1 negotiation
+
+SOLUTION:
+- Built dedicated HomeownerWrittenQuoteReviewModal
+- Extracted shared subcomponents (QuoteSystemSpecsCard, etc.)
+- Restored HomeownerBiddingReviewModal to bidding-only
+- Applied correct written quote terminology throughout
+- Wired negotiation actions (counter-offer, accept)
+
+IMPACT:
+✅ Clear user experience (dedicated UI for negotiation)
+✅ No code duplication (shared subcomponents)
+✅ Correct terminology ('Written Quote' vs 'Bids')
+✅ Simplified maintenance (no complex conditionals)
+✅ TypeScript: 0 errors, Build: Success
+✅ Post-migration verification: 0/0/0/0/0/0
+
+FILES CHANGED:
+- Created: src/components/written-quote/HomeownerWrittenQuoteReviewModal.tsx
+- Created: src/components/quote-display/*.tsx (5 subcomponents)
+- Modified: src/components/homeowner/HomeownerBiddingReviewModal.tsx (reverted conditionals)
+- Modified: src/app/homeowner/dashboard/page.tsx (updated triggers)
+
+TESTING:
+✅ TypeScript compilation passed
+✅ npm run build succeeded
+✅ Multi-theme compliance verified
+✅ Responsive design verified
+✅ Negotiation flow tested
+
+Per specs/008-description-enhance-existing/tasks.md Phase 4.16.13
+Implements DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-SEPARATION-AUDIT-2025-12-21.md"
+```
+
+**Success Criteria:**
+- ✅ Completion report created
+- ✅ tasks.md updated
+- ✅ Git commit with descriptive message
+- ✅ All files added to git
+
+**Time**: 15 minutes
+
+---
+
+## Phase 4.16.13 — Summary
+
+**Total Estimated Time:** 3.5 hours (210 minutes)
+
+**Sprint Breakdown:**
+| Sprint | Task | Duration |
+|--------|------|----------|
+| 4.16.13.1 | Revert conditional logic | 30 min |
+| 4.16.13.2 | Extract shared subcomponents | 45 min |
+| 4.16.13.3 | Build HomeownerWrittenQuoteReviewModal | 60 min |
+| 4.16.13.4 | Update modal trigger points | 15 min |
+| 4.16.13.5 | Wire negotiation actions | 30 min |
+| 4.16.13.6 | Build verification | 15 min |
+| 4.16.13.7 | Documentation & cleanup | 15 min |
+| **TOTAL** | | **210 min (3.5 hrs)** |
+
+**Success Criteria:**
+- ✅ Separate HomeownerWrittenQuoteReviewModal component created
+- ✅ Shared subcomponents extracted (no duplication)
+- ✅ HomeownerBiddingReviewModal restored to bidding-only
+- ✅ Correct terminology applied ("Written Quote" vs "Bids")
+- ✅ Negotiation actions wired (counter-offer, accept)
+- ✅ TypeScript: 0 errors
+- ✅ Build: Production bundle optimized
+- ✅ Multi-theme compliance
+- ✅ Responsive design (5 breakpoints)
+- ✅ Accessibility (WCAG 2.1 AA)
+- ✅ Post-migration verification: 0/0/0/0/0/0
+
+**Deliverables:**
+- HomeownerWrittenQuoteReviewModal.tsx
+- 5 shared subcomponents (QuoteSystemSpecsCard, etc.)
+- Updated HomeownerBiddingReviewModal (conditionals removed)
+- Updated dashboard triggers
+- Completion report
+- Git commit
+
+**Next Steps After Completion:**
+1. Manual E2E testing of written quote flow
+2. Installer-side modal enhancement (QuoteBuilderModal negotiation panel)
+3. Playwright E2E test suite
+4. Production deployment
+
+---
+
+## Phase 4.16.12 — CRITICAL: Rebuild Written Quote Modal According to MODAL-REUSE-STRATEGY
+
+**Status:** 🔴 CRITICAL - READY TO START  
+**Priority:** P0 (Feature Not Working As Designed - Deviation from Plan)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-REBUILD-AUDIT-2025-12-21.md`  
+**Reference Plan:** `DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md`  
+**Authority:** System Constitution → Blueprint → MODAL-REUSE-STRATEGY → AI Implementation Guidelines
+
+### Context
+
+**User Complaint**: "The written Quote - Review Quote modal is not built as per planned and the design is also not expected. The Data fetching from the Quote Builder modal is not same as the Review bids modal does. And now it is fetching very limited data, and not accurately as per the Quote builder modal data."
+
+**Root Cause**: Implementation deviated from MODAL-REUSE-STRATEGY document  
+- **Plan Said**: Reuse `HomeownerBiddingReviewModal` for both bidding AND written quotes
+- **What Was Done**: Created separate `WrittenQuoteDetailsDisplay` component with limited features
+- **Result**: Homeowners see only 40% of quote data, missing products table, equipment specs, financial projections, roof details
+
+**Impact**:
+- Homeowners cannot make informed decisions
+- Inconsistent UX between bidding and written quote flows
+- Data IS stored and returned correctly by API, but NOT displayed in UI
+- Violates DRY principle (duplicate components doing similar things)
+
+**Evidence from Screenshot**:
+- ✅ Shows: System capacity, type, cost breakdown, financial assumptions
+- ❌ Missing: Products table with equipment specs, financial projections (savings/ROI), roof/installation details, installer rating, expected install date
+
+---
+
+### Sprint 4.16.12.1 — Add leadType Prop to HomeownerBiddingReviewModal (30 min)
+
+**T-WQ-1201: Modify modal to support both BIDDING and WRITTEN_QUOTE flows**
+
+**Objective**: Make HomeownerBiddingReviewModal reusable for both lead types per original plan.
+
+**Step 1: Update Interface (5 min)**
+
+File: `src/components/homeowner/HomeownerBiddingReviewModal.tsx`
+
+```typescript
+interface HomeownerBiddingReviewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  leadId: string;
+  propertyAddress: string;
+  bids: BidWithFullData[];
+  onSelectWinner?: (bidId: string) => Promise<void>;
+  defaultTab?: 'bids' | 'written-quote';
+  leadType: 'BIDDING' | 'WRITTEN_QUOTE'; // ← ADD THIS
+}
+```
+
+**Step 2: Conditional Data Fetching (15 min)**
+
+Replace `fetchBids` function:
+
+```typescript
+const fetchQuoteData = useCallback(async () => {
+  if (!leadId) return;
+  
+  if (leadType === 'BIDDING') {
+    // Existing bid fetch logic
+    setIsLoadingBids(true);
+    setBidsError(null);
+    try {
+      const response = await fetch(`/api/bids?leadId=${leadId}`);
+      if (!response.ok) throw new Error('Failed to fetch bids');
+      const data: GetBidsResponse = await response.json();
+      
+      const transformedBids: BidWithFullData[] = data.bids.map(bid => ({
+        ...bid,
+        installerName: bid.installer?.companyName || 'Unknown Installer',
+        installerRating: 4.5,
+        pricePerWatt: bid.systemData?.capacityKw 
+          ? bid.finalTotal / bid.systemData.capacityKw / 1000
+          : 0,
+        isWinner: bid.status === 'SELECTED'
+      }));
+      
+      setBids(transformedBids);
+    } catch (error) {
+      console.error('Error fetching bids:', error);
+      setBidsError(error instanceof Error ? error.message : 'Failed to load bids');
+    } finally {
+      setIsLoadingBids(false);
+    }
+    
+  } else if (leadType === 'WRITTEN_QUOTE') {
+    // NEW: Fetch written quote and transform to bid format
+    setIsLoadingBids(true);
+    setBidsError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/get?leadId=${leadId}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          setBids([]);
+          return;
+        }
+        throw new Error('Failed to fetch written quote');
+      }
+      const data = await response.json();
+      
+      if (data.quote) {
+        const transformedQuote = transformWrittenQuoteToBid(data.quote);
+        setBids([transformedQuote]);
+        setWrittenQuote(data.quote); // Store original for negotiation panel
+      } else {
+        setBids([]);
+      }
+    } catch (error) {
+      console.error('Error fetching written quote:', error);
+      setBidsError(error instanceof Error ? error.message : 'Failed to load written quote');
+    } finally {
+      setIsLoadingBids(false);
+    }
+  }
+}, [leadId, leadType]);
+```
+
+**Step 3: Create Transformation Helper (10 min)**
+
+Add helper function inside component or in utils:
+
+```typescript
+function transformWrittenQuoteToBid(wq: any): BidWithFullData {
+  return {
+    id: wq.id,
+    leadId: wq.leadId,
+    installerId: wq.installerId,
+    installer: {
+      companyName: wq.installer?.companyName || wq.installerContact?.name || 'Unknown Installer',
+      email: wq.installer?.email || wq.installerContact?.email || '',
+      phone: wq.installer?.phone || wq.installerContact?.phone || '',
+      businessAddress: wq.installer?.businessAddress || ''
+    },
+    amount: wq.currentPrice,
+    finalTotal: wq.currentPrice,
+    status: 'SUBMITTED', // Map written quote status appropriately
+    createdAt: wq.createdAt,
+    updatedAt: wq.lastActionAt || wq.createdAt,
+    
+    // Pass through all 8 JSON fields from written quote
+    systemData: wq.systemData,
+    productsData: wq.productsData,
+    lineItems: wq.lineItems,
+    assumptions: wq.assumptions,
+    roofData: wq.roofData,
+    calculations: wq.calculations,
+    importMeta: wq.importMeta,
+    installerContact: wq.installerContact,
+    
+    // Metadata for display
+    installerName: wq.installer?.companyName || wq.installerContact?.name || 'Unknown',
+    installerRating: 4.5, // TODO: Get from installer profile if available
+    pricePerWatt: wq.systemData?.capacityKw
+      ? wq.currentPrice / wq.systemData.capacityKw / 1000
+      : 0,
+    isWinner: false // Written quotes don't have "winner" concept
+  };
+}
+```
+
+**Testing**:
+- [ ] Open bidding lead review modal → should work as before
+- [ ] Open written quote lead review modal → should show same comprehensive data
+- [ ] Verify all 8 JSON fields display correctly in both modes
+
+---
+
+### Sprint 4.16.12.2 — Conditional UI Rendering (25 min)
+
+**T-WQ-1202: Hide/show UI elements based on leadType**
+
+**Step 1: Bid Selector Dropdown (hide for written quotes)**
+
+```tsx
+{/* Installer Selector Dropdown */}
+{leadType === 'BIDDING' && sortedBids.length > 1 && (
+  <div className="mb-6 space-y-2">
+    <label className="text-label text-foreground block">
+      Select Installer to Review:
+    </label>
+    <select 
+      value={selectedBidId} 
+      onChange={(e) => setSelectedBidId(e.target.value)}
+      className="w-full md:w-auto px-4 py-3 bg-surface border border-border rounded-lg..."
+    >
+      {sortedBids.map((bid) => (
+        <option key={bid.id} value={bid.id}>
+          {bid.isWinner && '🏆 '}
+          {bid.status === 'shortlisted' && '⭐ '}
+          {bid.installerName} - ${bid.finalTotal.toLocaleString()}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+```
+
+**Step 2: Winner Selection Button (hide for written quotes)**
+
+In footer section:
+
+```tsx
+{leadType === 'BIDDING' && selectedBid && (
+  <Button 
+    variant="primary" 
+    onClick={handleSelectWinnerClick}
+    disabled={selectedBid.isWinner || isSelecting}
+  >
+    {selectedBid.isWinner ? (
+      <>
+        <CheckCircle className="h-4 w-4 mr-2" />
+        Winner Selected
+      </>
+    ) : (
+      <>
+        <Award className="h-4 w-4 mr-2" />
+        Select as Winner
+      </>
+    )}
+  </Button>
+)}
+```
+
+**Step 3: Tab Switcher (remove for single-quote flows)**
+
+Current tab switcher shows "Marketplace Bids" and "Written Quote" tabs. This should only show when leadType === 'BIDDING' AND there's a written quote available:
+
+```tsx
+{/* Tab Switcher - only for bidding leads with written quote */}
+{leadType === 'BIDDING' && writtenQuote && (
+  <div className="flex gap-2 px-4 md:px-6 pt-4 border-b border-border">
+    <button
+      onClick={() => setActiveTab('bids')}
+      className={`px-4 py-2 text-label transition-colors border-b-2 -mb-px ${
+        activeTab === 'bids'
+          ? 'border-primary text-primary'
+          : 'border-transparent text-muted-foreground hover:text-foreground'
+      }`}
+    >
+      Marketplace Bids ({bids.length})
+    </button>
+    <button
+      onClick={() => setActiveTab('written-quote')}
+      className={`px-4 py-2 text-label transition-colors border-b-2 -mb-px ${
+        activeTab === 'written-quote'
+          ? 'border-primary text-primary'
+          : 'border-transparent text-muted-foreground hover:text-foreground'
+      }`}
+    >
+      Written Quote
+    </button>
+  </div>
+)}
+```
+
+**Step 4: Right Column - Negotiation Panel (show for written quotes)**
+
+Replace right column content for written quote flow:
+
+```tsx
+{/* RIGHT COLUMN */}
+<div className="space-y-6 lg:sticky lg:top-0 lg:h-fit">
+  {leadType === 'WRITTEN_QUOTE' && writtenQuote ? (
+    // Negotiation Panel for Written Quotes
+    <WrittenQuoteNegotiationPanel
+      role="homeowner"
+      currentPrice={writtenQuote.currentPrice}
+      status={writtenQuote.currentStatus.toLowerCase() as any}
+      history={writtenQuote.events || []}
+      onAction={handleWrittenQuoteAction}
+    />
+  ) : (
+    // Original Lead Details for Bidding
+    <>
+      <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
+        Original Lead Details
+      </h3>
+      {/* ... existing InstantQuote details ... */}
+    </>
+  )}
+</div>
+```
+
+**Testing**:
+- [ ] Bidding flow: Bid selector dropdown visible, winner button visible, tabs hidden (if no written quote)
+- [ ] Written quote flow: Bid selector hidden, winner button hidden, negotiation panel in right column
+- [ ] Both flows: Quote details (left column) show identically
+
+---
+
+### Sprint 4.16.12.3 — Update Modal Trigger Points (15 min)
+
+**T-WQ-1203: Pass leadType prop from all callsites**
+
+**File 1**: `src/components/homeowner/HomeownerLeadsTable.tsx` (or wherever modal is triggered)
+
+Find where `HomeownerBiddingReviewModal` is instantiated and add `leadType` prop:
+
+```tsx
+<HomeownerBiddingReviewModal
+  isOpen={reviewModalOpen}
+  onClose={() => setReviewModalOpen(false)}
+  leadId={selectedLead.id}
+  propertyAddress={selectedLead.location}
+  leadType={selectedLead.quoteType} // ← ADD THIS (BIDDING | WRITTEN_QUOTE)
+  bids={[]}
+  defaultTab={selectedLead.quoteType === 'WRITTEN_QUOTE' ? 'written-quote' : 'bids'}
+/>
+```
+
+**File 2**: Any other components that open the modal
+
+Search for all usages:
+```powershell
+Select-String -Path "src\**\*.tsx" -Pattern "HomeownerBiddingReviewModal" -CaseSensitive
+```
+
+Update each callsite to include `leadType` prop.
+
+**Testing**:
+- [ ] Click "Review Bids" on bidding lead → Opens with leadType='BIDDING'
+- [ ] Click "Review Quote" on written quote lead → Opens with leadType='WRITTEN_QUOTE'
+- [ ] Verify correct data fetches based on leadType
+
+---
+
+### Sprint 4.16.12.4 — Delete WrittenQuoteDetailsDisplay Component (10 min)
+
+**T-WQ-1204: Remove obsolete component**
+
+**Objective**: Clean up code - remove component that's no longer needed.
+
+**Step 1: Delete Component File**
+
+```powershell
+Remove-Item "src\components\written-quote\WrittenQuoteDetailsDisplay.tsx" -Confirm
+```
+
+**Step 2: Remove Imports**
+
+Search for any remaining imports:
+```powershell
+Select-String -Path "src\**\*.tsx" -Pattern "WrittenQuoteDetailsDisplay"
+```
+
+Remove import statements from files (should only be in `HomeownerBiddingReviewModal.tsx` from previous implementation).
+
+**Step 3: Remove Type Definitions (if in separate file)**
+
+Check `src/types/written-quote.ts` - keep only `FinancialAssumptions` interface, remove any WrittenQuoteDetailsDisplay-specific types.
+
+**Testing**:
+- [ ] No TypeScript errors after deletion
+- [ ] Build succeeds: `npm run build`
+- [ ] No runtime errors when opening written quote modal
+
+---
+
+### Sprint 4.16.12.5 — Full E2E Testing (30 min)
+
+**T-WQ-1205: Verify both bidding and written quote flows work correctly**
+
+**Test Scenario 1: Bidding Lead Review (Regression Test)**
+
+1. **Setup**: Homeowner with bidding lead that has 2+ bids submitted
+2. **Action**: Click "Review Bids" button
+3. **Expected**:
+   - Modal opens with leadType='BIDDING'
+   - Bid selector dropdown shows all bids
+   - Can switch between bids
+   - Left column shows full quote details:
+     - ✅ System specs (capacity, panel count, annual production)
+     - ✅ Products table (panels, inverters, batteries with specs)
+     - ✅ Financial projections (annual savings, payback, 25-year ROI)
+     - ✅ Installation details (roof type, pitch, arrays, shading)
+   - Right column shows original lead context
+   - "Select as Winner" button visible
+   - No negotiation panel visible
+4. **Verify**: Can select winner successfully
+
+---
+
+**Test Scenario 2: Written Quote Review (New Functionality)**
+
+1. **Setup**: Homeowner with written quote lead (installer submitted written quote)
+2. **Action**: Click "Review Quote" button
+3. **Expected**:
+   - Modal opens with leadType='WRITTEN_QUOTE'
+   - NO bid selector dropdown (single installer)
+   - Left column shows SAME comprehensive quote details as bidding:
+     - ✅ System Configuration
+     - ✅ Products & Equipment Table (full specs)
+     - ✅ Cost Breakdown (line items)
+     - ✅ Financial Assumptions
+     - ✅ Installation & Roof Details
+     - ✅ Financial Projections (if calculations present)
+   - Right column shows Negotiation Panel:
+     - ✅ Current price displayed
+     - ✅ Negotiation history timeline
+     - ✅ Counter-offer input field
+     - ✅ Accept/Reject buttons
+   - NO "Select as Winner" button
+4. **Actions to Test**:
+   - Counter-offer: Enter new price, click "Counter Offer"
+   - Accept: Click "Accept Quote"
+   - Verify actions update WrittenQuote status correctly
+
+---
+
+**Test Scenario 3: Bidding Lead with Written Quote (Tab Switching)**
+
+1. **Setup**: Bidding lead with marketplace bids AND written quote
+2. **Action**: Open review modal
+3. **Expected**:
+   - Modal opens with leadType='BIDDING'
+   - Tab switcher visible: "Marketplace Bids" and "Written Quote"
+   - Default tab: "Marketplace Bids"
+4. **Action**: Click "Written Quote" tab
+5. **Expected**:
+   - Switches to written quote view
+   - Shows written quote data in same comprehensive format
+   - Right column changes to negotiation panel
+6. **Action**: Click "Marketplace Bids" tab
+7. **Expected**:
+   - Switches back to bidding view
+   - Shows multiple bids with selector
+   - Right column shows lead context
+
+---
+
+**Test Scenario 4: Responsive Design**
+
+Test at breakpoints:
+- 320px (mobile portrait)
+- 375px (mobile portrait)
+- 768px (tablet portrait)
+- 1024px (tablet landscape)
+- 1440px (desktop)
+
+**Expected**:
+- 2-column layout collapses to single column on <1024px
+- All quote details remain visible and readable
+- Negotiation panel moves below quote details on mobile
+
+---
+
+**Test Scenario 5: Edge Cases**
+
+1. **No Bids**: Bidding lead with 0 bids
+   - Shows "No Bids Received Yet" message
+2. **No Written Quote**: Written quote lead with no quote submitted
+   - Shows "No Written Quote Yet" message
+3. **Malformed Data**: Quote with missing systemData/productsData
+   - Gracefully handles missing fields, shows fallback messages
+4. **Network Error**: API fails
+   - Shows error message, retry button
+5. **Slow Network**: API takes >2 seconds
+   - Shows loading spinner, doesn't crash
+
+---
+
+**Test Scenario 6: Accessibility (WCAG 2.1 AA)**
+
+1. **Keyboard Navigation**:
+   - [ ] Can tab through all interactive elements
+   - [ ] Tab switcher accessible via keyboard
+   - [ ] Bid selector dropdown keyboard-navigable
+   - [ ] Buttons have focus indicators
+2. **Screen Reader**:
+   - [ ] Modal has aria-label
+   - [ ] Tables have proper th/td structure
+   - [ ] Status badges have aria-labels
+3. **Color Contrast**:
+   - [ ] All text meets 4.5:1 ratio (body text)
+   - [ ] All UI text meets 3:1 ratio (large text)
+
+---
+
+### Sprint 4.16.12.6 — Documentation & Cleanup (15 min)
+
+**T-WQ-1206: Update documentation and commit changes**
+
+**Step 1: Update Component Documentation**
+
+Add JSDoc to `HomeownerBiddingReviewModal.tsx`:
+
+```typescript
+/**
+ * HomeownerBiddingReviewModal
+ * 
+ * Comprehensive quote review modal for homeowners.
+ * Supports BOTH bidding and written quote flows (per MODAL-REUSE-STRATEGY).
+ * 
+ * @param leadType - 'BIDDING' (marketplace bids) or 'WRITTEN_QUOTE' (negotiation)
+ * @param leadId - Lead ID to fetch quotes for
+ * @param propertyAddress - Lead property address for display
+ * 
+ * BIDDING MODE:
+ * - Shows multiple bids in dropdown selector
+ * - Left column: Comprehensive quote details (8 JSON fields)
+ * - Right column: Original lead context
+ * - Footer: "Select as Winner" button
+ * 
+ * WRITTEN_QUOTE MODE:
+ * - Shows single quote (no selector)
+ * - Left column: Same comprehensive quote details
+ * - Right column: Negotiation panel (counter/accept/reject)
+ * - No winner selection
+ * 
+ * Data Structure: Uses identical 8 JSON fields for both flows:
+ * - systemData, productsData, lineItems, assumptions, roofData, calculations, importMeta, installerContact
+ * 
+ * @see DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md
+ */
+export default function HomeownerBiddingReviewModal({ ... }) {
+  // ...
+}
+```
+
+**Step 2: Update MODAL-REUSE-STRATEGY Document**
+
+Add implementation notes:
+
+```markdown
+## Implementation Status
+
+✅ **COMPLETED** (Phase 4.16.12 - Dec 21, 2025)
+
+- HomeownerBiddingReviewModal extended with `leadType` prop
+- Conditional data fetching for BIDDING vs WRITTEN_QUOTE
+- Written quote → bid transformation helper created
+- UI elements conditionally rendered based on leadType
+- Negotiation panel integrated in right column for written quotes
+- WrittenQuoteDetailsDisplay component removed (obsolete)
+- Full E2E testing completed (both flows verified)
+
+**Files Modified**:
+- src/components/homeowner/HomeownerBiddingReviewModal.tsx
+- src/components/homeowner/HomeownerLeadsTable.tsx
+
+**Files Deleted**:
+- src/components/written-quote/WrittenQuoteDetailsDisplay.tsx
+```
+
+**Step 3: Git Commit**
+
+```powershell
+git add src/components/homeowner/HomeownerBiddingReviewModal.tsx
+git add src/components/homeowner/HomeownerLeadsTable.tsx
+git add DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md
+git rm src/components/written-quote/WrittenQuoteDetailsDisplay.tsx
+
+git commit -m "refactor: rebuild Written Quote modal per MODAL-REUSE-STRATEGY
+
+- Add leadType prop to HomeownerBiddingReviewModal (supports BIDDING | WRITTEN_QUOTE)
+- Implement conditional data fetching (bids API vs written-quotes API)
+- Create transformWrittenQuoteToBid() helper for data normalization
+- Add conditional UI rendering (hide/show elements based on leadType)
+- Integrate WrittenQuoteNegotiationPanel in right column
+- Remove obsolete WrittenQuoteDetailsDisplay component (DRY principle)
+
+BEFORE: Separate incomplete component showing 40% of quote data
+AFTER: Unified modal showing 100% of Quote Builder data for both flows
+
+Impact:
+- Homeowners now see full quote details (products, equipment, financials, roof)
+- Consistent UX between bidding and written quote flows
+- Single component to maintain (reduced code duplication)
+- Complies with original MODAL-REUSE-STRATEGY plan
+
+Fixes: Incomplete written quote display (user-reported issue Dec 21, 2025)
+References: DOC/Features/Written Quote/MODAL-REUSE-STRATEGY-2025-12-15.md
+Audit: DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-MODAL-REBUILD-AUDIT-2025-12-21.md
+Phase: 4.16.12 (specs/008-description-enhance-existing/tasks.md)
+
+Tested:
+- ✅ Bidding flow (regression): All existing features work
+- ✅ Written quote flow (new): Shows comprehensive data + negotiation
+- ✅ Tab switching (bidding with written quote): Works correctly
+- ✅ Responsive design: Mobile/tablet/desktop verified
+- ✅ Accessibility: WCAG 2.1 AA compliant
+"
+```
+
+---
+
+### Phase 4.16.12 — Completion Criteria
+
+**Must Have** (Blocking):
+- [ ] `leadType` prop added to HomeownerBiddingReviewModal
+- [ ] Conditional data fetching implemented (bids vs written quotes)
+- [ ] transformWrittenQuoteToBid() helper created
+- [ ] Conditional UI rendering (bid selector, winner button, negotiation panel)
+- [ ] All callsites updated to pass leadType prop
+- [ ] WrittenQuoteDetailsDisplay component deleted
+- [ ] Both flows tested and working (bidding + written quote)
+- [ ] No regressions to existing bidding functionality
+
+**Should Have** (Important):
+- [ ] JSDoc documentation added to component
+- [ ] MODAL-REUSE-STRATEGY updated with implementation status
+- [ ] Git commit with descriptive message
+- [ ] E2E tests pass for both flows
+- [ ] Accessibility verified (keyboard nav, screen readers)
+
+**Could Have** (Nice to Have):
+- [ ] Storybook stories for both leadType modes
+- [ ] Unit tests for transformWrittenQuoteToBid()
+- [ ] Performance optimization (memoization if needed)
+
+---
+
+### Estimated Timeline
+
+| Sprint | Task | Duration | Owner |
+|--------|------|----------|-------|
+| 4.16.12.1 | Add leadType prop + data fetching | 30 min | Dev |
+| 4.16.12.2 | Conditional UI rendering | 25 min | Dev |
+| 4.16.12.3 | Update modal triggers | 15 min | Dev |
+| 4.16.12.4 | Delete obsolete component | 10 min | Dev |
+| 4.16.12.5 | E2E testing | 30 min | QA/Dev |
+| 4.16.12.6 | Documentation & commit | 15 min | Dev |
+| **TOTAL** | | **2 hours 5 min** | |
+
+**Target Completion**: Same day (within 3 hours of approval)
+
+---
+
+### Dependencies & Blockers
+
+**Dependencies**:
+- Phase 4.16.11 completed (assumptions rendering fix)
+- WrittenQuoteNegotiationPanel component functional (already exists)
+
+**Blockers**:
+- None (can start immediately)
+
+**Risks**:
+- Low: Changes are primarily conditional rendering, low risk of breaking existing code
+- Mitigation: Extensive regression testing of bidding flow before deployment
+
+---
+
+## Phase 4.16.11 — CRITICAL: Fix Written Quote Review Modal Crash (Assumptions Object Rendering)
+
+**Status:** ✅ COMPLETED  
+**Priority:** P0 (Production Blocker - Complete Feature Failure)  
+**Owner:** Engineering  
+**Created:** 2025-12-21  
+**Audit Report:** `DOC/AUDIT-REPORTS/System/WRITTEN-QUOTE-REVIEW-MODAL-ERROR-AUDIT-2025-12-21.md`  
+**Authority:** System Constitution → Blueprint → AI Implementation Guidelines → DESIGN-SYSTEM-SOT
+
+### Context
+
+**Issue**: Unhandled Runtime Error when homeowners try to open Written Quote Review Modal  
+**Error**: `Objects are not valid as a React child (found: object with keys {paybackYears, dailyUsageKWh, solarOffsetPercent, annualPriceIncrease, systemLifespanYears, feedInTariffCentsKWh})`  
+**Impact**: 🔴 **COMPLETE FEATURE BLOCKAGE** - Homeowners cannot review ANY written quotes from installers  
+
+**Root Cause**:
+- Database schema defines `assumptions` as `Json?` (Prisma type: `JsonValue`)
+- API returns `assumptions` as JSON object: `{paybackYears: 7, dailyUsageKWh: 25.5, ...}`
+- Component type definition expects `string | null`
+- Component tries to render object directly: `{quote.assumptions}` → React crash
+
+**Files Affected**:
+- `prisma/schema.prisma` - Line 409: `assumptions Json?`
+- `src/app/api/written-quotes/get/route.ts` - Line 142: Returns JSON object
+- `src/components/written-quote/WrittenQuoteDetailsDisplay.tsx` - Lines 70, 253: Type mismatch + crash
+
+**Constitutional Violations**:
+- ❌ Article IX: No graceful degradation (crashes entire modal)
+- ❌ Article X: Type mismatch not caught (zero-warnings policy violated)
+
+---
+
+### Sprint 4.16.11.1 — Immediate Hotfix (15 minutes) ⚡
+
+**T-WQ-1101: Fix assumptions rendering to prevent crash**
+
+**Objective**: Unblock homeowners from viewing written quotes immediately.
+
+**Approach**: Option 2 (Structured Data Rendering) - User-friendly display with type safety
+
+**Implementation Steps**:
+
+**Step 1: Update Type Definition (5 min)**
+```typescript
+// src/components/written-quote/WrittenQuoteDetailsDisplay.tsx
+
+// ADD: Proper TypeScript interface
+interface FinancialAssumptions {
+  paybackYears?: number;
+  dailyUsageKWh?: number;
+  solarOffsetPercent?: number;
+  annualPriceIncrease?: number;
+  systemLifespanYears?: number;
+  feedInTariffCentsKWh?: number;
+}
+
+export interface WrittenQuoteDetailsDisplayProps {
+  quote: {
+    id: string;
+    currentPrice: number;
+    systemData?: SystemData | null;
+    productsData?: Product[] | null;
+    lineItems?: LineItem[] | null;
+    assumptions?: string | FinancialAssumptions | null; // ← FIX: Accept both types
+    calculations?: any;
+    installerContact?: InstallerContact | null;
+  };
+}
+```
+
+**Step 2: Update Rendering Logic (10 min)**
+```tsx
+{/* Assumptions & Notes */}
+{quote.assumptions && (
+  <Card className="neu-card p-4">
+    <div className="flex items-center gap-2 mb-3">
+      <FileText className="h-5 w-5 text-primary" />
+      <h3 className="text-heading-4 text-foreground">
+        {typeof quote.assumptions === 'object' ? 'Financial Assumptions' : 'Assumptions & Notes'}
+      </h3>
+    </div>
+    
+    {typeof quote.assumptions === 'object' && quote.assumptions !== null ? (
+      // NEW: Render object as structured data
+      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {(quote.assumptions as FinancialAssumptions).paybackYears && (
+          <InfoRow 
+            label="Payback Period" 
+            value={`${(quote.assumptions as FinancialAssumptions).paybackYears} years`}
+            icon={<Calendar className="h-4 w-4" />}
+          />
+        )}
+        {(quote.assumptions as FinancialAssumptions).dailyUsageKWh && (
+          <InfoRow 
+            label="Daily Usage" 
+            value={`${(quote.assumptions as FinancialAssumptions).dailyUsageKWh} kWh/day`}
+            icon={<Zap className="h-4 w-4" />}
+          />
+        )}
+        {(quote.assumptions as FinancialAssumptions).solarOffsetPercent && (
+          <InfoRow 
+            label="Solar Offset" 
+            value={`${(quote.assumptions as FinancialAssumptions).solarOffsetPercent}%`}
+            icon={<Sun className="h-4 w-4" />}
+          />
+        )}
+        {(quote.assumptions as FinancialAssumptions).annualPriceIncrease && (
+          <InfoRow 
+            label="Annual Price Increase" 
+            value={`${(quote.assumptions as FinancialAssumptions).annualPriceIncrease}%`}
+            icon={<TrendingUp className="h-4 w-4" />}
+          />
+        )}
+        {(quote.assumptions as FinancialAssumptions).systemLifespanYears && (
+          <InfoRow 
+            label="System Lifespan" 
+            value={`${(quote.assumptions as FinancialAssumptions).systemLifespanYears} years`}
+            icon={<Settings className="h-4 w-4" />}
+          />
+        )}
+        {(quote.assumptions as FinancialAssumptions).feedInTariffCentsKWh && (
+          <InfoRow 
+            label="Feed-in Tariff" 
+            value={`${(quote.assumptions as FinancialAssumptions).feedInTariffCentsKWh}¢/kWh`}
+            icon={<DollarSign className="h-4 w-4" />}
+          />
+        )}
+      </dl>
+    ) : (
+      // LEGACY: String assumptions (backward compatibility)
+      <p className="text-body text-muted-foreground whitespace-pre-wrap">
+        {String(quote.assumptions)}
+      </p>
+    )}
+  </Card>
+)}
+```
+
+**Step 3: Add Missing Imports**
+```typescript
+import { 
+  Calendar,  // ← ADD
+  TrendingUp, // ← ADD
+  // ... existing imports
+} from 'lucide-react';
+```
+
+**Testing Checklist**:
+- [ ] Homeowner can open written quote modal without crash
+- [ ] Assumptions object renders as structured data
+- [ ] Legacy string assumptions still work
+- [ ] No TypeScript errors
+- [ ] No console warnings
+
+**Files Modified**:
+- `src/components/written-quote/WrittenQuoteDetailsDisplay.tsx` (1 file, 3 changes)
+
+**GATE 0 Requirement**:
+```powershell
+npx tsc --noEmit    # Must pass with 0 errors
+npm run build       # Must compile successfully
+```
+
+---
+
+### Sprint 4.16.11.2 — Testing & Validation (15 minutes)
+
+**T-WQ-1102: Manual testing of all assumptions scenarios**
+
+**Test Scenarios**:
+
+1. **Valid Object Assumptions** (Primary Test)
+   - Setup: Load written quote with object assumptions
+   - Expected: Renders 6 fields in 2-column grid, formatted values
+   - Verify: Dark/Light/Purple themes all render correctly
+
+2. **Legacy String Assumptions** (Backward Compatibility)
+   - Setup: Load written quote with string assumptions (if any exist)
+   - Expected: Renders as paragraph text
+   - Verify: No crash, proper styling
+
+3. **Missing Assumptions** (Null/Undefined)
+   - Setup: Load written quote without assumptions field
+   - Expected: Assumptions card not shown
+   - Verify: No error, rest of modal works
+
+4. **Partial Object** (Incomplete Data)
+   - Setup: Assumptions object with only 2-3 fields
+   - Expected: Shows only available fields, no empty rows
+   - Verify: No "undefined" or "null" text
+
+**Manual Test Data**:
+```sql
+-- Create test quote with object assumptions (run in Prisma Studio or psql)
+UPDATE "WrittenQuote" 
+SET assumptions = '{"paybackYears":7.5,"dailyUsageKWh":25.5,"solarOffsetPercent":75,"annualPriceIncrease":3.5,"systemLifespanYears":25,"feedInTariffCentsKWh":8}'::jsonb
+WHERE id = 'YOUR_QUOTE_ID';
+```
+
+**Validation Steps**:
+1. Open homeowner dashboard
+2. Navigate to written quote lead
+3. Click "Review Quote" button
+4. Verify modal opens without crash
+5. Verify assumptions section shows structured data
+6. Verify all 6 fields render with icons
+7. Test responsive: 320px, 768px, 1440px
+8. Test accessibility: Tab through all fields
+
+**Success Criteria**:
+- ✅ No React errors in console
+- ✅ Modal opens in <500ms
+- ✅ All themes render correctly
+- ✅ Mobile responsive (grid becomes 1 column on <640px)
+- ✅ Keyboard accessible
+
+---
+
+### Sprint 4.16.11.3 — Documentation & Prevention (10 minutes)
+
+**T-WQ-1103: Update API documentation and add type safety**
+
+**Step 1: Document API Contract**
+
+Create/Update file: `DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/api-contracts.md`
+
+```markdown
+## Written Quotes API - GET /api/written-quotes/get
+
+### Response Schema
+
+#### `assumptions` field (JsonValue)
+
+**Type**: `Json?` (Prisma schema)  
+**Frontend Type**: `string | FinancialAssumptions | null`
+
+**Object Structure** (Current Standard):
+```typescript
+interface FinancialAssumptions {
+  paybackYears?: number;          // Years to break even
+  dailyUsageKWh?: number;         // Daily energy usage estimate
+  solarOffsetPercent?: number;    // % of usage offset by solar
+  annualPriceIncrease?: number;   // % electricity price increase/year
+  systemLifespanYears?: number;   // Expected system lifetime
+  feedInTariffCentsKWh?: number;  // Feed-in tariff rate (cents)
+}
+```
+
+**Legacy Format**: String (free-text assumptions)
+
+**Handling**:
+- Frontend MUST handle both object and string formats
+- Use `typeof assumptions === 'object'` to detect format
+- Never render object directly in React (will crash)
+```
+
+**Step 2: Add JSDoc to API**
+
+File: `src/app/api/written-quotes/get/route.ts`
+
+```typescript
+/**
+ * GET /api/written-quotes/get?leadId=X
+ * Fetch written quote with full event history
+ * 
+ * @access Authenticated users (installer or homeowner, must be involved in the quote)
+ * @query leadId - Lead ID to fetch quote for
+ * @returns 200 OK + Quote with events, or 404 if not found
+ * 
+ * @example Response
+ * {
+ *   quote: {
+ *     assumptions: {
+ *       paybackYears: 7.5,
+ *       dailyUsageKWh: 25.5,
+ *       solarOffsetPercent: 75,
+ *       // ... (FinancialAssumptions object)
+ *     } | "String assumptions" | null
+ *   }
+ * }
+ */
+export async function GET(request: NextRequest) {
+  // ... existing code
+}
+```
+
+**Step 3: Create Shared Type**
+
+File: `src/types/written-quote.ts` (NEW)
+
+```typescript
+/**
+ * Financial Assumptions for Written Quotes
+ * Used in Quote Builder → Written Quote submission
+ */
+export interface FinancialAssumptions {
+  /** Years to break even on investment */
+  paybackYears?: number;
+  
+  /** Daily energy usage estimate (kWh) */
+  dailyUsageKWh?: number;
+  
+  /** Percentage of usage offset by solar system */
+  solarOffsetPercent?: number;
+  
+  /** Annual electricity price increase (percentage) */
+  annualPriceIncrease?: number;
+  
+  /** Expected system lifetime (years) */
+  systemLifespanYears?: number;
+  
+  /** Feed-in tariff rate (cents per kWh) */
+  feedInTariffCentsKWh?: number;
+}
+
+/**
+ * Assumptions field can be:
+ * - Object: Structured financial data (current standard)
+ * - String: Legacy free-text assumptions
+ * - Null: No assumptions provided
+ */
+export type AssumptionsData = FinancialAssumptions | string | null;
+```
+
+**Step 4: Update Component Import**
+
+File: `src/components/written-quote/WrittenQuoteDetailsDisplay.tsx`
+
+```typescript
+import { FinancialAssumptions } from '@/types/written-quote';
+
+// Use in interface instead of inline definition
+export interface WrittenQuoteDetailsDisplayProps {
+  quote: {
+    // ... other fields
+    assumptions?: FinancialAssumptions | string | null;
+  };
+}
+```
+
+---
+
+### Sprint 4.16.11.4 — Deployment & Monitoring (5 minutes)
+
+**T-WQ-1104: Deploy fix and monitor for errors**
+
+**Pre-Deployment Checklist**:
+- [ ] All TypeScript errors resolved
+- [ ] Manual testing passed for all 4 scenarios
+- [ ] No console warnings in dev mode
+- [ ] Build succeeds: `npm run build`
+- [ ] Git commit with descriptive message
+
+**Deployment Steps**:
+```powershell
+# Commit changes
+git add src/components/written-quote/WrittenQuoteDetailsDisplay.tsx
+git add src/types/written-quote.ts
+git commit -m "fix: resolve Written Quote modal crash on assumptions object rendering
+
+- Add FinancialAssumptions interface for type safety
+- Update WrittenQuoteDetailsDisplay to handle both object and string assumptions
+- Add structured display for financial assumptions with icons
+- Maintain backward compatibility with legacy string format
+- Fixes: Objects not valid as React child error
+
+Issue: Homeowners could not open written quote review modal
+Root Cause: assumptions field (JSON object) rendered directly in React
+Resolution: Type-safe conditional rendering based on data type
+
+Tested:
+- Object assumptions → Structured 2-column grid display
+- String assumptions → Paragraph text (legacy)
+- Null assumptions → Card hidden
+- All 3 themes (Dark/Light/Purple) verified
+"
+
+# Push to repository
+git push origin main
+
+# Monitor for errors (if using error tracking)
+# Check Sentry/LogRocket/etc for next 1 hour
+```
+
+**Post-Deployment Verification** (Production):
+1. Open homeowner account with written quote
+2. Navigate to review modal
+3. Verify no crash
+4. Check browser console for errors
+5. Test on mobile device
+6. Verify analytics tracking (if applicable)
+
+**Rollback Plan** (If Issues Found):
+```powershell
+git revert HEAD
+git push origin main
+```
+
+---
+
+### Phase 4.16.11 — Completion Criteria
+
+**Must Have** (Blocking):
+- [x] Root cause identified and documented
+- [ ] Hotfix implemented and tested
+- [ ] Homeowners can open written quote modal without crash
+- [ ] Assumptions data visible and readable
+- [ ] No TypeScript errors or console warnings
+
+**Should Have** (Important):
+- [ ] Structured display for object assumptions (user-friendly)
+- [ ] All 3 themes render correctly
+- [ ] Responsive on mobile (grid → 1 column)
+- [ ] API documentation updated
+- [ ] Shared type definition created
+
+**Could Have** (Nice to Have):
+- [ ] Unit tests for assumptions rendering
+- [ ] Storybook stories for both formats
+- [ ] Error boundary for graceful degradation
+
+**Won't Have** (Out of Scope):
+- Separate FinancialAssumptionsCard component (can be Phase 4.16.12)
+- Prisma schema migration to separate assumptions table
+- Real-time validation of assumptions data format
+
+---
+
+### Estimated Timeline
+
+| Sprint | Task | Duration | Owner |
+|--------|------|----------|-------|
+| 4.16.11.1 | Hotfix Implementation | 15 min | Dev |
+| 4.16.11.2 | Manual Testing | 15 min | QA/Dev |
+| 4.16.11.3 | Documentation | 10 min | Dev |
+| 4.16.11.4 | Deployment | 5 min | DevOps/Dev |
+| **TOTAL** | | **45 min** | |
+
+**Target Completion**: Same day (within 1 hour of approval)
+
+---
+
+### Dependencies & Blockers
+
+**Dependencies**:
+- None (isolated component fix)
+
+**Blockers**:
+- None (can deploy immediately)
+
+**Risks**:
+- Low: Changes only affect display logic, no backend or state changes
+- Mitigation: Thorough manual testing before deployment
+
+---
+
 ## Phase 4.16.10 — Written Quote Homeowner Modal Enhancement (Two-Column Layout + Quote Details)
 
-**Status:** 🚧 IN PROGRESS  
+**Status:** ✅ COMPLETED (Superseded by 4.16.11 - Layout already implemented)  
 **Priority:** P1 (Feature Completion - User-Requested Enhancement)  
 **Owner:** Engineering  
 **Created:** 2025-12-18  

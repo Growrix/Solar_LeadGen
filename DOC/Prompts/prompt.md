@@ -3499,3 +3499,57 @@ Follow the
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
 --------------------------------------------------------------------------------------------------
 
+I am having error while opening the Written QUote - Review Quote modal. Check the screenshot for better understanding. Audid the frontend and backend deeply and identify the root cause of this issue and create a comprehensive fix plan to fix this issue as per the guidelines .
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+---------------------------------------------------------------------------------------------
+
+The written Quote - Review Quote modal is not built as per planned and the desgin is also not expected. The Data fetching from the Quote Builder modal is not same as the Review bids modal does. And not it is fetching very limited data, and not accurately as per the Quote builder modal data. so the homeowners are unable to see the correct data in the review quote modal. 
+
+You have overcomplicated it. And nothing done as per planned in this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\MODAL-REUSE-STRATEGY-2025-12-15.md file. 
+***Instructions*** I want you to rebuild the written Quote - Review Quote modal as per the plan mentioned in this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\MODAL-REUSE-STRATEGY-2025-12-15.md file. so that the homeowners can see the correct data in the review quote modal without any issues.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-------------------------------------------------------------------------------------------------
+
+The reuse of the review bids modal for the written quote review modal is causing a lot of issues and complications. So I want you to build a new Written Quote - Review Quote modal from scratch as per the desgin mentioned in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\MODAL-REUSE-STRATEGY-2025-12-15.md file. so that the homeowners can see the correct data in the review quote modal without any issues.
+
+- You need to make sure to keep the review bids modal as it is . Make sure the written Quote Conditions are handled properly in the new Written Quote - Review Quote modal. 
+- Now I can see the Data is fetching under the bidding leads. so you have to make sure the Data fetching is done properly in the new Written Quote - Review Quote modal as well. 
+- The users will be confused to see the modal, becuase now written Quote is showing up on bidding tabs as well. And when users are dealing with the Written Quote type leads, they will be confused to see the bidding related terms in the modal. So you have to make sure to handle all these conditions properly in the new Written Quote - Review Quote modal. 
+- Even the modal heading , titles are confusing. When the homeowners are dealing with the Written Quote type leads, they should see Written Quote related terms in the modal. so you have to make sure to handle all these conditions properly in the new Written Quote - Review Quote modal.
+- Currently the negotiation panel is not working as per the written quote flow. so you have to make sure the negotiation panel is working as per the written quote flow in the new Written Quote - Review Quote modal in the both ends (homeowners and installers) without any issues.
+- 
+
+***Instructions*** There are a lot of issues and gaps to identify. You need to checkback the main D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\MODAL-REUSE-STRATEGY-2025-12-15.md file and identify all the missing gaps and create a comprehensive implementation plan to build a new Written Quote - Review Quote modal from scratch as per the desgin mentioned in the above file. so that the homeowners can see the correct data in the review quote modal without any issues.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\AUDIT-REPORTS\System folder .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 

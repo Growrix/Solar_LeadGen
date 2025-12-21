@@ -1560,6 +1560,7 @@ export default function HomeownerDashboardPage() {
           leadId={selectedBiddingLeadId}
           propertyAddress="Loading..." 
           bids={[]}
+          leadType={selectedLeadQuoteType || 'BIDDING'} // Sprint 4.16.12.3: Pass leadType
           defaultTab={selectedLeadQuoteType === 'WRITTEN_QUOTE' ? 'written-quote' : 'bids'}
           onSelectWinner={async (bidId: string) => {
             try {
