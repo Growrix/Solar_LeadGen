@@ -1,0 +1,164 @@
+/**
+ * Written Quote Agreement API
+ * 
+ * POST /api/written-quotes/[id]/agree
+ * Either installer or homeowner can finalize the negotiation ("Done Deal")
+ * 
+ * Phase 13W - Negotiation flow
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth/authorization';
+import { prisma } from '@/lib/prisma';
+import { createNotification } from '@/lib/notifications/notification-service';
+import { NotificationType, UserRole } from '@prisma/client';
+import type { AgreeQuoteRequest } from '@/types/written-quote';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger({ context: 'WrittenQuoteAgreeRoute' });
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const correlationId = request.headers.get('x-correlation-id') || `agree-${Date.now()}`;
+  const { id } = await context.params;
+  
+  try {
+    // Both installer and homeowner can agree
+    const auth = await requireAuth();
+
+    const body: AgreeQuoteRequest = await request.json();
+    
+    logger.info('Quote agreement initiated', { 
+      writtenQuoteId: id,
+      userId: auth.userId,
+      role: auth.role,
+      correlationId 
+    });
+
+    // Fetch written quote with lead info
+    const writtenQuote = await prisma.writtenQuote.findUnique({
+      where: { id },
+      include: {
+        lead: {
+          select: { homeownerId: true }
+        },
+        installer: {
+          select: { id: true, email: true }
+        }
+      }
+    });
+
+    if (!writtenQuote) {
+      logger.warn('Written quote not found', { writtenQuoteId: id, correlationId });
+      return NextResponse.json(
+        { error: 'Written quote not found' },
+        { status: 404 }
+      );
+    }
+
+    // Verify user is either installer or homeowner of this quote
+    const isInstaller = writtenQuote.installerId === auth.userId;
+    const isHomeowner = writtenQuote.lead.homeownerId === auth.userId;
+
+    if (!isInstaller && !isHomeowner) {
+      logger.warn('Unauthorized agree attempt', { 
+        writtenQuoteId: id,
+        userId: auth.userId,
+        installerId: writtenQuote.installerId,
+        homeownerId: writtenQuote.lead.homeownerId,
+        correlationId 
+      });
+      return NextResponse.json(
+        { error: 'You are not authorized to finalize this quote' },
+        { status: 403 }
+      );
+    }
+
+    // Check if already agreed
+    if (writtenQuote.negotiationStatus === 'AGREED') {
+      logger.warn('Duplicate agree attempt', { 
+        writtenQuoteId: id,
+        correlationId 
+      });
+      return NextResponse.json(
+        { error: 'Quote has already been finalized' },
+        { status: 403 }
+      );
+    }
+
+    // Calculate final agreed amount (last price is authoritative)
+    const agreedAmount = writtenQuote.installerRevisedAmount 
+      || writtenQuote.homeownerCounterAmount 
+      || writtenQuote.amount;
+
+    // Update quote to AGREED status
+    const updatedQuote = await prisma.writtenQuote.update({
+      where: { id },
+      data: {
+        negotiationStatus: 'AGREED',
+        agreedAmount,
+        agreedAt: new Date(),
+        agreedBy: body.agreedBy
+      }
+    });
+
+    logger.info('Quote finalized successfully', { 
+      writtenQuoteId: id,
+      agreedBy: body.agreedBy,
+      agreedAmount,
+      correlationId 
+    });
+
+    // Notify the other party
+    const otherPartyId = isInstaller ? writtenQuote.lead.homeownerId : writtenQuote.installer.id;
+    const otherPartyRole = isInstaller ? UserRole.HOMEOWNER : UserRole.INSTALLER;
+
+    await createNotification({
+      recipientUserId: otherPartyId,
+      actionType: NotificationType.BID_SUBMITTED, // TODO: Create QUOTE_AGREED type
+      role: otherPartyRole,
+      messageKey: isInstaller ? 'homeowner.request.received' : 'installer.bid.received',
+      routeKey: isInstaller ? 'homeowner.requests' : 'installer.dashboard',
+      routeParams: { 
+        leadId: writtenQuote.leadId
+      },
+      metadata: {
+        agreedAmount,
+        agreedBy: body.agreedBy
+      }
+    });
+
+    logger.debug('Other party notification sent', { 
+      recipientId: otherPartyId,
+      role: otherPartyRole 
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        agreedAmount,
+        message: 'Quote finalized successfully'
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    logger.error('Quote agreement failed', error, { correlationId });
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Unauthorized')) {
+        return NextResponse.json({ error: error.message }, { status: 401 });
+      }
+      if (error.message.includes('Forbidden')) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to finalize quote' },
+      { status: 500 }
+    );
+  }
+}

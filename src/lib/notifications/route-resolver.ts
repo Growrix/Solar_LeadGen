@@ -7,6 +7,7 @@ export type RouteKey =
   | 'admin.dashboard'
   | 'admin.lead.manage'
   | 'installer.leads'
+  | 'installer.dashboard'
   | 'homeowner.requests'
   | 'homeowner.requests.review';
 
@@ -21,6 +22,7 @@ const ROUTE_MAP: Record<RouteKey, (params?: RouteParams) => string> = {
   'admin.dashboard': () => '/admin/dashboard',
   'admin.lead.manage': () => '/admin/leads',
   'installer.leads': () => '/installer/leads',
+  'installer.dashboard': () => '/installer/dashboard',
   'homeowner.requests': () => '/homeowner/dashboard',
   'homeowner.requests.review': (params) =>
     params?.requestId ? `/homeowner/requests/${params.requestId}` : '/homeowner/dashboard',

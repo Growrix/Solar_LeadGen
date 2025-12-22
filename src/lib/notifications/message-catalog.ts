@@ -17,6 +17,7 @@ export type MessageKey =
   // Installer messages (professional tone)
   | 'installer.new.opportunity'
   | 'installer.bid.won'
+  | 'installer.bid.received'
   | 'installer.bid.outcome.other'
   | 'installer.data.update'
   | 'installer.purchase.confirmed'
@@ -91,6 +92,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'installer.bid.won': {
     title: 'You Won!',
     message: 'You won this bid. Please proceed to payment to unlock contact details.',
+  },
+  'installer.bid.received': {
+    title: 'New Activity',
+    message: 'There is new activity on your quote. Check your dashboard for details.',
   },
   'installer.bid.outcome.other': {
     title: 'Bid Outcome',
