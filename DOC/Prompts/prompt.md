@@ -3386,3 +3386,37 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+--------------------------------------------------------------------------------------------
+
+before implimentation of the backend of written Quote , We took a backup of the DB. During implimentation the DB had to reset. After the implimentation I restored the DB from the backup. but now the Written Quote flow is not working properly. I think there are some issues with the data integrity after restoring the DB from the backup and there is a mismatch because of the backup has old data not the new tables that was created during the implimentation of the Written Quote flow. 
+***Instructions*** I want you to fix the data integrity issues in the Written Quote flow as per the above instructions. so that the Written Quote flow is working properly without any issues. Audit deeply and understand what are the data integrity issues after restoring the DB from the backup. then you have to fix those issues accordingly.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-----------------------------------------------------------------------------------------------
+
+***Instructions***
+I want you to perform a deep audit for the written QUote implimentations. you have to audit the frontend ,backend , API, prisma etc e2e in order to validate the tasks were done perfecly from the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\PHASE-13W-DETAILED-TASKS.md . 
+
+Understand the current flow and modals e2e for the written Quotes and ientify the missing gaps . Because I see the QUote BUuilder modal opens when I click on the written lead card > Submit QUote button. there might be a lot of mismatches according to the plan. You have to identify them. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 

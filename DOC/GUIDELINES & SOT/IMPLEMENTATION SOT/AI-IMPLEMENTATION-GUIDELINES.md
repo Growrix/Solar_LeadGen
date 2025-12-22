@@ -732,14 +732,18 @@ npx prisma migrate dev --name feature_name
 
 ### 🚨 DATABASE RESET POLICY (CRITICAL - READ CAREFULLY)
 
-**⛔ NEVER USE `npx prisma migrate reset` UNLESS ABSOLUTELY NO OTHER OPTION EXISTS**
+**⛔ ABSOLUTELY NEVER USE `npx prisma migrate reset` OR `npx prisma db push --force-reset`**
+**⛔ ABSOLUTELY NEVER USE ANY COMMAND THAT WIPES DATABASE DATA**
 
-**Why This Matters:**
-- `npx prisma migrate reset` **DESTROYS ALL DATABASE DATA** (users, leads, bids, settings, everything)
-- Even in dev mode, losing data is **time-consuming and annoying** - requires re-seeding, re-creating test data, re-testing workflows
-- Forces you to run multiple seed scripts (seed-settings.ts, seed-test-bidding.ts, etc.)
-- Breaks existing test scenarios and workflows that depend on specific data states
-- Wastes developer time recreating data that was working fine
+**ZERO TOLERANCE POLICY - NO EXCEPTIONS, NOT EVEN IN DEV MODE**
+
+**Why This Is Permanently Forbidden:**
+- `npx prisma migrate reset` and `npx prisma db push --force-reset` **DESTROY ALL DATABASE DATA** permanently
+- Even in dev mode, **REAL USER DATA EXISTS** - every user account, lead, bid, and setting is production-grade data
+- Losing data wastes hours of development time, breaks user workflows, destroys trust
+- Requires re-creating all user accounts, re-testing all features, re-establishing all relationships
+- **USER EXPLICITLY FORBIDS DATA LOSS IN ANY ENVIRONMENT** - development, staging, or production
+- There is ALWAYS a migration-based solution that preserves data
 
 **✅ CORRECT APPROACH - Incremental Migrations (Preserves All Data):**
 
@@ -785,68 +789,161 @@ npx prisma db push --accept-data-loss
 # - This creates a new migration without destroying existing data
 ```
 
-**⚠️ LAST RESORT - When Reset Is Actually Necessary:**
+**✅ MANDATORY WORKFLOW - Database Changes With Zero Data Loss:**
 
-**ONLY use `npx prisma migrate reset` if ALL of these are true:**
-1. ✅ Migration history is completely broken and cannot be resolved
-2. ✅ `npx prisma migrate resolve` failed to fix the issue
-3. ✅ `npx prisma db push` failed or caused data corruption
-4. ✅ You have documented what data exists and how to restore it
-5. ✅ You have a plan to run ALL necessary seed scripts afterward
-6. ✅ You understand this will require re-testing all features
+**STEP 1: ALWAYS TAKE BACKUP FIRST (NON-NEGOTIABLE):**
 
-**If you MUST reset (extremely rare):**
 ```powershell
-# 1. Document current data state (if needed):
-# - Take screenshots of Prisma Studio
-# - Export critical data if possible
-# - Document what test scenarios will break
+# Create timestamped backup BEFORE any schema change:
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+docker exec -it solarmatch-db-1 pg_dump -U postgres -d solarmatch > "backup/backup_${timestamp}_pre_migration.sql"
 
-# 2. Understand what seed scripts exist:
-# Check: prisma/seed-settings.ts
-# Check: prisma/seed-test-bidding.ts
-# Check: prisma/seed-admin.ts
-# Check: prisma/seed-complete.ts
-
-# 3. Reset database:
-npx prisma migrate reset --force
-
-# 4. IMMEDIATELY run ALL required seed scripts:
-npx tsx prisma/seed-settings.ts     # CRITICAL: System settings
-npx tsx prisma/seed-admin.ts        # Admin user for access
-npx tsx prisma/seed-test-bidding.ts # Test data for bidding flows
-# Run others as needed for your feature
-
-# 5. Verify in Prisma Studio:
-npx prisma studio
-# Check: Settings table populated (18 records)
-# Check: Admin user exists
-# Check: Test data exists
-
-# 6. Document in commit message:
-git commit -m "fix(database): Reset required due to [specific reason]
-
-RESET JUSTIFICATION:
-- Migration conflict: [describe]
-- Resolution attempts failed: [list what you tried]
-- Impact: All data lost, re-seeded with scripts
-
-POST-RESET ACTIONS:
-- Ran seed-settings.ts (18 settings)
-- Ran seed-admin.ts (admin user)
-- Ran seed-test-bidding.ts (3 users, 3 leads)
-- Verified in Prisma Studio
-
-REQUIRED RE-TESTING:
-- [List features that need re-testing]
-"
+# Verify backup was created and has content:
+Get-Item "backup/backup_${timestamp}_pre_migration.sql" | Select-Object Name, Length
+# Should show file size > 0 bytes
 ```
 
-**Summary - Migration Decision Tree:**
+**STEP 2: MAKE SCHEMA CHANGES (Never Touch Data):**
+
+```powershell
+# Edit prisma/schema.prisma with your changes
+
+# Generate Prisma Client (updates TypeScript types only):
+npx prisma generate
+
+# Create migration (applies schema changes, preserves all data):
+npx prisma migrate dev --name descriptive_name
+# Examples:
+# npx prisma migrate dev --name add_written_quote_fields
+# npx prisma migrate dev --name add_user_preferences
+# npx prisma migrate dev --name update_notification_types
+```
+
+**STEP 3: VERIFY DATA INTEGRITY:**
+
+```powershell
+# Open Prisma Studio and verify:
+npx prisma studio
+
+# Checklist:
+# ✅ New fields/tables exist
+# ✅ ALL existing data is still present
+# ✅ User accounts unchanged
+# ✅ Leads/Bids/Settings intact
+# ✅ Relationships preserved
+
+# If data is missing → RESTORE IMMEDIATELY (see STEP 4)
+```
+
+**STEP 4: IF ANYTHING GOES WRONG - RESTORE FROM BACKUP:**
+
+```powershell
+# Stop any running migrations:
+# Ctrl+C any active processes
+
+# Restore database from backup:
+docker exec -i solarmatch-db-1 psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS solarmatch;"
+docker exec -i solarmatch-db-1 psql -U postgres -d postgres -c "CREATE DATABASE solarmatch;"
+Get-Content "backup/backup_${timestamp}_pre_migration.sql" | docker exec -i solarmatch-db-1 psql -U postgres -d solarmatch
+
+# Verify restore worked:
+npx prisma studio
+# Check that all data is back
+
+# Fix the migration issue (not the data):
+# - Review what went wrong
+# - Adjust schema.prisma correctly
+# - Try migration again with new backup
+```
+
+**STEP 5: TAKE POST-MIGRATION BACKUP (RECOMMENDED):**
+
+```powershell
+# After successful migration, create new backup:
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+docker exec -it solarmatch-db-1 pg_dump -U postgres -d solarmatch > "backup/backup_${timestamp}_post_migration.sql"
+
+# Label it clearly (rename if needed) to indicate what it includes:
+# Example: backup_20251222_153045_with_written_quote_schema.sql
+```
+
+**Summary - Migration Decision Tree (ZERO DATA LOSS):**
 
 ```
 Need to change schema?
-├─ YES → Make change in schema.prisma
+├─ STEP 1: Take backup FIRST (MANDATORY)
+│   └─ docker exec ... pg_dump > backup/backup_[timestamp]_pre_migration.sql
+├─ STEP 2: Make change in schema.prisma
+│   └─ Run: npx prisma generate
+│   └─ Run: npx prisma migrate dev --name change_description
+├─ STEP 3: Verify in Prisma Studio (ALL data must still exist)
+│   └─ If data missing → RESTORE from backup immediately
+├─ STEP 4: Take post-migration backup (optional but recommended)
+│   └─ docker exec ... pg_dump > backup/backup_[timestamp]_post_migration.sql
+
+Migration has conflicts?
+├─ STEP 1: Check status
+│   └─ npx prisma migrate status
+├─ STEP 2: Try resolve (no data loss)
+│   └─ npx prisma migrate resolve --applied "migration_name"
+│   └─ npx prisma migrate resolve --rolled-back "migration_name"
+├─ STEP 3: If broken, delete migration file and recreate
+│   └─ Delete: prisma/migrations/[broken_migration]/
+│   └─ Run: npx prisma migrate dev --name new_migration_name
+├─ STEP 4: If all else fails, restore from backup
+│   └─ See "STEP 4: IF ANYTHING GOES WRONG" above
+
+⛔ NEVER ALLOWED (PERMANENTLY BANNED):
+├─ npx prisma migrate reset (DESTROYS ALL DATA)
+├─ npx prisma db push --force-reset (DESTROYS ALL DATA)
+├─ DROP DATABASE commands (unless part of restore procedure)
+└─ Any command that wipes data without backup-restore workflow
+```
+
+**When Restoring Old Backup With New Schema Requirements:**
+
+```powershell
+# Scenario: You have old backup (missing new fields) and need current schema
+
+# STEP 1: Take backup of CURRENT database state (has new schema):
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+docker exec -it solarmatch-db-1 pg_dump -U postgres -d solarmatch > "backup/backup_${timestamp}_current_schema.sql"
+
+# STEP 2: Restore old backup (has real user data, old schema):
+docker exec -i solarmatch-db-1 psql -U postgres -d postgres -c "DROP DATABASE IF EXISTS solarmatch;"
+docker exec -i solarmatch-db-1 psql -U postgres -d postgres -c "CREATE DATABASE solarmatch;"
+Get-Content "backup/backup_old_data.sql" | docker exec -i solarmatch-db-1 psql -U postgres -d solarmatch
+
+# STEP 3: Apply migrations to update schema (preserves restored data):
+npx prisma migrate deploy
+# This applies all pending migrations to bring old schema up to date
+
+# STEP 4: Verify all data + new schema exist:
+npx prisma studio
+# Check:
+# ✅ Old user accounts present
+# ✅ Old leads/bids present
+# ✅ New fields exist (with NULL or default values)
+# ✅ New tables exist (empty, ready for use)
+
+# STEP 5: Update specific records if needed (e.g., admin credentials):
+docker exec -it solarmatch-db-1 psql -U postgres -d solarmatch -c "
+  UPDATE users 
+  SET email = 'desired@email.com', password = 'bcrypt_hash_here' 
+  WHERE role = 'ADMIN';
+"
+
+# STEP 6: Take new backup of merged state:
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+docker exec -it solarmatch-db-1 pg_dump -U postgres -d solarmatch > "backup/backup_${timestamp}_merged_data_and_schema.sql"
+```
+
+```
+Need to change schema?
+├─ STEP 1: Take backup FIRST (MANDATORY)
+│   └─ docker exec ... pg_dump > backup/backup_[timestamp]_pre_migration.sql
+├─ STEP 2: Make change in schema.prisma
+│   └─ Run: npx prisma generate
 │   └─ Run: npx prisma migrate dev --name change_description
 │       ├─ Success? → ✅ Done! Data preserved.
 │       └─ Conflict/Error?

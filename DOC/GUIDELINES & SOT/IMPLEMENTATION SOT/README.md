@@ -51,6 +51,7 @@ Assumption policy:
 ## Document Map by Use-Case
 
 - Architecture decisions: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md, SYSTEM DESIGN/Blueprint.md, TECHNICAL DOCUMENTATIONS/architecture/**
+- **Database operations**: TECHNICAL DOCUMENTATIONS/operations/database-operations-standard.md (MANDATORY for all schema changes, backups, migrations)
 - Feature implementation rules: IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md, specs/**
 - Auditing & debugging: SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md, DOC/AUDIT-REPORTS/**
 - Refactoring: SYSTEM DESIGN/Blueprint.md (boundaries), IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md (workflow)
