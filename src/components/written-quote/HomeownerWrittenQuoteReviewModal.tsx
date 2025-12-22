@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Loader, AlertCircle, Building, Mail, Phone, FileText, Zap, Package, Calculator, DollarSign, List, Lock } from 'lucide-react';
+import { X, Loader, AlertCircle, Building, Mail, Phone, FileText, Zap, Package, Calculator, DollarSign, List, Lock, Info, Lightbulb, TrendingUp } from 'lucide-react';
 import { QuoteSystemSpecsCard } from '@/components/quote-display/QuoteSystemSpecsCard';
 import { QuoteEquipmentCard } from '@/components/quote-display/QuoteEquipmentCard';
 import { QuoteFinancialCard } from '@/components/quote-display/QuoteFinancialCard';
@@ -383,20 +383,39 @@ export default function HomeownerWrittenQuoteReviewModal({
                   />
                 )}
 
-                {/* Savings Graph with Empty State (Sprint 4.16.16.1) */}
+                {/* Savings Graph with Improved Empty State (Sprint 4.16.17.3) */}
                 {!writtenQuote.calculations?.estimatedAnnualSavings ? (
-                  <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-body-small text-warning">Savings Projection Unavailable</p>
-                      <p className="text-body-small text-warning/80 mt-1">
-                        The installer has not provided savings estimates yet. Contact them for details.
-                      </p>
+                  <div className="bg-info/5 border border-info/20 rounded-xl p-6">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="text-heading-xs text-info mb-2">Savings Estimate Not Included</h4>
+                        <p className="text-body-small text-foreground-secondary mb-3">
+                          This quote doesn&apos;t include annual savings projections. This is optional and some installers provide it separately during negotiations.
+                        </p>
+                        
+                        {/* Helpful tips */}
+                        <div className="bg-surface rounded-lg p-4 border-l-4 border-info">
+                          <p className="text-label text-foreground-secondary flex items-center gap-2 mb-2">
+                            <Lightbulb className="h-4 w-4 text-info" />
+                            What you can do:
+                          </p>
+                          <ul className="text-body-small text-muted-foreground space-y-1.5 list-disc list-inside">
+                            <li>Request a savings breakdown when you contact the installer</li>
+                            <li>Ask for estimated monthly bill reduction based on your energy usage</li>
+                            <li>Compare system output (kWh/year) with your current consumption</li>
+                            <li>Inquire about payback period and return on investment</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div className="bg-surface rounded-xl p-6 border border-border shadow-neu-inset">
-                    <h3 className="text-heading-3 mb-4">Annual Savings Projection</h3>
+                    <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-success" />
+                      Annual Savings Projection
+                    </h3>
                     <SavingsChart
                       finalPrice={writtenQuote.currentPrice}
                       annualSavings={writtenQuote.calculations.estimatedAnnualSavings}
