@@ -151,7 +151,7 @@ export default function NegotiationTimeline({
                 {event.message && (
                   <div className="mt-2 p-3 bg-surface rounded-lg border border-border">
                     <p className="text-body-small text-foreground italic">
-                      "{event.message}"
+                      &ldquo;{event.message}&rdquo;
                     </p>
                   </div>
                 )}

@@ -10491,3 +10491,21 @@ Add `'SYSTEM'` to the email whitelist + optional email template enhancements.
 **Quick Win**: This is a **15-minute fix** (T701 only) that significantly improves user communication.
 
 **END OF PHASE 13T**
+
+### T13W-5: TypeScript Type Fixes (Frontend)
+**Status**: IN PROGRESS  
+**Date**: December 22, 2025  
+**Audit**: DOC/Features/Written Quote/TYPESCRIPT-FIX-AUDIT.md
+
+**Objective**: Fix TypeScript compilation errors in Written Quote modals by applying Bid modal pattern.
+
+**Tasks**:
+- [x] T13W-5.1: Audit Bid modal TypeScript patterns
+- [x] T13W-5.2: Create audit report
+- [ ] T13W-5.3: Update src/types/written-quote.ts with Bid interfaces
+- [ ] T13W-5.4: Fix HomeownerWrittenQuoteReviewModal.tsx
+- [ ] T13W-5.5: Fix WrittenQuoteBuilderModal.tsx
+- [ ] T13W-5.6: TypeScript validation (0 errors)
+- [ ] T13W-5.7: Build validation
+- [ ] T13W-5.8: Commit
+

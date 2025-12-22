@@ -3368,3 +3368,21 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+----------------------------------------------------------------------------------------
+as per your next step : 
+ Next Steps (Manual TypeScript Fixes Required)
+The frontend components have TypeScript errors because Prisma's JSON fields (systemData, batteryData, lineItems) need type assertions. Follow the same pattern as the Bid modal - use optional chaining with the JSON fields directly without type assertions, or add as any where needed.
+
+***Instructions*** I want you to fix the TypeScript errors in the Written Quote flow modals as per the above instructions. so that the frontend components have no TypeScript errors. But before that you need to deeply understand how the TypeScript errors were fixed in the Bid modals first. then you have to follow the same pattern as the Bid modal - use optional chaining with the JSON fields directly without type assertions, or add as any where needed. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 

@@ -25,7 +25,7 @@ interface HomeownerWrittenQuoteReviewModalProps {
   onClose: () => void;
   leadId: string;
   propertyAddress: string;
-  bids: WrittenQuoteWithFullData[];
+  writtenQuotes: WrittenQuoteWithFullData[];
   onSelectWinner?: (writtenQuoteId: string) => Promise<void>;
 }
 
@@ -34,7 +34,7 @@ export default function HomeownerWrittenQuoteReviewModal({
   onClose,
   leadId,
   propertyAddress,
-  bids: initialBids,
+  writtenQuotes: initialWrittenQuotes,
   onSelectWinner
 }: HomeownerWrittenQuoteReviewModalProps) {
   // State management
@@ -42,9 +42,9 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isLoadingLead, setIsLoadingLead] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
-  const [writtenQuotes, setWrittenQuotes] = useState<WrittenQuoteWithFullData[]>(initialBids);
-  const [isLoadingBids, setIsLoadingBids] = useState(false);
-  const [bidsError, setBidsError] = useState<string | null>(null);
+  const [writtenQuotes, setWrittenQuotes] = useState<WrittenQuoteWithFullData[]>(initialWrittenQuotes);
+  const [isLoadingWrittenQuotes, setIsLoadingWrittenQuotes] = useState(false);
+  const [writtenQuotesError, setWrittenQuotesError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -53,28 +53,28 @@ export default function HomeownerWrittenQuoteReviewModal({
     results: false
   });
 
-  // Select first bid by default when bids change
+  // Select first written quote by default when writtenQuotes change
   useEffect(() => {
-    if (bids.length > 0 && !selectedBidId) {
-      setSelectedBidId(bids[0].id);
+    if (writtenQuotes.length > 0 && !selectedBidId) {
+      setSelectedBidId(writtenQuotes[0].id);
     }
-  }, [bids, selectedBidId]);
+  }, [writtenQuotes, selectedBidId]);
 
-  // Fetch bids for the lead
-  const fetchBids = React.useCallback(async () => {
+  // Fetch written quotes for the lead
+  const fetchWrittenQuotes = React.useCallback(async () => {
     if (!leadId) return;
-    setIsLoadingBids(true);
-    setBidsError(null);
+    setIsLoadingWrittenQuotes(true);
+    setWrittenQuotesError(null);
     try {
-      console.log('[HomeownerWrittenQuoteReviewModal] Fetching bids for leadId:', leadId);
+      console.log('[HomeownerWrittenQuoteReviewModal] Fetching written quotes for leadId:', leadId);
       const response = await fetch(`/api/written-quotes?leadId=${leadId}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch bids: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch written quotes: ${response.status} ${response.statusText}`);
       }
       const data: GetWrittenQuotesResponse = await response.json();
-      console.log('[HomeownerWrittenQuoteReviewModal] Bids fetched:', data.writtenQuotes.length, 'bids');
+      console.log('[HomeownerWrittenQuoteReviewModal] Written quotes fetched:', data.writtenQuotes.length, 'written quotes');
       
-      // DEBUG: Log first bid's structure
+      // DEBUG: Log first written quote's structure
       if (data.writtenQuotes.length > 0) {
         console.log('[DEBUG] First bid structure:', {
           id: data.writtenQuotes[0].id,
@@ -99,19 +99,19 @@ export default function HomeownerWrittenQuoteReviewModal({
       
       setWrittenQuotes(transformedBids);
     } catch (error) {
-      console.error('[HomeownerWrittenQuoteReviewModal] Error fetching bids:', error);
-      setBidsError(error instanceof Error ? error.message : 'Failed to load bids');
+      console.error('[HomeownerWrittenQuoteReviewModal] Error fetching written quotes:', error);
+      setWrittenQuotesError(error instanceof Error ? error.message : 'Failed to load written quotes');
     } finally {
-      setIsLoadingBids(false);
+      setIsLoadingWrittenQuotes(false);
     }
   }, [leadId]);
 
-  // Fetch bids when modal opens
+  // Fetch written quotes when modal opens
   useEffect(() => {
     if (isOpen && leadId) {
-      fetchBids();
+      fetchWrittenQuotes();
     }
-  }, [isOpen, leadId, fetchBids]);
+  }, [isOpen, leadId, fetchWrittenQuotes]);
 
   // Fetch full lead data when modal opens
   const fetchLeadData = React.useCallback(async () => {
@@ -144,9 +144,9 @@ export default function HomeownerWrittenQuoteReviewModal({
     }));
   };
 
-  const selectedWrittenQuote = bids.find(b => b.id === selectedBidId);
+  const selectedWrittenQuote = writtenQuotes.find(wq => wq.id === selectedBidId);
 
-  const sortedBids = [...bids].sort((a, b) => {
+  const sortedWrittenQuotes = [...writtenQuotes].sort((a, b) => {
     // Winner first, then shortlisted, then by price
     if (a.isWinner && !b.isWinner) return -1;
     if (b.isWinner && !a.isWinner) return 1;
@@ -222,7 +222,7 @@ export default function HomeownerWrittenQuoteReviewModal({
           <div>
             <h2 className="text-heading-3 text-foreground">Review Solar Bids</h2>
             <p className="text-body-small text-muted-foreground mt-1">
-              {propertyAddress} • {bids.length} bid{bids.length !== 1 ? 's' : ''} received
+              {propertyAddress} • {writtenQuotes.length} bid{writtenQuotes.length !== 1 ? 's' : ''} received
             </p>
           </div>
           <button
@@ -236,7 +236,7 @@ export default function HomeownerWrittenQuoteReviewModal({
 
         {/* Body - 2 Column Layout */}
         <div className="flex-grow overflow-auto p-4 md:p-6">
-          {isLoadingBids ? (
+          {isLoadingWrittenQuotes ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Loader className="h-16 w-16 animate-spin text-primary mb-4" />
               <h3 className="text-heading-4 text-foreground mb-2">Loading Bids...</h3>
@@ -244,18 +244,18 @@ export default function HomeownerWrittenQuoteReviewModal({
                 Please wait while we fetch all submitted bids for this lead.
               </p>
             </div>
-          ) : bidsError ? (
+          ) : writtenQuotesError ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Info className="h-16 w-16 text-error mb-4" />
               <h3 className="text-heading-4 text-foreground mb-2">Error Loading Bids</h3>
               <p className="text-body text-muted-foreground max-w-md mb-4">
-                {bidsError}
+                {writtenQuotesError}
               </p>
-              <Button onClick={fetchBids} variant="primary">
+              <Button onClick={fetchWrittenQuotes} variant="primary">
                 Retry
               </Button>
             </div>
-          ) : sortedBids.length === 0 ? (
+          ) : sortedWrittenQuotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Award className="h-16 w-16 text-muted mb-4" />
               <h3 className="text-heading-4 text-foreground mb-2">No Bids Received Yet</h3>
@@ -275,7 +275,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                   onChange={(e) => setSelectedBidId(e.target.value)}
                   className="w-full md:w-auto px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                 >
-                  {sortedBids.map((writtenQuote, index) => (
+                  {sortedWrittenQuotes.map((writtenQuote, index) => (
                     <option key={writtenQuote.id} value={writtenQuote.id}>
                       {writtenQuote.isWinner && '🏆 '}
                       {writtenQuote.status === 'shortlisted' && '⭐ '}
@@ -284,7 +284,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                   ))}
                 </select>
                 <p className="text-caption text-muted-foreground">
-                  {bids.length} bid{bids.length !== 1 ? 's' : ''} received • Compare installers side-by-side
+                  {writtenQuotes.length} bid{writtenQuotes.length !== 1 ? 's' : ''} received • Compare installers side-by-side
                 </p>
               </div>
 
@@ -365,7 +365,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                           <tr>
                             <td className="py-2 text-body text-muted-foreground">Total Panels</td>
                             <td className="py-2 text-body text-foreground text-right">
-                              {selectedWrittenQuote.systemData?.solarPanelsArray?.reduce((sum, arr) => sum + arr.quantity, 0) || 0} panels
+                              {selectedWrittenQuote.systemData?.solarPanelsArray?.reduce((sum: number, arr: any) => sum + arr.quantity, 0) || 0} panels
                             </td>
                           </tr>
                           <tr>

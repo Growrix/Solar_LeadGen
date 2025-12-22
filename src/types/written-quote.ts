@@ -1,6 +1,19 @@
 // Phase 13W: Written Quote Negotiation Types
 // This file contains all TypeScript types for the Written Quote feature
 
+// Import Bid type interfaces for reuse (DRY principle)
+// Written Quote uses the same Quote Builder data structure as Bid
+import {
+  BidSystemData,
+  BidProductsData,
+  BidLineItem,
+  BidAssumptions,
+  BidRoofData,
+  BidCalculations,
+  BidImportMeta,
+  BidInstallerContact
+} from './bid';
+
 /**
  * Request body for creating a new Written Quote (POST /api/written-quotes)
  * Installer submits initial quote to homeowner
@@ -99,23 +112,21 @@ export interface WrittenQuoteWithInstaller {
   agreedAmount?: number | null;
   agreedAt?: string | null;
   agreedBy?: string | null;
-  
   selectedAt?: string | null;
-  purchasedAt?: string | null;
   rejectedAt?: string | null;
   rejectionReason?: string | null;
   createdAt: string;
   updatedAt: string;
   
-  // JSON data
-  systemData?: Record<string, unknown>;
-  productsData?: Record<string, unknown>;
-  lineItems?: Record<string, unknown>;
-  assumptions?: Record<string, unknown>;
-  roofData?: Record<string, unknown>;
-  calculations?: Record<string, unknown>;
-  importMeta?: Record<string, unknown>;
-  installerContact?: Record<string, unknown>;
+  // JSON data (properly typed using Bid interfaces for consistency)
+  systemData?: BidSystemData;
+  productsData?: BidProductsData;
+  lineItems?: BidLineItem[];
+  assumptions?: BidAssumptions;
+  roofData?: BidRoofData;
+  calculations?: BidCalculations;
+  importMeta?: BidImportMeta;
+  installerContact?: BidInstallerContact;
   
   // Installer info (joined from User table)
   installer: {
