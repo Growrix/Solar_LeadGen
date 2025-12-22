@@ -123,6 +123,7 @@ export interface WrittenQuoteWithInstaller {
     companyName?: string | null;
     email: string;
     phone?: string | null;
+    businessAddress?: string | null;
   };
 }
 
@@ -185,4 +186,12 @@ export enum WrittenQuoteStatus {
   SELECTED = 'SELECTED',
   PURCHASED = 'PURCHASED',
   REJECTED = 'REJECTED',
+}
+
+/**
+ * Response from GET /api/written-quotes
+ */
+export interface GetWrittenQuotesResponse {
+  success: boolean;
+  writtenQuotes: WrittenQuoteWithInstaller[];
 }

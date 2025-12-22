@@ -331,6 +331,7 @@ export async function GET(request: NextRequest) {
 
     // Format response with comprehensive data
     const response: GetWrittenQuotesResponse = {
+      success: true,
       writtenQuotes: writtenQuotes.map(quote => ({
         id: quote.id,
         leadId: quote.leadId,
