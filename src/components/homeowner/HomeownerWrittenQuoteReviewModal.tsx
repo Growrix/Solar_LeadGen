@@ -220,9 +220,9 @@ export default function HomeownerWrittenQuoteReviewModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
           <div>
-            <h2 className="text-heading-3 text-foreground">Review Solar Bids</h2>
+            <h2 className="text-heading-3 text-foreground">Review Written Quotes & Negotiate</h2>
             <p className="text-body-small text-muted-foreground mt-1">
-              {propertyAddress} • {writtenQuotes.length} bid{writtenQuotes.length !== 1 ? 's' : ''} received
+              {propertyAddress} • {writtenQuotes.length} quote{writtenQuotes.length !== 1 ? 's' : ''} received
             </p>
           </div>
           <button

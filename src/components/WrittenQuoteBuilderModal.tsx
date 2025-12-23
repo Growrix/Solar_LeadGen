@@ -470,7 +470,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      if (mode === 'bid') {
+      // WrittenQuoteBuilderModal is used for WRITTEN_QUOTE leads.
+      // For this modal, `mode="quote"` means submit a written quote via `/api/written-quotes`.
+      if (mode === 'quote') {
         // Calculate totals from pricing data
         const subtotal = quoteDraft.pricing.lineItems.reduce(
           (acc, item) => acc + item.qty * item.unitPrice,
@@ -489,11 +491,13 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           (acc, d) => acc + d.amount,
           0
         );
-        const finalTotal = subtotal + gstAmount - stcDeduction - vicDeduction - totalDiscounts;
+        const totalIncentives = stcDeduction + vicDeduction + totalDiscounts;
+        const finalTotal = subtotal + gstAmount - totalIncentives;
 
-        // Map QuoteDraft to comprehensive Bid payload (Phase 13B - Full JSON fields)
-        const bidPayload = {
+        // Map QuoteDraft to comprehensive Written Quote payload (Phase 13W - Full JSON fields)
+        const writtenQuotePayload = {
           leadId: String(lead.id),
+          // API contract: `amount` is the base amount; server computes GST and finalTotal.
           amount: subtotal,
           capacityOffer: quoteDraft.system.systemSize,
           expectedInstallDate: null, // TODO: Add to UI if needed
@@ -508,10 +512,10 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           // Financial details
           includeGst: true,
           gstPercent: 10.0,
-          includeIncentive: quoteDraft.pricing.stc.eligible,
-          incentiveAmount: stcDeduction,
+          includeIncentive: totalIncentives > 0,
+          incentiveAmount: totalIncentives,
           
-          // Phase 13B - Comprehensive JSON fields for homeowner comparison
+          // Phase 13W - Comprehensive JSON fields for homeowner comparison
           systemData: {
             capacityKw: quoteDraft.system.systemSize,
             systemType: quoteDraft.system.systemType,
@@ -586,7 +590,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             gstPercent: 10.0,
             gstAmount: gstAmount,
             includeIncentive: quoteDraft.pricing.stc.eligible,
-            incentiveAmount: stcDeduction,
+            incentiveAmount: totalIncentives,
             finalTotal: finalTotal,
             pricePerWatt: subtotal / (quoteDraft.system.systemSize * 1000),
             estimatedAnnualSavings: 0,
@@ -594,11 +598,11 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           }
         };
 
-        // Call bid submission API
+        // Call written quote submission API
         const response = await fetch('/api/written-quotes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bidPayload)
+          body: JSON.stringify(writtenQuotePayload)
         });
 
         const data = await response.json();
@@ -612,7 +616,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         localStorage.removeItem(draftKey);
 
         // Show success message
-        alert(`Bid submitted successfully! Bid ID: ${data.bidId}`);
+        alert(`Written Quote submitted successfully! Quote ID: ${data.writtenQuoteId}`);
         onClose();
       } else {
         // For quotes, use the existing onSubmitQuote handler
@@ -771,6 +775,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                       : 'Unsaved changes'}
                   </div>
                 </div>
+                <p className="text-caption text-info mt-2">
+                  📝 Note: Homeowner will review & negotiate your quote via their dashboard
+                </p>
               </div>
             </div>
 

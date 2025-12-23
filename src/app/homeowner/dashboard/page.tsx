@@ -15,6 +15,7 @@ import SimplifiedQuoteFormModal from '@/components/homeowner/SimplifiedQuoteForm
 import QuoteOptionsModal from '@/components/QuoteOptionsModal';
 import QuoteTypeDistributionModal from '@/components/homeowner/QuoteTypeDistributionModal';
 import HomeownerBiddingReviewModal from '@/components/homeowner/HomeownerBiddingReviewModal'; // Phase 3: Bidding review
+import HomeownerWrittenQuoteReviewModal from '@/components/homeowner/HomeownerWrittenQuoteReviewModal'; // Phase T13W-7: Written Quote review
 import HomeownersInfoForm from '@/components/HomeownersInfoForm'; // ✅ Phase 12: Reuse guest flow component for consistency
 import MessagingModal from '@/components/MessagingModal';
 import ProfileManagement from '@/components/ProfileManagement';
@@ -344,6 +345,9 @@ interface DashboardOverviewContentProps {
   onLimitReached?: () => void;
   setSelectedBiddingLeadId: (id: string) => void;
   setIsBiddingReviewModalOpen: (open: boolean) => void;
+  setSelectedWrittenQuoteLeadId: (id: string) => void;
+  setSelectedWrittenQuoteLead: (lead: RecentLeadSummary) => void;
+  setIsWrittenQuoteReviewModalOpen: (open: boolean) => void;
 }
 
 const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
@@ -358,6 +362,9 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
   onLimitReached,
   setSelectedBiddingLeadId,
   setIsBiddingReviewModalOpen,
+  setSelectedWrittenQuoteLeadId,
+  setSelectedWrittenQuoteLead,
+  setIsWrittenQuoteReviewModalOpen,
 }) => {
   const StatCard: React.FC<{ 
     icon: React.ReactNode; 
@@ -651,6 +658,24 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                                   <span className="hidden sm:inline">Review Bids</span>
                                 </Button>
                               )}
+                              
+                              {/* Phase T13W-8: Review Written Quotes button for WRITTEN_QUOTE leads with submitted quotes */}
+                              {/* T13W-8.3: Button should appear when writtenQuotes exist (modal fetches via API) */}
+                              {lead.quoteType === 'WRITTEN_QUOTE' && [LeadStatusEnum.APPROVED as LeadStatus, LeadStatusEnum.PURCHASED as LeadStatus].includes(lead.status) && (
+                                <Button
+                                  onClick={() => {
+                                    setSelectedWrittenQuoteLeadId(lead.id);
+                                    setSelectedWrittenQuoteLead(lead);
+                                    setIsWrittenQuoteReviewModalOpen(true);
+                                  }}
+                                  variant="minimal"
+                                  className="flex items-center gap-1 px-2 py-1 text-caption text-info hover:text-info/80 bg-transparent shadow-none"
+                                  title="Review and negotiate written quotes from installers"
+                                >
+                                  <FileTextIcon />
+                                  <span className="hidden sm:inline">Review Quotes</span>
+                                </Button>
+                              )}
                               {canEdit && (
                                 <Button
                                   onClick={() => onEditLead(lead)}
@@ -760,6 +785,9 @@ export default function HomeownerDashboardPage() {
   const [isDetailedInfoModalOpen, setIsDetailedInfoModalOpen] = useState(false); // ✅ Phase 12: Added for first-quote contact info
   const [isBiddingReviewModalOpen, setIsBiddingReviewModalOpen] = useState(false); // Phase 3: Bidding review modal
   const [selectedBiddingLeadId, setSelectedBiddingLeadId] = useState<string | null>(null); // Phase 3: Track which lead to review
+  const [isWrittenQuoteReviewModalOpen, setIsWrittenQuoteReviewModalOpen] = useState(false); // Phase T13W-7: Written Quote review modal
+  const [selectedWrittenQuoteLeadId, setSelectedWrittenQuoteLeadId] = useState<string | null>(null); // Phase T13W-7: Track which Written Quote lead to review
+  const [selectedWrittenQuoteLead, setSelectedWrittenQuoteLead] = useState<RecentLeadSummary | null>(null); // Phase T13W-7: Full lead data for property address
   const [homeownerInfo, setHomeownerInfo] = useState<{ name: string; phone: string; address: string } | null>(null); // ✅ Phase 12: Store homeowner contact info
   const [isMessagingModalOpen, setIsMessagingModalOpen] = useState(false);
   const [showContactVerificationModal, setShowContactVerificationModal] = useState(false);
@@ -1207,6 +1235,9 @@ export default function HomeownerDashboardPage() {
             onLimitReached={() => setIsLeadLimitModalOpen(true)}
             setSelectedBiddingLeadId={setSelectedBiddingLeadId}
             setIsBiddingReviewModalOpen={setIsBiddingReviewModalOpen}
+            setSelectedWrittenQuoteLeadId={setSelectedWrittenQuoteLeadId}
+            setSelectedWrittenQuoteLead={setSelectedWrittenQuoteLead}
+            setIsWrittenQuoteReviewModalOpen={setIsWrittenQuoteReviewModalOpen}
           />
         );
       case 'Call/Visit Quotes':
@@ -1235,6 +1266,9 @@ export default function HomeownerDashboardPage() {
             onLimitReached={() => setIsLeadLimitModalOpen(true)}
             setSelectedBiddingLeadId={setSelectedBiddingLeadId}
             setIsBiddingReviewModalOpen={setIsBiddingReviewModalOpen}
+            setSelectedWrittenQuoteLeadId={setSelectedWrittenQuoteLeadId}
+            setSelectedWrittenQuoteLead={setSelectedWrittenQuoteLead}
+            setIsWrittenQuoteReviewModalOpen={setIsWrittenQuoteReviewModalOpen}
           />
         );
     }
@@ -1582,6 +1616,72 @@ export default function HomeownerDashboardPage() {
               });
               
               throw error; // Re-throw so modal handles loading state
+            }
+          }}  
+        />
+      )}
+
+      {/* Phase T13W-7: Homeowner Written Quote Review Modal */}
+      {isWrittenQuoteReviewModalOpen && selectedWrittenQuoteLeadId && selectedWrittenQuoteLead && (
+        <HomeownerWrittenQuoteReviewModal
+          isOpen={isWrittenQuoteReviewModalOpen}
+          onClose={() => {
+            setIsWrittenQuoteReviewModalOpen(false);
+            setSelectedWrittenQuoteLeadId(null);
+            setSelectedWrittenQuoteLead(null);
+          }}
+          leadId={selectedWrittenQuoteLeadId}
+          propertyAddress={
+            (selectedWrittenQuoteLead?.quoteData?.location as string) ||
+            `${selectedWrittenQuoteLead?.quoteData?.suburb || ''}, ${selectedWrittenQuoteLead?.quoteData?.state || ''} ${selectedWrittenQuoteLead?.quoteData?.postcode || ''}`.trim() ||
+            'Loading...'
+          }
+          writtenQuotes={[]} // Modal will fetch via API
+          onSelectWinner={async (writtenQuoteId: string) => {
+            try {
+              console.log('[Phase T13W-7] Selecting winner written quote:', writtenQuoteId);
+              
+              // TODO: Implement winner selection API for written quotes
+              // Similar to bidding winner selection
+              const response = await fetch(`/api/written-quotes/${writtenQuoteId}/select`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ leadId: selectedWrittenQuoteLeadId })
+              });
+
+              if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to select winner');
+              }
+
+              const result = await response.json();
+              console.log('[Phase T13W-7] Winner selected successfully:', result);
+
+              toast.success('Winner Selected!', {
+                description: 'The installer has been notified and will contact you shortly to complete the purchase and begin installation.',
+                duration: 5000
+              });
+
+              setSelectedWrittenQuoteLeadId(null);
+              setIsWrittenQuoteReviewModalOpen(false);
+              setSelectedWrittenQuoteLead(null);
+              
+            } catch (error) {
+              console.error('[Phase T13W-7] Error selecting winner:', error);
+              const message = error instanceof Error ? error.message : 'Unknown error';
+              
+              toast.error('Failed to Select Winner', {
+                description: message,
+                duration: 5000,
+                action: {
+                  label: 'Retry',
+                  onClick: () => {
+                    console.log('[Phase T13W-7] User requested retry');
+                  }
+                }
+              });
+              
+              throw error;
             }
           }}
         />

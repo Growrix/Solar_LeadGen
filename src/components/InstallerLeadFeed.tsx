@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import QuoteBuilderModal from './QuoteBuilderModal';
+import WrittenQuoteBuilderModal from './WrittenQuoteBuilderModal';
 import BidEvaluationModal from './BidEvaluationModal';
 import BiddingStatusBadge from './BiddingStatusBadge';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
@@ -913,27 +914,75 @@ const LeadCard: React.FC<{
       </div>
       </div>
 
-      {/* Quote Builder Modal */}
-      <QuoteBuilderModal
-        isOpen={isQuoteModalOpen}
-        onClose={() => setIsQuoteModalOpen(false)}
-        lead={{
-          id: lead.id,
-          name: lead.contact?.name || '***LOCKED***',
-          location: lead.location
-            ? `${lead.location.suburb}, ${lead.location.state} ${lead.location.postcode}`
-            : '',
-          propertyType: lead.systemDetails?.propertyType || '',
-          systemSize: lead.systemDetails?.estimatedSize || '0',
-          estimatedUsage: lead.systemDetails?.estimatedSize || '',
-          budget: lead.systemDetails?.budget || '',
-          quoteData: lead.quoteData, // Pass through quoteData for Import feature
-          status: lead.status, // T13I-4: Pass status for purchase checking
-          purchasedAt: lead.purchasedAt // T13I-4: Pass purchasedAt for purchase checking
-        }}
-        onSubmitQuote={onSubmitQuote}
-        mode={quoteMode}
-      />
+      {/* Quote Builder Modals - Conditional by lead type (Phase T13W-7.1) */}
+      {lead.type === 'call_visit' && (
+        <QuoteBuilderModal
+          isOpen={isQuoteModalOpen}
+          onClose={() => setIsQuoteModalOpen(false)}
+          lead={{
+            id: lead.id,
+            name: lead.contact?.name || '***LOCKED***',
+            location: lead.location
+              ? `${lead.location.suburb}, ${lead.location.state} ${lead.location.postcode}`
+              : '',
+            propertyType: lead.systemDetails?.propertyType || '',
+            systemSize: lead.systemDetails?.estimatedSize || '0',
+            estimatedUsage: lead.systemDetails?.estimatedSize || '',
+            budget: lead.systemDetails?.budget || '',
+            quoteData: lead.quoteData,
+            status: lead.status,
+            purchasedAt: lead.purchasedAt
+          }}
+          onSubmitQuote={onSubmitQuote}
+          mode="quote"
+        />
+      )}
+
+      {lead.type === 'written' && (
+        <WrittenQuoteBuilderModal
+          isOpen={isQuoteModalOpen}
+          onClose={() => setIsQuoteModalOpen(false)}
+          lead={{
+            id: lead.id,
+            name: lead.contact?.name || '***LOCKED***',
+            location: lead.location
+              ? `${lead.location.suburb}, ${lead.location.state} ${lead.location.postcode}`
+              : '',
+            propertyType: lead.systemDetails?.propertyType || '',
+            systemSize: lead.systemDetails?.estimatedSize || '0',
+            estimatedUsage: lead.systemDetails?.estimatedSize || '',
+            budget: lead.systemDetails?.budget || '',
+            quoteData: lead.quoteData,
+            status: lead.status,
+            purchasedAt: lead.purchasedAt
+          }}
+          onSubmitQuote={onSubmitQuote}
+          mode="quote"
+        />
+      )}
+
+      {lead.type === 'bidding' && (
+        <QuoteBuilderModal
+          isOpen={isQuoteModalOpen}
+          onClose={() => setIsQuoteModalOpen(false)}
+          lead={{
+            id: lead.id,
+            name: lead.contact?.name || '***LOCKED***',
+            location: lead.location
+              ? `${lead.location.suburb}, ${lead.location.state} ${lead.location.postcode}`
+              : '',
+            propertyType: lead.systemDetails?.propertyType || '',
+            systemSize: lead.systemDetails?.estimatedSize || '0',
+            estimatedUsage: lead.systemDetails?.estimatedSize || '',
+            budget: lead.systemDetails?.budget || '',
+            quoteData: lead.quoteData,
+            status: lead.status,
+            purchasedAt: lead.purchasedAt
+          }}
+          onSubmitQuote={onSubmitQuote}
+          mode="bid"
+        />
+      )}
 
       {/* Bid Evaluation Modal */}
       <BidEvaluationModal

@@ -169,9 +169,51 @@ export default function InstallerLeadsPage() {
   };
 
   const handleSubmitQuote = async (leadId: string, quoteData: any): Promise<boolean> => {
-    console.log('Submit quote for lead:', leadId, quoteData);
-    // TODO: Implement actual quote submission logic
-    return true;
+    try {
+      console.log('[T13W-8.2] Submitting quote for lead:', leadId);
+      
+      // Determine API endpoint based on lead type
+      const lead = leads.find(l => String(l.id) === String(leadId));
+      const apiEndpoint = lead?.type === 'written' ? '/api/written-quotes' : '/api/quotes';
+      
+      console.log('[T13W-8.2] Lead type:', lead?.type, '→ API:', apiEndpoint);
+      
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...quoteData
+          ,
+          leadId,
+          installerId: installer?.id,
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('[T13W-8.2] API error:', error);
+        throw new Error(error.error || 'Failed to submit quote');
+      }
+
+      const result = await response.json();
+      console.log('[T13W-8.2] Quote submitted successfully:', result);
+
+      // Refresh leads to show updated status
+      const leadsRes = await fetch('/api/installer/leads/assigned');
+      if (leadsRes.ok) {
+        const leadsData = await leadsRes.json();
+        const mappedLeads = (leadsData.leads || []).map(mapAssignedLeadToComponentLead);
+        setLeads(mappedLeads);
+      }
+
+      alert('Quote submitted successfully!');
+      return true;
+    } catch (error) {
+      console.error('[T13W-8.2] Error submitting quote:', error);
+      const message = error instanceof Error ? error.message : 'Failed to submit quote. Please try again.';
+      alert(message);
+      return false;
+    }
   };
 
   const handleStartChat = (leadId: string): void => {

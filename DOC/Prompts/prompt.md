@@ -3420,3 +3420,44 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+---------------------------------------------------------------------------------------------
+
+The feature is not functional as you are claiming : Test manually: Create Written Quote lead → Submit quote → Review quotes → Negotiate . 
+
+- The lead card > Submit Quote button > Opening the Quote builder modal which is not adapted as per the written Quote as per planned. check the screenshot. And there is no negotiation section in the right column and Clicking on send Quote button does not generate any Quote. Might be backend issues. 
+
+- The homeowners written QUote lead card > review Quotes Button > Opens the bidding review modal . the texts are confusing and it was not adapted as per the written QUote. As the Backend has issues , so there is no option to test the frontend. 
+
+***Instructions*** 
+Audit back the entire system regarding writtenQuote and its e2e flows also the previews audits to identify why your previous audits could not fix the issues. 
+- D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\WRITTEN-QUOTE-E2E-AUDIT.md
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-------------------------------------------------------------------------------------
+
+Check the screenshot. The Quote is not generating. there are issues in the backend  and frontend.  I mentioned several times to check the entire system including API, prisma, Frontend ,backend, modals, etc end to end , flows. SO that you can get a clear picture. you should check the root plan and validate with the implimentation done and identify the gaps clearly. Nothing is done as per planned perfectly. check back all the files D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote . and understand what is done and what was the actual plan. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+---------------------------------------------------------------------------------------------
+
+The QUotation was generated and the homeowners review modal is showing up . But the texts and labels are not adapted as per the Written Quote flow. it is still showing Bid related texts and labels. check the screenshot.
