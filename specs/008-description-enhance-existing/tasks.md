@@ -30,6 +30,30 @@ Source: DOC/Features/Written Quote/ImplementationPlan.md
   - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-AUDIT-2025-12-14.md
   - Guidelines: DOC/Guidelines/README.md, AI-IMPLEMENTATION-GUIDELINES.md
 
+## Phase 13W.1 — Written Quote UI Alignment (Copy + Negotiation Panels)
+- Status: IN PROGRESS
+- Priority: P1
+- References:
+  - SOT: DOC/Features/Written Quote/Raw_plan.md
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-PANEL-UI-AUDIT-2025-12-23.md
+
+### T13W.1-1: Copy / Label Alignment (Remove “Bid” wording)
+- Update homeowner Written Quote review modal copy to match Written Quote semantics.
+- Replace winner-selection semantics with “Done deal”.
+
+### T13W.1-2: Negotiation Panel (Right Column) — Homeowner Review
+- Add right-column Negotiation panel per Raw_plan.md.
+- Wire homeowner counter and done-deal actions.
+
+### T13W.1-3: Negotiation Panel (Right Column) — Installer Builder
+- Add right-column Negotiation panel per Raw_plan.md.
+- Wire installer revise and done-deal actions.
+- Ensure draft autosave keys are per-installer and per-mode.
+
+### T13W.1-4: Homeowner Modal Overlay / Stacking Fix
+- Ensure the homeowner Written Quote review modal fully overlays the dashboard (no sidebar/header overlap).
+- Use portal rendering + scroll lock if needed to avoid stacking-context issues.
+
 ### T13W-1: Data Model & Migrations
 - Define `WrittenQuote` and `WrittenQuoteEvent` models in Prisma.
 - One OPEN negotiation per (leadId, installerId).

@@ -3460,4 +3460,29 @@ Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatc
 
 ---------------------------------------------------------------------------------------------
 
-The QUotation was generated and the homeowners review modal is showing up . But the texts and labels are not adapted as per the Written Quote flow. it is still showing Bid related texts and labels. check the screenshot.
+The QUotation was generated and the homeowners review modal is showing up . But the texts and labels are not adapted as per the Written Quote flow. it is still showing Bid related texts and labels. check the screenshot. ANd also the buttons are not relevant according to the Written Quote flow. 
+- There is no right column negotiation panel as per the plan in the homeowners review modal.
+- Also there is no Right colum Negotation panel in the installers Quote builder modal as per the plan. 
+
+***Instructions*** I want you to fix the texts and labels in the homeowners review modal as per the Written Quote flow. also adapt the buttons accordingly as per the Written Quote flow. so that everything is relevant to the Written Quote flow. Also add the right column negotiation panel in both modals (homeowners review modal and installers Quote builder modal) as per the plan. Check back the raw plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\Raw_plan.md for better understanding. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+---------------------------------------------------------------------------------------------
+
+The homeowners review modal UI issues. The MOdal has a lot of overlapping contents from the Dashboard . might be Z-indexing issue. This modal should be clean and clear without any overlapping contents. check the screenshot for better understanding. 
+
+AUdit if needed, Fix the UI only issues in the homeowners review modal as per the above instructions. so that the MOdal has a clean and clear UI without any overlapping contents.
+
+----------------------------------------------------------------------------------------
+
+THe installers Quote builder modal also has similar kind of UI issues and also the autosaving is acting like a bug , e.g it is auto auto blinking all the time . ANd also it has other contnets overlapping issues. 
+-  Also make sure the negotiation part is synced with the homeonwers negotioation panel. Both should be in sync. e.g if the homeowner proposed a counter amount , it should reflect in the installers negotiation panel as well instantly without any issues.

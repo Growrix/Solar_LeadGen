@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/button';
 import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download } from 'lucide-react';
 import { calcQuoteTotals, DEFAULT_ASSUMPTIONS, QuoteInputs } from '@/utils/quoteCalculator';
@@ -22,6 +23,7 @@ import HomeownerInstantQuoteDetails from './quote-builder/HomeownerInstantQuoteD
 import LeadTechnicalDetails from './quote-builder/LeadTechnicalDetails';
 import InstantQuoteResult from './quote-builder/InstantQuoteResult';
 import { PRESET_BUNDLES } from './quote-builder/Presets';
+import type { GetWrittenQuotesResponse } from '@/types/written-quote';
 
 // --- Types ---
 interface Lead {
@@ -92,10 +94,20 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   onSubmitQuote,
   mode = 'quote'
 }) => {
+  const { data: session } = useSession();
+
   // Full lead data state (fetched from API for complete data)
   const [fullLeadData, setFullLeadData] = useState<LeadData | null>(null);
   const [isLoadingFullLead, setIsLoadingFullLead] = useState(false);
   const [leadFetchError, setLeadFetchError] = useState<string | null>(null);
+
+  // Negotiation panel state (Phase 13W)
+  const [negotiationQuote, setNegotiationQuote] = useState<GetWrittenQuotesResponse['writtenQuotes'][number] | null>(null);
+  const [isLoadingNegotiation, setIsLoadingNegotiation] = useState(false);
+  const [negotiationFetchError, setNegotiationFetchError] = useState<string | null>(null);
+  const [revisedAmount, setRevisedAmount] = useState<string>('');
+  const [isSubmittingRevision, setIsSubmittingRevision] = useState(false);
+  const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
 
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -209,6 +221,167 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [isBudgetHintDismissed, setIsBudgetHintDismissed] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-AU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getNegotiationStatusLabel = (negotiationStatus?: string | null) => {
+    switch (negotiationStatus) {
+      case 'HOMEOWNER_COUNTERED':
+        return 'Homeowner countered (action needed)';
+      case 'INSTALLER_RESPONDED':
+        return 'You revised the offer';
+      case 'AGREED':
+        return 'Finalized (Done deal)';
+      case 'PENDING':
+      default:
+        return 'Not started';
+    }
+  };
+
+  const getLastOfferAmount = (quote: any) => {
+    return quote?.installerRevisedAmount || quote?.homeownerCounterAmount || quote?.agreedAmount || quote?.amount || 0;
+  };
+
+  const getNegotiationTimeline = (quote: any) => {
+    if (!quote) return [] as Array<{ label: string; actor: string; amount: number; at: string }>;
+    const events: Array<{ label: string; actor: string; amount: number; at: string }> = [];
+
+    events.push({
+      label: 'Initial offer submitted',
+      actor: 'Installer',
+      amount: quote.amount,
+      at: quote.createdAt
+    });
+
+    if (quote.homeownerCounterAt && quote.homeownerCounterAmount) {
+      events.push({
+        label: 'Counter offer received',
+        actor: 'Homeowner',
+        amount: quote.homeownerCounterAmount,
+        at: quote.homeownerCounterAt
+      });
+    }
+
+    if (quote.installerRevisedAt && quote.installerRevisedAmount) {
+      events.push({
+        label: 'Offer revised',
+        actor: 'Installer',
+        amount: quote.installerRevisedAmount,
+        at: quote.installerRevisedAt
+      });
+    }
+
+    if (quote.agreedAt && quote.agreedAmount) {
+      events.push({
+        label: 'Done deal',
+        actor: 'Finalized',
+        amount: quote.agreedAmount,
+        at: quote.agreedAt
+      });
+    }
+
+    return events;
+  };
+
+  const fetchNegotiationQuote = React.useCallback(async () => {
+    if (!lead?.id) return;
+    const installerId = session?.user?.id;
+    if (!installerId) return;
+
+    setIsLoadingNegotiation(true);
+    setNegotiationFetchError(null);
+
+    try {
+      const response = await fetch(`/api/written-quotes?leadId=${lead.id}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch written quotes: ${response.status} ${response.statusText}`);
+      }
+
+      const data: GetWrittenQuotesResponse = await response.json();
+      const ownQuote = (data.writtenQuotes || []).find((q: any) => q.installerId === installerId) || null;
+      setNegotiationQuote(ownQuote);
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error fetching negotiation quote:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to load negotiation data');
+      setNegotiationQuote(null);
+    } finally {
+      setIsLoadingNegotiation(false);
+    }
+  }, [lead?.id, session?.user?.id]);
+
+  const handleReviseOffer = async () => {
+    if (!negotiationQuote) return;
+    const parsed = Number(revisedAmount);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setNegotiationFetchError('Enter a valid revised amount greater than 0.');
+      return;
+    }
+    if (negotiationQuote.negotiationStatus === 'AGREED') return;
+
+    setIsSubmittingRevision(true);
+    setNegotiationFetchError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/revise`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ revisedAmount: parsed })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to revise offer');
+      }
+
+      setRevisedAmount('');
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error revising offer:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to revise offer');
+    } finally {
+      setIsSubmittingRevision(false);
+    }
+  };
+
+  const handleDoneDeal = async () => {
+    if (!negotiationQuote) return;
+    if (negotiationQuote.negotiationStatus === 'AGREED') return;
+
+    const userId = session?.user?.id;
+    if (!userId) {
+      setNegotiationFetchError('Unable to finalize deal: missing user session.');
+      return;
+    }
+
+    setIsFinalizingDeal(true);
+    setNegotiationFetchError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/agree`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agreedBy: userId })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to finalize negotiation');
+      }
+
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error finalizing deal:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to finalize negotiation');
+    } finally {
+      setIsFinalizingDeal(false);
+    }
+  };
+
   // Generate preview options based on current config
   const generatePreviewOptions = (): QuoteOption[] => {
     const { system, products, pricing, assumptions } = quoteDraft;
@@ -308,10 +481,11 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         meta: { ...prev.meta, autosaveStatus: 'saving' }
       }));
 
+      const installerKey = session?.user?.id ?? 'unknown-installer';
       const draftKey =
-        mode === 'bid'
-          ? `writtenQuote:draft:${lead.id}:installer-id`
-          : `quote:draft:${lead.id}:installer-id`;
+        mode === 'quote'
+          ? `writtenQuote:draft:${lead.id}:${installerKey}`
+          : `quote:draft:${lead.id}:${installerKey}`;
       
       const draftData = {
         ...quoteDraft,
@@ -335,16 +509,17 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
     const timer = setTimeout(saveDraft, 750);
     return () => clearTimeout(timer);
-  }, [isOpen, lead, mode, quoteDraft]);
+  }, [isOpen, lead, mode, quoteDraft, session?.user?.id]);
 
   // Load draft on mount
   useEffect(() => {
     if (!isOpen || !lead) return;
 
+    const installerKey = session?.user?.id ?? 'unknown-installer';
     const draftKey =
-      mode === 'bid'
-        ? `writtenQuote:draft:${lead.id}:installer-id`
-        : `quote:draft:${lead.id}:installer-id`;
+      mode === 'quote'
+        ? `writtenQuote:draft:${lead.id}:${installerKey}`
+        : `quote:draft:${lead.id}:${installerKey}`;
     const draft = localStorage.getItem(draftKey);
 
     if (draft) {
@@ -367,7 +542,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         console.error('Failed to load draft:', error);
       }
     }
-  }, [isOpen, lead, mode]);
+  }, [isOpen, lead, mode, session?.user?.id]);
 
   // Update preview options when relevant data changes (T020 - Real-time preview)
   useEffect(() => {
@@ -408,6 +583,13 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quoteDraft.products.addons]);
+
+  // Refresh negotiation state when modal opens / lead changes
+  useEffect(() => {
+    if (isOpen && lead?.id) {
+      fetchNegotiationQuote();
+    }
+  }, [isOpen, lead?.id, fetchNegotiationQuote]);
 
   // Handlers
   const toggleSection = (section: string) => {
@@ -612,7 +794,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         }
 
         // Clear draft on success
-        const draftKey = `writtenQuote:draft:${lead.id}:installer-id`;
+        const installerKey = session?.user?.id ?? 'unknown-installer';
+        const draftKey = `writtenQuote:draft:${lead.id}:${installerKey}`;
         localStorage.removeItem(draftKey);
 
         // Show success message
@@ -628,7 +811,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         const success = await onSubmitQuote(String(lead.id), quoteData);
         
         if (success) {
-          const draftKey = `quote:draft:${lead.id}:installer-id`;
+          const installerKey = session?.user?.id ?? 'unknown-installer';
+          const draftKey = `quote:draft:${lead.id}:${installerKey}`;
           localStorage.removeItem(draftKey);
           onClose();
         }
@@ -675,10 +859,11 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   if (!isOpen || !lead) return null;
 
   // Check if draft exists for restoration banner
+  const installerKey = session?.user?.id ?? 'unknown-installer';
   const draftKey =
-    mode === 'bid'
-      ? `writtenQuote:draft:${lead.id}:installer-id`
-      : `quote:draft:${lead.id}:installer-id`;
+    mode === 'quote'
+      ? `writtenQuote:draft:${lead.id}:${installerKey}`
+      : `quote:draft:${lead.id}:${installerKey}`;
   const hasDraft = typeof window !== 'undefined' && localStorage.getItem(draftKey);
 
   // Calculate budget hint banner visibility
@@ -709,7 +894,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal-backdrop flex items-center justify-center p-0 md:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
@@ -757,9 +942,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
               <div>
                 <h2
                   className="text-heading-4 text-foreground"
-                  data-testid={mode === 'bid' ? 'written-quote-builder-heading' : 'quote-builder-heading'}
+                  data-testid={mode === 'quote' ? 'written-quote-builder-heading' : 'quote-builder-heading'}
                 >
-                  {mode === 'bid' ? 'Written Quote Builder' : `Quote Builder: ${lead.name}`}
+                  {mode === 'quote' ? 'Written Quote Builder' : `Quote Builder: ${lead.name}`}
                 </h2>
                 <div className="flex items-center gap-4 text-caption text-muted-foreground mt-1">
                   <span>Lead #{lead.id}</span>
@@ -812,7 +997,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                 <Send className="h-4 w-4" /> 
                 {isSubmitting 
                   ? 'Submitting...' 
-                  : mode === 'bid' ? 'Submit Written Quote' : 'Send Quote'}
+                  : mode === 'quote' ? 'Submit Written Quote' : 'Send Quote'}
               </Button>
               <Button
                 onClick={onClose}
@@ -947,6 +1132,105 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           {/* Right Column - 30% - Customer Preview & Lead Details (Sticky) */}
           <div className="w-[30%] overflow-y-auto pl-2">
             <div className="sticky top-0 space-y-6">
+                {/* Negotiation Panel (Phase 13W) */}
+                <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
+                  <h3 className="text-heading-4 text-foreground">Negotiation</h3>
+
+                  {isLoadingNegotiation ? (
+                    <div className="space-y-3">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                      <p className="text-body-small text-muted-foreground">Loading negotiation status...</p>
+                    </div>
+                  ) : negotiationFetchError ? (
+                    <div className="bg-error/10 border border-error/20 rounded-lg p-3">
+                      <p className="text-body-small text-error">{negotiationFetchError}</p>
+                    </div>
+                  ) : !negotiationQuote ? (
+                    <div className="bg-info/10 border border-info/20 rounded-lg p-3">
+                      <p className="text-body-small text-info">
+                        No negotiation yet. Submit your written quote to start.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Status</span>
+                          <span className="text-body-small text-foreground">
+                            {getNegotiationStatusLabel(negotiationQuote.negotiationStatus)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Last offer</span>
+                          <span className="text-body-small text-foreground">
+                            ${getLastOfferAmount(negotiationQuote).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-label text-foreground">History</div>
+                        <div className="space-y-2">
+                          {getNegotiationTimeline(negotiationQuote).map((evt, idx) => (
+                            <div key={idx} className="bg-background/50 border border-border rounded-lg p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="text-body-small text-foreground">
+                                  {evt.actor}: {evt.label}
+                                </div>
+                                <div className="text-body-small text-foreground">
+                                  ${evt.amount.toLocaleString()}
+                                </div>
+                              </div>
+                              <div className="text-caption text-muted-foreground mt-1">
+                                {formatDateTime(evt.at)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {negotiationQuote.negotiationStatus !== 'AGREED' && (
+                        <div className="space-y-3">
+                          <div className="text-label text-foreground">Revise your offer</div>
+                          <input
+                            value={revisedAmount}
+                            onChange={(e) => setRevisedAmount(e.target.value)}
+                            type="number"
+                            min={0}
+                            inputMode="numeric"
+                            placeholder="Enter revised amount"
+                            className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                          />
+                          <Button
+                            variant="secondary"
+                            onClick={handleReviseOffer}
+                            disabled={isSubmittingRevision}
+                            className="w-full"
+                          >
+                            {isSubmittingRevision ? 'Updating...' : 'Send Updated Offer'}
+                          </Button>
+
+                          <Button
+                            variant="primary"
+                            onClick={handleDoneDeal}
+                            disabled={isFinalizingDeal}
+                            className="w-full"
+                          >
+                            {isFinalizingDeal ? 'Finalizing...' : 'Done deal'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {negotiationQuote.negotiationStatus === 'AGREED' && (
+                        <div className="bg-success/10 border border-success/20 rounded-lg p-3">
+                          <p className="text-body-small text-success">Negotiation finalized.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
               {/* Customer Preview - Collapsible */}
               <CollapsibleSection
                 title="Customer Preview"

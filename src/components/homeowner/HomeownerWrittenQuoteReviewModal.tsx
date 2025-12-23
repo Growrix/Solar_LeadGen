@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useSession } from 'next-auth/react';
 import { 
   X, Award, DollarSign, TrendingUp, Calendar, Battery, Zap, 
   CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader 
@@ -37,8 +39,10 @@ export default function HomeownerWrittenQuoteReviewModal({
   writtenQuotes: initialWrittenQuotes,
   onSelectWinner
 }: HomeownerWrittenQuoteReviewModalProps) {
+  const { data: session } = useSession();
+  const [isMounted, setIsMounted] = useState(false);
   // State management
-  const [selectedBidId, setSelectedBidId] = useState<string>('');
+  const [selectedWrittenQuoteId, setSelectedWrittenQuoteId] = useState<string>('');
   const [leadData, setLeadData] = useState<LeadData | null>(null);
   const [isLoadingLead, setIsLoadingLead] = useState(false);
   const [leadError, setLeadError] = useState<string | null>(null);
@@ -46,7 +50,10 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [isLoadingWrittenQuotes, setIsLoadingWrittenQuotes] = useState(false);
   const [writtenQuotesError, setWrittenQuotesError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isSelecting, setIsSelecting] = useState(false);
+  const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
+  const [counterAmount, setCounterAmount] = useState<string>('');
+  const [isSubmittingCounter, setIsSubmittingCounter] = useState(false);
+  const [negotiationError, setNegotiationError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     instantQuote: true,
     technical: false,
@@ -55,10 +62,10 @@ export default function HomeownerWrittenQuoteReviewModal({
 
   // Select first written quote by default when writtenQuotes change
   useEffect(() => {
-    if (writtenQuotes.length > 0 && !selectedBidId) {
-      setSelectedBidId(writtenQuotes[0].id);
+    if (writtenQuotes.length > 0 && !selectedWrittenQuoteId) {
+      setSelectedWrittenQuoteId(writtenQuotes[0].id);
     }
-  }, [writtenQuotes, selectedBidId]);
+  }, [writtenQuotes, selectedWrittenQuoteId]);
 
   // Fetch written quotes for the lead
   const fetchWrittenQuotes = React.useCallback(async () => {
@@ -76,7 +83,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       
       // DEBUG: Log first written quote's structure
       if (data.writtenQuotes.length > 0) {
-        console.log('[DEBUG] First bid structure:', {
+        console.log('[DEBUG] First written quote structure:', {
           id: data.writtenQuotes[0].id,
           amount: data.writtenQuotes[0].amount,
           finalTotal: data.writtenQuotes[0].finalTotal,
@@ -87,7 +94,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       }
       
       // Transform API response to match component's expected format
-      const transformedBids: WrittenQuoteWithFullData[] = data.writtenQuotes.map(writtenQuote => ({
+      const transformedQuotes: WrittenQuoteWithFullData[] = data.writtenQuotes.map(writtenQuote => ({
         ...writtenQuote,
         installerName: writtenQuote.installer?.companyName || 'Unknown Installer',
         installerRating: 4.5, // TODO: Get actual rating from installer profile
@@ -97,7 +104,7 @@ export default function HomeownerWrittenQuoteReviewModal({
         isWinner: writtenQuote.status === 'SELECTED'
       }));
       
-      setWrittenQuotes(transformedBids);
+      setWrittenQuotes(transformedQuotes);
     } catch (error) {
       console.error('[HomeownerWrittenQuoteReviewModal] Error fetching written quotes:', error);
       setWrittenQuotesError(error instanceof Error ? error.message : 'Failed to load written quotes');
@@ -144,7 +151,7 @@ export default function HomeownerWrittenQuoteReviewModal({
     }));
   };
 
-  const selectedWrittenQuote = writtenQuotes.find(wq => wq.id === selectedBidId);
+  const selectedWrittenQuote = writtenQuotes.find(wq => wq.id === selectedWrittenQuoteId);
 
   const sortedWrittenQuotes = [...writtenQuotes].sort((a, b) => {
     // Winner first, then shortlisted, then by price
@@ -155,36 +162,74 @@ export default function HomeownerWrittenQuoteReviewModal({
     return a.finalTotal - b.finalTotal;
   });
 
-  const handleSelectWinnerClick = () => {
+  const handleDoneDealClick = () => {
     setShowConfirmation(true);
   };
 
-  const handleConfirmSelection = async () => {
-    if (!selectedBidId || !onSelectWinner) return;
-    
-    setIsSelecting(true);
+  const handleConfirmDoneDeal = async () => {
+    if (!selectedWrittenQuote) return;
+
+    const userId = session?.user?.id;
+    if (!userId) {
+      setNegotiationError('Unable to finalize deal: missing user session. Please refresh and try again.');
+      return;
+    }
+
+    setIsFinalizingDeal(true);
+    setNegotiationError(null);
     try {
-      await onSelectWinner(selectedBidId);
-      
-      // ✅ T189: Update local state to show winner badge immediately
-      setWrittenQuotes(prevBids => prevBids.map(writtenQuote =>
-        writtenQuote.id === selectedBidId
-          ? { ...writtenQuote, status: 'SELECTED' as const, isWinner: true }
-          : { ...writtenQuote, status: 'REJECTED' as const, isWinner: false }
-      ));
-      
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/agree`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agreedBy: userId })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to finalize negotiation');
+      }
+
       setShowConfirmation(false);
-      
-      // ✅ T189: Keep modal open for 2 seconds to show winner badge, then close
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-      
+
+      await fetchWrittenQuotes();
     } catch (error) {
-      console.error('[HomeownerWrittenQuoteReviewModal] Error selecting winner:', error);
-      // Error handled by parent with toast - no alert needed
+      console.error('[HomeownerWrittenQuoteReviewModal] Error finalizing deal:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to finalize negotiation');
     } finally {
-      setIsSelecting(false);
+      setIsFinalizingDeal(false);
+    }
+  };
+
+  const handleSubmitCounter = async () => {
+    if (!selectedWrittenQuote) return;
+    setNegotiationError(null);
+
+    const parsed = Number(counterAmount);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setNegotiationError('Enter a valid counter amount greater than 0.');
+      return;
+    }
+
+    setIsSubmittingCounter(true);
+    try {
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/counter`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ counterAmount: parsed })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit counter offer');
+      }
+
+      setCounterAmount('');
+      await fetchWrittenQuotes();
+    } catch (error) {
+      console.error('[HomeownerWrittenQuoteReviewModal] Error submitting counter:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to submit counter offer');
+    } finally {
+      setIsSubmittingCounter(false);
     }
   };
 
@@ -194,6 +239,79 @@ export default function HomeownerWrittenQuoteReviewModal({
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-AU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getLastOfferAmount = (writtenQuote: WrittenQuoteWithFullData) => {
+    return (
+      writtenQuote.installerRevisedAmount ||
+      writtenQuote.homeownerCounterAmount ||
+      writtenQuote.agreedAmount ||
+      writtenQuote.amount
+    );
+  };
+
+  const getNegotiationStatusLabel = (writtenQuote: WrittenQuoteWithFullData) => {
+    switch (writtenQuote.negotiationStatus) {
+      case 'HOMEOWNER_COUNTERED':
+        return 'Waiting on installer response';
+      case 'INSTALLER_RESPONDED':
+        return 'Installer updated the offer';
+      case 'AGREED':
+        return 'Finalized (Done deal)';
+      case 'PENDING':
+      default:
+        return 'Not started';
+    }
+  };
+
+  const getNegotiationTimeline = (writtenQuote: WrittenQuoteWithFullData) => {
+    const events: Array<{ label: string; actor: string; amount: number; at: string }> = [];
+
+    events.push({
+      label: 'Initial offer submitted',
+      actor: 'Installer',
+      amount: writtenQuote.amount,
+      at: writtenQuote.createdAt
+    });
+
+    if (writtenQuote.homeownerCounterAt && writtenQuote.homeownerCounterAmount) {
+      events.push({
+        label: 'Counter offer submitted',
+        actor: 'Homeowner',
+        amount: writtenQuote.homeownerCounterAmount,
+        at: writtenQuote.homeownerCounterAt
+      });
+    }
+
+    if (writtenQuote.installerRevisedAt && writtenQuote.installerRevisedAmount) {
+      events.push({
+        label: 'Offer revised',
+        actor: 'Installer',
+        amount: writtenQuote.installerRevisedAmount,
+        at: writtenQuote.installerRevisedAt
+      });
+    }
+
+    if (writtenQuote.agreedAt && writtenQuote.agreedAmount) {
+      events.push({
+        label: 'Done deal',
+        actor: 'Finalized',
+        amount: writtenQuote.agreedAmount,
+        at: writtenQuote.agreedAt
+      });
+    }
+
+    return events;
   };
 
   // Helper functions to safely access bid data with fallbacks
@@ -206,11 +324,25 @@ export default function HomeownerWrittenQuoteReviewModal({
     return Math.round(systemSize * yieldFactor * 365);
   };
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-  return (
+  // UI-only: prevent background scroll while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !isMounted) return null;
+
+  return createPortal(
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1400] flex items-center justify-center p-0 md:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div 
@@ -239,15 +371,15 @@ export default function HomeownerWrittenQuoteReviewModal({
           {isLoadingWrittenQuotes ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Loader className="h-16 w-16 animate-spin text-primary mb-4" />
-              <h3 className="text-heading-4 text-foreground mb-2">Loading Bids...</h3>
+              <h3 className="text-heading-4 text-foreground mb-2">Loading Written Quotes...</h3>
               <p className="text-body text-muted-foreground max-w-md">
-                Please wait while we fetch all submitted bids for this lead.
+                Please wait while we fetch all submitted written quotes for this lead.
               </p>
             </div>
           ) : writtenQuotesError ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Info className="h-16 w-16 text-error mb-4" />
-              <h3 className="text-heading-4 text-foreground mb-2">Error Loading Bids</h3>
+              <h3 className="text-heading-4 text-foreground mb-2">Error Loading Written Quotes</h3>
               <p className="text-body text-muted-foreground max-w-md mb-4">
                 {writtenQuotesError}
               </p>
@@ -258,9 +390,9 @@ export default function HomeownerWrittenQuoteReviewModal({
           ) : sortedWrittenQuotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Award className="h-16 w-16 text-muted mb-4" />
-              <h3 className="text-heading-4 text-foreground mb-2">No Bids Received Yet</h3>
+              <h3 className="text-heading-4 text-foreground mb-2">No Written Quotes Received Yet</h3>
               <p className="text-body text-muted-foreground max-w-md">
-                Installers are preparing their quotes. You&apos;ll be notified when bids are submitted for your review.
+                Installers are preparing their written quotes. You&apos;ll be notified when quotes are submitted for your review.
               </p>
             </div>
           ) : (
@@ -268,11 +400,11 @@ export default function HomeownerWrittenQuoteReviewModal({
               {/* Installer Selector Dropdown */}
               <div className="mb-6 space-y-2">
                 <label className="text-label text-foreground block">
-                  Select Installer to Review:
+                  Select Quote to Review:
                 </label>
                 <select 
-                  value={selectedBidId} 
-                  onChange={(e) => setSelectedBidId(e.target.value)}
+                  value={selectedWrittenQuoteId} 
+                  onChange={(e) => setSelectedWrittenQuoteId(e.target.value)}
                   className="w-full md:w-auto px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
                 >
                   {sortedWrittenQuotes.map((writtenQuote, index) => (
@@ -284,14 +416,14 @@ export default function HomeownerWrittenQuoteReviewModal({
                   ))}
                 </select>
                 <p className="text-caption text-muted-foreground">
-                  {writtenQuotes.length} bid{writtenQuotes.length !== 1 ? 's' : ''} received • Compare installers side-by-side
+                  {writtenQuotes.length} quote{writtenQuotes.length !== 1 ? 's' : ''} received • Compare offers side-by-side
                 </p>
               </div>
 
               {/* 2 Column Grid */}
               {selectedWrittenQuote && (
                 <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
-                  {/* LEFT COLUMN: Bid Details (Quotation Style) */}
+                  {/* LEFT COLUMN: Written Quote Details */}
                   <div className="space-y-6 overflow-y-auto">
                     {/* Quote Header */}
                     <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
@@ -678,6 +810,84 @@ export default function HomeownerWrittenQuoteReviewModal({
 
                   {/* RIGHT COLUMN: Lead Details (InstantQuote Data) */}
                   <div className="space-y-6 lg:sticky lg:top-0 lg:h-fit">
+                    {/* Negotiation Panel */}
+                    <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
+                      <h3 className="text-heading-4 text-foreground">Negotiation</h3>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Status</span>
+                          <span className="text-body-small text-foreground">
+                            {getNegotiationStatusLabel(selectedWrittenQuote)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Last offer</span>
+                          <span className="text-body-small text-foreground">
+                            ${getLastOfferAmount(selectedWrittenQuote).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-label text-foreground">History</div>
+                        <div className="space-y-2">
+                          {getNegotiationTimeline(selectedWrittenQuote).map((evt, idx) => (
+                            <div key={idx} className="bg-background/50 border border-border rounded-lg p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="text-body-small text-foreground">
+                                  {evt.actor}: {evt.label}
+                                </div>
+                                <div className="text-body-small text-foreground">
+                                  ${evt.amount.toLocaleString()}
+                                </div>
+                              </div>
+                              <div className="text-caption text-muted-foreground mt-1">
+                                {formatDateTime(evt.at)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {negotiationError && (
+                        <div className="bg-error/10 border border-error/20 rounded-lg p-3">
+                          <p className="text-body-small text-error">{negotiationError}</p>
+                        </div>
+                      )}
+
+                      {selectedWrittenQuote.negotiationStatus !== 'AGREED' && !selectedWrittenQuote.homeownerCounterAt ? (
+                        <div className="space-y-3">
+                          <div className="text-label text-foreground">Your counter offer (one time)</div>
+                          <input
+                            value={counterAmount}
+                            onChange={(e) => setCounterAmount(e.target.value)}
+                            type="number"
+                            min={0}
+                            inputMode="numeric"
+                            placeholder="Enter amount"
+                            className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                          />
+                          <Button
+                            variant="secondary"
+                            onClick={handleSubmitCounter}
+                            disabled={isSubmittingCounter}
+                            className="w-full"
+                          >
+                            {isSubmittingCounter ? 'Submitting...' : 'Send Counter Offer'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="bg-info/10 border border-info/20 rounded-lg p-3">
+                          <p className="text-body-small text-info">
+                            {selectedWrittenQuote.negotiationStatus === 'AGREED'
+                              ? 'This negotiation is finalized.'
+                              : 'Counter offer already submitted (one-time limit).'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
                     <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
                       Original Lead Details
                     </h3>
@@ -766,23 +976,23 @@ export default function HomeownerWrittenQuoteReviewModal({
             {selectedWrittenQuote && (
               <Button 
                 variant="primary" 
-                onClick={handleSelectWinnerClick}
-                disabled={selectedWrittenQuote.isWinner || isSelecting}
+                onClick={handleDoneDealClick}
+                disabled={selectedWrittenQuote.negotiationStatus === 'AGREED' || isFinalizingDeal}
               >
-                {selectedWrittenQuote.isWinner ? (
+                {selectedWrittenQuote.negotiationStatus === 'AGREED' ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Winner Selected
+                    Done Deal
                   </>
-                ) : isSelecting ? (
+                ) : isFinalizingDeal ? (
                   <>
                     <Loader className="h-4 w-4 mr-2 animate-spin" />
-                    Selecting...
+                    Finalizing...
                   </>
                 ) : (
                   <>
                     <Award className="h-4 w-4 mr-2" />
-                    Select as Winner
+                    Done deal
                   </>
                 )}
               </Button>
@@ -793,15 +1003,13 @@ export default function HomeownerWrittenQuoteReviewModal({
 
       {/* Confirmation Modal */}
       {showConfirmation && selectedWrittenQuote && (
-        <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4">
           <div className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg">
-            <h3 className="text-heading-4 text-foreground">Confirm Winning Bid Selection</h3>
+            <h3 className="text-heading-4 text-foreground">Confirm Done Deal</h3>
             <p className="text-body text-muted-foreground">
-              Are you sure you want to select <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong> as the winning installer?
+              Finalize this negotiation with <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong> at the last offered price?
             </p>
-            <p className="text-body-small text-info">
-              This action will notify the installer and unlock their contact details for you.
-            </p>
+            <p className="text-body-small text-info">This will notify the installer and lock the negotiated amount.</p>
             <div className="flex items-center gap-3 pt-4">
               <Button 
                 variant="secondary" 
@@ -812,18 +1020,18 @@ export default function HomeownerWrittenQuoteReviewModal({
               </Button>
               <Button 
                 variant="primary" 
-                onClick={handleConfirmSelection}
-                disabled={isSelecting}
+                onClick={handleConfirmDoneDeal}
+                disabled={isFinalizingDeal}
                 className="flex-1"
               >
-                {isSelecting ? 'Confirming...' : 'Confirm Selection'}
+                {isFinalizingDeal ? 'Confirming...' : 'Confirm Done Deal'}
               </Button>
             </div>
           </div>
         </div>
       )}
     </div>
-  );
+  , document.body);
 }
 
 // Collapsible Section Component
