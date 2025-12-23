@@ -3532,3 +3532,68 @@ Flow:
 - The lead card has no updates based on the user actions, so it is also quite confusing. I want the Lead card always shows updated information based on user actions. e.g the installer submitted written QUote , but the Installers lead card has no updates . If the installer open the modal by clicking on submit QUote , only then they can see update inside.
 
 ***Instructions*** I want you to re-audit the entire Written Quote purchase flow again and identify the missing gaps as per the plan mentioned in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\WRITTEN-QUOTE-PURCHASE-FLOW-AUDIT.md file. then you have to fix those issues accordingly so that the Written Quote purchase flow meets the plan perfectly without any issues.
+------------------------------------------------------------------------------------------
+
+
+***Written Quote UI/UX Improvements***
+- When the installer clicks on "Done Deal" > It should redirect to the lead card , So that installers see the purcase option and do the purchase. 
+- The QUoteBUilder Modal> The Right Column > Customer Preview Panel does not autosave the Installers generated Quote pricing and details. you need to check the autosave functionality overall in the Quotebuilder modal which is followed by the Bidding lead and also written Quote lead. 
+- In the Homeowners review modal > It doesnt show the Financial Projections graphs. 
+
+### There is a mismatch in the written Lead card : 
+
+- The installer submitted a quote $19120 > But the Homeowners review modal , negotiation panel is showing price $18000. and I have no Idea from where it shows 18000. It should be 19120 as per the quote submitted. I want you to identify and fix this issue. 
+
+- When the Homeowner send a counter offer price wich is 16000 > the installers lead card is still showing the first price sent from the installer > the lead card should be updated accordingly to 16000 , and mention that with "Counter Offer Price submitted - awaiting homeowner" and show lastest offer price. 
+
+- Reject button trigger issue : After clicing on the Homeowners Written Quote Review modal's Reject Button > it opens a modal > but when I click to type reason , the modal closes automatically, might be a bug issue there. Identify and fix it . The modal should stay still untill the user cancel it by cliciking on cancel button. The users should be able to write the reason of rejection and it should be saved in the DB accordingly. 
+
+- Even after the rejection the installer is still able to send counter offer price which even showing in the homeowners review modal . Which is alright , but there should be an endpoint. I want you to increate the limit for the counter offer price to total 2 times for the both end . So that both parties can negotiate 3 times max and then close/reject the deal. You should mention the Counter offer price limit in both end .
+After the limit is over , no parties should be able to send counter offer price anymore. 
+
+***Instructions*** I want you to implement the Written Quote UI/UX Improvements as per the above instructions. so that the Written Quote flow is more user friendly and stable without any issues. Audit deeply and understand the current flow and identify the gaps accordingly. then you have to fix those issues as per the above instructions.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+---------------------------------------------------------------------------------
+
+- The Negotiation limit for the installers should be 4 , so that the installers can negotiate more with the homeowners and close more deals. BUt the homeowners limit remains as it is 3 times. 
+
+- Done deal condition : either Installer or the Homeonwer clicks on "Done deal" button , e.g if the installer clicks on "Done deal" button > the homeowners should see the final price offered by the installer and a "Accept Deal" button > if the homeowner clicks on "Accept Deal" button > the deal is closed > the installer can proceed to purchase the lead. same goes for the homeowners side as well. if the homeowner clicks on "Done deal" button > the installers should see the final price offered by the homeowner and a "Accept Deal" button > if the installer clicks on "Accept Deal" button > the deal is closed > the installer can proceed to purchase the lead. 
+There should be Accept and ALso reject button beside the "Done deal" button in both end. 
+- After clicking on "Done deal" button , the negotiation panel should be disabled for both end. so that no parties can send counter offer price anymore.
+
+- Always show the latest counter offer price in the Negotiation panel So that the both end users can see the latest counter offer price clearly without any confusion.
+
+### Homeonwers Lead card enhancement :
+ I want the Homeowners written Quote lead card to be more informative. so that the homeowners can see the latest status of the written quote negotiation easily from the lead card itself without opening the modal. Now there is no such update shown, All the updates can be seen while opening the review modal. but I want all the updates shows on the Lead card just as like the installers lead card do.
+
+***Instructions*** I want you to audit the Written Quote negotiation flow and implement the improvements as per the above instructions. so that the Written Quote negotiation flow is more user friendly and stable without any issues. Audit deeply and understand the current flow and identify the gaps accordingly. then you have to fix those issues as per the above instructions.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+-----------------------------------------------------------------------------------------------
+
+There is  a mismatch between 2 modals from both side. The installers side has the issue. I have generated a quote price was 5200 > Homeonwer countered 4000 > Aftert that I see Installer: Initial offer submitted
+$8,000
+23 Dec 2025, 06:48 pm > I have no idea how this 8000 came and from where. 
+
+- You must check this issue deeply and check all the calcualtion logics , also negotiaton flow and its logics . Audit both the modal to identify the missmathh. check the screenshot for better Idea. Audit the frontend and backend both deeply and identify and fix it accordingly. 

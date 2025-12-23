@@ -73,6 +73,15 @@ export interface AgreeQuoteRequest {
 }
 
 /**
+ * Step 2: Accept a pending done-deal request
+ */
+export interface AcceptQuoteResponse {
+  success: boolean;
+  agreedAmount?: number;
+  message?: string;
+}
+
+/**
  * Response from GET /api/written-quotes?leadId={id}
  * Returns all written quotes for a specific lead
  */
@@ -112,6 +121,9 @@ export interface WrittenQuoteWithInstaller {
   agreedAmount?: number | null;
   agreedAt?: string | null;
   agreedBy?: string | null;
+  homeownerCounterCount?: number | null;
+  installerRevisionCount?: number | null;
+  negotiationTurnCount?: number | null;
   selectedAt?: string | null;
   purchasedAt?: string | null; // Phase 13W.2: Purchase timestamp
   rejectedAt?: string | null;
@@ -185,7 +197,9 @@ export enum NegotiationStatus {
   PENDING = 'PENDING',
   HOMEOWNER_COUNTERED = 'HOMEOWNER_COUNTERED',
   INSTALLER_RESPONDED = 'INSTALLER_RESPONDED',
+  PENDING_ACCEPTANCE = 'PENDING_ACCEPTANCE',
   AGREED = 'AGREED',
+  REJECTED = 'REJECTED',
 }
 
 /**

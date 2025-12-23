@@ -105,14 +105,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate financial totals
+    // Financial totals
+    // NOTE: The Quote Builder already calculates totals; we preserve provided values to avoid
+    // mismatches between installer view (finalTotal) and homeowner negotiation panel.
     const includeGst = body.includeGst !== undefined ? body.includeGst : true;
     const gstPercent = body.gstPercent || 10.0;
     const includeIncentive = body.includeIncentive || false;
     const incentiveAmount = body.incentiveAmount || 0;
-
-    const gstAmount = includeGst ? (body.amount * (gstPercent / 100)) : 0;
-    const finalTotal = body.amount + gstAmount - incentiveAmount;
+    const gstAmount = body.gstAmount ?? (includeGst ? (body.amount * (gstPercent / 100)) : 0);
+    const finalTotal = body.finalTotal ?? (body.amount + gstAmount - incentiveAmount);
 
     // Create written quote record with comprehensive Quote Builder data (Phase 13W)
     const writtenQuote = await prisma.writtenQuote.create({
@@ -365,6 +366,9 @@ export async function GET(request: NextRequest) {
         agreedAmount: quote.agreedAmount || null,
         agreedAt: quote.agreedAt?.toISOString() || null,
         agreedBy: quote.agreedBy || null,
+        homeownerCounterCount: (quote as any).homeownerCounterCount ?? null,
+        installerRevisionCount: (quote as any).installerRevisionCount ?? null,
+        negotiationTurnCount: (quote as any).negotiationTurnCount ?? null,
         
         createdAt: quote.createdAt.toISOString(),
         updatedAt: quote.updatedAt.toISOString(),

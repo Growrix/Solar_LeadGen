@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { LeadStatus as LeadStatusEnum } from '@prisma/client';
 import { useTheme, type Theme } from '@/components/ThemeProvider';
@@ -144,6 +144,15 @@ interface RecentLeadSummary {
   batteryCapacity: string | null;
   timeframe: string | null;
   additionalNotes: string | null;
+
+  // Written Quote negotiation summary (present for WRITTEN_QUOTE leads)
+  writtenQuoteSummary?: {
+    negotiationStatus: string;
+    statusLabel: string;
+    latestAmount: number | null;
+    latestAt: string | null;
+    installerCompanyName: string | null;
+  };
 }
 
 interface HomeownerDashboardSummary {
@@ -744,6 +753,20 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                             <span className={`px-2.5 py-0.5 rounded-lg shadow-neu-inset text-caption ${statusInfo.accent}`}>
                               {statusLabel}
                             </span>
+
+                            {/* Written Quote negotiation summary (no modal open required) */}
+                            {lead.quoteType === 'WRITTEN_QUOTE' && lead.writtenQuoteSummary?.latestAmount != null && (
+                              <span
+                                className="px-2.5 py-0.5 rounded-lg shadow-neu-inset text-caption bg-info/10 text-info border border-info/30"
+                                title={
+                                  lead.writtenQuoteSummary.installerCompanyName
+                                    ? `Latest update from ${lead.writtenQuoteSummary.installerCompanyName}`
+                                    : 'Latest written quote negotiation update'
+                                }
+                              >
+                                WQ: ${Number(lead.writtenQuoteSummary.latestAmount).toLocaleString()} • {lead.writtenQuoteSummary.statusLabel}
+                              </span>
+                            )}
                             {/* Live Countdown Timer - Only for APPROVED leads (not PURCHASED) */}
                             {lead.expiresAt && lead.status === LeadStatusEnum.APPROVED && (
                               <LiveCountdownBar
@@ -886,9 +909,13 @@ export default function HomeownerDashboardPage() {
   }, [fetchDashboardSummary]);
 
   // T402: Handle URL parameters for modal auto-open (e.g., ?modal=reviewBids&leadId=123)
-  const searchParams = useSearchParams();
-  
+  // NOTE: Avoid useSearchParams() here to prevent Next.js prerender build errors.
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const searchParams = new URLSearchParams(window.location.search);
     const modalParam = searchParams.get('modal');
     const leadIdParam = searchParams.get('leadId');
 
@@ -905,7 +932,7 @@ export default function HomeownerDashboardPage() {
         window.history.replaceState({}, '', url.toString());
       }
     }
-  }, [searchParams]);
+  }, []);
 
   // Listen for global lead limit reached events (fallback trigger from CTA button)
   useEffect(() => {

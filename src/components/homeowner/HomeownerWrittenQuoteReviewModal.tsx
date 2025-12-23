@@ -13,6 +13,7 @@ import { LeadData } from '@/types/lead';
 import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerInstantQuoteDetails';
 import LeadTechnicalDetails from '@/components/quote-builder/LeadTechnicalDetails';
 import InstantQuoteResult from '@/components/quote-builder/InstantQuoteResult';
+import SavingsChart from '@/components/SavingsChart';
 
 // Type alias for individual bid with full data
 type WrittenQuoteWithFullData = GetWrittenQuotesResponse['writtenQuotes'][number] & {
@@ -52,6 +53,8 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showRejectConfirmation, setShowRejectConfirmation] = useState(false);
   const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
+  const [isAcceptingDeal, setIsAcceptingDeal] = useState(false);
+  const [isRejectingDeal, setIsRejectingDeal] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [counterAmount, setCounterAmount] = useState<string>('');
@@ -193,13 +196,62 @@ export default function HomeownerWrittenQuoteReviewModal({
       }
 
       setShowConfirmation(false);
+      await fetchWrittenQuotes();
+    } catch (error) {
+      console.error('[HomeownerWrittenQuoteReviewModal] Error requesting done-deal:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to request done-deal');
+    } finally {
+      setIsFinalizingDeal(false);
+    }
+  };
+
+  const handleAcceptDeal = async () => {
+    if (!selectedWrittenQuote) return;
+
+    setIsAcceptingDeal(true);
+    setNegotiationError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to accept done-deal');
+      }
 
       await fetchWrittenQuotes();
     } catch (error) {
-      console.error('[HomeownerWrittenQuoteReviewModal] Error finalizing deal:', error);
-      setNegotiationError(error instanceof Error ? error.message : 'Failed to finalize negotiation');
+      console.error('[HomeownerWrittenQuoteReviewModal] Error accepting done-deal:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to accept done-deal');
     } finally {
-      setIsFinalizingDeal(false);
+      setIsAcceptingDeal(false);
+    }
+  };
+
+  const handleRejectDeal = async () => {
+    if (!selectedWrittenQuote) return;
+
+    setIsRejectingDeal(true);
+    setNegotiationError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/deal-reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject done-deal');
+      }
+
+      await fetchWrittenQuotes();
+    } catch (error) {
+      console.error('[HomeownerWrittenQuoteReviewModal] Error rejecting done-deal:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to reject done-deal');
+    } finally {
+      setIsRejectingDeal(false);
     }
   };
 
@@ -289,10 +341,14 @@ export default function HomeownerWrittenQuoteReviewModal({
   };
 
   const getLastOfferAmount = (writtenQuote: WrittenQuoteWithFullData) => {
+    if (writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' && writtenQuote.agreedAmount) {
+      return writtenQuote.agreedAmount;
+    }
     return (
       writtenQuote.installerRevisedAmount ||
       writtenQuote.homeownerCounterAmount ||
       writtenQuote.agreedAmount ||
+      writtenQuote.finalTotal ||
       writtenQuote.amount
     );
   };
@@ -303,8 +359,12 @@ export default function HomeownerWrittenQuoteReviewModal({
         return 'Waiting on installer response';
       case 'INSTALLER_RESPONDED':
         return 'Installer updated the offer';
+      case 'PENDING_ACCEPTANCE':
+        return 'Done deal pending acceptance';
       case 'AGREED':
         return 'Finalized (Done deal)';
+      case 'REJECTED':
+        return 'Rejected';
       case 'PENDING':
       default:
         return 'Not started';
@@ -317,7 +377,7 @@ export default function HomeownerWrittenQuoteReviewModal({
     events.push({
       label: 'Initial offer submitted',
       actor: 'Installer',
-      amount: writtenQuote.amount,
+      amount: writtenQuote.finalTotal || writtenQuote.amount,
       at: writtenQuote.createdAt
     });
 
@@ -341,8 +401,8 @@ export default function HomeownerWrittenQuoteReviewModal({
 
     if (writtenQuote.agreedAt && writtenQuote.agreedAmount) {
       events.push({
-        label: 'Done deal',
-        actor: 'Finalized',
+        label: writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? 'Done deal requested' : 'Done deal',
+        actor: writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? 'Pending' : 'Finalized',
         amount: writtenQuote.agreedAmount,
         at: writtenQuote.agreedAt
       });
@@ -380,7 +440,10 @@ export default function HomeownerWrittenQuoteReviewModal({
   return createPortal(
     <div 
       className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1400] flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
+      onClick={() => {
+        if (showConfirmation || showRejectConfirmation) return;
+        onClose();
+      }}
     >
       <div 
         className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
@@ -805,6 +868,35 @@ export default function HomeownerWrittenQuoteReviewModal({
                             ${((selectedWrittenQuote.calculations?.estimatedAnnualSavings || 0) * 25).toLocaleString()}
                           </p>
                       </div>
+
+                        {leadData && (() => {
+                          const finalPrice =
+                            selectedWrittenQuote.finalTotal ||
+                            selectedWrittenQuote.calculations?.finalTotal ||
+                            selectedWrittenQuote.amount;
+
+                          const annualSavings = selectedWrittenQuote.calculations?.estimatedAnnualSavings || 0;
+
+                          const currentAnnualBill =
+                            (leadData as any)?.quoteData?.currentAnnualBill ||
+                            (leadData.billType === 'monthly'
+                              ? leadData.energyBill * 12
+                              : leadData.billType === 'quarterly'
+                              ? leadData.energyBill * 4
+                              : leadData.energyBill);
+
+                          if (!finalPrice || !annualSavings || !currentAnnualBill) return null;
+
+                          return (
+                            <div className="pt-3 border-t border-border">
+                              <SavingsChart
+                                finalPrice={Number(finalPrice)}
+                                annualSavings={Number(annualSavings)}
+                                currentAnnualBill={Number(currentAnnualBill)}
+                              />
+                            </div>
+                          );
+                        })()}
                     </div>
 
                     {/* Installation & Roof Details */}
@@ -904,9 +996,17 @@ export default function HomeownerWrittenQuoteReviewModal({
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-body-small text-muted-foreground">Last offer</span>
+                          <span className="text-body-small text-muted-foreground">
+                            {selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? 'Deal price' : 'Last offer'}
+                          </span>
                           <span className="text-body-small text-foreground">
                             ${getLastOfferAmount(selectedWrittenQuote).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Negotiation turns</span>
+                          <span className="text-body-small text-foreground">
+                            {(selectedWrittenQuote.negotiationTurnCount ?? 0)}/7
                           </span>
                         </div>
                       </div>
@@ -938,36 +1038,59 @@ export default function HomeownerWrittenQuoteReviewModal({
                         </div>
                       )}
 
-                      {selectedWrittenQuote.negotiationStatus !== 'AGREED' && !selectedWrittenQuote.homeownerCounterAt ? (
-                        <div className="space-y-3">
-                          <div className="text-label text-foreground">Your counter offer (one time)</div>
-                          <input
-                            value={counterAmount}
-                            onChange={(e) => setCounterAmount(e.target.value)}
-                            type="number"
-                            min={0}
-                            inputMode="numeric"
-                            placeholder="Enter amount"
-                            className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                          />
-                          <Button
-                            variant="secondary"
-                            onClick={handleSubmitCounter}
-                            disabled={isSubmittingCounter}
-                            className="w-full"
-                          >
-                            {isSubmittingCounter ? 'Submitting...' : 'Send Counter Offer'}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="bg-info/10 border border-info/20 rounded-lg p-3">
-                          <p className="text-body-small text-info">
-                            {selectedWrittenQuote.negotiationStatus === 'AGREED'
-                              ? 'This negotiation is finalized.'
-                              : 'Counter offer already submitted (one-time limit).'}
-                          </p>
-                        </div>
-                      )}
+                      {(() => {
+                        const homeownerCounterCount = selectedWrittenQuote.homeownerCounterCount ?? 0;
+                        const negotiationTurns = selectedWrittenQuote.negotiationTurnCount ?? 0;
+                        const isClosed =
+                          selectedWrittenQuote.negotiationStatus === 'AGREED' ||
+                          selectedWrittenQuote.negotiationStatus === 'REJECTED' ||
+                          selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ||
+                          !!selectedWrittenQuote.purchasedAt;
+
+                        const canCounter = !isClosed && homeownerCounterCount < 3 && negotiationTurns < 7;
+
+                        if (!canCounter) {
+                          const reason = isClosed
+                            ? selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE'
+                              ? 'Done deal is pending acceptance. Negotiation is temporarily locked.'
+                              : 'This negotiation is closed.'
+                            : negotiationTurns >= 7
+                            ? 'Negotiation limit reached (7 total turns).'
+                            : 'Counter offer limit reached (3 total).';
+
+                          return (
+                            <div className="bg-info/10 border border-info/20 rounded-lg p-3">
+                              <p className="text-body-small text-info">{reason}</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-3">
+                            <div className="text-label text-foreground">
+                              Your counter offer ({homeownerCounterCount}/3 used)
+                              <span className="text-caption text-muted-foreground"> · Total turns: {negotiationTurns}/7</span>
+                            </div>
+                            <input
+                              value={counterAmount}
+                              onChange={(e) => setCounterAmount(e.target.value)}
+                              type="number"
+                              min={0}
+                              inputMode="numeric"
+                              placeholder="Enter amount"
+                              className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-body text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                            />
+                            <Button
+                              variant="secondary"
+                              onClick={handleSubmitCounter}
+                              disabled={isSubmittingCounter}
+                              className="w-full"
+                            >
+                              {isSubmittingCounter ? 'Submitting...' : 'Send Counter Offer'}
+                            </Button>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
@@ -1055,7 +1178,10 @@ export default function HomeownerWrittenQuoteReviewModal({
               Close
             </Button>
             
-            {selectedWrittenQuote && selectedWrittenQuote.negotiationStatus !== 'AGREED' && selectedWrittenQuote.negotiationStatus !== 'REJECTED' && (
+            {selectedWrittenQuote &&
+              selectedWrittenQuote.negotiationStatus !== 'AGREED' &&
+              selectedWrittenQuote.negotiationStatus !== 'REJECTED' &&
+              selectedWrittenQuote.negotiationStatus !== 'PENDING_ACCEPTANCE' && (
               <Button 
                 variant="secondary"
                 onClick={handleRejectClick}
@@ -1087,29 +1213,91 @@ export default function HomeownerWrittenQuoteReviewModal({
               </Button>
             )}
 
-            {selectedWrittenQuote && (
-              <Button 
-                variant="primary" 
-                onClick={handleDoneDealClick}
-                disabled={selectedWrittenQuote.negotiationStatus === 'AGREED' || selectedWrittenQuote.negotiationStatus === 'REJECTED' || isFinalizingDeal}
-              >
-                {selectedWrittenQuote.negotiationStatus === 'AGREED' ? (
+            {selectedWrittenQuote && selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? (
+              (() => {
+                const userId = session?.user?.id;
+                const proposerId = selectedWrittenQuote.agreedBy || null;
+                const isProposer = !!userId && !!proposerId && userId === proposerId;
+
+                if (isProposer) {
+                  return (
+                    <Button variant="primary" disabled>
+                      <Loader className="h-4 w-4 mr-2 animate-spin" />
+                      Waiting for acceptance...
+                    </Button>
+                  );
+                }
+
+                return (
                   <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Done Deal
+                    <Button
+                      variant="secondary"
+                      onClick={handleRejectDeal}
+                      disabled={isRejectingDeal}
+                      className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                    >
+                      {isRejectingDeal ? (
+                        <>
+                          <Loader className="h-4 w-4 mr-2 animate-spin" />
+                          Rejecting...
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Reject Deal
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={handleAcceptDeal}
+                      disabled={isAcceptingDeal}
+                    >
+                      {isAcceptingDeal ? (
+                        <>
+                          <Loader className="h-4 w-4 mr-2 animate-spin" />
+                          Accepting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Accept Deal
+                        </>
+                      )}
+                    </Button>
                   </>
-                ) : isFinalizingDeal ? (
-                  <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
-                    Finalizing...
-                  </>
-                ) : (
-                  <>
-                    <Award className="h-4 w-4 mr-2" />
-                    Done deal
-                  </>
-                )}
-              </Button>
+                );
+              })()
+            ) : (
+              selectedWrittenQuote && (
+                <Button 
+                  variant="primary" 
+                  onClick={handleDoneDealClick}
+                  disabled={
+                    selectedWrittenQuote.negotiationStatus === 'AGREED' ||
+                    selectedWrittenQuote.negotiationStatus === 'REJECTED' ||
+                    selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ||
+                    isFinalizingDeal
+                  }
+                >
+                  {selectedWrittenQuote.negotiationStatus === 'AGREED' ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Done Deal
+                    </>
+                  ) : isFinalizingDeal ? (
+                    <>
+                      <Loader className="h-4 w-4 mr-2 animate-spin" />
+                      Requesting...
+                    </>
+                  ) : (
+                    <>
+                      <Award className="h-4 w-4 mr-2" />
+                      Done deal
+                    </>
+                  )}
+                </Button>
+              )
             )}
           </div>
         </div>
@@ -1117,13 +1305,19 @@ export default function HomeownerWrittenQuoteReviewModal({
 
       {/* Confirmation Modal */}
       {showConfirmation && selectedWrittenQuote && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4">
-          <div className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg">
-            <h3 className="text-heading-4 text-foreground">Confirm Done Deal</h3>
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-heading-4 text-foreground">Request Done Deal</h3>
             <p className="text-body text-muted-foreground">
-              Finalize this negotiation with <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong> at the last offered price?
+              Request a done deal with <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong> at the last offered price?
             </p>
-            <p className="text-body-small text-info">This will notify the installer and lock the negotiated amount.</p>
+            <p className="text-body-small text-info">This will notify the installer and temporarily lock negotiation until they accept or reject.</p>
             <div className="flex items-center gap-3 pt-4">
               <Button 
                 variant="secondary" 
@@ -1138,7 +1332,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                 disabled={isFinalizingDeal}
                 className="flex-1"
               >
-                {isFinalizingDeal ? 'Confirming...' : 'Confirm Done Deal'}
+                {isFinalizingDeal ? 'Requesting...' : 'Request Done Deal'}
               </Button>
             </div>
           </div>
@@ -1147,8 +1341,14 @@ export default function HomeownerWrittenQuoteReviewModal({
 
       {/* Reject Confirmation Modal */}
       {showRejectConfirmation && selectedWrittenQuote && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4">
-          <div className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg">
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-heading-4 text-destructive">Reject Quote</h3>
             <p className="text-body text-muted-foreground">
               Are you sure you want to reject the quote from <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong>?

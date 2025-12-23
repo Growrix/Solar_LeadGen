@@ -78,14 +78,33 @@ export async function PATCH(
       );
     }
 
-    // Check if already agreed
-    if (writtenQuote.negotiationStatus === 'AGREED') {
-      logger.warn('Revise attempt on agreed quote', { 
-        writtenQuoteId: id,
-        correlationId 
-      });
+    // Negotiation is closed once agreed/rejected/purchased
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
       return NextResponse.json(
-        { error: 'Cannot revise an already agreed quote' },
+        { error: 'This negotiation is closed and cannot be revised.' },
+        { status: 403 }
+      );
+    }
+
+    // Done-deal handshake in progress: lock negotiation until accepted/rejected
+    if (writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE') {
+      return NextResponse.json(
+        { error: 'A done-deal is pending acceptance. Negotiation is temporarily locked.' },
+        { status: 403 }
+      );
+    }
+
+    // Limits: homeowner counters max 3; installer revisions max 4; max 7 total negotiation turns
+    if ((writtenQuote as any).installerRevisionCount >= 4) {
+      return NextResponse.json(
+        { error: 'Revision limit reached (4 total). The deal must be finalized or rejected.' },
+        { status: 403 }
+      );
+    }
+
+    if ((writtenQuote as any).negotiationTurnCount >= 7) {
+      return NextResponse.json(
+        { error: 'Negotiation limit reached (7 total turns). The deal must be finalized or rejected.' },
         { status: 403 }
       );
     }
@@ -96,7 +115,9 @@ export async function PATCH(
       data: {
         installerRevisedAmount: body.revisedAmount,
         installerRevisedAt: new Date(),
-        negotiationStatus: 'INSTALLER_RESPONDED'
+        negotiationStatus: 'INSTALLER_RESPONDED',
+        installerRevisionCount: { increment: 1 },
+        negotiationTurnCount: { increment: 1 },
       }
     });
 

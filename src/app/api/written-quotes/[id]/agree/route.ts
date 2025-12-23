@@ -76,14 +76,22 @@ export async function POST(
       );
     }
 
-    // Check if already agreed
-    if (writtenQuote.negotiationStatus === 'AGREED') {
+    // Negotiation is closed once agreed/rejected/purchased
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
       logger.warn('Duplicate agree attempt', { 
         writtenQuoteId: id,
         correlationId 
       });
       return NextResponse.json(
-        { error: 'Quote has already been finalized' },
+        { error: 'This negotiation is already closed.' },
+        { status: 403 }
+      );
+    }
+
+    // If a done-deal has already been requested, negotiation is locked until accepted/rejected
+    if (writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE') {
+      return NextResponse.json(
+        { error: 'A done-deal is already pending acceptance.' },
         { status: 403 }
       );
     }
@@ -91,22 +99,24 @@ export async function POST(
     // Calculate final agreed amount (last price is authoritative)
     const agreedAmount = writtenQuote.installerRevisedAmount 
       || writtenQuote.homeownerCounterAmount 
+      || writtenQuote.finalTotal
       || writtenQuote.amount;
 
-    // Update quote to AGREED status
+    // Step 1: Request a done-deal. The other party must accept or reject.
     const updatedQuote = await prisma.writtenQuote.update({
       where: { id },
       data: {
-        negotiationStatus: 'AGREED',
+        negotiationStatus: 'PENDING_ACCEPTANCE',
         agreedAmount,
         agreedAt: new Date(),
-        agreedBy: body.agreedBy
+        // While pending, store the proposer in agreedBy (accept endpoint overwrites this with acceptor).
+        agreedBy: auth.userId
       }
     });
 
-    logger.info('Quote finalized successfully', { 
+    logger.info('Done-deal requested successfully', { 
       writtenQuoteId: id,
-      agreedBy: body.agreedBy,
+      proposedBy: auth.userId,
       agreedAmount,
       correlationId 
     });
@@ -120,13 +130,13 @@ export async function POST(
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create QUOTE_AGREED type
       role: otherPartyRole,
       messageKey: isInstaller ? 'homeowner.request.received' : 'installer.bid.received',
-      routeKey: isInstaller ? 'homeowner.requests' : 'installer.dashboard',
+      routeKey: isInstaller ? 'homeowner.requests' : 'installer.leads',
       routeParams: { 
         leadId: writtenQuote.leadId
       },
       metadata: {
         agreedAmount,
-        agreedBy: body.agreedBy
+        proposedBy: auth.userId
       }
     });
 
@@ -139,7 +149,7 @@ export async function POST(
       {
         success: true,
         agreedAmount,
-        message: 'Quote finalized successfully'
+        message: 'Done-deal requested successfully'
       },
       { status: 200 }
     );

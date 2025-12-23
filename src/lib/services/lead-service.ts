@@ -117,6 +117,15 @@ export interface HomeownerLeadSummaryItem {
   batteryCapacity: string | null;
   timeframe: string | null;
   additionalNotes: string | null;
+
+  // Written Quote negotiation summary (for WRITTEN_QUOTE leads)
+  writtenQuoteSummary?: {
+    negotiationStatus: string;
+    statusLabel: string;
+    latestAmount: number | null;
+    latestAt: string | null;
+    installerCompanyName: string | null;
+  };
 }
 
 export interface HomeownerLeadSummary {
@@ -559,6 +568,31 @@ export async function getHomeownerLeadSummary(userId: string): Promise<Homeowner
         batteryCapacity: true,
         timeframe: true,
         additionalNotes: true,
+
+        // Written Quote summary for lead cards
+        writtenQuotes: {
+          select: {
+            id: true,
+            negotiationStatus: true,
+            homeownerCounterAmount: true,
+            homeownerCounterAt: true,
+            installerRevisedAmount: true,
+            installerRevisedAt: true,
+            agreedAmount: true,
+            agreedAt: true,
+            agreedBy: true,
+            finalTotal: true,
+            amount: true,
+            createdAt: true,
+            installer: {
+              select: {
+                installerProfile: {
+                  select: { companyName: true },
+                },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.lead.groupBy({
@@ -599,36 +633,102 @@ export async function getHomeownerLeadSummary(userId: string): Promise<Homeowner
     verificationThreshold,
     lastSubmissionAt: recentLeads.length > 0 ? recentLeads[0].createdAt : null,
     statusBreakdown,
-    recentLeads: recentLeads.map(lead => ({
+    recentLeads: recentLeads.map(lead => {
+      const quoteType = lead.quoteType as 'CALL_VISIT' | 'WRITTEN_QUOTE' | 'BIDDING';
+
+      const writtenQuoteSummary =
+        quoteType === 'WRITTEN_QUOTE' && Array.isArray((lead as any).writtenQuotes)
+          ? (() => {
+              const quotes = (lead as any).writtenQuotes as Array<any>;
+              if (quotes.length === 0) return undefined;
+
+              const getLatestAt = (q: any): Date => {
+                const timestamps: Array<Date | null | undefined> = [
+                  q.agreedAt,
+                  q.installerRevisedAt,
+                  q.homeownerCounterAt,
+                  q.createdAt,
+                ];
+                const latest = timestamps
+                  .filter((d): d is Date => d instanceof Date)
+                  .map(d => d.getTime())
+                  .reduce((max, t) => (t > max ? t : max), 0);
+                return new Date(latest);
+              };
+
+              const latestQuote = quotes
+                .slice()
+                .sort((a, b) => getLatestAt(b).getTime() - getLatestAt(a).getTime())[0];
+
+              const negotiationStatus = String(latestQuote.negotiationStatus || 'PENDING');
+              const latestAmount =
+                negotiationStatus === 'PENDING_ACCEPTANCE'
+                  ? (latestQuote.agreedAmount ?? null)
+                  : (latestQuote.installerRevisedAmount ??
+                      latestQuote.homeownerCounterAmount ??
+                      latestQuote.agreedAmount ??
+                      latestQuote.finalTotal ??
+                      latestQuote.amount ??
+                      null);
+
+              const statusLabel =
+                negotiationStatus === 'PENDING_ACCEPTANCE'
+                  ? 'Done deal pending acceptance'
+                  : negotiationStatus === 'AGREED'
+                    ? 'Finalized (Done deal)'
+                    : negotiationStatus === 'REJECTED'
+                      ? 'Rejected'
+                      : negotiationStatus === 'HOMEOWNER_COUNTERED'
+                        ? 'Waiting on installer response'
+                        : negotiationStatus === 'INSTALLER_RESPONDED'
+                          ? 'Installer updated the offer'
+                          : 'Not started';
+
+              const installerCompanyName =
+                latestQuote.installer?.installerProfile?.companyName ?? null;
+
+              return {
+                negotiationStatus,
+                statusLabel,
+                latestAmount,
+                latestAt: getLatestAt(latestQuote).toISOString(),
+                installerCompanyName,
+              };
+            })()
+          : undefined;
+
+      return {
       id: lead.id,
-      quoteType: lead.quoteType as 'CALL_VISIT' | 'WRITTEN_QUOTE' | 'BIDDING',
-      status: lead.status,
-      createdAt: lead.createdAt,
-      updatedAt: lead.updatedAt,
-      leadPrice: lead.leadPrice,
-      purchaseStatus: lead.purchaseStatus,
-      purchasedAt: lead.purchasedAt,
-      visibility: lead.visibility,
-      quoteData: lead.quoteData,
-      phoneVerified: lead.phoneVerified,
-      expiresAt: lead.expiresAt,
-      phoneNumber: lead.phoneNumber,
-      // Phase 1: Map all form fields for LeadEditModal prefill
-      energyBill: lead.energyBill,
-      billType: lead.billType,
-      address: lead.address, // Maps to propertyAddress in form
-      postcode: lead.postcode, // Maps to propertyPostcode in form
-      location: lead.location,
-      state: lead.state,
-      propertyType: lead.propertyType,
-      roofType: lead.roofType,
-      budgetRange: lead.budgetRange,
-      desiredOffset: lead.desiredOffset,
-      batteryRequired: lead.batteryRequired,
-      batteryCapacity: lead.batteryCapacity,
-      timeframe: lead.timeframe,
-      additionalNotes: lead.additionalNotes,
-    })),
+        quoteType,
+        status: lead.status,
+        createdAt: lead.createdAt,
+        updatedAt: lead.updatedAt,
+        leadPrice: lead.leadPrice,
+        purchaseStatus: lead.purchaseStatus,
+        purchasedAt: lead.purchasedAt,
+        visibility: lead.visibility,
+        quoteData: lead.quoteData,
+        phoneVerified: lead.phoneVerified,
+        expiresAt: lead.expiresAt,
+        phoneNumber: lead.phoneNumber,
+        // Phase 1: Map all form fields for LeadEditModal prefill
+        energyBill: lead.energyBill,
+        billType: lead.billType,
+        address: lead.address, // Maps to propertyAddress in form
+        postcode: lead.postcode, // Maps to propertyPostcode in form
+        location: lead.location,
+        state: lead.state,
+        propertyType: lead.propertyType,
+        roofType: lead.roofType,
+        budgetRange: lead.budgetRange,
+        desiredOffset: lead.desiredOffset,
+        batteryRequired: lead.batteryRequired,
+        batteryCapacity: lead.batteryCapacity,
+        timeframe: lead.timeframe,
+        additionalNotes: lead.additionalNotes,
+        writtenQuoteSummary,
+      };
+    }),
   };
 }
 

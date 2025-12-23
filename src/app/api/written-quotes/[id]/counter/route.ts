@@ -81,28 +81,37 @@ export async function PATCH(
       );
     }
 
-    // Check if already countered (1-time limit)
-    if (writtenQuote.homeownerCounterAt) {
-      logger.warn('Duplicate counter attempt', { 
-        writtenQuoteId: id,
-        homeownerId: auth.userId,
-        previousCounterAt: writtenQuote.homeownerCounterAt,
-        correlationId 
-      });
-      return NextResponse.json(
-        { error: 'You have already submitted a counter offer (1 time limit)' },
-        { status: 403 }
-      );
-    }
-
-    // Check if already agreed
-    if (writtenQuote.negotiationStatus === 'AGREED') {
+    // Negotiation is closed once agreed/rejected/purchased
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
       logger.warn('Counter attempt on agreed quote', { 
         writtenQuoteId: id,
         correlationId 
       });
       return NextResponse.json(
-        { error: 'Cannot counter an already agreed quote' },
+        { error: 'This negotiation is closed and cannot be countered.' },
+        { status: 403 }
+      );
+    }
+
+    // Done-deal handshake in progress: lock negotiation until accepted/rejected
+    if (writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE') {
+      return NextResponse.json(
+        { error: 'A done-deal is pending acceptance. Negotiation is temporarily locked.' },
+        { status: 403 }
+      );
+    }
+
+    // Limits: homeowner counters max 3; installer revisions max 4; max 7 total negotiation turns
+    if ((writtenQuote as any).homeownerCounterCount >= 3) {
+      return NextResponse.json(
+        { error: 'Counter offer limit reached (3 total). The deal must be finalized or rejected.' },
+        { status: 403 }
+      );
+    }
+
+    if ((writtenQuote as any).negotiationTurnCount >= 7) {
+      return NextResponse.json(
+        { error: 'Negotiation limit reached (7 total turns). The deal must be finalized or rejected.' },
         { status: 403 }
       );
     }
@@ -113,7 +122,9 @@ export async function PATCH(
       data: {
         homeownerCounterAmount: body.counterAmount,
         homeownerCounterAt: new Date(),
-        negotiationStatus: 'HOMEOWNER_COUNTERED'
+        negotiationStatus: 'HOMEOWNER_COUNTERED',
+        homeownerCounterCount: { increment: 1 },
+        negotiationTurnCount: { increment: 1 },
       }
     });
 
@@ -130,7 +141,7 @@ export async function PATCH(
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create COUNTER_OFFER_RECEIVED type
       role: UserRole.INSTALLER,
       messageKey: 'installer.bid.received',
-      routeKey: 'installer.dashboard',
+      routeKey: 'installer.leads',
       routeParams: { 
         leadId: writtenQuote.leadId
       },

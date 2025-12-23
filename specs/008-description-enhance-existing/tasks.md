@@ -54,6 +54,55 @@ References:
 
 ---
 
+## Phase 13W.3 — Done Deal Handshake + Negotiation Limits
+
+Status: COMPLETE
+Priority: P1
+Date: December 23, 2025
+References:
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-DONE-DEAL-HANDSHAKE-AUDIT-2025-12-23.md
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T13W.3-1: Update Negotiation Limits (Backend Enforcement)
+- Installer revisions limit: 4
+- Homeowner counters limit: 3
+- Total negotiation turns limit: 7
+- Block counter/revise while deal is pending acceptance
+- Files:
+  - `src/app/api/written-quotes/[id]/counter/route.ts`
+  - `src/app/api/written-quotes/[id]/revise/route.ts`
+
+### T13W.3-2: Convert Done Deal into 2-Step Handshake
+- Request Done Deal sets `PENDING_ACCEPTANCE` (does not finalize immediately)
+- Add Accept Deal endpoint (other party only) → finalizes to `AGREED`
+- Add Reject Deal endpoint (other party only) → re-opens negotiation
+- Files:
+  - `src/app/api/written-quotes/[id]/agree/route.ts`
+  - `src/app/api/written-quotes/[id]/accept/route.ts`
+  - `src/app/api/written-quotes/[id]/deal-reject/route.ts`
+
+### T13W.3-3: UI — Pending Acceptance Lock + Accept/Reject Deal
+- Disable negotiation panel actions while `PENDING_ACCEPTANCE`
+- If proposer: show waiting state
+- If non-proposer: show Accept Deal + Reject Deal
+- Always show latest offer amount clearly (deal price when pending)
+- Files:
+  - `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+  - `src/components/WrittenQuoteBuilderModal.tsx`
+  - `src/components/InstallerLeadFeed.tsx`
+
+### T13W.3-4: Homeowner Lead Card Written Quote Summary
+- Surface Written Quote status + latest amount on homeowner dashboard lead cards
+- Files:
+  - `src/lib/services/lead-service.ts`
+  - `src/app/homeowner/dashboard/page.tsx`
+
+### T13W.3-5: Validation
+- `npx tsc --noEmit` → pass
+- `npm run build` → pass
+
+---
+
 ## Phase 4.16 — Written Quote (UI → Spec → Backend)
 
 Status: IN PROGRESS (UI-First)  

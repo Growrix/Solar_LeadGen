@@ -98,10 +98,18 @@ export interface Lead {
     amount: number;
     finalTotal: number;
     negotiationStatus: string;
+    homeownerCounterAmount?: number | null;
+    homeownerCounterAt?: string | null;
+    installerRevisedAmount?: number | null;
+    installerRevisedAt?: string | null;
     agreedAmount?: number | null;
     agreedAt?: string | null;
     purchasedAt?: string | null;
     rejectedAt?: string | null;
+    rejectionReason?: string | null;
+    homeownerCounterCount?: number | null;
+    installerRevisionCount?: number | null;
+    negotiationTurnCount?: number | null;
   }>;
 }
 
@@ -754,12 +762,43 @@ const LeadCard: React.FC<{
             <div className="flex items-center space-x-2">
               <InfoIcon className="h-5 w-5 text-info" />
               <div>
-                <p className="text-body text-foreground">
-                  Written quote submitted — awaiting homeowner
-                </p>
-                <p className="text-body-small text-muted-foreground">
-                  Latest offer: <span className="text-foreground">${(myWrittenQuote?.finalTotal ?? myWrittenQuote?.amount ?? 0).toLocaleString()}</span>
-                </p>
+                {(() => {
+                  const latestOffer = (
+                    (myWrittenQuote as any)?.agreedAmount ??
+                    (myWrittenQuote as any)?.installerRevisedAmount ??
+                    (myWrittenQuote as any)?.homeownerCounterAmount ??
+                    (myWrittenQuote as any)?.finalTotal ??
+                    (myWrittenQuote as any)?.amount ??
+                    0
+                  ) as number;
+                  const status = (myWrittenQuote as any)?.negotiationStatus as string | undefined;
+                  const turns = (myWrittenQuote as any)?.negotiationTurnCount as number | null | undefined;
+
+                  let headline = 'Written quote submitted — awaiting homeowner';
+                  if (status === 'HOMEOWNER_COUNTERED') headline = 'Homeowner counter offer received — action needed';
+                  if (status === 'INSTALLER_RESPONDED') headline = 'Offer revised — awaiting homeowner';
+                  if (status === 'PENDING_ACCEPTANCE') headline = 'Done deal requested — awaiting acceptance';
+
+                  return (
+                    <>
+                      <p className="text-body text-foreground">{headline}</p>
+                      <p className="text-body-small text-muted-foreground">
+                        {status === 'PENDING_ACCEPTANCE' ? (
+                          <>
+                            Deal price: <span className="text-foreground">${latestOffer.toLocaleString()}</span>
+                          </>
+                        ) : (
+                          <>
+                            Latest offer: <span className="text-foreground">${latestOffer.toLocaleString()}</span>
+                          </>
+                        )}
+                        {typeof turns === 'number' && (
+                          <span className="text-muted-foreground"> · Negotiation turns: {turns}/7</span>
+                        )}
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>

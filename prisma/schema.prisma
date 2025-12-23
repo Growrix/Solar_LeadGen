@@ -412,6 +412,11 @@ model WrittenQuote {
   agreedAt               DateTime?
   agreedBy               String?
 
+  // Negotiation limits
+  homeownerCounterCount   Int @default(0)
+  installerRevisionCount  Int @default(0)
+  negotiationTurnCount    Int @default(0)
+
   selectedAt      DateTime?
   purchasedAt     DateTime?
   rejectedAt      DateTime?

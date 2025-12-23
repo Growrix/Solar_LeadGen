@@ -225,6 +225,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [isBidEvaluationOpen, setIsBidEvaluationOpen] = useState(false);
   const [isBudgetHintDismissed, setIsBudgetHintDismissed] = useState(false);
   const [didRestoreDraft, setDidRestoreDraft] = useState(false);
+  const [isAcceptingDeal, setIsAcceptingDeal] = useState(false);
+  const [isRejectingDeal, setIsRejectingDeal] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const lastAutosavedSnapshotRef = useRef<string | null>(null);
 
@@ -244,6 +246,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         return 'Homeowner countered (action needed)';
       case 'INSTALLER_RESPONDED':
         return 'You revised the offer';
+      case 'PENDING_ACCEPTANCE':
+        return 'Done deal pending acceptance';
       case 'AGREED':
         return 'Finalized (Done deal)';
       case 'PENDING':
@@ -253,7 +257,17 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   };
 
   const getLastOfferAmount = (quote: any) => {
-    return quote?.installerRevisedAmount || quote?.homeownerCounterAmount || quote?.agreedAmount || quote?.amount || 0;
+    if (quote?.negotiationStatus === 'PENDING_ACCEPTANCE' && quote?.agreedAmount) {
+      return quote.agreedAmount;
+    }
+    return (
+      quote?.installerRevisedAmount ||
+      quote?.homeownerCounterAmount ||
+      quote?.agreedAmount ||
+      quote?.finalTotal ||
+      quote?.amount ||
+      0
+    );
   };
 
   const getNegotiationTimeline = (quote: any) => {
@@ -263,7 +277,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     events.push({
       label: 'Initial offer submitted',
       actor: 'Installer',
-      amount: quote.amount,
+      amount: quote.finalTotal || quote.amount,
       at: quote.createdAt
     });
 
@@ -287,8 +301,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
     if (quote.agreedAt && quote.agreedAmount) {
       events.push({
-        label: 'Done deal',
-        actor: 'Finalized',
+        label: quote.negotiationStatus === 'PENDING_ACCEPTANCE' ? 'Done deal requested' : 'Done deal',
+        actor: quote.negotiationStatus === 'PENDING_ACCEPTANCE' ? 'Pending' : 'Finalized',
         amount: quote.agreedAmount,
         at: quote.agreedAt
       });
@@ -331,7 +345,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             installerRevisedAmount: ownQuote.installerRevisedAmount,
             installerRevisedAt: ownQuote.installerRevisedAt,
             agreedAmount: ownQuote.agreedAmount,
-            agreedAt: ownQuote.agreedAt
+            agreedAt: ownQuote.agreedAt,
+            agreedBy: ownQuote.agreedBy
           })
         : 'null';
 
@@ -363,6 +378,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       return;
     }
     if (negotiationQuote.negotiationStatus === 'AGREED') return;
+    if (negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE') return;
 
     setIsSubmittingRevision(true);
     setNegotiationFetchError(null);
@@ -391,6 +407,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const handleDoneDeal = async () => {
     if (!negotiationQuote) return;
     if (negotiationQuote.negotiationStatus === 'AGREED') return;
+    if (negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE') return;
 
     const userId = session?.user?.id;
     if (!userId) {
@@ -418,6 +435,56 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to finalize negotiation');
     } finally {
       setIsFinalizingDeal(false);
+    }
+  };
+
+  const handleAcceptDeal = async () => {
+    if (!negotiationQuote) return;
+
+    setIsAcceptingDeal(true);
+    setNegotiationFetchError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to accept done-deal');
+      }
+
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error accepting done-deal:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to accept done-deal');
+    } finally {
+      setIsAcceptingDeal(false);
+    }
+  };
+
+  const handleRejectDeal = async () => {
+    if (!negotiationQuote) return;
+
+    setIsRejectingDeal(true);
+    setNegotiationFetchError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/deal-reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject done-deal');
+      }
+
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error rejecting done-deal:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to reject done-deal');
+    } finally {
+      setIsRejectingDeal(false);
     }
   };
 
@@ -770,8 +837,10 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           // Financial details
           includeGst: true,
           gstPercent: 10.0,
+          gstAmount,
           includeIncentive: totalIncentives > 0,
           incentiveAmount: totalIncentives,
+          finalTotal,
           
           // Phase 13W - Comprehensive JSON fields for homeowner comparison
           systemData: {
@@ -1240,7 +1309,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-body-small text-muted-foreground">Last offer</span>
+                          <span className="text-body-small text-muted-foreground">
+                            {negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? 'Deal price' : 'Last offer'}
+                          </span>
                           <span className="text-body-small text-foreground">
                             ${getLastOfferAmount(negotiationQuote).toLocaleString()}
                           </span>
@@ -1268,7 +1339,43 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                         </div>
                       </div>
 
-                      {negotiationQuote.negotiationStatus !== 'AGREED' && (
+                      {negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? (
+                        (() => {
+                          const userId = session?.user?.id;
+                          const proposerId = (negotiationQuote as any)?.agreedBy || null;
+                          const isProposer = !!userId && !!proposerId && userId === proposerId;
+
+                          if (isProposer) {
+                            return (
+                              <div className="bg-info/10 border border-info/20 rounded-lg p-3">
+                                <p className="text-body-small text-info">Done deal requested. Waiting for homeowner to accept or reject.</p>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="space-y-3">
+                              <div className="text-label text-foreground">Done deal requested</div>
+                              <Button
+                                variant="secondary"
+                                onClick={handleRejectDeal}
+                                disabled={isRejectingDeal}
+                                className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                              >
+                                {isRejectingDeal ? 'Rejecting...' : 'Reject Deal'}
+                              </Button>
+                              <Button
+                                variant="primary"
+                                onClick={handleAcceptDeal}
+                                disabled={isAcceptingDeal}
+                                className="w-full"
+                              >
+                                {isAcceptingDeal ? 'Accepting...' : 'Accept Deal'}
+                              </Button>
+                            </div>
+                          );
+                        })()
+                      ) : negotiationQuote.negotiationStatus !== 'AGREED' ? (
                         <div className="space-y-3">
                           <div className="text-label text-foreground">Revise your offer</div>
                           <input
@@ -1295,10 +1402,10 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                             disabled={isFinalizingDeal}
                             className="w-full"
                           >
-                            {isFinalizingDeal ? 'Finalizing...' : 'Done deal'}
+                            {isFinalizingDeal ? 'Requesting...' : 'Done deal'}
                           </Button>
                         </div>
-                      )}
+                      ) : null}
 
                       {negotiationQuote.negotiationStatus === 'AGREED' && (
                         <div className="bg-success/10 border border-success/20 rounded-lg p-3">
