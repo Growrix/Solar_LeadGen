@@ -1,3 +1,59 @@
+## Phase 13W.2 — Written Quote Purchase & Reject Flow
+
+Status: IN PROGRESS
+Priority: P1
+Date: December 23, 2025
+References:
+  - Audit: DOC/FEATURES/Written Quote/WRITTEN-QUOTE-PURCHASE-FLOW-AUDIT.md
+  - Pattern: Mirrors bidding lead purchase flow (src/app/api/bids/[bidId]/purchase/route.ts)
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T13W.2-1: Create Reject API Endpoint
+- File: `src/app/api/written-quotes/[id]/reject/route.ts`
+- POST endpoint for homeowner to reject negotiated quote
+- Updates `negotiationStatus` to 'REJECTED', sets `rejectedAt`
+- Stores optional `rejectionReason`
+- Notifies installer via in-app notification + email
+
+### T13W.2-2: Create Purchase API Endpoint
+- File: `src/app/api/written-quotes/[id]/purchase/route.ts`
+- POST endpoint for installer to purchase after AGREED status
+- Validates quote is AGREED and installer owns quote
+- Updates `purchasedAt` timestamp on WrittenQuote
+- Updates Lead status to PURCHASED
+- Notifies homeowner + admin
+- Returns unmasked contact details
+
+### T13W.2-3: Add Reject Button to Homeowner Modal
+- File: `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+- Add "Reject" button beside "Done Deal" in negotiation panel
+- Confirmation dialog before reject action
+- Call reject API and refresh state
+- Show rejection feedback
+
+### T13W.2-4: Add Purchase Banner to Installer Lead Card
+- File: `src/components/InstallerLeadFeed.tsx`
+- Detect AGREED written quotes for this installer
+- Show banner: "Deal Agreed! Proceed to Payment"
+- "Proceed to Payment" button calls purchase API
+- On success: reveal contacts
+
+### T13W.2-5: Contact Reveal After Purchase
+- Installer sees homeowner contact details in lead card after purchase
+- Homeowner sees installer contact details in modal after purchase
+- Use `installerContact` JSON field for installer info
+
+### T13W.2-6: TypeScript & Build Validation
+- Run `npx tsc --noEmit` → 0 errors
+- Run `npm run build` → success
+
+### T13W.2-7: Commit & Push
+- Commit with descriptive message
+- Push to New_WrittenQuote branch
+- Update DOC/gitstatus.md
+
+---
+
 ## Phase 4.16 — Written Quote (UI → Spec → Backend)
 
 Status: IN PROGRESS (UI-First)  

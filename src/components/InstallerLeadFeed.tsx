@@ -30,6 +30,7 @@ const SendIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xmln
 const EyeIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
 const TrophyIcon = ({ className = "h-4 w-4" }: { className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
 const InfoIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+const LoaderIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="2" y2="6"/><line x1="12" x2="12" y1="18" y2="22"/><line x1="4.93" x2="7.76" y1="4.93" y2="7.76"/><line x1="16.24" x2="19.07" y1="16.24" y2="19.07"/><line x1="2" x2="6" y1="12" y2="12"/><line x1="18" x2="22" y1="12" y2="12"/><line x1="4.93" x2="7.76" y1="19.07" y2="16.24"/><line x1="16.24" x2="19.07" y1="7.76" y2="4.93"/></svg>;
 
 // --- Types ---
 export type LeadType = 'call_visit' | 'written' | 'bidding';
@@ -89,6 +90,18 @@ export interface Lead {
     amount: number;
     selectedAt?: Date | null;
     purchasedAt?: Date | null;
+  }>;
+  // Written Quote fields
+  writtenQuotes?: Array<{
+    id: string;
+    installerId: string;
+    amount: number;
+    finalTotal: number;
+    negotiationStatus: string;
+    agreedAmount?: number | null;
+    agreedAt?: string | null;
+    purchasedAt?: string | null;
+    rejectedAt?: string | null;
   }>;
 }
 
@@ -540,12 +553,27 @@ const LeadCard: React.FC<{
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
   const [isBidEvaluationOpen, setIsBidEvaluationOpen] = useState(false);
   const [quoteMode, setQuoteMode] = useState<'quote' | 'bid'>('quote'); // Track if opening for quote or bid
+  const [isPurchasingWrittenQuote, setIsPurchasingWrittenQuote] = useState(false);
   
-  const isUnlockedByInstaller = lead.isUnlocked;
+  const installerIdStr = String((installer as any)?.id ?? '');
+
+  const isUnlockedByInstaller = !!lead.isUnlocked && (
+    (!lead.isPurchasedByAnother) && (
+      (lead.installerId ? String(lead.installerId) === installerIdStr : false) ||
+      ((lead.unlockedBy || []).map((id: any) => String(id)).includes(installerIdStr))
+    )
+  );
   const isPurchasedByAnother = lead.isPurchasedByAnother || false;
   
   // T196: Determine if this installer is the winner (selected but not paid yet)
-  const myBid = lead.bids?.find((b: any) => b.installerId === installer.id);
+  const myBid = lead.bids?.find((b: any) => String(b.installerId) === installerIdStr);
+  
+  // Phase 13W.2: Determine if this installer has an AGREED written quote (ready for purchase)
+  const myWrittenQuote = lead.writtenQuotes?.find((wq: any) => String(wq.installerId) === installerIdStr);
+  const isWrittenQuoteAgreed = myWrittenQuote?.negotiationStatus === 'AGREED' && !myWrittenQuote?.purchasedAt;
+  const isWrittenQuotePurchased = myWrittenQuote?.purchasedAt != null;
+  const isWrittenQuoteRejected = myWrittenQuote?.negotiationStatus === 'REJECTED';
+  const isWrittenQuoteSubmitted = !!myWrittenQuote && !isWrittenQuoteAgreed && !isWrittenQuoteRejected && !isWrittenQuotePurchased;
   const isWinner = myBid?.status === 'SELECTED';
   const isPaid = lead.status === 'PURCHASED' && lead.purchasedAt;
   const isLoser = myBid?.status === 'REJECTED';
@@ -603,7 +631,7 @@ const LeadCard: React.FC<{
           <div className="flex items-start space-x-3">
             <TrophyIcon className="h-8 w-8 text-warning flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h4 className="text-h6 text-success mb-1">
+              <h4 className="text-heading-6 text-success mb-1">
                 🎉 Congratulations! You won this bid!
               </h4>
               <p className="text-body text-muted-foreground mb-3">
@@ -652,6 +680,99 @@ const LeadCard: React.FC<{
             <InfoIcon className="h-5 w-5 text-warning" />
             <p className="text-body text-warning">
               The bid was won by another installer. Better luck next time!
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {/* Phase 13W.2: Written Quote Deal Agreed - Proceed to Payment */}
+      {lead.type === 'written' && isWrittenQuoteAgreed && (
+        <div className="bg-success/10 border-2 border-success/30 rounded-lg p-4 mb-4">
+          <div className="flex items-start space-x-3">
+            <CheckCircleIcon className="h-8 w-8 text-success flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h4 className="text-heading-6 text-success mb-1">
+                Deal Agreed!
+              </h4>
+              <p className="text-body text-muted-foreground mb-2">
+                The homeowner has accepted your quote at <strong className="text-foreground">${myWrittenQuote?.agreedAmount?.toLocaleString() || myWrittenQuote?.finalTotal?.toLocaleString()}</strong>.
+              </p>
+              <p className="text-body-small text-muted-foreground mb-3">
+                Complete payment to unlock full contact details and begin the installation process.
+              </p>
+              <Button
+                variant="primary"
+                className="text-heading-6 px-6 py-3 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
+                disabled={isPurchasingWrittenQuote}
+                onClick={async () => {
+                  if (!myWrittenQuote?.id) return;
+                  if (!confirm('Complete payment to unlock homeowner contact details? (Dev mode: no actual charge)')) {
+                    return;
+                  }
+                  setIsPurchasingWrittenQuote(true);
+                  try {
+                    const response = await fetch(`/api/written-quotes/${myWrittenQuote.id}/purchase`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (!response.ok) {
+                      const error = await response.json();
+                      alert(error.error || 'Payment failed');
+                      return;
+                    }
+                    alert('✅ Payment successful! Contact details unlocked. Refreshing page...');
+                    window.location.reload();
+                  } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Payment failed. Please try again.');
+                  } finally {
+                    setIsPurchasingWrittenQuote(false);
+                  }
+                }}
+              >
+                {isPurchasingWrittenQuote ? (
+                  <>
+                    <LoaderIcon className="h-5 w-5 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <LockIcon className="h-5 w-5" />
+                    <span>Proceed to Payment</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase 13W.2: Written Quote Submitted (visible status on lead card) */}
+      {lead.type === 'written' && isWrittenQuoteSubmitted && (
+        <div className="bg-info/10 border border-info/20 rounded-lg p-3 mb-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center space-x-2">
+              <InfoIcon className="h-5 w-5 text-info" />
+              <div>
+                <p className="text-body text-foreground">
+                  Written quote submitted — awaiting homeowner
+                </p>
+                <p className="text-body-small text-muted-foreground">
+                  Latest offer: <span className="text-foreground">${(myWrittenQuote?.finalTotal ?? myWrittenQuote?.amount ?? 0).toLocaleString()}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase 13W.2: Written Quote Rejected (visible status on lead card) */}
+      {lead.type === 'written' && isWrittenQuoteRejected && (
+        <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircleIcon className="h-5 w-5 text-warning" />
+            <p className="text-body text-warning">
+              The homeowner rejected your deal.
             </p>
           </div>
         </div>
@@ -773,8 +894,8 @@ const LeadCard: React.FC<{
         </div>
       </div>
 
-      {/* T197 & T13I-3: Contact Info (if unlocked AND paid for bidding leads) */}
-      {isUnlockedByInstaller && (lead.type !== 'bidding' || isPaid) && (
+      {/* T197 & T13I-3 & Phase 13W.2: Contact Info (if unlocked AND paid for bidding/written leads) */}
+      {((isUnlockedByInstaller && (lead.type !== 'bidding' || isPaid)) || isWrittenQuotePurchased) && (
         <div className="bg-success/10 border border-success/20 rounded-lg p-4 mb-4 shadow-neu-inset">
           <div className="flex items-center space-x-2 mb-2">
             <UnlockIcon className="h-4 w-4 text-success" />
@@ -851,7 +972,7 @@ const LeadCard: React.FC<{
             className="flex items-center space-x-2"
           >
             <SendIcon className="h-4 w-4" />
-            <span>Submit Quote</span>
+            <span>{lead.type === 'written' && myWrittenQuote ? 'View / Update Quote' : 'Submit Quote'}</span>
           </Button>
         )}
 

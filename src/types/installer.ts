@@ -74,4 +74,18 @@ export interface AssignedLead {
     selectedAt?: Date | null;
     purchasedAt?: Date | null;
   }>;
+
+  // Phase 13W.2: Written quote state for this installer (used by lead card)
+  writtenQuotes?: Array<{
+    id: string;
+    installerId: string;
+    amount: number;
+    finalTotal: number;
+    status: string;
+    negotiationStatus: string;
+    agreedAmount?: number | null;
+    agreedAt?: string | null;
+    purchasedAt?: string | null;
+    rejectedAt?: string | null;
+  }>;
 }

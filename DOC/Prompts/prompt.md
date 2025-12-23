@@ -3492,3 +3492,43 @@ THe installers Quote builder modal also has similar kind of UI issues and also t
 --------------------------------------------------------------------------------------------------
 
 The negotiation section in the Writeen Quote Builder might have some bug, it is also auto blinking. AS it is not stable so it is difficult to write anything in the revise offer price. I want you to identify this UI/UX related issues and fix it accordingly. audit if needed. 
+
+------------------------------------------------------------------------------------------------
+
+
+ Now the negotiation panel is working on both side but there is no end point. After the Homeowner clicked on "Done Deal" > The installers should be able to Purchase the lead in order to communicate to the Homeowners by unmasked their contact details > also the homeowners should see the Installers contact details after the Installer purchase the Lead. There should be a "Reject" button beside the "Done deal" button , so that the homeowners can reject the deal if the price was not good> after rejeection the installers will get the notifications that the deal price was rejected by the homeowner > this will show up in the lead card of the installers side. 
+
+- For the purchase flow, You can mirror the bidding lead flow which is done within the lead card of the installers side. SO Installers will see purchase button and contact revealing within the lead card. For this implimentation in the writtenQuote lead card, I want you to understand the Bidding lead card. You do not need to invent anything new, we will mirror the Bidding flow endpoints but adapt everything as per the written quote. 
+
+***Instructions*** I want you to implement the purchase flow in the Written Quote flow as per the above instructions. so that after the Homeowner clicked on "Done Deal" > The installers should be able to Purchase the lead in order to communicate to the Homeowners by unmasked their contact details > also the homeowners should see the Installers contact details after the Installer purchase the Lead. There should be a "Reject" button beside the "Done deal" button , so that the homeowners can reject the deal if the price was not good> after rejeection the installers will get the notifications that the deal price was rejected by the homeowner > this will show up in the lead card of the installers side.
+
+- For the purchase flow, You can mirror the bidding lead flow which is done within the lead card of the installers side. SO Installers will see purchase button and contact revealing within the lead card. For this implimentation in the writtenQuote lead card, I want you to understand the Bidding lead card. You do not need to invent anything new, we will mirror the Bidding flow endpoints but adapt everything as per the written quote.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder . 
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+--------------------------------------------------------------------------------------------
+
+
+Your implimentation did not meet the plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\WRITTEN-QUOTE-PURCHASE-FLOW-AUDIT.md . I want you to re-audit the entire Written Quote purchase flow again and identify the missing gaps as per the plan mentioned in the above file. then you have to fix those issues accordingly so that the Written Quote purchase flow meets the plan perfectly without any issues.
+
+The flow you mentioned which is done , it is actually partially done. Not e2e . Flow mentioned by you after implimentation : 
+Flow:
+>Homeowner clicks "Done Deal" → negotiationStatus = AGREED  
+>Homeowner can also click "Reject" → sends notification to installer, shows rejection banner
+>Installer sees "Deal Agreed" banner with "Proceed to Payment" button
+>Installer clicks payment → purchasedAt is set, lead status = PURCHASED
+>Both parties see each other's contact details after purchase
+
+### Additionally : 
+- The lead card has no updates based on the user actions, so it is also quite confusing. I want the Lead card always shows updated information based on user actions. e.g the installer submitted written QUote , but the Installers lead card has no updates . If the installer open the modal by clicking on submit QUote , only then they can see update inside.
+
+***Instructions*** I want you to re-audit the entire Written Quote purchase flow again and identify the missing gaps as per the plan mentioned in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\WRITTEN-QUOTE-PURCHASE-FLOW-AUDIT.md file. then you have to fix those issues accordingly so that the Written Quote purchase flow meets the plan perfectly without any issues.

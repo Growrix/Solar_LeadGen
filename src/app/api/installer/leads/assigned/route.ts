@@ -69,6 +69,12 @@ export async function GET(request: NextRequest) {
               select: { id: true, name: true, phone: true, email: true }
             },
             quotes: { select: { id: true } },
+            _count: {
+              select: {
+                quotes: true,
+                writtenQuotes: true,
+              },
+            },
             // T196: Include bids for bidding leads to show winner/loser status
             bids: {
               select: {
@@ -79,7 +85,25 @@ export async function GET(request: NextRequest) {
                 selectedAt: true,
                 purchasedAt: true
               }
-            }
+            },
+            // Phase 13W.2: Include this installer's written quote for lead-card status
+            writtenQuotes: {
+              where: { installerId: session.user.id },
+              select: {
+                id: true,
+                installerId: true,
+                amount: true,
+                finalTotal: true,
+                status: true,
+                negotiationStatus: true,
+                agreedAmount: true,
+                agreedAt: true,
+                purchasedAt: true,
+                rejectedAt: true,
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+            },
           }
         }
       },
@@ -90,6 +114,10 @@ export async function GET(request: NextRequest) {
     const leads = assignments.map(assignment => {
       const lead = assignment.lead;
       const isPurchased = lead.installerId === session.user.id && !!lead.purchasedAt;
+      const quotesCount =
+        lead.quoteType === 'WRITTEN_QUOTE'
+          ? lead._count.writtenQuotes
+          : lead._count.quotes;
 
       return {
         id: lead.id,
@@ -107,7 +135,7 @@ export async function GET(request: NextRequest) {
         leadPrice: lead.leadPrice,
         purchaseStatus: lead.purchaseStatus || null,
         purchasedAt: lead.purchasedAt?.toISOString() || null,
-        quotesCount: lead.quotes.length,
+        quotesCount,
         expiresAt: lead.expiresAt?.toISOString() || null,
         createdAt: lead.createdAt.toISOString(),
         approvedAt: lead.approvedAt?.toISOString() || null,
@@ -133,9 +161,12 @@ export async function GET(request: NextRequest) {
         },
         // T196: Include bids for bidding flow (winner/loser detection)
         bids: lead.quoteType === 'BIDDING' ? lead.bids : undefined,
+        // Phase 13W.2: Include written quote state for written leads
+        writtenQuotes: lead.quoteType === 'WRITTEN_QUOTE' ? lead.writtenQuotes : undefined,
         countdown: calculateCountdown(lead.expiresAt),
         isPurchased,
         isPurchasedByAnother: !!lead.installerId && lead.installerId !== session.user.id,
+        installerId: lead.installerId,
       };
     });
 

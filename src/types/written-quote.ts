@@ -113,6 +113,7 @@ export interface WrittenQuoteWithInstaller {
   agreedAt?: string | null;
   agreedBy?: string | null;
   selectedAt?: string | null;
+  purchasedAt?: string | null; // Phase 13W.2: Purchase timestamp
   rejectedAt?: string | null;
   rejectionReason?: string | null;
   createdAt: string;

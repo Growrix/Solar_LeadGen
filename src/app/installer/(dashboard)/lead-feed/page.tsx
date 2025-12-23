@@ -39,7 +39,7 @@ function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
     },
     contact: {
       name: apiLead.homeowner.name || '***LOCKED***',
-      email: isLocked ? '***LOCKED***' : '***LOCKED***',
+      email: isLocked ? '***LOCKED***' : (apiLead.homeowner.email || '***LOCKED***'),
       phone: apiLead.homeowner.phone || '***LOCKED***'
     },
     unlockPrice: apiLead.leadPrice || 0,
@@ -49,7 +49,10 @@ function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
     expiresAt: apiLead.expiresAt ? new Date(apiLead.expiresAt) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     priority: 'medium',
     notes: apiLead.assignmentNotes || undefined,
-    quoteData: apiLead.quoteData || null // Pass through quoteData from API for Import feature
+    quoteData: apiLead.quoteData || null,
+    bids: (apiLead as any).bids || undefined,
+    installerId: (apiLead as any).installerId || null,
+    writtenQuotes: (apiLead as any).writtenQuotes || undefined
   };
 }
 
@@ -60,6 +63,16 @@ export default function LeadFeedPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const refreshAssignedLeads = async () => {
+    const leadsRes = await fetch('/api/installer/leads/assigned');
+    if (!leadsRes.ok) {
+      throw new Error('Failed to fetch assigned leads');
+    }
+    const leadsData = await leadsRes.json();
+    const mappedLeads = (leadsData.leads || []).map(mapAssignedLeadToComponentLead);
+    setLeads(mappedLeads);
+  };
 
   // Redirect if not authenticated or not installer
   useEffect(() => {
@@ -91,7 +104,7 @@ export default function LeadFeedPage() {
         // API returns { user, profile, verification, preferences }
         // Adapt to component format
         setInstaller({
-          id: 1, // Component expects number, using placeholder
+          id: session.user.id as any,
           companyName: profileData.verification?.companyName || profileData.user?.name || 'Unknown',
           email: profileData.user?.email || '',
           phone: profileData.verification?.phone || profileData.user?.phone || '',
@@ -102,14 +115,7 @@ export default function LeadFeedPage() {
           successRate: 0, // TODO: Calculate from quotes
         });
 
-        // Fetch assigned leads
-        const leadsRes = await fetch('/api/installer/leads/assigned');
-        if (!leadsRes.ok) {
-          throw new Error('Failed to fetch assigned leads');
-        }
-        const leadsData = await leadsRes.json();
-        const mappedLeads = (leadsData.leads || []).map(mapAssignedLeadToComponentLead);
-        setLeads(mappedLeads);
+        await refreshAssignedLeads();
 
       } catch (err: any) {
         console.error('Error fetching data:', err);
@@ -123,13 +129,56 @@ export default function LeadFeedPage() {
   }, [status, session]);
 
   const handleUnlockLead = async (leadId: string): Promise<boolean> => {
-    console.log('Unlock lead:', leadId);
-    return true;
+    try {
+      const response = await fetch(`/api/installer/leads/${leadId}/purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Purchase failed:', errorData.error);
+        alert(errorData.error || 'Failed to purchase lead');
+        return false;
+      }
+
+      await refreshAssignedLeads();
+      return true;
+    } catch (error) {
+      console.error('Error purchasing lead:', error);
+      alert('Failed to purchase lead. Please try again.');
+      return false;
+    }
   };
 
   const handleSubmitQuote = async (leadId: string, quoteData: any): Promise<boolean> => {
-    console.log('Submit quote for lead:', leadId, quoteData);
-    return true;
+    try {
+      const lead = leads.find(l => String(l.id) === String(leadId));
+      const apiEndpoint = lead?.type === 'written' ? '/api/written-quotes' : '/api/quotes';
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...quoteData,
+          leadId,
+          installerId: installer?.id,
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit quote');
+      }
+
+      await refreshAssignedLeads();
+      return true;
+    } catch (error) {
+      console.error('Error submitting quote:', error);
+      const message = error instanceof Error ? error.message : 'Failed to submit quote. Please try again.';
+      alert(message);
+      return false;
+    }
   };
 
   const handleStartChat = (leadId: string): void => {

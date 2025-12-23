@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import { 
   X, Award, DollarSign, TrendingUp, Calendar, Battery, Zap, 
-  CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader 
+  CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader, XCircle 
 } from 'lucide-react';
 import Button from '@/components/ui/button';
 import { GetWrittenQuotesResponse } from '@/types/written-quote';
@@ -50,7 +50,10 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [isLoadingWrittenQuotes, setIsLoadingWrittenQuotes] = useState(false);
   const [writtenQuotesError, setWrittenQuotesError] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showRejectConfirmation, setShowRejectConfirmation] = useState(false);
   const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const [counterAmount, setCounterAmount] = useState<string>('');
   const [isSubmittingCounter, setIsSubmittingCounter] = useState(false);
   const [negotiationError, setNegotiationError] = useState<string | null>(null);
@@ -197,6 +200,40 @@ export default function HomeownerWrittenQuoteReviewModal({
       setNegotiationError(error instanceof Error ? error.message : 'Failed to finalize negotiation');
     } finally {
       setIsFinalizingDeal(false);
+    }
+  };
+
+  const handleRejectClick = () => {
+    setShowRejectConfirmation(true);
+    setRejectReason('');
+  };
+
+  const handleConfirmReject = async () => {
+    if (!selectedWrittenQuote) return;
+
+    setIsRejecting(true);
+    setNegotiationError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: rejectReason || undefined })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject quote');
+      }
+
+      setShowRejectConfirmation(false);
+      setRejectReason('');
+
+      await fetchWrittenQuotes();
+    } catch (error) {
+      console.error('[HomeownerWrittenQuoteReviewModal] Error rejecting quote:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to reject quote');
+    } finally {
+      setIsRejecting(false);
     }
   };
 
@@ -472,6 +509,51 @@ export default function HomeownerWrittenQuoteReviewModal({
                             {selectedWrittenQuote.installerRating.toFixed(1)} / 5.0
                           </span>
                         </div>
+                        
+                        {/* Phase 13W.2: Installer Contact Info - visible after purchase */}
+                        {selectedWrittenQuote.purchasedAt ? (
+                          <div className="mt-4 pt-4 border-t border-success/30 bg-success/5 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-3">
+                              <CheckCircle className="h-5 w-5 text-success" />
+                              <span className="text-label text-success">Installer Contact Details</span>
+                            </div>
+                            <div className="space-y-2 text-body">
+                              {selectedWrittenQuote.installer.companyName && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">Company:</span>
+                                  <span className="text-foreground">{selectedWrittenQuote.installer.companyName}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground">Email:</span>
+                                <a href={`mailto:${selectedWrittenQuote.installer.email}`} className="text-info hover:underline">
+                                  {selectedWrittenQuote.installer.email}
+                                </a>
+                              </div>
+                              {selectedWrittenQuote.installer.phone && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">Phone:</span>
+                                  <a href={`tel:${selectedWrittenQuote.installer.phone}`} className="text-info hover:underline">
+                                    {selectedWrittenQuote.installer.phone}
+                                  </a>
+                                </div>
+                              )}
+                              {selectedWrittenQuote.installer.businessAddress && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground">Address:</span>
+                                  <span className="text-foreground">{selectedWrittenQuote.installer.businessAddress}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : selectedWrittenQuote.negotiationStatus === 'AGREED' && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Info className="h-4 w-4" />
+                              <span className="text-caption">Contact details will be available after payment is completed.</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -973,11 +1055,43 @@ export default function HomeownerWrittenQuoteReviewModal({
               Close
             </Button>
             
+            {selectedWrittenQuote && selectedWrittenQuote.negotiationStatus !== 'AGREED' && selectedWrittenQuote.negotiationStatus !== 'REJECTED' && (
+              <Button 
+                variant="secondary"
+                onClick={handleRejectClick}
+                disabled={isRejecting}
+                className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+              >
+                {isRejecting ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    Rejecting...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Reject
+                  </>
+                )}
+              </Button>
+            )}
+            
+            {selectedWrittenQuote && selectedWrittenQuote.negotiationStatus === 'REJECTED' && (
+              <Button 
+                variant="secondary"
+                disabled
+                className="border-destructive/50 text-destructive/50"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Rejected
+              </Button>
+            )}
+
             {selectedWrittenQuote && (
               <Button 
                 variant="primary" 
                 onClick={handleDoneDealClick}
-                disabled={selectedWrittenQuote.negotiationStatus === 'AGREED' || isFinalizingDeal}
+                disabled={selectedWrittenQuote.negotiationStatus === 'AGREED' || selectedWrittenQuote.negotiationStatus === 'REJECTED' || isFinalizingDeal}
               >
                 {selectedWrittenQuote.negotiationStatus === 'AGREED' ? (
                   <>
@@ -1025,6 +1139,51 @@ export default function HomeownerWrittenQuoteReviewModal({
                 className="flex-1"
               >
                 {isFinalizingDeal ? 'Confirming...' : 'Confirm Done Deal'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Confirmation Modal */}
+      {showRejectConfirmation && selectedWrittenQuote && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4">
+          <div className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg">
+            <h3 className="text-heading-4 text-destructive">Reject Quote</h3>
+            <p className="text-body text-muted-foreground">
+              Are you sure you want to reject the quote from <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong>?
+            </p>
+            <p className="text-body-small text-warning">This will notify the installer that you have declined their offer.</p>
+            
+            <div className="space-y-2">
+              <label className="text-label text-foreground">Reason (optional)</label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Let the installer know why (optional)"
+                className="w-full px-3 py-2 bg-background-alt border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30 resize-none"
+                rows={3}
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 pt-4">
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  setShowRejectConfirmation(false);
+                  setRejectReason('');
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                variant="primary"
+                onClick={handleConfirmReject}
+                disabled={isRejecting}
+                className="flex-1 bg-destructive hover:bg-destructive/90"
+              >
+                {isRejecting ? 'Rejecting...' : 'Confirm Reject'}
               </Button>
             </div>
           </div>

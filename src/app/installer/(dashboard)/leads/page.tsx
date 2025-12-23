@@ -69,7 +69,10 @@ function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
     quoteData: apiLead.quoteData || null,
     // T196: Map bids data for winner/loser detection
     bids: apiLead.bids || undefined,
-    installerId: apiLead.installerId || null
+    installerId: apiLead.installerId || null,
+    // Phase 13W.2: Include latest written quote state so the lead card can render
+    // “submitted / agreed / rejected / purchased” without opening the modal.
+    writtenQuotes: (apiLead as any).writtenQuotes || undefined
   };
 }
 
