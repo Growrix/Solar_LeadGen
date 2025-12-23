@@ -3486,3 +3486,9 @@ AUdit if needed, Fix the UI only issues in the homeowners review modal as per th
 
 THe installers Quote builder modal also has similar kind of UI issues and also the autosaving is acting like a bug , e.g it is auto auto blinking all the time . ANd also it has other contnets overlapping issues. 
 -  Also make sure the negotiation part is synced with the homeonwers negotioation panel. Both should be in sync. e.g if the homeowner proposed a counter amount , it should reflect in the installers negotiation panel as well instantly without any issues.
+
+***Instructions*** I want you to fix the UI only issues in the installers Quote builder modal as per the above instructions. so that the MOdal has a clean and clear UI without any overlapping contents. also fix the autosaving bug as per the above instructions. Also make sure the negotiation part is synced with the homeonwers negotioation panel. Both should be in sync. e.g if the homeowner proposed a counter amount , it should reflect in the installers negotiation panel as well instantly without any issues.
+
+--------------------------------------------------------------------------------------------------
+
+The negotiation section in the Writeen Quote Builder might have some bug, it is also auto blinking. AS it is not stable so it is difficult to write anything in the revise offer price. I want you to identify this UI/UX related issues and fix it accordingly. audit if needed. 

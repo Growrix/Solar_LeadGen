@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/button';
 import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download } from 'lucide-react';
@@ -95,6 +96,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   mode = 'quote'
 }) => {
   const { data: session } = useSession();
+  const [isMounted, setIsMounted] = useState(false);
 
   // Full lead data state (fetched from API for complete data)
   const [fullLeadData, setFullLeadData] = useState<LeadData | null>(null);
@@ -104,10 +106,13 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   // Negotiation panel state (Phase 13W)
   const [negotiationQuote, setNegotiationQuote] = useState<GetWrittenQuotesResponse['writtenQuotes'][number] | null>(null);
   const [isLoadingNegotiation, setIsLoadingNegotiation] = useState(false);
+  const [isRefreshingNegotiation, setIsRefreshingNegotiation] = useState(false);
   const [negotiationFetchError, setNegotiationFetchError] = useState<string | null>(null);
   const [revisedAmount, setRevisedAmount] = useState<string>('');
   const [isSubmittingRevision, setIsSubmittingRevision] = useState(false);
   const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
+  const hasLoadedNegotiationRef = useRef(false);
+  const negotiationSignatureRef = useRef<string | null>(null);
 
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -219,7 +224,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isBidEvaluationOpen, setIsBidEvaluationOpen] = useState(false);
   const [isBudgetHintDismissed, setIsBudgetHintDismissed] = useState(false);
+  const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const lastAutosavedSnapshotRef = useRef<string | null>(null);
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-AU', {
@@ -290,13 +297,20 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     return events;
   };
 
-  const fetchNegotiationQuote = React.useCallback(async () => {
+  const fetchNegotiationQuote = React.useCallback(async (opts?: { background?: boolean }) => {
     if (!lead?.id) return;
     const installerId = session?.user?.id;
     if (!installerId) return;
 
-    setIsLoadingNegotiation(true);
-    setNegotiationFetchError(null);
+    const isBackground = !!opts?.background;
+    const showBlockingLoader = !isBackground && !hasLoadedNegotiationRef.current;
+
+    if (showBlockingLoader) {
+      setIsLoadingNegotiation(true);
+      setNegotiationFetchError(null);
+    } else if (isBackground) {
+      setIsRefreshingNegotiation(true);
+    }
 
     try {
       const response = await fetch(`/api/written-quotes?leadId=${lead.id}`);
@@ -306,13 +320,38 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
       const data: GetWrittenQuotesResponse = await response.json();
       const ownQuote = (data.writtenQuotes || []).find((q: any) => q.installerId === installerId) || null;
-      setNegotiationQuote(ownQuote);
+
+      const signature = ownQuote
+        ? JSON.stringify({
+            id: ownQuote.id,
+            negotiationStatus: ownQuote.negotiationStatus,
+            amount: ownQuote.amount,
+            homeownerCounterAmount: ownQuote.homeownerCounterAmount,
+            homeownerCounterAt: ownQuote.homeownerCounterAt,
+            installerRevisedAmount: ownQuote.installerRevisedAmount,
+            installerRevisedAt: ownQuote.installerRevisedAt,
+            agreedAmount: ownQuote.agreedAmount,
+            agreedAt: ownQuote.agreedAt
+          })
+        : 'null';
+
+      if (signature !== negotiationSignatureRef.current) {
+        setNegotiationQuote(ownQuote);
+        negotiationSignatureRef.current = signature;
+      }
+
+      hasLoadedNegotiationRef.current = true;
+      if (!isBackground) setNegotiationFetchError(null);
     } catch (error) {
       console.error('[WrittenQuoteBuilderModal] Error fetching negotiation quote:', error);
       setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to load negotiation data');
-      setNegotiationQuote(null);
+      // Keep the last known negotiationQuote on background refresh errors to avoid UI blinking.
+      if (!hasLoadedNegotiationRef.current) {
+        setNegotiationQuote(null);
+      }
     } finally {
-      setIsLoadingNegotiation(false);
+      if (showBlockingLoader) setIsLoadingNegotiation(false);
+      if (isBackground) setIsRefreshingNegotiation(false);
     }
   }, [lead?.id, session?.user?.id]);
 
@@ -442,6 +481,25 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    lastAutosavedSnapshotRef.current = null;
+  }, [isOpen, lead?.id, mode]);
+
+  // UI-only: prevent background scroll while modal is open
+  useEffect(() => {
+    if (!isOpen || !isMounted) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, isMounted]);
+
   // Fetch full lead data from API (same pattern as BidEvaluationModal)
   useEffect(() => {
     if (!isOpen || !lead?.id) return;
@@ -470,22 +528,31 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     fetchFullLeadData();
   }, [isOpen, lead?.id]); // All dependencies included
 
-  // Autosave effect
+  // Autosave effect (debounced): only save when meaningful data changes.
   useEffect(() => {
     if (!isOpen || !lead) return;
 
+    const installerKey = session?.user?.id ?? 'unknown-installer';
+    const draftKey =
+      mode === 'quote'
+        ? `writtenQuote:draft:${lead.id}:${installerKey}`
+        : `quote:draft:${lead.id}:${installerKey}`;
+
+    // Exclude `preview` and autosave-related `meta` fields to avoid save loops.
+    const snapshot = JSON.stringify({
+      mode: quoteDraft.mode,
+      system: quoteDraft.system,
+      roof: quoteDraft.roof,
+      products: quoteDraft.products,
+      pricing: quoteDraft.pricing,
+      compliance: quoteDraft.compliance,
+      assumptions: quoteDraft.assumptions
+    });
+
+    if (snapshot === lastAutosavedSnapshotRef.current) return;
+
     const saveDraft = () => {
       setIsSaving(true);
-      setQuoteDraft((prev) => ({
-        ...prev,
-        meta: { ...prev.meta, autosaveStatus: 'saving' }
-      }));
-
-      const installerKey = session?.user?.id ?? 'unknown-installer';
-      const draftKey =
-        mode === 'quote'
-          ? `writtenQuote:draft:${lead.id}:${installerKey}`
-          : `quote:draft:${lead.id}:${installerKey}`;
       
       const draftData = {
         ...quoteDraft,
@@ -497,14 +564,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
       localStorage.setItem(draftKey, JSON.stringify(draftData));
 
-      setTimeout(() => {
-        setIsSaving(false);
-        setLastSaved(new Date());
-        setQuoteDraft((prev) => ({
-          ...prev,
-          meta: { ...prev.meta, autosaveStatus: 'saved' }
-        }));
-      }, 500);
+      lastAutosavedSnapshotRef.current = snapshot;
+      setIsSaving(false);
+      setLastSaved(new Date());
     };
 
     const timer = setTimeout(saveDraft, 750);
@@ -514,6 +576,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   // Load draft on mount
   useEffect(() => {
     if (!isOpen || !lead) return;
+
+    setDidRestoreDraft(false);
 
     const installerKey = session?.user?.id ?? 'unknown-installer';
     const draftKey =
@@ -538,6 +602,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           assumptions: { ...prev.assumptions, ...(data.assumptions || {}) },
           meta: { ...prev.meta, ...(data.meta || {}) }
         }));
+
+        // Only show the restoration banner if we actually restored a previously-saved draft.
+        setDidRestoreDraft(true);
       } catch (error) {
         console.error('Failed to load draft:', error);
       }
@@ -589,6 +656,15 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     if (isOpen && lead?.id) {
       fetchNegotiationQuote();
     }
+  }, [isOpen, lead?.id, fetchNegotiationQuote]);
+
+  // Keep negotiation panel in sync while modal is open (lightweight polling).
+  useEffect(() => {
+    if (!isOpen || !lead?.id) return;
+    const interval = window.setInterval(() => {
+      fetchNegotiationQuote({ background: true });
+    }, 3000);
+    return () => window.clearInterval(interval);
   }, [isOpen, lead?.id, fetchNegotiationQuote]);
 
   // Handlers
@@ -856,15 +932,10 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     }));
   };
 
-  if (!isOpen || !lead) return null;
+  if (!isOpen || !lead || !isMounted) return null;
 
-  // Check if draft exists for restoration banner
-  const installerKey = session?.user?.id ?? 'unknown-installer';
-  const draftKey =
-    mode === 'quote'
-      ? `writtenQuote:draft:${lead.id}:${installerKey}`
-      : `quote:draft:${lead.id}:${installerKey}`;
-  const hasDraft = typeof window !== 'undefined' && localStorage.getItem(draftKey);
+  // Restoration banner should be based on actual restore, not existence of current-session autosaves.
+  const hasDraft = didRestoreDraft;
 
   // Calculate budget hint banner visibility
   const budgetRange = lead.quoteData?.budgetRange 
@@ -892,9 +963,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     budgetRange && 
     currentTotals.total > budgetRange.max * 1.1; // Show if >10% over budget
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal-backdrop flex items-center justify-center p-0 md:p-4 animate-fade-in"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1400] flex items-center justify-center p-0 md:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
@@ -1134,17 +1205,18 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             <div className="sticky top-0 space-y-6">
                 {/* Negotiation Panel (Phase 13W) */}
                 <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
-                  <h3 className="text-heading-4 text-foreground">Negotiation</h3>
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-heading-4 text-foreground">Negotiation</h3>
+                    {isRefreshingNegotiation && negotiationQuote ? (
+                      <span className="text-caption text-muted-foreground">Updating…</span>
+                    ) : null}
+                  </div>
 
-                  {isLoadingNegotiation ? (
+                  {isLoadingNegotiation && !negotiationQuote ? (
                     <div className="space-y-3">
                       <div className="h-4 bg-muted rounded w-3/4"></div>
                       <div className="h-4 bg-muted rounded w-1/2"></div>
                       <p className="text-body-small text-muted-foreground">Loading negotiation status...</p>
-                    </div>
-                  ) : negotiationFetchError ? (
-                    <div className="bg-error/10 border border-error/20 rounded-lg p-3">
-                      <p className="text-body-small text-error">{negotiationFetchError}</p>
                     </div>
                   ) : !negotiationQuote ? (
                     <div className="bg-info/10 border border-info/20 rounded-lg p-3">
@@ -1154,6 +1226,12 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                     </div>
                   ) : (
                     <div className="space-y-4">
+                      {negotiationFetchError ? (
+                        <div className="bg-error/10 border border-error/20 rounded-lg p-3">
+                          <p className="text-body-small text-error">{negotiationFetchError}</p>
+                        </div>
+                      ) : null}
+
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-body-small text-muted-foreground">Status</span>
@@ -1364,7 +1442,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         />
       )}
     </div>
-  );
+  , document.body);
 };
 
 // Collapsible Section Component

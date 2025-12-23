@@ -290,11 +290,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Authorization: homeowner can see quotes for their leads, admin can see all
+    // Authorization:
+    // - homeowner can see all quotes for their own leads
+    // - admin can see all
+    // - installer can see ONLY their own quote for the lead
     const isHomeowner = auth.role === 'HOMEOWNER' && lead.homeownerId === auth.userId;
     const isAdmin = auth.role === 'ADMIN';
+    const isInstaller = auth.role === 'INSTALLER';
 
-    if (!isHomeowner && !isAdmin) {
+    if (!isHomeowner && !isAdmin && !isInstaller) {
       logger.warn('Unauthorized written quote access attempt', { 
         userId: auth.userId, 
         role: auth.role, 
@@ -309,9 +313,10 @@ export async function GET(request: NextRequest) {
     
     logger.debug('Fetching written quotes for lead', { leadId, role: auth.role, correlationId });
 
-    // Fetch all written quotes for the lead with installer details
+    // Fetch written quotes with installer details.
+    // Installers only see their own quote for this lead.
     const writtenQuotes = await prisma.writtenQuote.findMany({
-      where: { leadId },
+      where: isInstaller ? { leadId, installerId: auth.userId } : { leadId },
       include: {
         installer: {
           select: {

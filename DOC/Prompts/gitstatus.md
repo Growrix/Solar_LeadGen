@@ -22,6 +22,8 @@ Phase 13R Complete ?
 6853366ed7bb9e9b5f2c2f9c9b9c1a1a1a1a1a1a|2025-12-11 14:10:15 +0600|Phase 13P notification system backend implementation: Prisma schema with normalized fields (role, messageKey, routeKey, routeParams), migration applied, message-catalog.ts, route-resolver.ts, notification-service.ts created. Backend routes (approve, select) updated to use new service. NotificationDropdown updated to use resolver. TypeScript check passed.
 8009afcbf6f5cc78ddf16ea85c99d19ac010cc8f|2025-12-11 13:42:42 +0600|Phase 13P notification redesign planning artifacts: audit, architecture, message catalog, Playwright test plan, seed schema. No implementation yet.
 
+a64e0a58c2e5a57c35c395e5334ef78611d7c808 | 2025-12-23 12:08:39 +0600 | Fix Written Quote modals: negotiation panels (homeowner+installer), homeowner portal overlay/scroll-lock, add @types/react-dom
+
 ## Commit Log - Written Quote Negotiation
 
 - **Commit ID**: 3f314c374814420e3154d8d1aac6d20631dca41a
