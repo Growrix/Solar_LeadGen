@@ -127,9 +127,6 @@ export async function POST(
         leadPrice,
         approvedAt: new Date(),
         expiresAt,
-        // This field tracks the negotiation window duration after quote submission,
-        // not the approval countdown.
-        initialCountdownDays: null,
         moderatedBy: session.user.id,
         moderatedAt: new Date(),
         ...(body.isHot !== undefined && { 

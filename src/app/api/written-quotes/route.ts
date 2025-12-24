@@ -174,16 +174,10 @@ export async function POST(request: NextRequest) {
     // Source of truth for negotiation timing remains WrittenQuote.negotiationDeadlineAt.
     // The lead-card timer (Lead.expiresAt) mirrors it so Installer/Homeowner/Admin see identical time.
     try {
-      const msPerDay = 24 * 60 * 60 * 1000;
-      const days = Math.max(1, Math.round((negotiationDeadlineAt.getTime() - Date.now()) / msPerDay));
-
       await (prisma.lead as any).update({
         where: { id: body.leadId },
         data: {
           expiresAt: negotiationDeadlineAt,
-          // Store the initial negotiation window duration for reference/debugging.
-          // This is intentionally NOT the approval countdown.
-          initialCountdownDays: days,
         },
       });
     } catch (err) {
