@@ -1,5 +1,11 @@
 ---
 
+- Commit: 3e5ee0972b8dba6b63cdad788cfd81022a2e2704
+- Date: 2025-12-24 18:24:59 +0600
+- Branch: NegotiationModal_Enhancement
+- Description: Sync lead-card countdown to negotiation window and extension; auto-expiry and status sync across all roles. Type and build validation complete.
+---
+
 - Commit: c431b61b4d213fb5844a510c4ec5cfda4d3d96c1
 - Date: 2025-12-24 16:37:51 +0600
 - Branch: NegotiationModal_Enhancement
