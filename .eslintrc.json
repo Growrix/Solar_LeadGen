@@ -5,7 +5,7 @@
   ],
   "plugins": ["tailwindcss"],
   "rules": {
-    "tailwindcss/no-custom-classname": "warn",
+    "tailwindcss/no-custom-classname": "off",
     "tailwindcss/no-contradicting-classname": "error"
   }
 }

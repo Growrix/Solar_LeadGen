@@ -7,7 +7,7 @@
 - Branch: Written_Quote
 - Description: Written Quote purchase flow: e2e audit, lead card state sync, API wiring, UI banners, and type/build validation. Fix Tailwind class errors. Ready for QA.
 
--- DB backup: backup/backup_20251223_000000.sql (PostgreSQL, Docker, solarmatch-db-1)
+-- DB backup: backup/backup_20251224_1425.sql (PostgreSQL, Docker, solarmatch-db-1)
 
 This entry records the rollback to the Written_Quote branch for full restoration. All files now reflect the state of commit a7b5c7a4bec8c3cf74f8f944dfe42512afc0d91a as of 2025-12-22 11:08:03.
 
@@ -31,3 +31,10 @@ This entry records the rollback to the Written_Quote branch for full restoration
 - Date: 2025-12-24 11:36:58 +0600
 - Branch: New_WrittenQuote
 - Description: Self-host Inter font: add woff2 files, update globals.css to use local @font-face, remove Google Fonts dependency. Fixes font loading reliability.
+
+---
+
+- Commit: c98453810d81da874e4628656d33c3f9011d43d8
+- Date: 2025-12-24 14:23:48 +0600
+- Branch: NegotiationModal_Enhancement
+- Description: Enhance negotiation modals: add live presence, expiry, extension, admin controls; typecheck and production build clean

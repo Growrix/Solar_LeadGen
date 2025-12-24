@@ -77,15 +77,18 @@ export function usePusher() {
 
     // Cleanup on unmount
     return () => {
-      if (pusherRef.current) {
+      const pusher = pusherRef.current;
+      const subscriptions = subscriptionsRef.current;
+
+      if (pusher) {
         // Unsubscribe from all channels
-        subscriptionsRef.current.forEach((channel) => {
-          pusherRef.current?.unsubscribe(channel.name);
+        subscriptions.forEach((channel) => {
+          pusher.unsubscribe(channel.name);
         });
-        subscriptionsRef.current.clear();
+        subscriptions.clear();
 
         // Disconnect Pusher
-        pusherRef.current.disconnect();
+        pusher.disconnect();
         pusherRef.current = null;
       }
     };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Button from '@/components/ui/button';
 
@@ -68,7 +68,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Fetch verification data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -87,13 +87,13 @@ const AdminInstallerVerificationPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [installerId]);
 
   useEffect(() => {
     if (installerId) {
       fetchData();
     }
-  }, [installerId]);
+  }, [installerId, fetchData]);
 
   // Action handlers
   const handleAction = async (action: 'APPROVE' | 'REJECT' | 'REQUEST_INFO') => {

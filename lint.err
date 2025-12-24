@@ -1,0 +1,7 @@
+Set-Location : A positional parameter cannot be found that accepts argument 'Mass\\SOLAR'.
+At line:1 char:1
++ Set-Location d:\\Desktop Mass\\SOLAR LEAD GEN PROJECT MAIN FILE\\sola ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [Set-Location], ParameterBindingException
+    + FullyQualifiedErrorId : PositionalParameterNotFound,Microsoft.PowerShell.Commands.SetLocationCommand
+ 

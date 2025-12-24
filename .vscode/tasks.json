@@ -40,6 +40,116 @@
 			"args": [],
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Gate0: Typecheck",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"tsc",
+				"--noEmit"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Gate0: Prisma validate",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"validate"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Gate0: Prisma validate (post config)",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"validate"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Gate0: Prisma validate (after directUrl removal)",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"validate"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Gate0: Prisma validate (config + schema)",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"validate"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Gate0: Prisma validate (retry)",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"validate"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Delete prisma.config.ts",
+			"type": "shell",
+			"command": "del",
+			"args": [
+				"/f",
+				"/q",
+				"prisma.config.ts"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Delete prisma.config.ts (ps)",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Remove-Item -Force prisma.config.ts"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "Gate0: Prisma validate (schema url restored)",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"prisma",
+				"validate"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Gate0: Next build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"problemMatcher": []
 		}
 	]
 }

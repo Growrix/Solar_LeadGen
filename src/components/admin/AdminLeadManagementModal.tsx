@@ -601,7 +601,7 @@ export default function AdminLeadManagementModal({
           )}
 
           {/* Scrollable Body */}
-          <div className="px-6 py-4 grid grid-cols-1 lg:grid-cols-5 gap-6 max-h-[70vh] overflow-y-auto">
+          <div className="px-6 py-4 grid grid-cols-1 lg:grid-cols-5 lg:grid-flow-row-dense gap-6 max-h-[70vh] overflow-y-auto items-start">
 
             {/* Negotiation Window (Written Quotes) */}
             <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-2 lg:col-start-4">

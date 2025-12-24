@@ -12,7 +12,7 @@
  * -"All Verified Installers" quick select
  */
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { UserRole } from '@prisma/client';
 
 interface Installer {
@@ -53,14 +53,7 @@ export default function InstallerSelectorModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch installers on mount
-  useEffect(() => {
-    if (isOpen) {
-      fetchInstallers();
-    }
-  }, [isOpen, includeUnverified]);
-
-  const fetchInstallers = async () => {
+  const fetchInstallers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -73,7 +66,14 @@ export default function InstallerSelectorModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [includeUnverified]);
+
+  // Fetch installers on mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchInstallers();
+    }
+  }, [isOpen, fetchInstallers]);
 
   // Filter installers by search query
   const filteredInstallers = installers.filter((installer) => {

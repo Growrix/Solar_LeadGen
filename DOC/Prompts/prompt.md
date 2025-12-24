@@ -3638,3 +3638,29 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+---------------------------------------------------------------------
+
+
+***negotiation panel UI enhancement***
+
+- I want the both end modals Deadline shows a timer (Just copy the countdown timer used in lead cards) instead of static date and time. So that both parties can see the remaining time easily without any confusion. Audit deeply and implement it accordingly.
+
+***Admin Dashboard > lead details modal > Negotiation window enhancement***
+I want the negotiation window shows all the negotiations from the both end installers and homeowners including all the counter prices , & countdown timer as well. 
+This section is the e2e monitoring of the negotiation panel for the admin purpose. So that the admin can monitor the entire negotiation process easily from the lead details modal itself without any issues. Audit deeply and implement it accordingly.
+
+***Lead Management modal UI enhancement*** 
+
+I want this modal container width shows 100% wide with 2 colum : left 60% right 40% . Keep all the sections in the left only Negotiation window move to the right column. Audit and understand the existing UI first. Make sure to make it responsive . 
+
+ ***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.

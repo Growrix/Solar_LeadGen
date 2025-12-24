@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 export interface FlexibleComboBoxOption {
@@ -31,6 +31,7 @@ const FlexibleComboBox: React.FC<FlexibleComboBoxProps> = ({
   className = '',
   required = false
 }) => {
+  const listboxId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -113,8 +114,11 @@ const FlexibleComboBox: React.FC<FlexibleComboBoxProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="form-input w-full px-4 py-3 pr-10"
+          role="combobox"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
         />
         
         <button
@@ -128,7 +132,11 @@ const FlexibleComboBox: React.FC<FlexibleComboBoxProps> = ({
         </button>
         
         {isOpen && filteredOptions.length > 0 && (
-          <div className="absolute z-50 mt-1 w-full bg-surface border border-border rounded-lg shadow-neu-outset-lg max-h-60 overflow-auto">
+          <div
+            id={listboxId}
+            role="listbox"
+            className="absolute z-50 mt-1 w-full bg-surface border border-border rounded-lg shadow-neu-outset-lg max-h-60 overflow-auto"
+          >
             {filteredOptions.map((opt) => (
               <button
                 key={opt.value}
@@ -136,6 +144,8 @@ const FlexibleComboBox: React.FC<FlexibleComboBoxProps> = ({
                 onClick={() => handleOptionClick(opt.value)}
                 onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                 className="w-full px-4 py-2.5 text-left hover:bg-surface-hover text-foreground transition-colors flex items-center gap-2"
+                role="option"
+                aria-selected={opt.value === value}
               >
                 {opt.label}
               </button>
