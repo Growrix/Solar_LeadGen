@@ -13,6 +13,7 @@ import { prisma } from '@/lib/prisma';
 import { createNotification } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
 import { createLogger } from '@/lib/logger';
+import { expireNegotiationIfNeeded } from '@/lib/written-quotes/negotiation-window';
 
 const logger = createLogger({ context: 'WrittenQuoteRejectRoute' });
 
@@ -84,6 +85,22 @@ export async function POST(
         { error: 'Only the homeowner can reject this quote' },
         { status: 403 }
       );
+    }
+
+    const expireResult = await expireNegotiationIfNeeded(id);
+    if (expireResult.expired) {
+      const fresh = await prisma.writtenQuote.findUnique({
+        where: { id },
+        select: { negotiationStatus: true, negotiationExpiredAt: true },
+      });
+
+      if (fresh?.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!fresh?.negotiationExpiredAt) {
+        logger.warn('Cannot reject expired negotiation', { writtenQuoteId: id, correlationId });
+        return NextResponse.json(
+          { error: 'Negotiation has expired and is now closed.' },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if already rejected

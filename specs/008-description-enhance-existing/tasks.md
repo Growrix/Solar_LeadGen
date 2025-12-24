@@ -103,6 +103,55 @@ References:
 
 ---
 
+## Phase 13W.4 — Negotiation Realtime + Presence + Time Window
+
+Status: PLANNED
+Priority: P1
+Date: December 24, 2025
+References:
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-REALTIME-PRESENCE-TIMEWINDOW-AUDIT-2025-12-24.md
+  - Plan: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-REALTIME-PRESENCE-TIMEWINDOW-PLAN-2025-12-24.md
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T13W.4-1: Homeowner Negotiation Panel Instant Updates
+- File: `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+- Add safe background refresh while modal open
+- Use signature diffing to avoid UI blinking
+
+### T13W.4-2: Presence Indicator (Online/Offline)
+- Backend: add role-based heartbeat timestamps on WrittenQuote
+- UI: show online only when BOTH parties are active in their modals
+- Files:
+  - `src/app/api/written-quotes/[id]/presence/route.ts`
+  - `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+  - `src/components/WrittenQuoteBuilderModal.tsx`
+
+### T13W.4-3: Negotiation Time Window (72h) + Extensions
+- Default deadline: 3 days from quote submission
+- Auto-expire closes negotiation after 72h
+- Each party can extend once (+2 days)
+- Admin can extend (+2 days)
+- Files:
+  - `prisma/schema.prisma`
+  - `src/app/api/written-quotes/route.ts`
+  - `src/app/api/written-quotes/[id]/counter/route.ts`
+  - `src/app/api/written-quotes/[id]/revise/route.ts`
+  - `src/app/api/written-quotes/[id]/agree/route.ts`
+
+### T13W.4-4: Admin Controls (Admin Lead Management Modal)
+- File: `src/components/admin/AdminLeadManagementModal.tsx`
+- Add Written Quote Negotiation section with deadline + extend action
+
+### T13W.4-5: Notifications & Emails
+- Notify homeowner + installer on negotiation expiry via email
+- Use normalized notification service (`NotificationType.SYSTEM`)
+
+### T13W.4-6: Validation
+- `npx tsc --noEmit` → pass
+- `npm run build` → pass
+
+---
+
 ## Phase 4.16 — Written Quote (UI → Spec → Backend)
 
 Status: IN PROGRESS (UI-First)  

@@ -233,6 +233,11 @@ const STATUS_LABELS: Record<LeadStatus, { label: string | ((lead?: { quoteType?:
     description: 'No activity for 30 days',
     accent: 'bg-background border border-border text-muted-foreground',
   },
+  [LeadStatusEnum.NEGOTIATION_EXPIRED]: {
+    label: 'Negotiation expired',
+    description: 'The negotiation window has closed',
+    accent: 'bg-background border border-border text-muted-foreground',
+  },
   [LeadStatusEnum.CANCELLED]: {
     label: 'Cancelled',
     description: 'Removed by homeowner',

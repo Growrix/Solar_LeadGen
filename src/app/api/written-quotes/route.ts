@@ -17,6 +17,7 @@ import { createNotification, createBulkNotifications } from '@/lib/notifications
 import { NotificationType, UserRole } from '@prisma/client';
 import type { CreateWrittenQuoteRequest, GetWrittenQuotesResponse } from '@/types/written-quote';
 import { createLogger } from '@/lib/logger';
+import { expireNegotiationIfNeeded } from '@/lib/written-quotes/negotiation-window';
 
 const logger = createLogger({ context: 'WrittenQuotesRoute' });
 
@@ -115,6 +116,9 @@ export async function POST(request: NextRequest) {
     const gstAmount = body.gstAmount ?? (includeGst ? (body.amount * (gstPercent / 100)) : 0);
     const finalTotal = body.finalTotal ?? (body.amount + gstAmount - incentiveAmount);
 
+    // Phase 13W.4 - Negotiation time window (default 72 hours)
+    const negotiationDeadlineAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+
     // Create written quote record with comprehensive Quote Builder data (Phase 13W)
     const writtenQuote = await prisma.writtenQuote.create({
       data: {
@@ -140,6 +144,17 @@ export async function POST(request: NextRequest) {
         
         // Phase 13W - Negotiation fields (default to PENDING)
         negotiationStatus: 'PENDING',
+
+        // Phase 13W.4 - Negotiation time window + presence
+        negotiationDeadlineAt,
+        negotiationExpiredAt: null,
+        homeownerModalActiveAt: null,
+        installerModalActiveAt: null,
+        homeownerExtensionUsed: false,
+        installerExtensionUsed: false,
+        adminExtensionCount: 0,
+        adminLastExtendedAt: null,
+        adminLastExtendedBy: null,
         
         // Phase 13W - Comprehensive Quote Builder data (8 JSON fields)
         systemData: (body.systemData as any) || undefined,
@@ -335,10 +350,33 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     });
 
+    // Phase 13W.4: Lazy expiry enforcement (no scheduler)
+    await Promise.all(writtenQuotes.map((q) => expireNegotiationIfNeeded(q.id)));
+
+    // Re-fetch after potential expiry updates so the response reflects latest state
+    const writtenQuotesFresh = await prisma.writtenQuote.findMany({
+      where: isInstaller ? { leadId, installerId: auth.userId } : { leadId },
+      include: {
+        installer: {
+          select: {
+            id: true,
+            email: true,
+            phone: true,
+            installerProfile: {
+              select: {
+                companyName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
     // Format response with comprehensive data
     const response: GetWrittenQuotesResponse = {
       success: true,
-      writtenQuotes: writtenQuotes.map(quote => ({
+      writtenQuotes: writtenQuotesFresh.map(quote => ({
         id: quote.id,
         leadId: quote.leadId,
         installerId: quote.installerId,
@@ -369,6 +407,17 @@ export async function GET(request: NextRequest) {
         homeownerCounterCount: (quote as any).homeownerCounterCount ?? null,
         installerRevisionCount: (quote as any).installerRevisionCount ?? null,
         negotiationTurnCount: (quote as any).negotiationTurnCount ?? null,
+
+        // Phase 13W.4 - Negotiation time window + presence
+        negotiationDeadlineAt: (quote as any).negotiationDeadlineAt?.toISOString?.() || null,
+        negotiationExpiredAt: (quote as any).negotiationExpiredAt?.toISOString?.() || null,
+        homeownerModalActiveAt: (quote as any).homeownerModalActiveAt?.toISOString?.() || null,
+        installerModalActiveAt: (quote as any).installerModalActiveAt?.toISOString?.() || null,
+        homeownerExtensionUsed: (quote as any).homeownerExtensionUsed ?? null,
+        installerExtensionUsed: (quote as any).installerExtensionUsed ?? null,
+        adminExtensionCount: (quote as any).adminExtensionCount ?? null,
+        adminLastExtendedAt: (quote as any).adminLastExtendedAt?.toISOString?.() || null,
+        adminLastExtendedBy: (quote as any).adminLastExtendedBy ?? null,
         
         createdAt: quote.createdAt.toISOString(),
         updatedAt: quote.updatedAt.toISOString(),

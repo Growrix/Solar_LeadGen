@@ -48,3 +48,22 @@ Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatc
 
 ***Admin function to control Written Quote Negotiation Limits***
 - Create an admin function to control the Written Quote Negotiation Limits for homeowners and installers.
+
+
+-----------------------------------------------------------------------------------------
+
+***Neogitation panel enhancement*** 
+ - The Installers negotiation panel always gets the counter price update instantly without any issues and with out refreshing the modal/page , But the Homeowners negotiation panel does not get the counter price update instantly without refreshing the modal/page. I want you to fix this issue in the Homeowners negotiation panel so that it always gets the counter price update instantly without any issues and with out refreshing the modal/page. Audit deeply and fix it accordingly.
+
+ - I want to add a online/Offline status indicator in the negotiation panel in both end (installer and homeowner) so that both parties can see each other's online/offline status easily while negotiation. e.g a green dot for online and grey dot for offline beside the username in the negotiation panel. Audit deeply and implement it accordingly.
+ The online status will only show when the Both parties are in the respective modals e.g if the installer is in the Quote builder modal and the homeowner is in the review modal at the same time then only the online status will show. if they are not in the respective modals at the same time then it will show offline status.
+
+ - I want to add a Counter and this counter will be active when the Installer submit the quote and the initial negotiation timeline should be 3 days from the date of quote submission. e.g if the installer submitted the quote on 1st Jan 2024 , then the homeowner will have time till 4th Jan 2024 to respond with a counter offer price. After that the counter offer option will be disabled automatically. same goes for the installer as well. The overall negotiation timeline is 3 days, After 3 days whichs is 72 hours - the entire negotiation will be closed automatically if the both end could not take any decision done deal/reject. The goal is to limit both parties within a negotiation timeframe, so that the users respond within a timeframe. Audit deeply and implement it accordingly. 
+
+ - After the Timeframe is over e.g 3 days/72 hours , if there is no action taken from both end , then the negotiation will be closed automatically and the lead status will be changed to "Negotiation expired" and both parties will get email notifications regarding this. Audit deeply and implement it accordingly. 
+
+ - But there will be an option for both parties to extend the negotiation timeframe by 2 days once. e.g if the homeowner could not respond within 3 days , then they can request for an extension of 2 days once. same goes for the installer as well. After the extension is over , there will be no option for further extension. Audit deeply and implement it accordingly. 
+
+ - The last option is to request admin to increase the negotiation timeframe if both parties could not take any decision within the given timeframe including extension. e.g if both parties could not take any decision within 5 days (3 days + 2 days extension) , then they can request admin to increase the negotiation timeframe. Admin will get email notifications regarding this request and admin can increase the negotiation timeframe as per the business requirement. Audit deeply and implement it accordingly.
+
+ - The admin will be able to control the negotiation timeframe from the admin panel. e.g admin can set the initial negotiation timeframe, extension timeframe etc as per the business requirement. I want you to create a modal for that and add a section in the Admin Lead Management Modal for that purpose. The section will be the control system of the Negotiation limits for both end. 

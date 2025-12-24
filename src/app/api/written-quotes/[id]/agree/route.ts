@@ -14,6 +14,7 @@ import { createNotification } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
 import type { AgreeQuoteRequest } from '@/types/written-quote';
 import { createLogger } from '@/lib/logger';
+import { expireNegotiationIfNeeded } from '@/lib/written-quotes/negotiation-window';
 
 const logger = createLogger({ context: 'WrittenQuoteAgreeRoute' });
 
@@ -58,6 +59,15 @@ export async function POST(
       );
     }
 
+    // Phase 13W.4: Expiry enforcement
+    const { expired } = await expireNegotiationIfNeeded(id);
+    if (expired) {
+      return NextResponse.json(
+        { error: 'Negotiation has expired and is now closed.' },
+        { status: 403 }
+      );
+    }
+
     // Verify user is either installer or homeowner of this quote
     const isInstaller = writtenQuote.installerId === auth.userId;
     const isHomeowner = writtenQuote.lead.homeownerId === auth.userId;
@@ -77,7 +87,7 @@ export async function POST(
     }
 
     // Negotiation is closed once agreed/rejected/purchased
-    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || writtenQuote.purchasedAt) {
       logger.warn('Duplicate agree attempt', { 
         writtenQuoteId: id,
         correlationId 

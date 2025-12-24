@@ -14,6 +14,7 @@ export type MessageKey =
   | 'homeowner.system.limit_updated'
   | 'homeowner.system.bidding_limit_updated' // Phase 13S.2
   | 'homeowner.lead.purchased'
+  | 'homeowner.written_quote.negotiation_expired'
   // Installer messages (professional tone)
   | 'installer.new.opportunity'
   | 'installer.bid.won'
@@ -24,6 +25,7 @@ export type MessageKey =
   | 'installer.bid.payment.success'
   | 'installer.assignment.removed'
   | 'installer.lead.resold'
+  | 'installer.written_quote.negotiation_expired'
   // Admin messages (operational tone)
   | 'admin.assignment.started'
   | 'admin.assignment.ended'
@@ -35,7 +37,8 @@ export type MessageKey =
   | 'admin.lead.created'
   | 'admin.phone.verified'
   | 'admin.lead.assigned'
-  | 'admin.assignment.accepted';
+  | 'admin.assignment.accepted'
+  | 'admin.written_quote.extension_requested';
 
 export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: string }> = {
   // Homeowner messages (avoid: lead, purchased, paid)
@@ -83,6 +86,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
     title: 'Request Accepted',
     message: 'An installer has accepted your request and will contact you soon.',
   },
+  'homeowner.written_quote.negotiation_expired': {
+    title: 'Negotiation Expired',
+    message: 'The negotiation window has expired. Please contact support if you need more time.',
+  },
 
   // Installer messages
   'installer.new.opportunity': {
@@ -120,6 +127,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'installer.lead.resold': {
     title: 'Lead Resold',
     message: 'A purchased lead was resold by admin and removed from your account.',
+  },
+  'installer.written_quote.negotiation_expired': {
+    title: 'Negotiation Expired',
+    message: 'The negotiation window has expired for this written quote. Please contact support if you need more time.',
   },
 
   // Admin messages
@@ -166,6 +177,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'admin.assignment.accepted': {
     title: 'Assignment Accepted',
     message: 'Installer accepted a lead assignment. Track progress in dashboard.',
+  },
+  'admin.written_quote.extension_requested': {
+    title: 'Extension Requested',
+    message: 'A user requested an admin extension for a written quote negotiation window.',
   },
 };
 

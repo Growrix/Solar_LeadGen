@@ -111,6 +111,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [revisedAmount, setRevisedAmount] = useState<string>('');
   const [isSubmittingRevision, setIsSubmittingRevision] = useState(false);
   const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
+  const [isExtendingNegotiation, setIsExtendingNegotiation] = useState(false);
+  const [isRequestingAdminExtension, setIsRequestingAdminExtension] = useState(false);
   const hasLoadedNegotiationRef = useRef(false);
   const negotiationSignatureRef = useRef<string | null>(null);
 
@@ -250,11 +252,57 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         return 'Done deal pending acceptance';
       case 'AGREED':
         return 'Finalized (Done deal)';
+      case 'NEGOTIATION_EXPIRED':
+        return 'Negotiation expired';
       case 'PENDING':
       default:
         return 'Not started';
     }
   };
+
+  const getTimestamp = (value: unknown): number => {
+    if (!value) return 0;
+    const t = new Date(value as any).getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  const isBothPartiesOnline = React.useMemo(() => {
+    if (!negotiationQuote) return false;
+    const now = Date.now();
+    const homeownerAt = getTimestamp((negotiationQuote as any).homeownerModalActiveAt);
+    const installerAt = getTimestamp((negotiationQuote as any).installerModalActiveAt);
+    if (!homeownerAt || !installerAt) return false;
+    return now - homeownerAt <= 15_000 && now - installerAt <= 15_000;
+  }, [negotiationQuote]);
+
+  // Presence heartbeat while modal is open
+  useEffect(() => {
+    if (!isOpen || !negotiationQuote) return;
+    const writtenQuoteId = negotiationQuote.id;
+
+    let cancelled = false;
+    const beat = async () => {
+      try {
+        await fetch(`/api/written-quotes/${writtenQuoteId}/presence`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch {
+        // Best-effort heartbeat only
+      }
+    };
+
+    void beat();
+    const interval = setInterval(() => {
+      if (cancelled) return;
+      void beat();
+    }, 10_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isOpen, negotiationQuote]);
 
   const getLastOfferAmount = (quote: any) => {
     if (quote?.negotiationStatus === 'PENDING_ACCEPTANCE' && quote?.agreedAmount) {
@@ -346,7 +394,16 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             installerRevisedAt: ownQuote.installerRevisedAt,
             agreedAmount: ownQuote.agreedAmount,
             agreedAt: ownQuote.agreedAt,
-            agreedBy: ownQuote.agreedBy
+            agreedBy: ownQuote.agreedBy,
+            negotiationDeadlineAt: (ownQuote as any).negotiationDeadlineAt,
+            negotiationExpiredAt: (ownQuote as any).negotiationExpiredAt,
+            homeownerModalActiveAt: (ownQuote as any).homeownerModalActiveAt,
+            installerModalActiveAt: (ownQuote as any).installerModalActiveAt,
+            homeownerExtensionUsed: (ownQuote as any).homeownerExtensionUsed,
+            installerExtensionUsed: (ownQuote as any).installerExtensionUsed,
+            adminExtensionCount: (ownQuote as any).adminExtensionCount,
+            adminLastExtendedAt: (ownQuote as any).adminLastExtendedAt,
+            adminLastExtendedBy: (ownQuote as any).adminLastExtendedBy
           })
         : 'null';
 
@@ -379,6 +436,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     }
     if (negotiationQuote.negotiationStatus === 'AGREED') return;
     if (negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE') return;
+    if (negotiationQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(negotiationQuote as any).negotiationExpiredAt) return;
 
     setIsSubmittingRevision(true);
     setNegotiationFetchError(null);
@@ -408,6 +466,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     if (!negotiationQuote) return;
     if (negotiationQuote.negotiationStatus === 'AGREED') return;
     if (negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE') return;
+    if (negotiationQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(negotiationQuote as any).negotiationExpiredAt) return;
 
     const userId = session?.user?.id;
     if (!userId) {
@@ -485,6 +544,54 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to reject done-deal');
     } finally {
       setIsRejectingDeal(false);
+    }
+  };
+
+  const handleExtendNegotiation = async () => {
+    if (!negotiationQuote) return;
+    setNegotiationFetchError(null);
+    setIsExtendingNegotiation(true);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/extend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to extend negotiation');
+      }
+
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error extending negotiation:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to extend negotiation');
+    } finally {
+      setIsExtendingNegotiation(false);
+    }
+  };
+
+  const handleRequestAdminExtension = async () => {
+    if (!negotiationQuote) return;
+    setNegotiationFetchError(null);
+    setIsRequestingAdminExtension(true);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/request-admin-extension`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to request admin extension');
+      }
+
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error requesting admin extension:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to request admin extension');
+    } finally {
+      setIsRequestingAdminExtension(false);
     }
   };
 
@@ -1340,6 +1447,20 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                             ${getLastOfferAmount(negotiationQuote).toLocaleString()}
                           </span>
                         </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Live status</span>
+                          <span className={`text-body-small ${isBothPartiesOnline ? 'text-success' : 'text-muted-foreground'}`}>
+                            {isBothPartiesOnline ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Deadline</span>
+                          <span className="text-body-small text-foreground">
+                            {(negotiationQuote as any).negotiationDeadlineAt
+                              ? formatDateTime((negotiationQuote as any).negotiationDeadlineAt)
+                              : '—'}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
@@ -1363,7 +1484,11 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                         </div>
                       </div>
 
-                      {negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? (
+                      {negotiationQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(negotiationQuote as any).negotiationExpiredAt ? (
+                        <div className="bg-error/10 border border-error/20 rounded-lg p-3">
+                          <p className="text-body-small text-error">Negotiation has expired and is now closed.</p>
+                        </div>
+                      ) : negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? (
                         (() => {
                           const userId = session?.user?.id;
                           const proposerId = (negotiationQuote as any)?.agreedBy || null;
@@ -1419,6 +1544,32 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                           >
                             {isSubmittingRevision ? 'Updating...' : 'Send Updated Offer'}
                           </Button>
+
+                          <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border">
+                            <Button
+                              variant="secondary"
+                              onClick={handleExtendNegotiation}
+                              disabled={
+                                isExtendingNegotiation ||
+                                (negotiationQuote as any).installerExtensionUsed
+                              }
+                              className="w-full"
+                            >
+                              {isExtendingNegotiation
+                                ? 'Extending...'
+                                : (negotiationQuote as any).installerExtensionUsed
+                                ? 'Extend (already used)'
+                                : 'Extend by 2 days (one-time)'}
+                            </Button>
+                            <Button
+                              variant="minimal"
+                              onClick={handleRequestAdminExtension}
+                              disabled={isRequestingAdminExtension}
+                              className="w-full"
+                            >
+                              {isRequestingAdminExtension ? 'Requesting...' : 'Request admin extension'}
+                            </Button>
+                          </div>
 
                           <Button
                             variant="primary"

@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma';
 import { createNotification } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
 import { createLogger } from '@/lib/logger';
+import { expireNegotiationIfNeeded } from '@/lib/written-quotes/negotiation-window';
 
 const logger = createLogger({ context: 'WrittenQuoteAcceptRoute' });
 
@@ -36,6 +37,12 @@ export async function POST(
       return NextResponse.json({ error: 'Written quote not found' }, { status: 404 });
     }
 
+    // Phase 13W.4: Expiry enforcement
+    const { expired } = await expireNegotiationIfNeeded(id);
+    if (expired) {
+      return NextResponse.json({ error: 'Negotiation has expired and is now closed.' }, { status: 403 });
+    }
+
     const isInstaller = writtenQuote.installerId === auth.userId;
     const isHomeowner = writtenQuote.lead.homeownerId === auth.userId;
 
@@ -43,7 +50,7 @@ export async function POST(
       return NextResponse.json({ error: 'You are not authorized to accept this quote' }, { status: 403 });
     }
 
-    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || writtenQuote.purchasedAt) {
       return NextResponse.json({ error: 'This negotiation is already closed.' }, { status: 403 });
     }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import { 
@@ -49,7 +49,10 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [leadError, setLeadError] = useState<string | null>(null);
   const [writtenQuotes, setWrittenQuotes] = useState<WrittenQuoteWithFullData[]>(initialWrittenQuotes);
   const [isLoadingWrittenQuotes, setIsLoadingWrittenQuotes] = useState(false);
+  const [isRefreshingWrittenQuotes, setIsRefreshingWrittenQuotes] = useState(false);
   const [writtenQuotesError, setWrittenQuotesError] = useState<string | null>(null);
+  const writtenQuotesSignatureRef = useRef<string | null>(null);
+  const hasLoadedWrittenQuotesRef = useRef(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showRejectConfirmation, setShowRejectConfirmation] = useState(false);
   const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
@@ -60,6 +63,8 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [counterAmount, setCounterAmount] = useState<string>('');
   const [isSubmittingCounter, setIsSubmittingCounter] = useState(false);
   const [negotiationError, setNegotiationError] = useState<string | null>(null);
+  const [isExtendingNegotiation, setIsExtendingNegotiation] = useState(false);
+  const [isRequestingAdminExtension, setIsRequestingAdminExtension] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     instantQuote: true,
     technical: false,
@@ -74,10 +79,19 @@ export default function HomeownerWrittenQuoteReviewModal({
   }, [writtenQuotes, selectedWrittenQuoteId]);
 
   // Fetch written quotes for the lead
-  const fetchWrittenQuotes = React.useCallback(async () => {
+  const fetchWrittenQuotes = React.useCallback(async (opts?: { background?: boolean }) => {
     if (!leadId) return;
-    setIsLoadingWrittenQuotes(true);
-    setWrittenQuotesError(null);
+
+    const isBackground = !!opts?.background;
+    const showBlockingLoader = !isBackground && !hasLoadedWrittenQuotesRef.current;
+
+    if (showBlockingLoader) {
+      setIsLoadingWrittenQuotes(true);
+      setWrittenQuotesError(null);
+    } else if (isBackground) {
+      setIsRefreshingWrittenQuotes(true);
+    }
+
     try {
       console.log('[HomeownerWrittenQuoteReviewModal] Fetching written quotes for leadId:', leadId);
       const response = await fetch(`/api/written-quotes?leadId=${leadId}`);
@@ -109,13 +123,44 @@ export default function HomeownerWrittenQuoteReviewModal({
           : 0,
         isWinner: writtenQuote.status === 'SELECTED'
       }));
-      
-      setWrittenQuotes(transformedQuotes);
+
+      const signature = JSON.stringify(
+        transformedQuotes.map((q) => ({
+          id: q.id,
+          negotiationStatus: (q as any).negotiationStatus,
+          amount: (q as any).amount,
+          finalTotal: (q as any).finalTotal,
+          homeownerCounterAmount: (q as any).homeownerCounterAmount,
+          homeownerCounterAt: (q as any).homeownerCounterAt,
+          installerRevisedAmount: (q as any).installerRevisedAmount,
+          installerRevisedAt: (q as any).installerRevisedAt,
+          agreedAmount: (q as any).agreedAmount,
+          agreedAt: (q as any).agreedAt,
+          agreedBy: (q as any).agreedBy,
+          purchasedAt: (q as any).purchasedAt,
+          rejectedAt: (q as any).rejectedAt,
+          negotiationDeadlineAt: (q as any).negotiationDeadlineAt,
+          negotiationExpiredAt: (q as any).negotiationExpiredAt,
+          homeownerModalActiveAt: (q as any).homeownerModalActiveAt,
+          installerModalActiveAt: (q as any).installerModalActiveAt,
+          homeownerExtensionUsed: (q as any).homeownerExtensionUsed,
+          installerExtensionUsed: (q as any).installerExtensionUsed
+        }))
+      );
+
+      if (signature !== writtenQuotesSignatureRef.current) {
+        setWrittenQuotes(transformedQuotes);
+        writtenQuotesSignatureRef.current = signature;
+      }
+
+      hasLoadedWrittenQuotesRef.current = true;
+      if (!isBackground) setWrittenQuotesError(null);
     } catch (error) {
       console.error('[HomeownerWrittenQuoteReviewModal] Error fetching written quotes:', error);
       setWrittenQuotesError(error instanceof Error ? error.message : 'Failed to load written quotes');
     } finally {
-      setIsLoadingWrittenQuotes(false);
+      if (showBlockingLoader) setIsLoadingWrittenQuotes(false);
+      if (isBackground) setIsRefreshingWrittenQuotes(false);
     }
   }, [leadId]);
 
@@ -124,6 +169,15 @@ export default function HomeownerWrittenQuoteReviewModal({
     if (isOpen && leadId) {
       fetchWrittenQuotes();
     }
+  }, [isOpen, leadId, fetchWrittenQuotes]);
+
+  // Background refresh while modal is open (keeps negotiation panel in sync)
+  useEffect(() => {
+    if (!isOpen || !leadId) return;
+    const interval = setInterval(() => {
+      fetchWrittenQuotes({ background: true });
+    }, 4000);
+    return () => clearInterval(interval);
   }, [isOpen, leadId, fetchWrittenQuotes]);
 
   // Fetch full lead data when modal opens
@@ -158,6 +212,98 @@ export default function HomeownerWrittenQuoteReviewModal({
   };
 
   const selectedWrittenQuote = writtenQuotes.find(wq => wq.id === selectedWrittenQuoteId);
+
+  const getTimestamp = (value: unknown): number => {
+    if (!value) return 0;
+    const t = new Date(value as any).getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  const isBothPartiesOnline = React.useMemo(() => {
+    if (!selectedWrittenQuote) return false;
+    const now = Date.now();
+    const homeownerAt = getTimestamp((selectedWrittenQuote as any).homeownerModalActiveAt);
+    const installerAt = getTimestamp((selectedWrittenQuote as any).installerModalActiveAt);
+    if (!homeownerAt || !installerAt) return false;
+    return now - homeownerAt <= 15_000 && now - installerAt <= 15_000;
+  }, [selectedWrittenQuote]);
+
+  // Presence heartbeat while modal is open
+  useEffect(() => {
+    if (!isOpen || !selectedWrittenQuote) return;
+    const writtenQuoteId = selectedWrittenQuote.id;
+
+    let cancelled = false;
+    const beat = async () => {
+      try {
+        await fetch(`/api/written-quotes/${writtenQuoteId}/presence`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch {
+        // Best-effort heartbeat only
+      }
+    };
+
+    void beat();
+    const interval = setInterval(() => {
+      if (cancelled) return;
+      void beat();
+    }, 10_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isOpen, selectedWrittenQuote]);
+
+  const handleExtendNegotiation = async () => {
+    if (!selectedWrittenQuote) return;
+    setNegotiationError(null);
+    setIsExtendingNegotiation(true);
+    try {
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/extend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to extend negotiation');
+      }
+
+      await fetchWrittenQuotes();
+    } catch (error) {
+      console.error('[HomeownerWrittenQuoteReviewModal] Error extending negotiation:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to extend negotiation');
+    } finally {
+      setIsExtendingNegotiation(false);
+    }
+  };
+
+  const handleRequestAdminExtension = async () => {
+    if (!selectedWrittenQuote) return;
+    setNegotiationError(null);
+    setIsRequestingAdminExtension(true);
+    try {
+      const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/request-admin-extension`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to request admin extension');
+      }
+
+      await fetchWrittenQuotes();
+    } catch (error) {
+      console.error('[HomeownerWrittenQuoteReviewModal] Error requesting admin extension:', error);
+      setNegotiationError(error instanceof Error ? error.message : 'Failed to request admin extension');
+    } finally {
+      setIsRequestingAdminExtension(false);
+    }
+  };
 
   const projections = React.useMemo(() => {
     if (!selectedWrittenQuote) {
@@ -425,6 +571,8 @@ export default function HomeownerWrittenQuoteReviewModal({
         return 'Finalized (Done deal)';
       case 'REJECTED':
         return 'Rejected';
+      case 'NEGOTIATION_EXPIRED':
+        return 'Negotiation expired';
       case 'PENDING':
       default:
         return 'Not started';
@@ -543,7 +691,7 @@ export default function HomeownerWrittenQuoteReviewModal({
               <p className="text-body text-muted-foreground max-w-md mb-4">
                 {writtenQuotesError}
               </p>
-              <Button onClick={fetchWrittenQuotes} variant="primary">
+              <Button onClick={() => fetchWrittenQuotes()} variant="primary">
                 Retry
               </Button>
             </div>
@@ -1088,6 +1236,8 @@ export default function HomeownerWrittenQuoteReviewModal({
                           selectedWrittenQuote.negotiationStatus === 'AGREED' ||
                           selectedWrittenQuote.negotiationStatus === 'REJECTED' ||
                           selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ||
+                          selectedWrittenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' ||
+                          !!(selectedWrittenQuote as any).negotiationExpiredAt ||
                           !!selectedWrittenQuote.purchasedAt;
 
                         const canCounter = !isClosed && homeownerCounterCount < 3 && negotiationTurns < 7;
@@ -1096,6 +1246,8 @@ export default function HomeownerWrittenQuoteReviewModal({
                           const reason = isClosed
                             ? selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE'
                               ? 'Done deal is pending acceptance. Negotiation is temporarily locked.'
+                              : selectedWrittenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(selectedWrittenQuote as any).negotiationExpiredAt
+                              ? 'This negotiation has expired and is now closed.'
                               : 'This negotiation is closed.'
                             : negotiationTurns >= 7
                             ? 'Negotiation limit reached (7 total turns).'
@@ -1134,6 +1286,57 @@ export default function HomeownerWrittenQuoteReviewModal({
                           </div>
                         );
                       })()}
+
+                      {/* Presence + time window + extension controls */}
+                      <div className="space-y-2 pt-2 border-t border-border">
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Live status</span>
+                          <span className={`text-body-small ${isBothPartiesOnline ? 'text-success' : 'text-muted-foreground'}`}>
+                            {isBothPartiesOnline ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-body-small text-muted-foreground">Deadline</span>
+                          <span className="text-body-small text-foreground">
+                            {(selectedWrittenQuote as any).negotiationDeadlineAt
+                              ? formatDateTime((selectedWrittenQuote as any).negotiationDeadlineAt)
+                              : '—'}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <Button
+                            variant="secondary"
+                            onClick={handleExtendNegotiation}
+                            disabled={
+                              isExtendingNegotiation ||
+                              (selectedWrittenQuote as any).homeownerExtensionUsed ||
+                              selectedWrittenQuote.negotiationStatus === 'AGREED' ||
+                              selectedWrittenQuote.negotiationStatus === 'REJECTED' ||
+                              selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ||
+                              selectedWrittenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' ||
+                              !!(selectedWrittenQuote as any).negotiationExpiredAt ||
+                              !!selectedWrittenQuote.purchasedAt
+                            }
+                            className="w-full"
+                          >
+                            {isExtendingNegotiation
+                              ? 'Extending...'
+                              : (selectedWrittenQuote as any).homeownerExtensionUsed
+                              ? 'Extend (already used)'
+                              : 'Extend by 2 days (one-time)'}
+                          </Button>
+
+                          <Button
+                            variant="minimal"
+                            onClick={handleRequestAdminExtension}
+                            disabled={isRequestingAdminExtension}
+                            className="w-full"
+                          >
+                            {isRequestingAdminExtension ? 'Requesting...' : 'Request admin extension'}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
 
                     <h3 className="text-heading-4 text-foreground border-b border-border pb-2">

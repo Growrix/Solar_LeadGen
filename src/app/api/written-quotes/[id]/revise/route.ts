@@ -14,6 +14,7 @@ import { createNotification } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
 import type { ReviseQuoteRequest } from '@/types/written-quote';
 import { createLogger } from '@/lib/logger';
+import { expireNegotiationIfNeeded } from '@/lib/written-quotes/negotiation-window';
 
 const logger = createLogger({ context: 'WrittenQuoteReviseRoute' });
 
@@ -64,6 +65,15 @@ export async function PATCH(
       );
     }
 
+    // Phase 13W.4: Expiry enforcement
+    const { expired } = await expireNegotiationIfNeeded(id);
+    if (expired) {
+      return NextResponse.json(
+        { error: 'Negotiation has expired and is now closed.' },
+        { status: 403 }
+      );
+    }
+
     // Verify installer owns this quote
     if (writtenQuote.installerId !== auth.userId) {
       logger.warn('Unauthorized revise attempt', { 
@@ -79,7 +89,7 @@ export async function PATCH(
     }
 
     // Negotiation is closed once agreed/rejected/purchased
-    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || writtenQuote.purchasedAt) {
       return NextResponse.json(
         { error: 'This negotiation is closed and cannot be revised.' },
         { status: 403 }

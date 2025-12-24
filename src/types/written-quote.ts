@@ -86,6 +86,7 @@ export interface AcceptQuoteResponse {
  * Returns all written quotes for a specific lead
  */
 export interface GetWrittenQuotesResponse {
+  success?: boolean;
   writtenQuotes: WrittenQuoteWithInstaller[];
 }
 
@@ -124,6 +125,15 @@ export interface WrittenQuoteWithInstaller {
   homeownerCounterCount?: number | null;
   installerRevisionCount?: number | null;
   negotiationTurnCount?: number | null;
+  negotiationDeadlineAt?: string | null;
+  negotiationExpiredAt?: string | null;
+  homeownerModalActiveAt?: string | null;
+  installerModalActiveAt?: string | null;
+  homeownerExtensionUsed?: boolean | null;
+  installerExtensionUsed?: boolean | null;
+  adminExtensionCount?: number | null;
+  adminLastExtendedAt?: string | null;
+  adminLastExtendedBy?: string | null;
   selectedAt?: string | null;
   purchasedAt?: string | null; // Phase 13W.2: Purchase timestamp
   rejectedAt?: string | null;
@@ -214,10 +224,4 @@ export enum WrittenQuoteStatus {
   REJECTED = 'REJECTED',
 }
 
-/**
- * Response from GET /api/written-quotes
- */
-export interface GetWrittenQuotesResponse {
-  success: boolean;
-  writtenQuotes: WrittenQuoteWithInstaller[];
-}
+// (duplicate GetWrittenQuotesResponse removed)

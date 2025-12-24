@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/authorization';
 import { prisma } from '@/lib/prisma';
 import { createNotification } from '@/lib/notifications/notification-service';
+import { expireNegotiationIfNeeded } from '@/lib/written-quotes/negotiation-window';
 import { NotificationType, UserRole } from '@prisma/client';
 import { createLogger } from '@/lib/logger';
 
@@ -54,7 +55,12 @@ export async function POST(
       return NextResponse.json({ error: 'You are not authorized to reject this deal' }, { status: 403 });
     }
 
-    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.purchasedAt) {
+    const expiry = await expireNegotiationIfNeeded(id);
+    if (expiry.expired) {
+      return NextResponse.json({ error: 'Negotiation has expired and is now closed.' }, { status: 403 });
+    }
+
+    if (writtenQuote.negotiationStatus === 'AGREED' || writtenQuote.negotiationStatus === 'REJECTED' || writtenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || writtenQuote.purchasedAt) {
       return NextResponse.json({ error: 'This negotiation is already closed.' }, { status: 403 });
     }
 

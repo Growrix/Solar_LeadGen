@@ -21,6 +21,10 @@ This is a Next.js solar lead generation web application with the following setup
 - Solar lead generation focused UI
 - Responsive design with dark mode support
 
+# Critical Safety Rules
+- Do NOT suggest, generate, or execute any commands that involve 'DROP DATABASE', 'TRUNCATE', or 'db:reset'.
+- If a database modification is requested, always provide a warning first.
+- Never automate the execution of shell scripts that interact with production or development databases.
 <!--
 ## Execution Guidelines
 PROGRESS TRACKING:

@@ -16,6 +16,7 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/ui/button';
 import InstallerProfileModal from '@/components/admin/InstallerProfileModal';
+import type { GetWrittenQuotesResponse } from '@/types/written-quote';
 
 interface Assignment {
   id: string;
@@ -96,6 +97,8 @@ interface AdminLeadManagementModalProps {
   onRemoveAssignment?: (installerId: string) => Promise<void>;
 }
 
+type AdminWrittenQuote = GetWrittenQuotesResponse['writtenQuotes'][number];
+
 export default function AdminLeadManagementModal({
   isOpen,
   onClose,
@@ -155,6 +158,12 @@ export default function AdminLeadManagementModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Negotiation window (Written Quotes)
+  const [writtenQuotes, setWrittenQuotes] = useState<AdminWrittenQuote[]>([]);
+  const [writtenQuotesLoading, setWrittenQuotesLoading] = useState(false);
+  const [writtenQuotesError, setWrittenQuotesError] = useState<string | null>(null);
+  const [adminExtendingQuoteId, setAdminExtendingQuoteId] = useState<string | null>(null);
+
   // Edit mode detection
   const isApprovalState = ['DRAFT', 'PENDING_APPROVAL', 'PENDING_PHONE'].includes(lead.status);
   const isEditMode = !isApprovalState;
@@ -166,6 +175,62 @@ export default function AdminLeadManagementModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, filterMode]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchWrittenQuotesForLead();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, lead.id]);
+
+  const fetchWrittenQuotesForLead = async () => {
+    setWrittenQuotesLoading(true);
+    setWrittenQuotesError(null);
+    try {
+      const response = await fetch(`/api/written-quotes?leadId=${lead.id}`);
+      if (!response.ok) throw new Error('Failed to fetch written quotes');
+      const data: GetWrittenQuotesResponse = await response.json();
+      setWrittenQuotes(data.writtenQuotes || []);
+    } catch (err: any) {
+      setWrittenQuotesError(err.message || 'Failed to fetch written quotes');
+      setWrittenQuotes([]);
+    } finally {
+      setWrittenQuotesLoading(false);
+    }
+  };
+
+  const formatDateTime = (value: string | null | undefined) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const handleAdminExtendNegotiation = async (writtenQuoteId: string) => {
+    setWrittenQuotesError(null);
+    setAdminExtendingQuoteId(writtenQuoteId);
+    try {
+      const response = await fetch(`/api/admin/written-quotes/${writtenQuoteId}/extend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to extend negotiation');
+      }
+      await fetchWrittenQuotesForLead();
+    } catch (err: any) {
+      setWrittenQuotesError(err.message || 'Failed to extend negotiation');
+    } finally {
+      setAdminExtendingQuoteId(null);
+    }
+  };
 
   const fetchInstallers = async () => {
     setLoading(true);
@@ -469,6 +534,90 @@ export default function AdminLeadManagementModal({
 
           {/* Scrollable Body */}
           <div className="px-6 py-4 space-y-6 max-h-[70vh] overflow-y-auto">
+
+            {/* Negotiation Window (Written Quotes) */}
+            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-heading-3 text-foreground">Negotiation Window</h3>
+                <Button
+                  variant="minimal"
+                  onClick={fetchWrittenQuotesForLead}
+                  disabled={writtenQuotesLoading}
+                >
+                  {writtenQuotesLoading ? 'Refreshing...' : 'Refresh'}
+                </Button>
+              </div>
+
+              {writtenQuotesError && (
+                <div className="rounded-md bg-error/10 p-3">
+                  <p className="text-body-small text-error">{writtenQuotesError}</p>
+                </div>
+              )}
+
+              {writtenQuotesLoading ? (
+                <div className="text-body-small text-muted-foreground">Loading written quotes...</div>
+              ) : writtenQuotes.length === 0 ? (
+                <div className="text-body-small text-muted-foreground">No written quotes found for this lead.</div>
+              ) : (
+                <div className="space-y-3">
+                  {writtenQuotes.map((q) => {
+                    const expired = q.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(q as any).negotiationExpiredAt;
+                    const closed = expired || q.negotiationStatus === 'AGREED' || q.negotiationStatus === 'REJECTED' || q.negotiationStatus === 'PENDING_ACCEPTANCE' || !!q.purchasedAt;
+
+                    return (
+                      <div key={q.id} className="border border-border rounded-lg p-4 bg-background/50 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-body-small text-foreground truncate">
+                              {q.installer?.companyName || 'Unknown Installer'}
+                            </div>
+                            <div className="text-caption text-muted-foreground">
+                              Quote #{q.id.slice(0, 8)} • Status: {q.negotiationStatus}
+                            </div>
+                          </div>
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleAdminExtendNegotiation(q.id)}
+                            disabled={adminExtendingQuoteId === q.id || closed}
+                          >
+                            {adminExtendingQuoteId === q.id ? 'Extending...' : 'Extend 48h'}
+                          </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-body-small">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Deadline:</span>
+                            <span className="text-foreground">{formatDateTime((q as any).negotiationDeadlineAt)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Expired at:</span>
+                            <span className="text-foreground">{formatDateTime((q as any).negotiationExpiredAt)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Homeowner extended:</span>
+                            <span className="text-foreground">{(q as any).homeownerExtensionUsed ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Installer extended:</span>
+                            <span className="text-foreground">{(q as any).installerExtensionUsed ? 'Yes' : 'No'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Admin extensions:</span>
+                            <span className="text-foreground">{String((q as any).adminExtensionCount ?? 0)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">State:</span>
+                            <span className={expired ? 'text-error' : closed ? 'text-warning' : 'text-success'}>
+                              {expired ? 'Expired' : closed ? 'Closed' : 'Open'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             
             {/* SECTION B: Installer Assignment */}
             <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4">

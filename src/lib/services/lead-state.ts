@@ -36,6 +36,7 @@ const VALID_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
   ACCEPTED: [], // Terminal state
   REJECTED: [], // Terminal state
   EXPIRED: [], // Terminal state
+  NEGOTIATION_EXPIRED: [], // Terminal state (negotiation window ended)
   CANCELLED: [], // Terminal state
   FLAGGED: ['PENDING_APPROVAL', 'CANCELLED'], // Admin can unflag or cancel
 };

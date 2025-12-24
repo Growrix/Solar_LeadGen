@@ -413,9 +413,20 @@ model WrittenQuote {
   agreedBy               String?
 
   // Negotiation limits
-  homeownerCounterCount   Int @default(0)
-  installerRevisionCount  Int @default(0)
-  negotiationTurnCount    Int @default(0)
+  homeownerCounterCount  Int @default(0)
+  installerRevisionCount Int @default(0)
+  negotiationTurnCount   Int @default(0)
+
+  // Negotiation time window + presence (Phase 13W.4)
+  negotiationDeadlineAt  DateTime?
+  negotiationExpiredAt   DateTime?
+  homeownerModalActiveAt DateTime?
+  installerModalActiveAt DateTime?
+  homeownerExtensionUsed Boolean   @default(false)
+  installerExtensionUsed Boolean   @default(false)
+  adminExtensionCount    Int       @default(0)
+  adminLastExtendedAt    DateTime?
+  adminLastExtendedBy    String?
 
   selectedAt      DateTime?
   purchasedAt     DateTime?
@@ -441,6 +452,7 @@ model WrittenQuote {
   @@index([leadId])
   @@index([installerId])
   @@index([negotiationStatus])
+  @@index([negotiationDeadlineAt])
   @@index([status])
   @@index([createdAt])
   @@map("written_quotes")
@@ -759,6 +771,7 @@ enum LeadStatus {
   ACCEPTED
   REJECTED
   EXPIRED
+  NEGOTIATION_EXPIRED
   CANCELLED
   FLAGGED
 }
