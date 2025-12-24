@@ -88,7 +88,7 @@ export default function NegotiationTimeline({
   return (
     <div className="space-y-4">
       {/* Current Amount Display */}
-      <div className="bg-surface-accent border border-border rounded-lg p-4">
+      <div className="bg-surface border border-border rounded-lg p-4">
         <div className="flex items-center justify-between">
           <span className="text-label text-foreground">Current Amount:</span>
           <span className="text-heading-4 text-primary">

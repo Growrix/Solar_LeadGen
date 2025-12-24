@@ -145,6 +145,15 @@ export interface HomeownerLeadSummary {
   recentLeads: HomeownerLeadSummaryItem[];
 }
 
+export interface GetHomeownerLeadSummaryOptions {
+  /**
+   * Number of leads to include in the summary.
+   * - default: 5 (keeps payload small for non-dashboard callers)
+   * - null: include all leads
+   */
+  leadLimit?: number | null;
+}
+
 /**
  * Create a new lead
  * 
@@ -515,7 +524,10 @@ export async function getLeads(input: GetLeadsInput) {
 /**
  * Build homeowner dashboard summary including quota metadata and recent leads.
  */
-export async function getHomeownerLeadSummary(userId: string): Promise<HomeownerLeadSummary> {
+export async function getHomeownerLeadSummary(
+  userId: string,
+  options: GetHomeownerLeadSummaryOptions = {},
+): Promise<HomeownerLeadSummary> {
   const homeowner = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -533,12 +545,15 @@ export async function getHomeownerLeadSummary(userId: string): Promise<Homeowner
     throw new Error('Homeowner not found');
   }
 
+  // null = return all leads; undefined = default to 5
+  const leadLimit = options.leadLimit === undefined ? 5 : options.leadLimit;
+
   const [verificationThreshold, recentLeads, groupedStatuses] = await Promise.all([
     getSettingAsNumber('MAX_LEAD_SUBMISSIONS_BEFORE_VERIFICATION'),
     prisma.lead.findMany({
       where: { homeownerId: userId },
       orderBy: { createdAt: 'desc' },
-      take: 5,
+      ...(typeof leadLimit === 'number' ? { take: leadLimit } : {}),
       select: {
         id: true,
         quoteType: true,

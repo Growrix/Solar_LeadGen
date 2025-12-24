@@ -17,3 +17,10 @@ This entry records the rollback to the Written_Quote branch for full restoration
 - Date: 2025-12-23 13:06:18 +0600
 - Branch: New_WrittenQuote
 - Description: Fix: stabilize negotiation panel input and polling, prevent input focus loss, improve UI update feedback.
+
+---
+
+- Commit: 533d04a31c62e55a4b57bd6a44fdbc88b4290636
+- Date: 2025-12-23 19:12:28 +0600
+- Branch: New_WrittenQuote
+- Description: Fix installer modal negotiation history to use finalTotal; ensure payload and UI match homeowner modal; TypeScript validation passing

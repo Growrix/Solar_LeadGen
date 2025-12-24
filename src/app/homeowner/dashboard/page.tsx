@@ -577,7 +577,7 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
       }}>
         <h3 className="text-body-large sm:text-heading-4 text-foreground mb-5" style={{
           textShadow: '2px 2px 4px var(--shadow-dark), -1px -1px 2px var(--shadow-light)'
-        }}>Recent Quote Requests</h3>
+        }}>Quote Requests</h3>
         {summary.recentLeads.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground mb-4">No quote requests yet.</p>
@@ -874,7 +874,7 @@ export default function HomeownerDashboardPage() {
     setSummaryError(null);
 
     try {
-      const response = await fetch('/api/homeowner/dashboard', {
+      const response = await fetch('/api/homeowner/dashboard?leadLimit=all', {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-store',
