@@ -3614,3 +3614,5 @@ Follow the
 
  - I want to add a online/Offline status indicator in the negotiation panel in both end (installer and homeowner) so that both parties can see each other's online/offline status easily while negotiation. e.g a green dot for online and grey dot for offline beside the username in the negotiation panel. Audit deeply and implement it accordingly.
  The online status will only show when the Both parties are in the respective modals e.g if the installer is in the Quote builder modal and the homeowner is in the review modal at the same time then only the online status will show. if they are not in the respective modals at the same time then it will show offline status.
+
+ - 
