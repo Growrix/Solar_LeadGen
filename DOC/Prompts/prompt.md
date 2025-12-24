@@ -3597,3 +3597,20 @@ $8,000
 23 Dec 2025, 06:48 pm > I have no idea how this 8000 came and from where. 
 
 - You must check this issue deeply and check all the calcualtion logics , also negotiaton flow and its logics . Audit both the modal to identify the missmathh. check the screenshot for better Idea. Audit the frontend and backend both deeply and identify and fix it accordingly. 
+
+--------------------------------------------------------------------------------------------------
+
+The saving chart is not showing up in the Homeonwers Review modal > Financial projection section. Identify the root cause. it should show the chart as per the Quote submitted by the installer. Audit deeply and fix it accordingly.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ --------------------------------------------------------------------------------------
+
+ ***Neogitation panel enhancement*** 
+ - The Installers negotiation panel always gets the counter price update instantly without any issues and with out refreshing the modal/page , But the Homeowners negotiation panel does not get the counter price update instantly without refreshing the modal/page. I want you to fix this issue in the Homeowners negotiation panel so that it always gets the counter price update instantly without any issues and with out refreshing the modal/page. Audit deeply and fix it accordingly.
+
+ - I want to add a online/Offline status indicator in the negotiation panel in both end (installer and homeowner) so that both parties can see each other's online/offline status easily while negotiation. e.g a green dot for online and grey dot for offline beside the username in the negotiation panel. Audit deeply and implement it accordingly.
+ The online status will only show when the Both parties are in the respective modals e.g if the installer is in the Quote builder modal and the homeowner is in the review modal at the same time then only the online status will show. if they are not in the respective modals at the same time then it will show offline status.

@@ -159,6 +159,66 @@ export default function HomeownerWrittenQuoteReviewModal({
 
   const selectedWrittenQuote = writtenQuotes.find(wq => wq.id === selectedWrittenQuoteId);
 
+  const projections = React.useMemo(() => {
+    if (!selectedWrittenQuote) {
+      return {
+        finalPrice: 0,
+        annualSavings: 0,
+        paybackYears: 0,
+        currentAnnualBill: 0
+      };
+    }
+
+    const finalPrice = Number(
+      (selectedWrittenQuote as any).finalTotal ||
+        (selectedWrittenQuote as any).calculations?.finalTotal ||
+        (selectedWrittenQuote as any).amount ||
+        0
+    );
+
+    const storedAnnualSavings = Number((selectedWrittenQuote as any).calculations?.estimatedAnnualSavings || 0);
+    const storedPaybackYears = Number((selectedWrittenQuote as any).calculations?.paybackYears || 0);
+
+    const annualSavings =
+      storedAnnualSavings > 0
+        ? storedAnnualSavings
+        : storedPaybackYears > 0 && finalPrice > 0
+          ? finalPrice / storedPaybackYears
+          : 0;
+
+    const paybackYears =
+      storedPaybackYears > 0
+        ? storedPaybackYears
+        : annualSavings > 0 && finalPrice > 0
+          ? finalPrice / annualSavings
+          : 0;
+
+    const leadAny = leadData as any;
+    const currentAnnualBillFromLead = Number(
+      leadAny?.quoteData?.currentAnnualBill ||
+        (leadAny?.billType === 'monthly'
+          ? leadAny?.energyBill * 12
+          : leadAny?.billType === 'quarterly'
+            ? leadAny?.energyBill * 4
+            : leadAny?.energyBill) ||
+        0
+    );
+
+    const currentAnnualBill =
+      currentAnnualBillFromLead > 0
+        ? currentAnnualBillFromLead
+        : annualSavings > 0
+          ? annualSavings * 1.3
+          : 0;
+
+    return {
+      finalPrice,
+      annualSavings,
+      paybackYears,
+      currentAnnualBill
+    };
+  }, [selectedWrittenQuote, leadData]);
+
   const sortedWrittenQuotes = [...writtenQuotes].sort((a, b) => {
     // Winner first, then shortlisted, then by price
     if (a.isWinner && !b.isWinner) return -1;
@@ -845,7 +905,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                           <span className="text-label">Annual Savings</span>
                         </div>
                           <p className="text-heading-3 text-success">
-                            ${(selectedWrittenQuote.calculations?.estimatedAnnualSavings || 0).toLocaleString()}/year
+                            ${projections.annualSavings.toLocaleString()}/year
                           </p>
                       </div>
 
@@ -855,7 +915,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                           <span className="text-label">Payback Period</span>
                         </div>
                         <p className="text-heading-3 text-foreground">
-                          {(selectedWrittenQuote.calculations?.paybackYears || 0).toFixed(1)} years
+                          {projections.paybackYears > 0 ? `${projections.paybackYears.toFixed(1)} years` : 'N/A'}
                         </p>
                       </div>
 
@@ -865,38 +925,21 @@ export default function HomeownerWrittenQuoteReviewModal({
                           <span className="text-label">25-Year Savings</span>
                         </div>
                           <p className="text-heading-3 text-foreground">
-                            ${((selectedWrittenQuote.calculations?.estimatedAnnualSavings || 0) * 25).toLocaleString()}
+                            ${(projections.annualSavings * 25).toLocaleString()}
                           </p>
                       </div>
 
-                        {leadData && (() => {
-                          const finalPrice =
-                            selectedWrittenQuote.finalTotal ||
-                            selectedWrittenQuote.calculations?.finalTotal ||
-                            selectedWrittenQuote.amount;
-
-                          const annualSavings = selectedWrittenQuote.calculations?.estimatedAnnualSavings || 0;
-
-                          const currentAnnualBill =
-                            (leadData as any)?.quoteData?.currentAnnualBill ||
-                            (leadData.billType === 'monthly'
-                              ? leadData.energyBill * 12
-                              : leadData.billType === 'quarterly'
-                              ? leadData.energyBill * 4
-                              : leadData.energyBill);
-
-                          if (!finalPrice || !annualSavings || !currentAnnualBill) return null;
-
-                          return (
-                            <div className="pt-3 border-t border-border">
-                              <SavingsChart
-                                finalPrice={Number(finalPrice)}
-                                annualSavings={Number(annualSavings)}
-                                currentAnnualBill={Number(currentAnnualBill)}
-                              />
-                            </div>
-                          );
-                        })()}
+                      {projections.finalPrice > 0 &&
+                        projections.annualSavings > 0 &&
+                        projections.currentAnnualBill > 0 && (
+                          <div className="pt-3 border-t border-border">
+                            <SavingsChart
+                              finalPrice={projections.finalPrice}
+                              annualSavings={projections.annualSavings}
+                              currentAnnualBill={projections.currentAnnualBill}
+                            />
+                          </div>
+                        )}
                     </div>
 
                     {/* Installation & Roof Details */}

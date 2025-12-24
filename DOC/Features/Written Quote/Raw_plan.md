@@ -41,3 +41,10 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting. 
+
+
+--------------------------------------------------------------------------------------------------
+ I need the admin function to control the Written Quote Negotiation Limits. e.g now the Homeowner can propose a counter amount only 3 times and installers can 4 times. I want you to create an admin function where the admin can set how many times the homeowners and installers can propose a counter amount. so that the admin can change this limit from time to time as per the business requirement.
+
+***Admin function to control Written Quote Negotiation Limits***
+- Create an admin function to control the Written Quote Negotiation Limits for homeowners and installers.

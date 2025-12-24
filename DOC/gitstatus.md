@@ -24,3 +24,10 @@ This entry records the rollback to the Written_Quote branch for full restoration
 - Date: 2025-12-23 19:12:28 +0600
 - Branch: New_WrittenQuote
 - Description: Fix installer modal negotiation history to use finalTotal; ensure payload and UI match homeowner modal; TypeScript validation passing
+
+---
+
+- Commit: cd3f5cd1d7461846069d029c5b899d0ee91b11c2
+- Date: 2025-12-24 11:36:58 +0600
+- Branch: New_WrittenQuote
+- Description: Self-host Inter font: add woff2 files, update globals.css to use local @font-face, remove Google Fonts dependency. Fixes font loading reliability.

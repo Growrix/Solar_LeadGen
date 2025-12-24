@@ -819,6 +819,25 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         const totalIncentives = stcDeduction + vicDeduction + totalDiscounts;
         const finalTotal = subtotal + gstAmount - totalIncentives;
 
+        const financialTotals = calcQuoteTotals({
+          systemSize_kW: quoteDraft.system.systemSize,
+          lineItems: quoteDraft.pricing.lineItems.map(item => ({
+            description: item.description,
+            qty: item.qty,
+            unitPrice: item.unitPrice,
+            taxable: item.taxGst
+          })),
+          includeGst: true,
+          gstPercent: DEFAULT_ASSUMPTIONS.gstPercent,
+          includeIncentive: true,
+          incentiveAmount: totalIncentives,
+          yield_kWh_per_kW_per_day: quoteDraft.assumptions.yield_kWh_per_kW_per_day,
+          selfConsumption: quoteDraft.assumptions.selfConsumption,
+          retailPrice: quoteDraft.assumptions.retailPrice,
+          feedInTariff: quoteDraft.assumptions.feedInTariff,
+          annualOpex: quoteDraft.assumptions.annualOpex
+        });
+
         // Map QuoteDraft to comprehensive Written Quote payload (Phase 13W - Full JSON fields)
         const writtenQuotePayload = {
           leadId: String(lead.id),
@@ -920,8 +939,13 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             incentiveAmount: totalIncentives,
             finalTotal: finalTotal,
             pricePerWatt: subtotal / (quoteDraft.system.systemSize * 1000),
-            estimatedAnnualSavings: 0,
-            paybackYears: 7
+            estimatedAnnualSavings: Math.max(0, Number(financialTotals.annualSavings) || 0),
+            paybackYears:
+              typeof financialTotals.paybackYears === 'number' &&
+              isFinite(financialTotals.paybackYears) &&
+              financialTotals.paybackYears > 0
+                ? financialTotals.paybackYears
+                : 0
           }
         };
 

@@ -1,0 +1,2 @@
+I want to build a feature called "Installer's Feed" that allows installers to post ads on a dedicated feed. This feature will enable installers to showcase their services, special offers, and promotions to potential customers. The customers can browse through these ads, filter them based on their preferences, and Request quotes directly from the installers Annonymously. The installer will receive the quote requests and can respond accordingly. This is also a lead , so the Installers should be able to pay for these leads as per the existing SOT lead payment flow.
+
