@@ -150,6 +150,26 @@ References:
 - `npx tsc --noEmit` → pass
 - `npm run build` → pass
 
+### T13W.4-7: UI — Replace Deadline Timestamp With Live Countdown (Homeowner + Installer)
+- Goal: Replace the static “Deadline” datetime with a live countdown timer.
+- Reuse: `src/components/LiveCountdownBar.tsx` (use `LiveCountdownBarCompact`).
+- Files:
+  - `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+  - `src/components/WrittenQuoteBuilderModal.tsx`
+
+### T13W.4-8: UI — Admin Negotiation Window Timeline + Countdown
+- Goal: Show a full negotiation timeline (both sides) plus countdown per written quote.
+- Reuse: `src/components/shared/NegotiationTimeline.tsx`.
+- File: `src/components/admin/AdminLeadManagementModal.tsx`
+
+### T13W.4-9: UI — Admin Lead Management Modal Full-Width + 60/40 Layout
+- Goal: Make modal full-width and responsive, with a 60/40 two-column layout.
+- Move: “Negotiation Window” to the right column.
+- File: `src/components/admin/AdminLeadManagementModal.tsx`
+
+### T13W.4-10: Audit Reference
+- Audit: `DOC/Features/Written Quote/WRITTEN-QUOTE-COUNTDOWN-ADMIN-MODAL-ENHANCEMENTS-AUDIT-2025-12-24.md`
+
 ---
 
 ## Phase 4.16 — Written Quote (UI → Spec → Backend)

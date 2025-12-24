@@ -16,7 +16,9 @@
 import { useState, useEffect } from 'react';
 import Button from '@/components/ui/button';
 import InstallerProfileModal from '@/components/admin/InstallerProfileModal';
-import type { GetWrittenQuotesResponse } from '@/types/written-quote';
+import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
+import NegotiationTimeline from '@/components/shared/NegotiationTimeline';
+import type { GetWrittenQuotesResponse, NegotiationEvent } from '@/types/written-quote';
 
 interface Assignment {
   id: string;
@@ -210,6 +212,72 @@ export default function AdminLeadManagementModal({
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const getNegotiationCurrentAmount = (q: AdminWrittenQuote): number => {
+    const anyQ = q as any;
+    return (
+      anyQ.agreedAmount ??
+      anyQ.installerRevisedAmount ??
+      anyQ.homeownerCounterAmount ??
+      q.amount
+    );
+  };
+
+  const buildNegotiationEvents = (q: AdminWrittenQuote): NegotiationEvent[] => {
+    const anyQ = q as any;
+    const events: NegotiationEvent[] = [];
+
+    if (anyQ.createdAt) {
+      events.push({
+        id: `${q.id}-submit`,
+        action: 'SUBMIT',
+        actorRole: 'INSTALLER',
+        amount: q.amount,
+        message: null,
+        createdAt: String(anyQ.createdAt),
+      });
+    }
+
+    if (anyQ.homeownerCounterAt && anyQ.homeownerCounterAmount != null) {
+      events.push({
+        id: `${q.id}-counter`,
+        action: 'COUNTER',
+        actorRole: 'HOMEOWNER',
+        amount: Number(anyQ.homeownerCounterAmount),
+        message: null,
+        createdAt: String(anyQ.homeownerCounterAt),
+      });
+    }
+
+    if (anyQ.installerRevisedAt && anyQ.installerRevisedAmount != null) {
+      events.push({
+        id: `${q.id}-revise`,
+        action: 'REVISE',
+        actorRole: 'INSTALLER',
+        amount: Number(anyQ.installerRevisedAmount),
+        message: null,
+        createdAt: String(anyQ.installerRevisedAt),
+      });
+    }
+
+    if (anyQ.agreedAt && anyQ.agreedAmount != null) {
+      const actorRole: NegotiationEvent['actorRole'] =
+        anyQ.agreedBy && anyQ.agreedBy === q.installerId ? 'INSTALLER' : 'HOMEOWNER';
+
+      events.push({
+        id: `${q.id}-accept`,
+        action: 'ACCEPT',
+        actorRole,
+        amount: Number(anyQ.agreedAmount),
+        message: null,
+        createdAt: String(anyQ.agreedAt),
+      });
+    }
+
+    return events
+      .filter((e) => !Number.isNaN(new Date(e.createdAt).getTime()))
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   };
 
   const handleAdminExtendNegotiation = async (writtenQuoteId: string) => {
@@ -491,7 +559,7 @@ export default function AdminLeadManagementModal({
         />
 
         {/* Modal */}
-        <div className="relative w-full max-w-6xl rounded-lg bg-surface shadow-neu-outset">
+        <div className="relative w-full max-w-none rounded-lg bg-surface shadow-neu-outset">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div className="flex items-center gap-3">
@@ -533,10 +601,10 @@ export default function AdminLeadManagementModal({
           )}
 
           {/* Scrollable Body */}
-          <div className="px-6 py-4 space-y-6 max-h-[70vh] overflow-y-auto">
+          <div className="px-6 py-4 grid grid-cols-1 lg:grid-cols-5 gap-6 max-h-[70vh] overflow-y-auto">
 
             {/* Negotiation Window (Written Quotes) */}
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4">
+            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-2 lg:col-start-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-heading-3 text-foreground">Negotiation Window</h3>
                 <Button
@@ -587,7 +655,15 @@ export default function AdminLeadManagementModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-body-small">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Deadline:</span>
-                            <span className="text-foreground">{formatDateTime((q as any).negotiationDeadlineAt)}</span>
+                            {(q as any).negotiationDeadlineAt ? (
+                              <LiveCountdownBarCompact
+                                expiresAt={(q as any).negotiationDeadlineAt}
+                                leadId={String(lead.id)}
+                                initialDays={3}
+                              />
+                            ) : (
+                              <span className="text-foreground">—</span>
+                            )}
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Expired at:</span>
@@ -612,6 +688,15 @@ export default function AdminLeadManagementModal({
                             </span>
                           </div>
                         </div>
+
+                        <div className="pt-3 border-t border-border">
+                          <div className="text-label text-foreground mb-2">Timeline</div>
+                          <NegotiationTimeline
+                            writtenQuoteId={q.id}
+                            negotiations={buildNegotiationEvents(q)}
+                            currentAmount={getNegotiationCurrentAmount(q)}
+                          />
+                        </div>
                       </div>
                     );
                   })}
@@ -620,7 +705,7 @@ export default function AdminLeadManagementModal({
             </div>
             
             {/* SECTION B: Installer Assignment */}
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4">
+            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-3 lg:col-start-1">
               <h3 className="text-heading-3 text-foreground">Installer Assignment</h3>
 
               {/* Filters */}
@@ -903,7 +988,7 @@ export default function AdminLeadManagementModal({
 
             {/* SECTION A: Approval & Pricing */}
             {(['DRAFT', 'PENDING_APPROVAL', 'PENDING_PHONE'].includes(lead.status) || isEditMode) && (
-              <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4">
+              <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-3 lg:col-start-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-heading-3 text-foreground">Approval & Pricing</h3>
                   {lead.status === 'APPROVED' && (
@@ -996,7 +1081,7 @@ export default function AdminLeadManagementModal({
             )}
 
             {/* SECTION C: Admin Notes */}
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4">
+            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-3 lg:col-start-1">
               <h3 className="text-heading-3 text-foreground">Admin Notes</h3>
               <textarea
                 value={adminNotes}

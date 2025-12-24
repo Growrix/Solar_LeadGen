@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/button';
+import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
 import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download } from 'lucide-react';
 import { calcQuoteTotals, DEFAULT_ASSUMPTIONS, QuoteInputs } from '@/utils/quoteCalculator';
 import { parseBudgetRange } from '@/lib/mappers/instant-to-bid';
@@ -1455,11 +1456,15 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-body-small text-muted-foreground">Deadline</span>
-                          <span className="text-body-small text-foreground">
-                            {(negotiationQuote as any).negotiationDeadlineAt
-                              ? formatDateTime((negotiationQuote as any).negotiationDeadlineAt)
-                              : '—'}
-                          </span>
+                          {(negotiationQuote as any).negotiationDeadlineAt ? (
+                            <LiveCountdownBarCompact
+                              expiresAt={(negotiationQuote as any).negotiationDeadlineAt}
+                              leadId={String(lead?.id ?? 'unknown')}
+                              initialDays={3}
+                            />
+                          ) : (
+                            <span className="text-body-small text-foreground">—</span>
+                          )}
                         </div>
                       </div>
 

@@ -8,6 +8,7 @@ import {
   CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader, XCircle 
 } from 'lucide-react';
 import Button from '@/components/ui/button';
+import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
 import { GetWrittenQuotesResponse } from '@/types/written-quote';
 import { LeadData } from '@/types/lead';
 import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerInstantQuoteDetails';
@@ -1297,11 +1298,15 @@ export default function HomeownerWrittenQuoteReviewModal({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-body-small text-muted-foreground">Deadline</span>
-                          <span className="text-body-small text-foreground">
-                            {(selectedWrittenQuote as any).negotiationDeadlineAt
-                              ? formatDateTime((selectedWrittenQuote as any).negotiationDeadlineAt)
-                              : '—'}
-                          </span>
+                          {(selectedWrittenQuote as any).negotiationDeadlineAt ? (
+                            <LiveCountdownBarCompact
+                              expiresAt={(selectedWrittenQuote as any).negotiationDeadlineAt}
+                              leadId={String(leadId)}
+                              initialDays={3}
+                            />
+                          ) : (
+                            <span className="text-body-small text-foreground">—</span>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-1 gap-2">
