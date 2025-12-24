@@ -184,7 +184,9 @@ const QUOTE_TYPE_LABELS: Record<QuoteTypeOption, string> = {
   BIDDING: 'Competitive Bidding',
 };
 
-const STATUS_LABELS: Record<LeadStatus, { label: string | ((lead?: { quoteType?: string }) => string); description: string; accent: string }> = {
+type LeadStatusKey = LeadStatus | 'NEGOTIATION_EXPIRED';
+
+const STATUS_LABELS: Record<LeadStatusKey, { label: string | ((lead?: { quoteType?: string }) => string); description: string; accent: string }> = {
   [LeadStatusEnum.DRAFT]: {
     label: 'Draft',
     description: 'Awaiting submission',
@@ -233,7 +235,7 @@ const STATUS_LABELS: Record<LeadStatus, { label: string | ((lead?: { quoteType?:
     description: 'No activity for 30 days',
     accent: 'bg-background border border-border text-muted-foreground',
   },
-  [LeadStatusEnum.NEGOTIATION_EXPIRED]: {
+  ['NEGOTIATION_EXPIRED']: {
     label: 'Negotiation expired',
     description: 'The negotiation window has closed',
     accent: 'bg-background border border-border text-muted-foreground',

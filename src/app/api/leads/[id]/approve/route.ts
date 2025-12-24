@@ -119,7 +119,7 @@ export async function POST(
     }
 
     // Update lead with approval
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await (prisma.lead as any).update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -127,6 +127,9 @@ export async function POST(
         leadPrice,
         approvedAt: new Date(),
         expiresAt,
+        // This field tracks the negotiation window duration after quote submission,
+        // not the approval countdown.
+        initialCountdownDays: null,
         moderatedBy: session.user.id,
         moderatedAt: new Date(),
         ...(body.isHot !== undefined && { 

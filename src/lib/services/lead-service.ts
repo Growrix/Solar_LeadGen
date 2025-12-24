@@ -19,6 +19,91 @@ import { createAuditLog, AUDIT_ACTIONS } from './audit-logger';
 import { createBulkNotifications } from '../notifications/notification-service';
 import { getSetting, getSettingAsNumber } from './settings-service';
 import { canCancelLead, canEditLead } from '@/lib/utils/lead-helpers';
+import { expireLeadNegotiationsByCountdownIfNeeded } from '@/lib/written-quotes/negotiation-window';
+
+// Prisma client types may lag behind SQL migrations in this repo.
+// Use a narrow escape hatch when accessing fields added via migrations.
+const prismaAny = prisma as any;
+
+async function maybeExpireLeadNegotiationsForLeadCards(
+  leads: Array<{ id: string; quoteType?: unknown; expiresAt?: Date | null; status?: unknown }>,
+): Promise<void> {
+  // First, sync lead-card countdown (Lead.expiresAt) to the negotiation deadline
+  // (WrittenQuote.negotiationDeadlineAt) so existing mismatches are corrected on read.
+  const writtenQuoteLeadIds = leads
+    .filter((lead) => lead.quoteType === 'WRITTEN_QUOTE' && lead.status !== 'NEGOTIATION_EXPIRED')
+    .map((lead) => lead.id);
+
+  if (writtenQuoteLeadIds.length > 0) {
+    const openQuotes: Array<{ leadId: string; negotiationDeadlineAt: Date | null }> = await prismaAny.writtenQuote.findMany({
+      where: {
+        leadId: { in: writtenQuoteLeadIds },
+        negotiationExpiredAt: null,
+        purchasedAt: null,
+        negotiationStatus: { notIn: ['AGREED', 'REJECTED', 'PENDING_ACCEPTANCE', 'NEGOTIATION_EXPIRED'] },
+        negotiationDeadlineAt: { not: null },
+      },
+      select: {
+        leadId: true,
+        negotiationDeadlineAt: true,
+      },
+    });
+
+    const maxDeadlineByLeadId = new Map<string, Date>();
+    for (const q of openQuotes) {
+      if (!(q.negotiationDeadlineAt instanceof Date)) continue;
+      const existing = maxDeadlineByLeadId.get(q.leadId);
+      if (!existing || q.negotiationDeadlineAt.getTime() > existing.getTime()) {
+        maxDeadlineByLeadId.set(q.leadId, q.negotiationDeadlineAt);
+      }
+    }
+
+    const syncTargets: Array<{ leadId: string; expiresAt: Date }> = [];
+    for (const lead of leads) {
+      if (lead.quoteType !== 'WRITTEN_QUOTE') continue;
+      const target = maxDeadlineByLeadId.get(lead.id);
+      if (!target) continue;
+
+      const currentMs = lead.expiresAt instanceof Date ? lead.expiresAt.getTime() : null;
+      if (currentMs === target.getTime()) continue;
+
+      (lead as any).expiresAt = target;
+      syncTargets.push({ leadId: lead.id, expiresAt: target });
+    }
+
+    if (syncTargets.length > 0) {
+      await Promise.all(
+        syncTargets.map((t) =>
+          prisma.lead.update({
+            where: { id: t.leadId },
+            data: { expiresAt: t.expiresAt },
+          }),
+        ),
+      );
+    }
+  }
+
+  const now = Date.now();
+
+  const candidates = leads.filter((lead) => {
+    if (lead.quoteType !== 'WRITTEN_QUOTE') return false;
+    const expiresAt = lead.expiresAt instanceof Date ? lead.expiresAt.getTime() : null;
+    if (!expiresAt) return false;
+    if (expiresAt > now) return false;
+    return lead.status !== 'NEGOTIATION_EXPIRED';
+  });
+
+  if (candidates.length === 0) return;
+
+  await Promise.all(
+    candidates.map(async (lead) => {
+      const result = await expireLeadNegotiationsByCountdownIfNeeded(lead.id);
+      if (result.expired) {
+        (lead as any).status = 'NEGOTIATION_EXPIRED';
+      }
+    }),
+  );
+}
 
 // 🔧 PHASE 21.3: Helper functions to inherit user data from first lead
 async function getNameFromFirstLead(homeownerId: string): Promise<string | null> {
@@ -411,6 +496,11 @@ export async function getLeads(input: GetLeadsInput) {
   // If installer requests assigned leads, use dedicated function
   if (userRole === 'INSTALLER' && assigned) {
     const assignedLeads = await getInstallerAssignedLeads(userId);
+
+    await maybeExpireLeadNegotiationsForLeadCards(
+      assignedLeads as Array<{ id: string; quoteType?: unknown; expiresAt?: Date | null; status?: unknown }>,
+    );
+
     return {
       leads: assignedLeads.slice(skip, skip + limit),
       pagination: {
@@ -509,6 +599,10 @@ export async function getLeads(input: GetLeadsInput) {
     }),
     prisma.lead.count({ where: whereClause }),
   ]);
+
+  await maybeExpireLeadNegotiationsForLeadCards(
+    leads as Array<{ id: string; quoteType?: unknown; expiresAt?: Date | null; status?: unknown }>,
+  );
 
   return {
     leads,
@@ -618,6 +712,10 @@ export async function getHomeownerLeadSummary(
       },
     }),
   ]);
+
+  await maybeExpireLeadNegotiationsForLeadCards(
+    recentLeads as Array<{ id: string; quoteType?: unknown; expiresAt?: Date | null; status?: unknown }>,
+  );
 
   const quoteLimit = homeowner.leadSubmissionLimit ?? await getSettingAsNumber('MAX_LEAD_SUBMISSIONS_TOTAL');
   const remainingLeadAllowance = Math.max(quoteLimit - homeowner.leadSubmissionCount, 0);
@@ -747,6 +845,7 @@ export async function getHomeownerLeadSummary(
   };
 }
 
+
 /**
  * Get Lead By ID Input
  */
@@ -862,6 +961,10 @@ export async function getLeadById(input: GetLeadByIdInput) {
       }
     }
   }
+
+  await maybeExpireLeadNegotiationsForLeadCards(
+    [lead] as Array<{ id: string; quoteType?: unknown; expiresAt?: Date | null; status?: unknown }>,
+  );
 
   return lead;
 }

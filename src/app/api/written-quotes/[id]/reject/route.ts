@@ -89,18 +89,11 @@ export async function POST(
 
     const expireResult = await expireNegotiationIfNeeded(id);
     if (expireResult.expired) {
-      const fresh = await prisma.writtenQuote.findUnique({
-        where: { id },
-        select: { negotiationStatus: true, negotiationExpiredAt: true },
-      });
-
-      if (fresh?.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!fresh?.negotiationExpiredAt) {
-        logger.warn('Cannot reject expired negotiation', { writtenQuoteId: id, correlationId });
-        return NextResponse.json(
-          { error: 'Negotiation has expired and is now closed.' },
-          { status: 403 }
-        );
-      }
+      logger.warn('Cannot reject expired negotiation', { writtenQuoteId: id, correlationId });
+      return NextResponse.json(
+        { error: 'Negotiation has expired and is now closed.' },
+        { status: 403 }
+      );
     }
 
     // Check if already rejected

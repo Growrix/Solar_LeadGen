@@ -167,7 +167,7 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
         onUpdate({ stc: { ...stc, stcCount: calculatedSTC } });
       }
     }
-  }, [stc.eligible, stc.zone, stc.stcCount, systemSize, panelWattage, onUpdate]);
+  }, [stc, systemSize, panelWattage, onUpdate]);
 
   // Line item validation (Phase 2.3)
   const validateLineItem = (item: LineItemData): string | null => {

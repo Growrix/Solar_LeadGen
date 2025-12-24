@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model NewsletterSubscriber {
@@ -188,6 +189,7 @@ model Lead {
   approvedAt            DateTime?
   purchasedAt           DateTime?
   expiresAt             DateTime?
+  initialCountdownDays  Int?
   adminNotes            String?
   flaggedReason         String?
   moderatedBy           String?

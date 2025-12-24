@@ -183,6 +183,41 @@ References:
 
 ---
 
+## Phase 13W.5 — Lead Card Countdown Reset + Auto-Expiry (Written Quote)
+
+Status: IN PROGRESS
+Priority: P1
+Date: December 24, 2025
+References:
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-LEAD-CARD-COUNTDOWN-RESET-AND-EXPIRY-AUDIT-2025-12-24.md
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T13W.5-1: Persist Initial Countdown Duration on Approval
+- Goal: Store the admin-defined initial countdown duration for the lead so it can be reused on reset.
+- Write `Lead.initialCountdownDays` during approval when countdown is enabled.
+- File: `src/app/api/leads/[id]/approve/route.ts`
+
+### T13W.5-2: Reset Lead Card Countdown After Written Quote Submission
+- Goal: After installer submits a written quote, reset the lead-card countdown to the initial admin-defined duration.
+- Update `Lead.expiresAt = now + Lead.initialCountdownDays` (fallback to settings `LEAD_COUNTDOWN_DEFAULT_DAYS`).
+- File: `src/app/api/written-quotes/route.ts`
+
+### T13W.5-3: Lead Card Countdown Endpoint Auto-Expiry
+- Goal: When `Lead.expiresAt` reaches 0, auto-close negotiation and flip lead status.
+- Behavior:
+  - Update `Lead.status` to `NEGOTIATION_EXPIRED`.
+  - Expire any open written quote negotiations for the lead.
+  - Send notifications to homeowner + affected installers.
+- Files:
+  - `src/lib/written-quotes/negotiation-window.ts`
+  - `src/lib/services/lead-service.ts`
+
+### T13W.5-4: Validation
+- `npx tsc --noEmit` → pass
+- `npm run build` → pass
+
+---
+
 ## Phase 4.16 — Written Quote (UI → Spec → Backend)
 
 Status: IN PROGRESS (UI-First)  

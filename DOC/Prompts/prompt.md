@@ -3664,3 +3664,41 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+
+---------------------------------------------------------------------------
+
+
+Now there are 2 countdown timers in the Written Quote leads . And it is across all 3 users (Installer, Homeowner, Admin) . One is in the lead card and another one is in the negotiation panel inside the respective modals.
+
+- You need to focus on the lead card countdown timer and do not touch the negotiation panel countdown timer as it is working perfectly. 
+- The initial lead card timer is set by the admin while approved and assigned the lead > the installer and Homeonwers end shows the same timer countdown in their lead cards.
+- What I want is , after the installer submitted the quote > the lead card timer should reset and start countdown from the initial negotiation timeframe set by the admin e.g 3 days/72 hours . same goes for the homeowners end as well. After the quote submission both parties should see the reseted countdown timer in their respective lead cards. Audit deeply and implement it accordingly.
+- The countdown timer should have an endpoint as well. e.g if the timer reaches to 0 , then the negotiation will be closed automatically and the lead status will be changed to "Negotiation expired" and both parties will get email notifications regarding this. Audit deeply and implement it accordingly. This should show the stauts on the lead card too. 
+- The admin should see the countdown timer reseted in the lead details modal as well after the installer submitted the quote. Audit deeply and implement it accordingly. 
+- I want the countdown timer syncs perfectly across all 3 users (Installer, Homeowner, Admin) e.g if the installer sees 48 hours remaining in the lead card countdown timer , then the homeowner and admin should see the same 48 hours remaining in their respective lead cards/countdown timers as well. Audit deeply and implement it accordingly.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+
+------------------------------------------------------------------------------------------
+
+After submitting the Written Quote , The Lead card countdown timer became 7 days from 30 days - I want you to fix this issue so that the lead card countdown timer shows the correct negotiation timeframe set by the admin e.g 3 days/72 hours after the quote submission. Audit deeply and implement it accordingly. this should be synced across all 3 users (Installer, Homeowner, Admin) as well.
+
+- IT should even adapt the negotiation extension timeframe as well. e.g if the admin set the negotiation extension timeframe to 2 days , then after the homeowner requested for extension and admin approved it > the lead card countdown timer should adapt to that and show the extended timeframe accordingly across all 3 users (Installer, Homeowner, Admin) as well. Audit deeply and implement it accordingly.
+
+- Check the screenshots for the mismatch and better understanding. 
+
+***Instructions*** I want you to fix the lead card countdown timer issues as per the above instructions. so that the lead card countdown timer shows the correct negotiation timeframe set by the admin e.g 3 days/72 hours after the quote submission. Audit deeply and implement it accordingly. this should be synced across all 3 users (Installer, Homeowner, Admin) as well. Check back your recent implimentation and idenitfy the issues/gaps as well.
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md

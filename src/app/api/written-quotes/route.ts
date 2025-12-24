@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
     const lead = await prisma.lead.findUnique({
       where: { id: body.leadId },
       include: {
+        // Needed for countdown reset after quote submission
+        // (keeps negotiation panel timer unchanged; lead-card uses Lead.expiresAt)
         homeowner: {
           select: { id: true, email: true, name: true }
         }
@@ -120,7 +122,7 @@ export async function POST(request: NextRequest) {
     const negotiationDeadlineAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
 
     // Create written quote record with comprehensive Quote Builder data (Phase 13W)
-    const writtenQuote = await prisma.writtenQuote.create({
+    const writtenQuote = await (prisma.writtenQuote as any).create({
       data: {
         leadId: body.leadId,
         installerId: auth.userId,
@@ -167,6 +169,30 @@ export async function POST(request: NextRequest) {
         installerContact: (body.installerContact as any) || undefined,
       }
     });
+
+    // Lead-card countdown reset: sync to negotiation deadline.
+    // Source of truth for negotiation timing remains WrittenQuote.negotiationDeadlineAt.
+    // The lead-card timer (Lead.expiresAt) mirrors it so Installer/Homeowner/Admin see identical time.
+    try {
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const days = Math.max(1, Math.round((negotiationDeadlineAt.getTime() - Date.now()) / msPerDay));
+
+      await (prisma.lead as any).update({
+        where: { id: body.leadId },
+        data: {
+          expiresAt: negotiationDeadlineAt,
+          // Store the initial negotiation window duration for reference/debugging.
+          // This is intentionally NOT the approval countdown.
+          initialCountdownDays: days,
+        },
+      });
+    } catch (err) {
+      logger.warn('Failed to reset lead countdown after written quote submission', {
+        leadId: body.leadId,
+        correlationId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
     
     logger.info('Written quote created successfully', { 
       writtenQuoteId: writtenQuote.id, 

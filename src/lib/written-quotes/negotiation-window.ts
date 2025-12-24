@@ -2,6 +2,10 @@ import { prisma } from '@/lib/prisma';
 import { createNotification } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
 
+// Prisma client types may lag behind migrations in this repo.
+// Use a narrow escape hatch for fields added via SQL migrations.
+const prismaAny = prisma as any;
+
 const HOURS_72_MS = 72 * 60 * 60 * 1000;
 const HOURS_48_MS = 48 * 60 * 60 * 1000;
 
@@ -43,7 +47,7 @@ export function isBothPartiesOnline(input: {
 
 async function ensureDeadlineIfMissing(writtenQuoteId: string, createdAt: Date): Promise<Date> {
   const fallback = computeDefaultNegotiationDeadline(createdAt);
-  await prisma.writtenQuote.updateMany({
+  await prismaAny.writtenQuote.updateMany({
     where: { id: writtenQuoteId, negotiationDeadlineAt: null },
     data: { negotiationDeadlineAt: fallback },
   });
@@ -81,7 +85,7 @@ export async function expireNegotiationIfNeeded(writtenQuoteId: string): Promise
   }
 
   // Atomic-ish: only one request should flip expiredAt from null -> now
-  const updated = await prisma.writtenQuote.updateMany({
+  const updated = await prismaAny.writtenQuote.updateMany({
     where: {
       id: writtenQuoteId,
       negotiationExpiredAt: null,
@@ -101,7 +105,7 @@ export async function expireNegotiationIfNeeded(writtenQuoteId: string): Promise
   }
 
   // Update lead status
-  await prisma.lead.update({
+  await prismaAny.lead.update({
     where: { id: writtenQuote.leadId },
     data: { status: 'NEGOTIATION_EXPIRED' },
   });
@@ -131,6 +135,114 @@ export async function expireNegotiationIfNeeded(writtenQuoteId: string): Promise
   return { expired: true };
 }
 
+/**
+ * Lead-card countdown endpoint behavior.
+ *
+ * When the lead-card countdown (Lead.expiresAt) reaches 0 for a WRITTEN_QUOTE lead,
+ * the negotiation is closed automatically:
+ * - Lead.status -> NEGOTIATION_EXPIRED
+ * - Any open written quotes for the lead -> NEGOTIATION_EXPIRED
+ * - Notifications are sent to homeowner + affected installers
+ *
+ * This does NOT change the negotiation panel countdown source-of-truth
+ * (WrittenQuote.negotiationDeadlineAt); it only enforces closure.
+ */
+export async function expireLeadNegotiationsByCountdownIfNeeded(
+  leadId: string,
+): Promise<{ expired: boolean; expiredWrittenQuoteIds: string[] }> {
+  const now = new Date();
+
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: {
+      id: true,
+      quoteType: true,
+      expiresAt: true,
+      status: true,
+      homeownerId: true,
+    },
+  });
+
+  if (!lead) return { expired: false, expiredWrittenQuoteIds: [] };
+  if (lead.quoteType !== 'WRITTEN_QUOTE') return { expired: false, expiredWrittenQuoteIds: [] };
+
+  const expiresAtMs = lead.expiresAt instanceof Date ? lead.expiresAt.getTime() : null;
+  if (!expiresAtMs) return { expired: false, expiredWrittenQuoteIds: [] };
+  if (expiresAtMs > now.getTime()) return { expired: false, expiredWrittenQuoteIds: [] };
+
+  // Find open negotiations for this lead.
+  const openQuotes: Array<{ id: string; installerId: string }> = await prismaAny.writtenQuote.findMany({
+    where: {
+      leadId,
+      negotiationExpiredAt: null,
+      purchasedAt: null,
+      negotiationStatus: { notIn: ['AGREED', 'REJECTED', 'PENDING_ACCEPTANCE', 'NEGOTIATION_EXPIRED'] },
+    },
+    select: {
+      id: true,
+      installerId: true,
+    },
+  });
+
+  const openQuoteIds = openQuotes.map((q: { id: string; installerId: string }) => q.id);
+
+  const quoteUpdate = openQuoteIds.length
+    ? await prismaAny.writtenQuote.updateMany({
+        where: {
+          id: { in: openQuoteIds },
+          negotiationExpiredAt: null,
+          purchasedAt: null,
+          negotiationStatus: { notIn: ['AGREED', 'REJECTED', 'PENDING_ACCEPTANCE', 'NEGOTIATION_EXPIRED'] },
+        },
+        data: {
+          negotiationExpiredAt: now,
+          negotiationStatus: 'NEGOTIATION_EXPIRED',
+        },
+      })
+    : { count: 0 };
+
+  const leadUpdate = await prismaAny.lead.updateMany({
+    where: {
+      id: leadId,
+      status: { not: 'NEGOTIATION_EXPIRED' },
+    },
+    data: {
+      status: 'NEGOTIATION_EXPIRED',
+    },
+  });
+
+  const didExpire = quoteUpdate.count > 0 || leadUpdate.count > 0;
+  if (!didExpire) return { expired: false, expiredWrittenQuoteIds: [] };
+
+  // Notify homeowner once.
+  await createNotification({
+    recipientUserId: lead.homeownerId,
+    actionType: NotificationType.SYSTEM,
+    role: UserRole.HOMEOWNER,
+    messageKey: 'homeowner.written_quote.negotiation_expired',
+    routeKey: 'homeowner.requests',
+    routeParams: { leadId },
+    metadata: { leadId, reason: 'lead_countdown_expired', writtenQuoteIds: openQuoteIds },
+  });
+
+  // Notify each affected installer.
+  await Promise.all(
+    openQuotes.map((q: { id: string; installerId: string }) =>
+      createNotification({
+        recipientUserId: q.installerId,
+        actionType: NotificationType.SYSTEM,
+        role: UserRole.INSTALLER,
+        messageKey: 'installer.written_quote.negotiation_expired',
+        routeKey: 'installer.leads',
+        routeParams: { leadId },
+        metadata: { writtenQuoteId: q.id, leadId, reason: 'lead_countdown_expired' },
+      }),
+    ),
+  );
+
+  return { expired: true, expiredWrittenQuoteIds: openQuoteIds };
+}
+
 export async function heartbeatPresence(input: {
   writtenQuoteId: string;
   userId: string;
@@ -147,7 +259,7 @@ export async function heartbeatPresence(input: {
 
   if (input.role === 'HOMEOWNER') {
     if (writtenQuote.lead.homeownerId !== input.userId) return { ok: false };
-    await prisma.writtenQuote.update({
+    await prismaAny.writtenQuote.update({
       where: { id: input.writtenQuoteId },
       data: { homeownerModalActiveAt: now },
     });
@@ -155,7 +267,7 @@ export async function heartbeatPresence(input: {
   }
 
   if (writtenQuote.installerId !== input.userId) return { ok: false };
-  await prisma.writtenQuote.update({
+  await prismaAny.writtenQuote.update({
     where: { id: input.writtenQuoteId },
     data: { installerModalActiveAt: now },
   });
@@ -204,12 +316,20 @@ export async function extendNegotiationByParty(input: {
     if (writtenQuote.lead.homeownerId !== input.userId) return { ok: false, error: 'Forbidden' };
     if ((fresh as any).homeownerExtensionUsed) return { ok: false, error: 'Extension already used' };
 
-    await prisma.writtenQuote.update({
+    const nextDeadlineAt = new Date(deadline.getTime() + HOURS_48_MS);
+
+    await prismaAny.writtenQuote.update({
       where: { id: fresh.id },
       data: {
-        negotiationDeadlineAt: new Date(deadline.getTime() + HOURS_48_MS),
+        negotiationDeadlineAt: nextDeadlineAt,
         homeownerExtensionUsed: true,
       },
+    });
+
+    // Sync lead-card countdown to negotiation deadline for all roles.
+    await prismaAny.lead.update({
+      where: { id: fresh.leadId },
+      data: { expiresAt: nextDeadlineAt },
     });
 
     return { ok: true };
@@ -218,12 +338,20 @@ export async function extendNegotiationByParty(input: {
   if (writtenQuote.installerId !== input.userId) return { ok: false, error: 'Forbidden' };
   if ((fresh as any).installerExtensionUsed) return { ok: false, error: 'Extension already used' };
 
-  await prisma.writtenQuote.update({
+  const nextDeadlineAt = new Date(deadline.getTime() + HOURS_48_MS);
+
+  await prismaAny.writtenQuote.update({
     where: { id: fresh.id },
     data: {
-      negotiationDeadlineAt: new Date(deadline.getTime() + HOURS_48_MS),
+      negotiationDeadlineAt: nextDeadlineAt,
       installerExtensionUsed: true,
     },
+  });
+
+  // Sync lead-card countdown to negotiation deadline for all roles.
+  await prismaAny.lead.update({
+    where: { id: fresh.leadId },
+    data: { expiresAt: nextDeadlineAt },
   });
 
   return { ok: true };
@@ -255,14 +383,22 @@ export async function extendNegotiationByAdmin(input: {
       ? ((fresh as any).negotiationDeadlineAt as Date)
       : await ensureDeadlineIfMissing(fresh.id, fresh.createdAt);
 
-  await prisma.writtenQuote.update({
+  const nextDeadlineAt = new Date(deadline.getTime() + HOURS_48_MS);
+
+  await prismaAny.writtenQuote.update({
     where: { id: fresh.id },
     data: {
-      negotiationDeadlineAt: new Date(deadline.getTime() + HOURS_48_MS),
+      negotiationDeadlineAt: nextDeadlineAt,
       adminExtensionCount: { increment: 1 },
       adminLastExtendedAt: now,
       adminLastExtendedBy: input.adminUserId,
     },
+  });
+
+  // Sync lead-card countdown to negotiation deadline for all roles.
+  await prismaAny.lead.update({
+    where: { id: fresh.leadId },
+    data: { expiresAt: nextDeadlineAt },
   });
 
   return { ok: true };
