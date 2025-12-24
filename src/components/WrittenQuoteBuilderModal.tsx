@@ -47,6 +47,11 @@ interface WrittenQuoteBuilderModalProps {
   onClose: () => void;
   lead: Lead | null;
   onSubmitQuote: (leadId: string, quoteData: any) => Promise<boolean>;
+  onWrittenQuotePurchased?: (args: {
+    leadId: string;
+    writtenQuoteId: string;
+    purchasedAt: string | null;
+  }) => void;
   mode?: 'quote' | 'bid';
 }
 
@@ -94,6 +99,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   onClose,
   lead,
   onSubmitQuote,
+  onWrittenQuotePurchased,
   mode = 'quote'
 }) => {
   const { data: session } = useSession();
@@ -114,8 +120,55 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [isFinalizingDeal, setIsFinalizingDeal] = useState(false);
   const [isExtendingNegotiation, setIsExtendingNegotiation] = useState(false);
   const [isRequestingAdminExtension, setIsRequestingAdminExtension] = useState(false);
+  const [isPurchasingWrittenQuote, setIsPurchasingWrittenQuote] = useState(false);
   const hasLoadedNegotiationRef = useRef(false);
   const negotiationSignatureRef = useRef<string | null>(null);
+
+  const handlePurchaseWrittenQuote = async () => {
+    if (!lead?.id || !negotiationQuote?.id) return;
+    if (!confirm('Complete payment to unlock homeowner contact details? (Dev mode: no actual charge)')) {
+      return;
+    }
+
+    setIsPurchasingWrittenQuote(true);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/purchase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        alert(data?.error || 'Payment failed');
+        return;
+      }
+
+      const purchasedAt = (data?.lead?.purchasedAt as string | undefined) ?? null;
+
+      setNegotiationQuote((prev) =>
+        prev
+          ? {
+              ...prev,
+              purchasedAt: purchasedAt,
+              status: 'PURCHASED'
+            }
+          : prev
+      );
+
+      onWrittenQuotePurchased?.({
+        leadId: String(lead.id),
+        writtenQuoteId: negotiationQuote.id,
+        purchasedAt
+      });
+
+      alert('✅ Payment successful! Contact details unlocked.');
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+    } finally {
+      setIsPurchasingWrittenQuote(false);
+    }
+  };
 
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -1588,8 +1641,30 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                       ) : null}
 
                       {negotiationQuote.negotiationStatus === 'AGREED' && (
-                        <div className="bg-success/10 border border-success/20 rounded-lg p-3">
-                          <p className="text-body-small text-success">Negotiation finalized.</p>
+                        <div className="space-y-3">
+                          <div className="bg-success/10 border border-success/20 rounded-lg p-3">
+                            <p className="text-body-small text-success">Negotiation finalized.</p>
+                          </div>
+
+                          {negotiationQuote.purchasedAt ? (
+                            <div className="bg-success/10 border border-success/20 rounded-lg p-3">
+                              <p className="text-body-small text-success">Payment completed. Contact details unlocked.</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-body-small text-muted-foreground">
+                                Complete payment to unlock full contact details and begin the installation process.
+                              </p>
+                              <Button
+                                variant="primary"
+                                onClick={handlePurchaseWrittenQuote}
+                                disabled={isPurchasingWrittenQuote}
+                                className="w-full"
+                              >
+                                {isPurchasingWrittenQuote ? 'Processing...' : 'Proceed to Payment'}
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

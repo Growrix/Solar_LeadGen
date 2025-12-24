@@ -47,6 +47,17 @@ References:
 - Run `npx tsc --noEmit` → 0 errors
 - Run `npm run build` → success
 
+### T13W.2-8: Add In-Modal Purchase CTA + Auto-Disable After Payment
+- Problem: Installer Written Quote builder modal shows "Negotiation finalized" but had no in-modal payment CTA.
+- Goal: Show "Proceed to Payment" in BOTH lead card and modal after AGREED.
+- Behavior: Once purchase completes, disable/hide payment actions in both places to prevent duplicate payment.
+- Files:
+  - `src/components/WrittenQuoteBuilderModal.tsx`
+  - `src/components/InstallerLeadFeed.tsx`
+- Verification:
+  - `npx tsc --noEmit` → pass
+  - `npm run build` → pass
+
 ### T13W.2-7: Commit & Push
 - Commit with descriptive message
 - Push to New_WrittenQuote branch

@@ -556,7 +556,8 @@ const LeadCard: React.FC<{
   onUnlock: (leadId: string) => void;
   onSubmitQuote: (leadId: string, quoteData: any) => Promise<boolean>;
   onStartChat: (leadId: string) => void;
-}> = ({ lead, installer, onUnlock, onSubmitQuote, onStartChat }) => {
+  onWrittenQuotePurchased: (args: { leadId: string; writtenQuoteId: string; purchasedAt: string | null }) => void;
+}> = ({ lead, installer, onUnlock, onSubmitQuote, onStartChat, onWrittenQuotePurchased }) => {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
   const [isBidEvaluationOpen, setIsBidEvaluationOpen] = useState(false);
@@ -728,8 +729,13 @@ const LeadCard: React.FC<{
                       alert(error.error || 'Payment failed');
                       return;
                     }
-                    alert('✅ Payment successful! Contact details unlocked. Refreshing page...');
-                    window.location.reload();
+                    const data = await response.json().catch(() => null);
+                    onWrittenQuotePurchased({
+                      leadId: String(lead.id),
+                      writtenQuoteId: myWrittenQuote.id,
+                      purchasedAt: (data?.lead?.purchasedAt as string | undefined) ?? null
+                    });
+                    alert('✅ Payment successful! Contact details unlocked.');
                   } catch (error) {
                     console.error('Payment error:', error);
                     alert('Payment failed. Please try again.');
@@ -1117,6 +1123,7 @@ const LeadCard: React.FC<{
             purchasedAt: lead.purchasedAt
           }}
           onSubmitQuote={onSubmitQuote}
+          onWrittenQuotePurchased={onWrittenQuotePurchased}
           mode="quote"
         />
       )}
@@ -1251,6 +1258,37 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
     setShowUnlockModal(false);
     setSelectedLead(null);
   };
+
+  const handleWrittenQuotePurchased = useCallback(
+    ({ leadId, writtenQuoteId, purchasedAt }: { leadId: string; writtenQuoteId: string; purchasedAt: string | null }) => {
+      setLeads((prev) =>
+        prev.map((lead) => {
+          if (String(lead.id) !== String(leadId)) return lead;
+
+          const updatedLead: Lead = {
+            ...lead,
+            status: 'PURCHASED',
+            purchasedAt: purchasedAt ?? lead.purchasedAt,
+            installerId: lead.installerId ?? String(installer.id)
+          };
+
+          if (Array.isArray(updatedLead.writtenQuotes)) {
+            updatedLead.writtenQuotes = updatedLead.writtenQuotes.map((wq) =>
+              wq.id === writtenQuoteId
+                ? {
+                    ...wq,
+                    purchasedAt: purchasedAt
+                  }
+                : wq
+            );
+          }
+
+          return updatedLead;
+        })
+      );
+    },
+    [installer.id]
+  );
 
   const handleRefresh = () => {
     setLoading(true);
@@ -1424,6 +1462,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
               onUnlock={handleUnlockLead}
               onSubmitQuote={onSubmitQuote}
               onStartChat={onStartChat}
+              onWrittenQuotePurchased={handleWrittenQuotePurchased}
             />
           ))
         )}
