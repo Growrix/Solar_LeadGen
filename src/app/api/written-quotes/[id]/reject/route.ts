@@ -29,7 +29,6 @@ export async function POST(
   const { id } = await context.params;
   
   try {
-    // Only homeowner can reject
     const auth = await requireAuth();
 
     let body: RejectRequest = {};
@@ -71,10 +70,10 @@ export async function POST(
       );
     }
 
-    // Verify user is the homeowner of this quote
     const isHomeowner = writtenQuote.lead.homeownerId === auth.userId;
+    const isInstaller = writtenQuote.installerId === auth.userId;
 
-    if (!isHomeowner) {
+    if (!isHomeowner && !isInstaller) {
       logger.warn('Unauthorized reject attempt', { 
         writtenQuoteId: id,
         userId: auth.userId,
@@ -82,7 +81,7 @@ export async function POST(
         correlationId 
       });
       return NextResponse.json(
-        { error: 'Only the homeowner can reject this quote' },
+        { error: 'You are not authorized to reject this quote' },
         { status: 403 }
       );
     }
@@ -122,11 +121,12 @@ export async function POST(
     }
 
     // Update quote to REJECTED status
-    const updatedQuote = await prisma.writtenQuote.update({
+    const updatedQuote = await (prisma.writtenQuote as any).update({
       where: { id },
       data: {
         negotiationStatus: 'REJECTED',
         rejectedAt: new Date(),
+        rejectedByRole: isInstaller ? UserRole.INSTALLER : UserRole.HOMEOWNER,
         rejectionReason: body.reason || null
       }
     });
@@ -137,26 +137,50 @@ export async function POST(
       correlationId 
     });
 
-    // Notify the installer about rejection
-    await createNotification({
-      recipientUserId: writtenQuote.installer.id,
-      actionType: NotificationType.QUOTE_REJECTED, // Existing type for quote rejection
-      role: UserRole.INSTALLER,
-      messageKey: 'installer.bid.outcome.other', // "This bid was awarded to another installer"
-      routeKey: 'installer.leads',
-      routeParams: { 
-        leadId: writtenQuote.leadId
-      },
-      metadata: {
-        reason: body.reason,
-        location: writtenQuote.lead.location,
-        postcode: writtenQuote.lead.postcode
-      }
-    });
+    // Notify the other party about rejection
+    if (isHomeowner) {
+      await createNotification({
+        recipientUserId: writtenQuote.installer.id,
+        actionType: NotificationType.QUOTE_REJECTED,
+        role: UserRole.INSTALLER,
+        messageKey: 'installer.written_quote.rejected',
+        routeKey: 'installer.leads',
+        routeParams: {
+          leadId: writtenQuote.leadId,
+        },
+        metadata: {
+          rejectedBy: 'HOMEOWNER',
+          reason: body.reason,
+          location: writtenQuote.lead.location,
+          postcode: writtenQuote.lead.postcode,
+        },
+      });
 
-    logger.debug('Installer rejection notification sent', { 
-      recipientId: writtenQuote.installer.id 
-    });
+      logger.debug('Installer rejection notification sent', {
+        recipientId: writtenQuote.installer.id,
+      });
+    } else if (isInstaller) {
+      await createNotification({
+        recipientUserId: writtenQuote.lead.homeownerId,
+        actionType: NotificationType.QUOTE_REJECTED,
+        role: UserRole.HOMEOWNER,
+        messageKey: 'homeowner.written_quote.rejected',
+        routeKey: 'homeowner.requests',
+        routeParams: {
+          leadId: writtenQuote.leadId,
+        },
+        metadata: {
+          rejectedBy: 'INSTALLER',
+          reason: body.reason,
+          location: writtenQuote.lead.location,
+          postcode: writtenQuote.lead.postcode,
+        },
+      });
+
+      logger.debug('Homeowner rejection notification sent', {
+        recipientId: writtenQuote.lead.homeownerId,
+      });
+    }
 
     return NextResponse.json(
       {

@@ -275,6 +275,25 @@ export default function AdminLeadManagementModal({
       });
     }
 
+    if (anyQ.rejectedAt) {
+      const reason = typeof anyQ.rejectionReason === 'string' && anyQ.rejectionReason.trim().length > 0
+        ? anyQ.rejectionReason.trim()
+        : 'No reason provided';
+
+      const rejectedByRole = String((anyQ as any).rejectedByRole || 'HOMEOWNER');
+      const rejectedByLabel = rejectedByRole === 'INSTALLER' ? 'Installer' : 'Homeowner';
+      const actorRole: NegotiationEvent['actorRole'] = rejectedByRole === 'INSTALLER' ? 'INSTALLER' : 'HOMEOWNER';
+
+      events.push({
+        id: `${q.id}-reject`,
+        action: 'REJECT',
+        actorRole,
+        amount: getNegotiationCurrentAmount(q),
+        message: `Deal rejected by ${rejectedByLabel}: ${reason}`,
+        createdAt: String(anyQ.rejectedAt),
+      });
+    }
+
     return events
       .filter((e) => !Number.isNaN(new Date(e.createdAt).getTime()))
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());

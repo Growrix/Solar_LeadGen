@@ -3702,3 +3702,43 @@ After submitting the Written Quote , The Lead card countdown timer became 7 days
 Follow the
 ### Guidelines:
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ -----------------------------------------------------------------------------
+
+- Deal reject issue : When the Homeowner reject the deal by clicking on the "Reject" button in the review modal > it opens a modal to write the reason > after writing the reason and clicking on "Submit" button > it should show the message in the Admin lead details modal negotiation window as "Deal rejected by Homeowner: [reason]" along with the date and time . but it is not showing anything in the admin lead details modal negotiation window. I want you to fix this issue accordingly. Audit deeply and implement it accordingly.
+
+ - After the rejection the countdown timer still Running in the Lead cards of all ends (Installer, Homeowner, Admin) . I want you to fix this issue so that after the rejection the countdown timer should stop and show "Negotiation closed - Deal rejected by [party]" in the lead cards of all ends (Installer, Homeowner, Admin) . Audit deeply and implement it accordingly.
+
+ ***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+
+ -----------------------------------------------------------------------------
+
+ ***negotiation final price issue***
+There is a UX issues and also a confusion regarding the final price shown in the negotiation panel after clicking on "Done deal" button from either end (Installer/Homeowner) .
+
+What is happenning right now  : check the screenshot first on both side. The last price was offered $5000 from homeowners end > The insaller clicked on "Done deal" button > then the homeowners negotiation panel is showing $12000 as final price which is wrong and confusing. It should show $5000 as final price as it was the last offered price from the homeowners end. 
+ 
+ ***Accept deal flow enhancement***
+- I need an enhancement in the Negotiation panel of the both ends (Installer/Homeowner) so that after clicking on "Done deal" button from either end (Installer/Homeowner) > the negotiation panel should show the last offered price as the final price clearly without any confusion. Audit deeply and implement it accordingly. You can highlight the final figure with some animation and bold font so that it is more visible to the users to notice it easily.
+- After the use clicks on accept deal button > the negotiation panel should show "Deal accepted by [party] at [final price]" along with the date and time . Audit deeply and implement it accordingly.
+- After the deal is accepted by either end (Installer/Homeowner) > the lead status should be changed to "Deal Accepted" in the lead cards of all ends (Installer, Homeowner, Admin) . Audit deeply and implement it accordingly.
+
+ ***Installers reject end point issue***
+- I have rejected From installers side > but there was no such changes seen , that means there is no end point for the installers to reject the deal. I want you to create an end point for the installers to reject the deal as well just like the homeowners reject end point. So that both parties can reject the deal if they are not interested to proceed further. Audit deeply and implement it accordingly. check back your recent implimentations. 
+
+***Instructions*** Make sure that you fix theses 3 issues as per the above instructions. so that the negotiation final price issue is fixed properly without any confusion. also implement the accept deal flow enhancement and also create an end point for the installers to reject the deal as well just like the homeowners reject end point. Audit deeply and implement it accordingly. check back your recent implimentations. 
+
+***Strickt rules***  
+Follow the
+### Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+### Audit Report: 
+ After that create a audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote .
+
+### Implementation Phase:
+Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.

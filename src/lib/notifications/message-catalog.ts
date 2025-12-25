@@ -15,6 +15,7 @@ export type MessageKey =
   | 'homeowner.system.bidding_limit_updated' // Phase 13S.2
   | 'homeowner.lead.purchased'
   | 'homeowner.written_quote.negotiation_expired'
+  | 'homeowner.written_quote.rejected'
   // Installer messages (professional tone)
   | 'installer.new.opportunity'
   | 'installer.bid.won'
@@ -26,6 +27,7 @@ export type MessageKey =
   | 'installer.assignment.removed'
   | 'installer.lead.resold'
   | 'installer.written_quote.negotiation_expired'
+  | 'installer.written_quote.rejected'
   // Admin messages (operational tone)
   | 'admin.assignment.started'
   | 'admin.assignment.ended'
@@ -90,6 +92,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
     title: 'Negotiation Expired',
     message: 'The negotiation window has expired. Please contact support if you need more time.',
   },
+  'homeowner.written_quote.rejected': {
+    title: 'Quote Update',
+    message: 'The installer has rejected the negotiation. You can review other options in your dashboard.',
+  },
 
   // Installer messages
   'installer.new.opportunity': {
@@ -131,6 +137,10 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'installer.written_quote.negotiation_expired': {
     title: 'Negotiation Expired',
     message: 'The negotiation window has expired for this written quote. Please contact support if you need more time.',
+  },
+  'installer.written_quote.rejected': {
+    title: 'Quote Update',
+    message: 'The homeowner has rejected the negotiation for this written quote.',
   },
 
   // Admin messages

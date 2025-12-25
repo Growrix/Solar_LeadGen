@@ -1,3 +1,9 @@
+# ---
+#
+# - Commit: ff0d6d1d27c4170d23218756eaf5d627f987d8bc
+# - Date: 2025-12-24 19:07:16 +0600
+# - Branch: NegotiationModal_Enhancement
+# - Description: fix(admin): restore approve+assign by removing initialCountdownDays writes
 ---
 
 - Commit: 3e5ee0972b8dba6b63cdad788cfd81022a2e2704

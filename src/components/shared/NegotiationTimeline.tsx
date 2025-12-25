@@ -43,6 +43,11 @@ const ACTION_CONFIG = {
     label: 'Deal Closed',
     color: 'text-success',
   },
+  REJECT: {
+    icon: '❌',
+    label: 'Deal Rejected',
+    color: 'text-error',
+  },
 } as const;
 
 /**

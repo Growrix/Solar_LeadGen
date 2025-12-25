@@ -137,6 +137,7 @@ export interface WrittenQuoteWithInstaller {
   selectedAt?: string | null;
   purchasedAt?: string | null; // Phase 13W.2: Purchase timestamp
   rejectedAt?: string | null;
+  rejectedByRole?: 'HOMEOWNER' | 'INSTALLER' | 'ADMIN' | 'GUEST' | null;
   rejectionReason?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -167,7 +168,7 @@ export interface WrittenQuoteWithInstaller {
  */
 export interface NegotiationEvent {
   id: string;
-  action: 'SUBMIT' | 'COUNTER' | 'REVISE' | 'ACCEPT';
+  action: 'SUBMIT' | 'COUNTER' | 'REVISE' | 'ACCEPT' | 'REJECT';
   actorRole: 'INSTALLER' | 'HOMEOWNER';
   amount: number;
   message?: string | null;

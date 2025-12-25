@@ -67,3 +67,16 @@ Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatc
  - The last option is to request admin to increase the negotiation timeframe if both parties could not take any decision within the given timeframe including extension. e.g if both parties could not take any decision within 5 days (3 days + 2 days extension) , then they can request admin to increase the negotiation timeframe. Admin will get email notifications regarding this request and admin can increase the negotiation timeframe as per the business requirement. Audit deeply and implement it accordingly.
 
  - The admin will be able to control the negotiation timeframe from the admin panel. e.g admin can set the initial negotiation timeframe, extension timeframe etc as per the business requirement. I want you to create a modal for that and add a section in the Admin Lead Management Modal for that purpose. The section will be the control system of the Negotiation limits for both end. 
+
+ -----------------------------------------------------------------------------------------
+
+*** Email and Notification system for Written Quote negotiation events***
+ - I want you to identify all the negotiation events e.g counter offer submitted, revise offer submitted, done deal clicked, reject clicked, negotiation expired etc. And Plan the push notification for all the events for both parties (installer and homeowner) accordingly. Audit deeply and implement it accordingly.
+
+ - From your Audit report I will finalize the email and notification contents for selective negotiation events. After that you have to implement it accordingly. 
+
+ - Also decide For admin Push notifications and Email notifications for critical negotiation events e.g negotiation expired, extension requested etc. Audit deeply and implement it accordingly. These will be chosen from your Audit report.
+
+ ***Instructions***
+ I want you to deeply audit the existing Written Quote negotiation system first. then create a detailed audit report in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote folder for all the above mentioned requirements. After my approval you have to start the implementation phase accordingly.
+ 

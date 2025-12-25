@@ -283,6 +283,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [didRestoreDraft, setDidRestoreDraft] = useState(false);
   const [isAcceptingDeal, setIsAcceptingDeal] = useState(false);
   const [isRejectingDeal, setIsRejectingDeal] = useState(false);
+  const [showRejectNegotiationConfirmation, setShowRejectNegotiationConfirmation] = useState(false);
+  const [rejectNegotiationReason, setRejectNegotiationReason] = useState('');
+  const [isRejectingNegotiation, setIsRejectingNegotiation] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const lastAutosavedSnapshotRef = useRef<string | null>(null);
 
@@ -306,6 +309,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         return 'Done deal pending acceptance';
       case 'AGREED':
         return 'Finalized (Done deal)';
+      case 'REJECTED':
+        return 'Rejected';
       case 'NEGOTIATION_EXPIRED':
         return 'Negotiation expired';
       case 'PENDING':
@@ -598,6 +603,39 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to reject done-deal');
     } finally {
       setIsRejectingDeal(false);
+    }
+  };
+
+  const handleRejectNegotiationClick = () => {
+    setShowRejectNegotiationConfirmation(true);
+    setRejectNegotiationReason('');
+  };
+
+  const handleConfirmRejectNegotiation = async () => {
+    if (!negotiationQuote) return;
+
+    setIsRejectingNegotiation(true);
+    setNegotiationFetchError(null);
+    try {
+      const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: rejectNegotiationReason || undefined }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reject negotiation');
+      }
+
+      setShowRejectNegotiationConfirmation(false);
+      setRejectNegotiationReason('');
+      await fetchNegotiationQuote();
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error rejecting negotiation:', error);
+      setNegotiationFetchError(error instanceof Error ? error.message : 'Failed to reject negotiation');
+    } finally {
+      setIsRejectingNegotiation(false);
     }
   };
 
@@ -1546,6 +1584,10 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                         <div className="bg-error/10 border border-error/20 rounded-lg p-3">
                           <p className="text-body-small text-error">Negotiation has expired and is now closed.</p>
                         </div>
+                      ) : negotiationQuote.negotiationStatus === 'REJECTED' ? (
+                        <div className="bg-muted/30 border border-border rounded-lg p-3">
+                          <p className="text-body-small text-muted-foreground">Negotiation has been rejected and is now closed.</p>
+                        </div>
                       ) : negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ? (
                         (() => {
                           const userId = session?.user?.id;
@@ -1628,6 +1670,15 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                               {isRequestingAdminExtension ? 'Requesting...' : 'Request admin extension'}
                             </Button>
                           </div>
+
+                          <Button
+                            variant="secondary"
+                            onClick={handleRejectNegotiationClick}
+                            disabled={isRejectingNegotiation}
+                            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                          >
+                            {isRejectingNegotiation ? 'Rejecting...' : 'Reject Quote'}
+                          </Button>
 
                           <Button
                             variant="primary"
@@ -1802,6 +1853,57 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           }}
           isSubmitting={isSubmitting}
         />
+      )}
+
+      {/* Reject Negotiation Confirmation Modal */}
+      {showRejectNegotiationConfirmation && negotiationQuote && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-heading-4 text-destructive">Reject Quote</h3>
+            <p className="text-body text-muted-foreground">
+              Are you sure you want to reject this negotiation?
+            </p>
+            <p className="text-body-small text-warning">This will notify the homeowner that you have declined the negotiation.</p>
+
+            <div className="space-y-2">
+              <label className="text-label text-foreground">Reason (optional)</label>
+              <textarea
+                value={rejectNegotiationReason}
+                onChange={(e) => setRejectNegotiationReason(e.target.value)}
+                placeholder="Let the homeowner know why (optional)"
+                className="w-full px-3 py-2 bg-background-alt border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30 resize-none"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowRejectNegotiationConfirmation(false);
+                  setRejectNegotiationReason('');
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleConfirmRejectNegotiation}
+                disabled={isRejectingNegotiation}
+                className="flex-1 bg-destructive hover:bg-destructive/90"
+              >
+                {isRejectingNegotiation ? 'Rejecting...' : 'Confirm Reject'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   , document.body);

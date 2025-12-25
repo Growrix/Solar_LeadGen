@@ -18,6 +18,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { calculateLiveCountdown, getLiveAccessibleText, type LiveCountdownState } from '@/lib/utils/countdown-client';
+import type { GetWrittenQuotesResponse } from '@/types/written-quote';
 
 interface LiveCountdownBarProps {
   /** UTC timestamp when lead expires (ISO string) */
@@ -54,11 +55,59 @@ export function LiveCountdownBar({
   quoteType,
 }: LiveCountdownBarProps) {
   const [countdown, setCountdown] = useState<LiveCountdownState | null>(null);
+  const [overrideText, setOverrideText] = useState<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // For WRITTEN_QUOTE leads, detect if the negotiation was rejected and show a closed banner instead of a running timer.
+  useEffect(() => {
+    if (!leadId || !expiresAt || quoteType !== 'WRITTEN_QUOTE') {
+      setOverrideText(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkRejection = async () => {
+      try {
+        const res = await fetch(`/api/written-quotes?leadId=${encodeURIComponent(leadId)}`);
+        if (!res.ok) return;
+        const data = (await res.json()) as GetWrittenQuotesResponse;
+        const quotes = Array.isArray(data?.writtenQuotes) ? data.writtenQuotes : [];
+        if (quotes.length === 0) {
+          if (!cancelled) setOverrideText(null);
+          return;
+        }
+
+        const latest = quotes
+          .slice()
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+
+        const negotiationStatus = String((latest as any).negotiationStatus || 'PENDING');
+        if (negotiationStatus === 'REJECTED') {
+          const rejectedByRole = String((latest as any).rejectedByRole || 'HOMEOWNER');
+          const rejectedByLabel = rejectedByRole === 'INSTALLER' ? 'Installer' : 'Homeowner';
+          if (!cancelled) setOverrideText(`Negotiation closed - Deal rejected by ${rejectedByLabel}`);
+          return;
+        }
+
+        if (!cancelled) setOverrideText(null);
+      } catch {
+        // Fail closed: do not block countdown rendering due to a transient fetch error.
+      }
+    };
+
+    checkRejection();
+    const poll = setInterval(checkRejection, 10000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(poll);
+    };
+  }, [leadId, expiresAt, quoteType]);
 
   // Set up live countdown with 1-second interval
   useEffect(() => {
-    if (!expiresAt) {
+    if (!expiresAt || overrideText) {
       setCountdown(null);
       return;
     }
@@ -98,16 +147,52 @@ export function LiveCountdownBar({
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [expiresAt, initialDays]);
+  }, [expiresAt, initialDays, overrideText]);
 
   // Hide countdown if no expiresAt set
-  if (!expiresAt || !countdown) {
+  if (!expiresAt) {
     return null;
   }
 
   // Hide countdown for purchased CALL_VISIT/WRITTEN_QUOTE leads
   // (BIDDING leads keep countdown visible)
   if (leadStatus === 'PURCHASED' && quoteType !== 'BIDDING') {
+    return null;
+  }
+
+  // Negotiation closed override for written quote rejections.
+  if (overrideText) {
+    if (position === 'top') {
+      return (
+        <div
+          className="w-full rounded-t-lg overflow-hidden"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div className="relative h-10 bg-muted/50">
+            <div className="relative z-10 h-full flex items-center justify-center px-4 text-muted-foreground">
+              <span className="text-label tracking-wide">{overrideText}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className="inline-flex items-center gap-2"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span className="h-2.5 w-2.5 rounded-full bg-muted" aria-hidden="true" />
+        <span className="text-body-small text-muted-foreground">{overrideText}</span>
+      </div>
+    );
+  }
+
+  if (!countdown) {
     return null;
   }
 

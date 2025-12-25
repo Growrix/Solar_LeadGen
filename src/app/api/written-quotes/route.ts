@@ -454,6 +454,7 @@ export async function GET(request: NextRequest) {
         selectedAt: quote.selectedAt?.toISOString() || null,
         purchasedAt: quote.purchasedAt?.toISOString() || null,
         rejectedAt: quote.rejectedAt?.toISOString() || null,
+        rejectedByRole: (quote as any).rejectedByRole ?? null,
         rejectionReason: quote.rejectionReason || null,
         
         // Phase 13W - Comprehensive Quote Builder data
