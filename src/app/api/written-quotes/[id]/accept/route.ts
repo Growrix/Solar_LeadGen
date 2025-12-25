@@ -84,6 +84,12 @@ export async function POST(
       },
     });
 
+    // Update Lead status to ACCEPTED
+    await prisma.lead.update({
+      where: { id: writtenQuote.leadId },
+      data: { status: 'ACCEPTED' }
+    });
+
     const otherPartyId = isInstaller ? writtenQuote.lead.homeownerId : writtenQuote.installer.id;
     const otherPartyRole = isInstaller ? UserRole.HOMEOWNER : UserRole.INSTALLER;
 

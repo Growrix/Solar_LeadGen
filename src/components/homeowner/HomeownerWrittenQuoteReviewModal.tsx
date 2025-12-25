@@ -551,13 +551,27 @@ export default function HomeownerWrittenQuoteReviewModal({
     if (writtenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' && writtenQuote.agreedAmount) {
       return writtenQuote.agreedAmount;
     }
-    return (
-      writtenQuote.installerRevisedAmount ||
-      writtenQuote.homeownerCounterAmount ||
-      writtenQuote.agreedAmount ||
-      writtenQuote.finalTotal ||
-      writtenQuote.amount
-    );
+    
+    let amount = writtenQuote.finalTotal || writtenQuote.amount || 0;
+    let lastTime = new Date(writtenQuote.createdAt || 0).getTime();
+
+    if (writtenQuote.installerRevisedAt && writtenQuote.installerRevisedAmount) {
+      const t = new Date(writtenQuote.installerRevisedAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        amount = writtenQuote.installerRevisedAmount;
+      }
+    }
+
+    if (writtenQuote.homeownerCounterAt && writtenQuote.homeownerCounterAmount) {
+      const t = new Date(writtenQuote.homeownerCounterAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        amount = writtenQuote.homeownerCounterAmount;
+      }
+    }
+
+    return amount;
   };
 
   const getNegotiationStatusLabel = (writtenQuote: WrittenQuoteWithFullData) => {
@@ -1244,6 +1258,28 @@ export default function HomeownerWrittenQuoteReviewModal({
                         const canCounter = !isClosed && homeownerCounterCount < 3 && negotiationTurns < 7;
 
                         if (!canCounter) {
+                          if (selectedWrittenQuote.negotiationStatus === 'AGREED') {
+                             return (
+                                <div className="bg-success/10 border border-success/20 rounded-lg p-4 animate-in fade-in zoom-in duration-300">
+                                    <div className="flex flex-col items-center text-center space-y-2">
+                                        <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center mb-2">
+                                            <CheckCircle className="h-6 w-6 text-success" />
+                                        </div>
+                                        <h4 className="text-heading-5 text-success">Deal Accepted!</h4>
+                                        <p className="text-body-small text-muted-foreground">
+                                            Deal accepted by <span className="text-foreground">{(selectedWrittenQuote as any).agreedBy === session?.user?.id ? 'You' : 'Installer'}</span> at
+                                        </p>
+                                        <div className="text-heading-3 text-foreground">
+                                            ${(selectedWrittenQuote.agreedAmount || 0).toLocaleString()}
+                                        </div>
+                                        <p className="text-caption text-muted-foreground">
+                                            {selectedWrittenQuote.agreedAt ? formatDateTime(selectedWrittenQuote.agreedAt) : ''}
+                                        </p>
+                                    </div>
+                                </div>
+                             );
+                          }
+
                           const reason = isClosed
                             ? selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE'
                               ? 'Done deal is pending acceptance. Negotiation is temporarily locked.'
@@ -1564,9 +1600,9 @@ export default function HomeownerWrittenQuoteReviewModal({
             className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-heading-4 text-foreground">Request Done Deal</h3>
+            <h3 className="text-heading-4 text-foreground">Confirm Done Deal</h3>
             <p className="text-body text-muted-foreground">
-              Request a done deal with <strong className="text-foreground">{selectedWrittenQuote.installerName}</strong> at the last offered price?
+              Are you sure you want to proceed with the final price of <span className="text-foreground">${getLastOfferAmount(selectedWrittenQuote).toLocaleString()}</span>?
             </p>
             <p className="text-body-small text-info">This will notify the installer and temporarily lock negotiation until they accept or reject.</p>
             <div className="flex items-center gap-3 pt-4">
@@ -1583,7 +1619,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                 disabled={isFinalizingDeal}
                 className="flex-1"
               >
-                {isFinalizingDeal ? 'Requesting...' : 'Request Done Deal'}
+                {isFinalizingDeal ? 'Confirming...' : 'Confirm'}
               </Button>
             </div>
           </div>

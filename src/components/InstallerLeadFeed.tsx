@@ -34,7 +34,7 @@ const LoaderIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xm
 
 // --- Types ---
 export type LeadType = 'call_visit' | 'written' | 'bidding';
-export type LeadStatus = 'new' | 'unlocked' | 'submitted' | 'expired' | 'contacted' | 'APPROVED' | 'PURCHASED';
+export type LeadStatus = 'new' | 'unlocked' | 'submitted' | 'expired' | 'contacted' | 'APPROVED' | 'PURCHASED' | 'ACCEPTED';
 
 export interface Lead {
   id: string;
@@ -596,6 +596,8 @@ const LeadCard: React.FC<{
     const baseClasses ="px-2 py-1 text-caption rounded-full";
     
     switch (lead.status) {
+      case 'ACCEPTED':
+        return `${baseClasses} bg-success/10 text-success`;
       case 'new':
         return `${baseClasses} bg-success/10 text-success`;
       case 'unlocked':
@@ -873,7 +875,7 @@ const LeadCard: React.FC<{
         
         <div className="flex items-center space-x-2">
           <span className={getStatusBadge()}>
-            {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
+            {lead.status === 'ACCEPTED' ? 'Deal Accepted' : lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
           </span>
           <span className="text-caption text-muted-foreground">
             {formatTimeAgo(lead.dateSubmitted)}

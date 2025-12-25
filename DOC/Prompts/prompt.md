@@ -3722,6 +3722,10 @@ There is a UX issues and also a confusion regarding the final price shown in the
 
 What is happenning right now  : check the screenshot first on both side. The last price was offered $5000 from homeowners end > The insaller clicked on "Done deal" button > then the homeowners negotiation panel is showing $12000 as final price which is wrong and confusing. It should show $5000 as final price as it was the last offered price from the homeowners end. 
  
+ - And It should always show the last offered price both end differently. E.g the Installers last price was offerd for 10000 , so installers will see 10000 was their last price offered, same Homeowners will see their price offered accordingly. e.g if the homeowners last price was offerd for 5000 , so homeowners will see 5000 was their last price offered in their negotiaton panel. But Upon the Done deal and accepted deal , both parties should see the final agreed price which is the last offered price from either end. Audit deeply and implement it accordingly. 
+
+ - Any end clicks the done deal button > before proceed ing further it should show a confirmation modal e.g "Are you sure you want to proceed with the final price of $[last offered price] ?" with Confirm and Cancel button. Audit deeply and implement it accordingly. This should be on both ends (Installer/Homeowner) .
+
  ***Accept deal flow enhancement***
 - I need an enhancement in the Negotiation panel of the both ends (Installer/Homeowner) so that after clicking on "Done deal" button from either end (Installer/Homeowner) > the negotiation panel should show the last offered price as the final price clearly without any confusion. Audit deeply and implement it accordingly. You can highlight the final figure with some animation and bold font so that it is more visible to the users to notice it easily.
 - After the use clicks on accept deal button > the negotiation panel should show "Deal accepted by [party] at [final price]" along with the date and time . Audit deeply and implement it accordingly.
@@ -3742,3 +3746,13 @@ Follow the
 
 ### Implementation Phase:
 Create a phase in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\specs\008-description-enhance-existing\tasks.md file and Start implimenting.
+
+-------------------------------------------------------------------
+***Written Quote submission flow enhancement***
+- When the installers clicks on the submit written Quote > before submitting I want it to open the Preview modal (Which is already built and now it open when clicked on preview button on the Written Quote builder modal) > So that the installers can preview the entire quote before submitting it. Audit deeply and implement it accordingly. So, The Quote will be submitted when the installers clicks on the Preview Modal > Confirm and Submit button.
+***Written Quote negotiation flow logic enhancement***
+- There is a negotiation done deal logic needs to update. Now the Homewners offered a price and homeowner is able to done the deal on their price > but it should be  : the Installer will have the only options to agree and click on done deal , not the homeowner. The homeowner can only click on done deal on the installers offer price . e.g if the homeowner offered a price of $5000 > then the installer can either accept it and click on done deal or send a counter offer price. The homeowner cannot click on done deal on their own offered price. Audit deeply and implement it accordingly. Same goes the the installers side, e.g if the installer offered a price of $10000 > then the homeowner can either accept it and click on done deal or send a counter offer price. The installer cannot click on done deal on their own offered price. Audit deeply and implement it accordingly.
+
+***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md

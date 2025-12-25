@@ -221,8 +221,8 @@ const STATUS_LABELS: Record<LeadStatusKey, { label: string | ((lead?: { quoteTyp
     accent: 'bg-secondary/10 text-secondary border border-secondary/30',
   },
   [LeadStatusEnum.ACCEPTED]: {
-    label: 'Accepted',
-    description: 'You selected a winning quote',
+    label: 'Deal Accepted',
+    description: 'Deal has been finalized',
     accent: 'bg-success text-success-foreground border border-success',
   },
   [LeadStatusEnum.REJECTED]: {

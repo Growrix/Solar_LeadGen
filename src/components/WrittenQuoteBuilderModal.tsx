@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/button';
 import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
-import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download } from 'lucide-react';
+import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download, Check } from 'lucide-react';
 import { calcQuoteTotals, DEFAULT_ASSUMPTIONS, QuoteInputs } from '@/utils/quoteCalculator';
 import { parseBudgetRange } from '@/lib/mappers/instant-to-bid';
 import SavingsChart from './SavingsChart';
@@ -285,6 +285,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [isRejectingDeal, setIsRejectingDeal] = useState(false);
   const [showRejectNegotiationConfirmation, setShowRejectNegotiationConfirmation] = useState(false);
   const [rejectNegotiationReason, setRejectNegotiationReason] = useState('');
+  const [showDoneDealConfirmation, setShowDoneDealConfirmation] = useState(false);
   const [isRejectingNegotiation, setIsRejectingNegotiation] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const lastAutosavedSnapshotRef = useRef<string | null>(null);
@@ -367,14 +368,27 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     if (quote?.negotiationStatus === 'PENDING_ACCEPTANCE' && quote?.agreedAmount) {
       return quote.agreedAmount;
     }
-    return (
-      quote?.installerRevisedAmount ||
-      quote?.homeownerCounterAmount ||
-      quote?.agreedAmount ||
-      quote?.finalTotal ||
-      quote?.amount ||
-      0
-    );
+    
+    let amount = quote?.finalTotal || quote?.amount || 0;
+    let lastTime = new Date(quote?.createdAt || 0).getTime();
+
+    if (quote?.installerRevisedAt && quote?.installerRevisedAmount) {
+      const t = new Date(quote.installerRevisedAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        amount = quote.installerRevisedAmount;
+      }
+    }
+
+    if (quote?.homeownerCounterAt && quote?.homeownerCounterAmount) {
+      const t = new Date(quote.homeownerCounterAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        amount = quote.homeownerCounterAmount;
+      }
+    }
+
+    return amount;
   };
 
   const getNegotiationTimeline = (quote: any) => {
@@ -521,12 +535,18 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     }
   };
 
-  const handleDoneDeal = async () => {
+  const handleDoneDeal = () => {
     if (!negotiationQuote) return;
     if (negotiationQuote.negotiationStatus === 'AGREED') return;
     if (negotiationQuote.negotiationStatus === 'PENDING_ACCEPTANCE') return;
     if (negotiationQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(negotiationQuote as any).negotiationExpiredAt) return;
 
+    setShowDoneDealConfirmation(true);
+  };
+
+  const confirmDoneDeal = async () => {
+    if (!negotiationQuote) return;
+    
     const userId = session?.user?.id;
     if (!userId) {
       setNegotiationFetchError('Unable to finalize deal: missing user session.');
@@ -535,6 +555,8 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
     setIsFinalizingDeal(true);
     setNegotiationFetchError(null);
+    setShowDoneDealConfirmation(false);
+
     try {
       const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/agree`, {
         method: 'POST',
@@ -1693,8 +1715,22 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
                       {negotiationQuote.negotiationStatus === 'AGREED' && (
                         <div className="space-y-3">
-                          <div className="bg-success/10 border border-success/20 rounded-lg p-3">
-                            <p className="text-body-small text-success">Negotiation finalized.</p>
+                          <div className="bg-success/10 border border-success/20 rounded-lg p-4 animate-in fade-in zoom-in duration-300">
+                            <div className="flex flex-col items-center text-center space-y-2">
+                                <div className="h-10 w-10 rounded-full bg-success/20 flex items-center justify-center mb-2">
+                                    <Check className="h-6 w-6 text-success" />
+                                </div>
+                                <h4 className="text-heading-5 text-success">Deal Accepted!</h4>
+                                <p className="text-body-small text-muted-foreground">
+                                    Deal accepted by <span className="text-foreground">{(negotiationQuote as any).agreedBy === session?.user?.id ? 'You' : 'Homeowner'}</span> at
+                                </p>
+                                <div className="text-heading-3 text-foreground">
+                                    ${(negotiationQuote.agreedAmount || 0).toLocaleString()}
+                                </div>
+                                <p className="text-caption text-muted-foreground">
+                                    {negotiationQuote.agreedAt ? new Date(negotiationQuote.agreedAt).toLocaleString() : ''}
+                                </p>
+                            </div>
                           </div>
 
                           {negotiationQuote.purchasedAt ? (
@@ -1853,6 +1889,42 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           }}
           isSubmitting={isSubmitting}
         />
+      )}
+
+      {/* Done Deal Confirmation Modal */}
+      {showDoneDealConfirmation && negotiationQuote && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-heading-4 text-foreground">Confirm Done Deal</h3>
+            <p className="text-body text-muted-foreground">
+              Are you sure you want to proceed with the final price of <span className="text-foreground">${getLastOfferAmount(negotiationQuote).toLocaleString()}</span>?
+            </p>
+            
+            <div className="flex items-center gap-3 pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDoneDealConfirmation(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={confirmDoneDeal}
+                disabled={isFinalizingDeal}
+                className="flex-1"
+              >
+                {isFinalizingDeal ? 'Confirming...' : 'Confirm'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Reject Negotiation Confirmation Modal */}

@@ -106,11 +106,25 @@ export async function POST(
       );
     }
 
-    // Calculate final agreed amount (last price is authoritative)
-    const agreedAmount = writtenQuote.installerRevisedAmount 
-      || writtenQuote.homeownerCounterAmount 
-      || writtenQuote.finalTotal
-      || writtenQuote.amount;
+    // Calculate final agreed amount (last price is authoritative based on timestamp)
+    let agreedAmount = writtenQuote.finalTotal || writtenQuote.amount;
+    let lastActivityTime = writtenQuote.createdAt.getTime();
+
+    if (writtenQuote.installerRevisedAt && writtenQuote.installerRevisedAmount) {
+      const t = new Date(writtenQuote.installerRevisedAt).getTime();
+      if (t > lastActivityTime) {
+        lastActivityTime = t;
+        agreedAmount = writtenQuote.installerRevisedAmount;
+      }
+    }
+
+    if (writtenQuote.homeownerCounterAt && writtenQuote.homeownerCounterAmount) {
+      const t = new Date(writtenQuote.homeownerCounterAt).getTime();
+      if (t > lastActivityTime) {
+        lastActivityTime = t;
+        agreedAmount = writtenQuote.homeownerCounterAmount;
+      }
+    }
 
     // Step 1: Request a done-deal. The other party must accept or reject.
     const updatedQuote = await prisma.writtenQuote.update({
