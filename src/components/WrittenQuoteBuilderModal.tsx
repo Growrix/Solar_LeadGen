@@ -124,6 +124,25 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const hasLoadedNegotiationRef = useRef(false);
   const negotiationSignatureRef = useRef<string | null>(null);
 
+  const refreshFullLeadData = async () => {
+    if (!lead?.id) return;
+    setIsLoadingFullLead(true);
+    setLeadFetchError(null);
+    try {
+      const response = await fetch(`/api/leads/${lead.id}`);
+      if (!response.ok) {
+        throw new Error(response.status === 404 ? 'Lead not found' : 'Failed to fetch lead details');
+      }
+      const data = await response.json();
+      setFullLeadData(data.lead);
+    } catch (error) {
+      console.error('[WrittenQuoteBuilderModal] Error refreshing lead:', error);
+      setLeadFetchError(error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setIsLoadingFullLead(false);
+    }
+  };
+
   const handlePurchaseWrittenQuote = async () => {
     if (!lead?.id || !negotiationQuote?.id) return;
     if (!confirm('Complete payment to unlock homeowner contact details? (Dev mode: no actual charge)')) {
@@ -154,6 +173,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             }
           : prev
       );
+
+      // Refresh lead payload so the right-column contact section un-masks immediately
+      await refreshFullLeadData();
 
       onWrittenQuotePurchased?.({
         leadId: String(lead.id),
@@ -284,11 +306,21 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
   const [isAcceptingDeal, setIsAcceptingDeal] = useState(false);
   const [isRejectingDeal, setIsRejectingDeal] = useState(false);
   const [showRejectNegotiationConfirmation, setShowRejectNegotiationConfirmation] = useState(false);
-  const [rejectNegotiationReason, setRejectNegotiationReason] = useState('');
+  const [rejectNegotiationReasons, setRejectNegotiationReasons] = useState<string[]>([]);
+  const [rejectNegotiationOtherText, setRejectNegotiationOtherText] = useState('');
+  const [rejectNegotiationValidationError, setRejectNegotiationValidationError] = useState<string | null>(null);
   const [showDoneDealConfirmation, setShowDoneDealConfirmation] = useState(false);
   const [isRejectingNegotiation, setIsRejectingNegotiation] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const lastAutosavedSnapshotRef = useRef<string | null>(null);
+
+  const INSTALLER_REJECT_REASON_OPTIONS: string[] = [
+    'Pricing no longer works for my business',
+    'Lead details don’t match what was advertised',
+    'Timeline / scheduling is not feasible',
+    'Unable to source required equipment or components',
+    'Scope / expectations are not aligned',
+  ];
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-AU', {
@@ -389,6 +421,30 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     }
 
     return amount;
+  };
+
+  const getLastOfferActorRole = (quote: any): 'INSTALLER' | 'HOMEOWNER' | null => {
+    if (!quote) return null;
+    let role: 'INSTALLER' | 'HOMEOWNER' = 'INSTALLER';
+    let lastTime = new Date(quote?.createdAt || 0).getTime();
+
+    if (quote?.installerRevisedAt && quote?.installerRevisedAmount) {
+      const t = new Date(quote.installerRevisedAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        role = 'INSTALLER';
+      }
+    }
+
+    if (quote?.homeownerCounterAt && quote?.homeownerCounterAmount) {
+      const t = new Date(quote.homeownerCounterAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        role = 'HOMEOWNER';
+      }
+    }
+
+    return role;
   };
 
   const getNegotiationTimeline = (quote: any) => {
@@ -630,11 +686,24 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
   const handleRejectNegotiationClick = () => {
     setShowRejectNegotiationConfirmation(true);
-    setRejectNegotiationReason('');
+    setRejectNegotiationReasons([]);
+    setRejectNegotiationOtherText('');
+    setRejectNegotiationValidationError(null);
   };
 
   const handleConfirmRejectNegotiation = async () => {
     if (!negotiationQuote) return;
+
+    const hasSelectedReasons = rejectNegotiationReasons.length > 0;
+    const otherTextTrimmed = rejectNegotiationOtherText.trim();
+    const hasOtherText = otherTextTrimmed.length > 0;
+
+    if (!hasSelectedReasons && !hasOtherText) {
+      setRejectNegotiationValidationError('Select at least one reason or provide details.');
+      return;
+    }
+
+    setRejectNegotiationValidationError(null);
 
     setIsRejectingNegotiation(true);
     setNegotiationFetchError(null);
@@ -642,7 +711,10 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       const response = await fetch(`/api/written-quotes/${negotiationQuote.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: rejectNegotiationReason || undefined }),
+        body: JSON.stringify({
+          reasons: rejectNegotiationReasons,
+          otherText: hasOtherText ? otherTextTrimmed : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -651,7 +723,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       }
 
       setShowRejectNegotiationConfirmation(false);
-      setRejectNegotiationReason('');
+      setRejectNegotiationReasons([]);
+      setRejectNegotiationOtherText('');
+      setRejectNegotiationValidationError(null);
       await fetchNegotiationQuote();
     } catch (error) {
       console.error('[WrittenQuoteBuilderModal] Error rejecting negotiation:', error);
@@ -815,6 +889,11 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
     fetchFullLeadData();
   }, [isOpen, lead?.id]); // All dependencies included
+
+  const isLeadPurchased =
+    (!!(fullLeadData?.status === 'PURCHASED' && fullLeadData?.purchasedAt)) ||
+    (!!(lead?.status === 'PURCHASED' && lead?.purchasedAt)) ||
+    (!!negotiationQuote?.purchasedAt);
 
   // Autosave effect (debounced): only save when meaningful data changes.
   useEffect(() => {
@@ -1374,7 +1453,13 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                 <Save className="h-4 w-4" /> Save Draft
               </Button>
               <Button 
-                onClick={handleSubmit}
+                onClick={() => {
+                  if (mode === 'quote') {
+                    setIsPreviewModalOpen(true);
+                    return;
+                  }
+                  handleSubmit();
+                }}
                 disabled={isSubmitting}
                 variant="primary" 
                 className="flex-1 md:flex-initial px-4 py-2"
@@ -1705,7 +1790,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                           <Button
                             variant="primary"
                             onClick={handleDoneDeal}
-                            disabled={isFinalizingDeal}
+                            disabled={isFinalizingDeal || getLastOfferActorRole(negotiationQuote) === 'INSTALLER'}
                             className="w-full"
                           >
                             {isFinalizingDeal ? 'Requesting...' : 'Done deal'}
@@ -1813,7 +1898,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                       />
                       <LeadTechnicalDetails 
                         lead={fullLeadData || lead} 
-                        isPurchased={!!(lead.status === 'PURCHASED' && lead.purchasedAt)} 
+                        isPurchased={isLeadPurchased} 
                       />
                       <InstantQuoteResult quoteData={fullLeadData?.quoteData || lead?.quoteData!} />
                     </div>
@@ -1833,7 +1918,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           leadId={String(lead.id)}
           bids={[]}
           yourBidId={undefined}
-          isPurchased={!!(lead.status === 'PURCHASED' && lead.purchasedAt)} // T13I-4: Pass purchase status
+          isPurchased={isLeadPurchased} // T13I-4: Pass purchase status
         />
       )}
 
@@ -1944,14 +2029,43 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             <p className="text-body-small text-warning">This will notify the homeowner that you have declined the negotiation.</p>
 
             <div className="space-y-2">
-              <label className="text-label text-foreground">Reason (optional)</label>
-              <textarea
-                value={rejectNegotiationReason}
-                onChange={(e) => setRejectNegotiationReason(e.target.value)}
-                placeholder="Let the homeowner know why (optional)"
-                className="w-full px-3 py-2 bg-background-alt border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30 resize-none"
-                rows={3}
-              />
+              <label className="text-label text-foreground">Reason (required)</label>
+
+              <div className="space-y-2">
+                {INSTALLER_REJECT_REASON_OPTIONS.map((option) => {
+                  const checked = rejectNegotiationReasons.includes(option);
+                  return (
+                    <label key={option} className="flex items-start gap-2 text-body text-foreground">
+                      <input
+                        type="checkbox"
+                        className="mt-1 h-4 w-4"
+                        checked={checked}
+                        onChange={() => {
+                          setRejectNegotiationReasons((prev) =>
+                            prev.includes(option) ? prev.filter((r) => r !== option) : [...prev, option]
+                          );
+                        }}
+                      />
+                      <span>{option}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="text-label text-foreground">Other details (optional)</label>
+                <textarea
+                  value={rejectNegotiationOtherText}
+                  onChange={(e) => setRejectNegotiationOtherText(e.target.value)}
+                  placeholder="Add any additional context (optional)"
+                  className="w-full px-3 py-2 bg-background-alt border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30 resize-none"
+                  rows={3}
+                />
+              </div>
+
+              {rejectNegotiationValidationError && (
+                <p className="text-body-small text-destructive">{rejectNegotiationValidationError}</p>
+              )}
             </div>
 
             <div className="flex items-center gap-3 pt-4">
@@ -1959,7 +2073,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                 variant="secondary"
                 onClick={() => {
                   setShowRejectNegotiationConfirmation(false);
-                  setRejectNegotiationReason('');
+                  setRejectNegotiationReasons([]);
+                  setRejectNegotiationOtherText('');
+                  setRejectNegotiationValidationError(null);
                 }}
                 className="flex-1"
               >

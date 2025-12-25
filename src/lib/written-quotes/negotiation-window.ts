@@ -1,10 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { createNotification } from '@/lib/notifications/notification-service';
 import { NotificationType, UserRole } from '@prisma/client';
+import { createLogger } from '@/lib/logger';
 
 // Prisma client types may lag behind migrations in this repo.
 // Use a narrow escape hatch for fields added via SQL migrations.
 const prismaAny = prisma as any;
+
+const logger = createLogger({ context: 'NegotiationWindow' });
 
 const HOURS_72_MS = 72 * 60 * 60 * 1000;
 const HOURS_48_MS = 48 * 60 * 60 * 1000;
@@ -45,6 +48,13 @@ export function isBothPartiesOnline(input: {
   return now.getTime() - homeownerAt <= thresholdMs && now.getTime() - installerAt <= thresholdMs;
 }
 
+function isMissingColumnError(error: unknown, columnNames: string[]): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  const haystack = message.toLowerCase();
+  if (!haystack.includes('column') || !haystack.includes('does not exist')) return false;
+  return columnNames.some((name) => haystack.includes(name.toLowerCase()));
+}
+
 async function ensureDeadlineIfMissing(writtenQuoteId: string, createdAt: Date): Promise<Date> {
   const fallback = computeDefaultNegotiationDeadline(createdAt);
   await prismaAny.writtenQuote.updateMany({
@@ -55,84 +65,106 @@ async function ensureDeadlineIfMissing(writtenQuoteId: string, createdAt: Date):
 }
 
 export async function expireNegotiationIfNeeded(writtenQuoteId: string): Promise<{ expired: boolean }>{
-  const now = new Date();
+  try {
+    const now = new Date();
 
-  const writtenQuote = await prisma.writtenQuote.findUnique({
-    where: { id: writtenQuoteId },
-    include: {
-      lead: { select: { id: true, homeownerId: true } },
-      installer: { select: { id: true } },
-    },
-  });
+    const writtenQuote = await prisma.writtenQuote.findUnique({
+      where: { id: writtenQuoteId },
+      select: {
+        id: true,
+        leadId: true,
+        installerId: true,
+        createdAt: true,
+        purchasedAt: true,
+        negotiationStatus: true,
+        negotiationDeadlineAt: true as any,
+        negotiationExpiredAt: true as any,
+        lead: { select: { homeownerId: true } },
+      } as any,
+    });
 
-  if (!writtenQuote) return { expired: false };
+    const anyQ = writtenQuote as any;
 
-  if (isNegotiationClosed({
-    negotiationStatus: writtenQuote.negotiationStatus,
-    purchasedAt: writtenQuote.purchasedAt,
-    negotiationExpiredAt: (writtenQuote as any).negotiationExpiredAt ?? null,
-  })) {
-    return { expired: writtenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(writtenQuote as any).negotiationExpiredAt };
-  }
+    if (!writtenQuote) return { expired: false };
 
-  const deadline =
-    (writtenQuote as any).negotiationDeadlineAt instanceof Date
-      ? ((writtenQuote as any).negotiationDeadlineAt as Date)
-      : await ensureDeadlineIfMissing(writtenQuoteId, writtenQuote.createdAt);
+    if (isNegotiationClosed({
+      negotiationStatus: writtenQuote.negotiationStatus,
+      purchasedAt: writtenQuote.purchasedAt,
+      negotiationExpiredAt: (writtenQuote as any).negotiationExpiredAt ?? null,
+    })) {
+      return { expired: writtenQuote.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(writtenQuote as any).negotiationExpiredAt };
+    }
 
-  if (now.getTime() <= deadline.getTime()) {
-    return { expired: false };
-  }
+    const deadline =
+      (writtenQuote as any).negotiationDeadlineAt instanceof Date
+        ? ((writtenQuote as any).negotiationDeadlineAt as Date)
+        : await ensureDeadlineIfMissing(writtenQuoteId, writtenQuote.createdAt);
 
-  // Atomic-ish: only one request should flip expiredAt from null -> now
-  const updated = await prismaAny.writtenQuote.updateMany({
-    where: {
-      id: writtenQuoteId,
-      negotiationExpiredAt: null,
-      purchasedAt: null,
-      negotiationStatus: { notIn: ['AGREED', 'REJECTED', 'PENDING_ACCEPTANCE', 'NEGOTIATION_EXPIRED'] },
-      negotiationDeadlineAt: { lte: now },
-    },
-    data: {
-      negotiationExpiredAt: now,
-      negotiationStatus: 'NEGOTIATION_EXPIRED',
-    },
-  });
+    if (now.getTime() <= deadline.getTime()) {
+      return { expired: false };
+    }
 
-  if (updated.count === 0) {
-    // Someone else expired it first, or it got closed.
+    // Atomic-ish: only one request should flip expiredAt from null -> now
+    const updated = await prismaAny.writtenQuote.updateMany({
+      where: {
+        id: writtenQuoteId,
+        negotiationExpiredAt: null,
+        purchasedAt: null,
+        negotiationStatus: { notIn: ['AGREED', 'REJECTED', 'PENDING_ACCEPTANCE', 'NEGOTIATION_EXPIRED'] },
+        negotiationDeadlineAt: { lte: now },
+      },
+      data: {
+        negotiationExpiredAt: now,
+        negotiationStatus: 'NEGOTIATION_EXPIRED',
+      },
+    });
+
+    if (updated.count === 0) {
+      // Someone else expired it first, or it got closed.
+      return { expired: true };
+    }
+
+    // Update lead status
+    await prismaAny.lead.update({
+      where: { id: writtenQuote.leadId },
+      data: { status: 'NEGOTIATION_EXPIRED' },
+    });
+
+    // Notify both parties via SYSTEM (email-enabled)
+    await Promise.all([
+      createNotification({
+        recipientUserId: anyQ.lead?.homeownerId,
+        actionType: NotificationType.SYSTEM,
+        role: UserRole.HOMEOWNER,
+        messageKey: 'homeowner.written_quote.negotiation_expired',
+        routeKey: 'homeowner.requests',
+        routeParams: { leadId: writtenQuote.leadId },
+        metadata: { writtenQuoteId },
+      }),
+      createNotification({
+        recipientUserId: writtenQuote.installerId,
+        actionType: NotificationType.SYSTEM,
+        role: UserRole.INSTALLER,
+        messageKey: 'installer.written_quote.negotiation_expired',
+        routeKey: 'installer.leads',
+        routeParams: { leadId: writtenQuote.leadId },
+        metadata: { writtenQuoteId },
+      }),
+    ]);
+
     return { expired: true };
+  } catch (error) {
+    // If DB was restored from an older backup, these newer negotiation columns may be absent.
+    // In that case, do not block primary actions (reject/accept/purchase) on an expiry check.
+    if (isMissingColumnError(error, ['negotiationDeadlineAt', 'negotiationExpiredAt'])) {
+      logger.warn('Schema drift detected; skipping negotiation expiry check', {
+        writtenQuoteId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return { expired: false };
+    }
+    throw error;
   }
-
-  // Update lead status
-  await prismaAny.lead.update({
-    where: { id: writtenQuote.leadId },
-    data: { status: 'NEGOTIATION_EXPIRED' },
-  });
-
-  // Notify both parties via SYSTEM (email-enabled)
-  await Promise.all([
-    createNotification({
-      recipientUserId: writtenQuote.lead.homeownerId,
-      actionType: NotificationType.SYSTEM,
-      role: UserRole.HOMEOWNER,
-      messageKey: 'homeowner.written_quote.negotiation_expired',
-      routeKey: 'homeowner.requests',
-      routeParams: { leadId: writtenQuote.leadId },
-      metadata: { writtenQuoteId },
-    }),
-    createNotification({
-      recipientUserId: writtenQuote.installer.id,
-      actionType: NotificationType.SYSTEM,
-      role: UserRole.INSTALLER,
-      messageKey: 'installer.written_quote.negotiation_expired',
-      routeKey: 'installer.leads',
-      routeParams: { leadId: writtenQuote.leadId },
-      metadata: { writtenQuoteId },
-    }),
-  ]);
-
-  return { expired: true };
 }
 
 /**

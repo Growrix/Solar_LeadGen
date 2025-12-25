@@ -1,0 +1,17 @@
+﻿Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "solarmatch", schema "public" at "localhost:5432"
+
+25 migrations found in prisma/migrations
+
+Applying migration `20251224130000_add_lead_initial_countdown_days`
+Applying migration `20251225120000_add_written_quote_rejected_by_role`
+
+The following migration(s) have been applied:
+
+migrations/
+  ΓööΓöÇ 20251224130000_add_lead_initial_countdown_days/
+    ΓööΓöÇ migration.sql
+  ΓööΓöÇ 20251225120000_add_written_quote_rejected_by_role/
+    ΓööΓöÇ migration.sql
+      
+All migrations have been successfully applied.

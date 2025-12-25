@@ -228,6 +228,27 @@ export default function AdminLeadManagementModal({
     const anyQ = q as any;
     const events: NegotiationEvent[] = [];
 
+    const formatRejectionReason = (value: unknown): string => {
+      if (typeof value !== 'string') return 'No reason provided';
+      const trimmed = value.trim();
+      if (!trimmed) return 'No reason provided';
+
+      try {
+        const parsed = JSON.parse(trimmed) as any;
+        const reasons = Array.isArray(parsed?.reasons)
+          ? parsed.reasons.filter((r: any) => typeof r === 'string' && r.trim().length > 0)
+          : [];
+        const otherText = typeof parsed?.otherText === 'string' ? parsed.otherText.trim() : '';
+
+        const parts: string[] = [];
+        if (reasons.length > 0) parts.push(reasons.join('; '));
+        if (otherText.length > 0) parts.push(otherText);
+        return parts.length > 0 ? parts.join(' — ') : 'No reason provided';
+      } catch {
+        return trimmed;
+      }
+    };
+
     if (anyQ.createdAt) {
       events.push({
         id: `${q.id}-submit`,
@@ -276,9 +297,7 @@ export default function AdminLeadManagementModal({
     }
 
     if (anyQ.rejectedAt) {
-      const reason = typeof anyQ.rejectionReason === 'string' && anyQ.rejectionReason.trim().length > 0
-        ? anyQ.rejectionReason.trim()
-        : 'No reason provided';
+      const reason = formatRejectionReason(anyQ.rejectionReason);
 
       const rejectedByRole = String((anyQ as any).rejectedByRole || 'HOMEOWNER');
       const rejectedByLabel = rejectedByRole === 'INSTALLER' ? 'Installer' : 'Homeowner';

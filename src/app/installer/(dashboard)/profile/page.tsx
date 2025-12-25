@@ -608,6 +608,7 @@ const InstallerProfilePage: React.FC = () => {
           {/* Avatar */}
           <div className="w-20 h-20 rounded-full bg-surface shadow-neu-inset flex items-center justify-center">
             {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt={user.name || 'User'} className="w-full h-full rounded-full object-cover" />
             ) : (
               <span className="text-heading-2 text-primary">

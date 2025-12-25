@@ -254,4 +254,14 @@ export interface LeadData {
   leadPrice?: number;
   phoneNumber?: string;
   name?: string;
+
+  // Optional fields returned by role-filtered lead endpoints
+  status?: string;
+  purchasedAt?: string | null;
+  installerId?: string | null;
+  homeowner?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+  };
 }

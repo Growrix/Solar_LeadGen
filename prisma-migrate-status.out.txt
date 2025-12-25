@@ -1,0 +1,17 @@
+﻿node.exe : Environment variables loaded from .env
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\User\AppData\Roaming\n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Environment variables loaded from .env:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "solarmatch", schema "public" at "localhost:5432"
+
+25 migrations found in prisma/migrations
+Following migrations have not yet been applied:
+20251224130000_add_lead_initial_countdown_days
+20251225120000_add_written_quote_rejected_by_role
+
+To apply migrations in development run prisma migrate dev.
+To apply migrations in production run prisma migrate deploy.

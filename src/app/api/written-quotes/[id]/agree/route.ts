@@ -109,12 +109,14 @@ export async function POST(
     // Calculate final agreed amount (last price is authoritative based on timestamp)
     let agreedAmount = writtenQuote.finalTotal || writtenQuote.amount;
     let lastActivityTime = writtenQuote.createdAt.getTime();
+    let lastOfferRole: UserRole = UserRole.INSTALLER;
 
     if (writtenQuote.installerRevisedAt && writtenQuote.installerRevisedAmount) {
       const t = new Date(writtenQuote.installerRevisedAt).getTime();
       if (t > lastActivityTime) {
         lastActivityTime = t;
         agreedAmount = writtenQuote.installerRevisedAmount;
+        lastOfferRole = UserRole.INSTALLER;
       }
     }
 
@@ -123,7 +125,16 @@ export async function POST(
       if (t > lastActivityTime) {
         lastActivityTime = t;
         agreedAmount = writtenQuote.homeownerCounterAmount;
+        lastOfferRole = UserRole.HOMEOWNER;
       }
+    }
+
+    // Business rule: you cannot request done-deal on your own latest offer.
+    if (auth.role === lastOfferRole) {
+      return NextResponse.json(
+        { error: 'You cannot request a done-deal on your own latest offer. The other party must finalize it.' },
+        { status: 403 }
+      );
     }
 
     // Step 1: Request a done-deal. The other party must accept or reject.

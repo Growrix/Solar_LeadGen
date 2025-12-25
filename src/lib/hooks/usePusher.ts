@@ -53,6 +53,8 @@ export function usePusher() {
 
   // Initialize Pusher client on first use
   useEffect(() => {
+    const subscriptions = subscriptionsRef.current;
+
     if (!pusherRef.current && process.env.NEXT_PUBLIC_PUSHER_KEY) {
       pusherRef.current = new PusherClient(
         process.env.NEXT_PUBLIC_PUSHER_KEY,
@@ -78,7 +80,6 @@ export function usePusher() {
     // Cleanup on unmount
     return () => {
       const pusher = pusherRef.current;
-      const subscriptions = subscriptionsRef.current;
 
       if (pusher) {
         // Unsubscribe from all channels

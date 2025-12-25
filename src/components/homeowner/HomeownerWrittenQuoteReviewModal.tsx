@@ -60,7 +60,9 @@ export default function HomeownerWrittenQuoteReviewModal({
   const [isAcceptingDeal, setIsAcceptingDeal] = useState(false);
   const [isRejectingDeal, setIsRejectingDeal] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectReasons, setRejectReasons] = useState<string[]>([]);
+  const [rejectOtherText, setRejectOtherText] = useState('');
+  const [rejectValidationError, setRejectValidationError] = useState<string | null>(null);
   const [counterAmount, setCounterAmount] = useState<string>('');
   const [isSubmittingCounter, setIsSubmittingCounter] = useState(false);
   const [negotiationError, setNegotiationError] = useState<string | null>(null);
@@ -71,6 +73,14 @@ export default function HomeownerWrittenQuoteReviewModal({
     technical: false,
     results: false
   });
+
+  const HOMEOWNER_REJECT_REASON_OPTIONS: string[] = [
+    'Price is higher than expected',
+    'I chose another installer',
+    'Timeline doesn’t work for me',
+    'Quote doesn’t match what I want (system specs / brands)',
+    'Communication or responsiveness concerns',
+  ];
 
   // Select first written quote by default when writtenQuotes change
   useEffect(() => {
@@ -464,11 +474,24 @@ export default function HomeownerWrittenQuoteReviewModal({
 
   const handleRejectClick = () => {
     setShowRejectConfirmation(true);
-    setRejectReason('');
+    setRejectReasons([]);
+    setRejectOtherText('');
+    setRejectValidationError(null);
   };
 
   const handleConfirmReject = async () => {
     if (!selectedWrittenQuote) return;
+
+    const hasSelectedReasons = rejectReasons.length > 0;
+    const otherTextTrimmed = rejectOtherText.trim();
+    const hasOtherText = otherTextTrimmed.length > 0;
+
+    if (!hasSelectedReasons && !hasOtherText) {
+      setRejectValidationError('Select at least one reason or provide details.');
+      return;
+    }
+
+    setRejectValidationError(null);
 
     setIsRejecting(true);
     setNegotiationError(null);
@@ -476,7 +499,10 @@ export default function HomeownerWrittenQuoteReviewModal({
       const response = await fetch(`/api/written-quotes/${selectedWrittenQuote.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: rejectReason || undefined })
+        body: JSON.stringify({
+          reasons: rejectReasons,
+          otherText: hasOtherText ? otherTextTrimmed : undefined,
+        })
       });
 
       if (!response.ok) {
@@ -485,7 +511,9 @@ export default function HomeownerWrittenQuoteReviewModal({
       }
 
       setShowRejectConfirmation(false);
-      setRejectReason('');
+      setRejectReasons([]);
+      setRejectOtherText('');
+      setRejectValidationError(null);
 
       await fetchWrittenQuotes();
     } catch (error) {
@@ -572,6 +600,29 @@ export default function HomeownerWrittenQuoteReviewModal({
     }
 
     return amount;
+  };
+
+  const getLastOfferActorRole = (writtenQuote: WrittenQuoteWithFullData): 'INSTALLER' | 'HOMEOWNER' => {
+    let role: 'INSTALLER' | 'HOMEOWNER' = 'INSTALLER';
+    let lastTime = new Date(writtenQuote.createdAt || 0).getTime();
+
+    if (writtenQuote.installerRevisedAt && writtenQuote.installerRevisedAmount) {
+      const t = new Date(writtenQuote.installerRevisedAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        role = 'INSTALLER';
+      }
+    }
+
+    if (writtenQuote.homeownerCounterAt && writtenQuote.homeownerCounterAmount) {
+      const t = new Date(writtenQuote.homeownerCounterAt).getTime();
+      if (t > lastTime) {
+        lastTime = t;
+        role = 'HOMEOWNER';
+      }
+    }
+
+    return role;
   };
 
   const getNegotiationStatusLabel = (writtenQuote: WrittenQuoteWithFullData) => {
@@ -1564,6 +1615,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                     selectedWrittenQuote.negotiationStatus === 'AGREED' ||
                     selectedWrittenQuote.negotiationStatus === 'REJECTED' ||
                     selectedWrittenQuote.negotiationStatus === 'PENDING_ACCEPTANCE' ||
+                    getLastOfferActorRole(selectedWrittenQuote) === 'HOMEOWNER' ||
                     isFinalizingDeal
                   }
                 >
@@ -1643,14 +1695,43 @@ export default function HomeownerWrittenQuoteReviewModal({
             <p className="text-body-small text-warning">This will notify the installer that you have declined their offer.</p>
             
             <div className="space-y-2">
-              <label className="text-label text-foreground">Reason (optional)</label>
-              <textarea
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Let the installer know why (optional)"
-                className="w-full px-3 py-2 bg-background-alt border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30 resize-none"
-                rows={3}
-              />
+              <label className="text-label text-foreground">Reason (required)</label>
+
+              <div className="space-y-2">
+                {HOMEOWNER_REJECT_REASON_OPTIONS.map((option) => {
+                  const checked = rejectReasons.includes(option);
+                  return (
+                    <label key={option} className="flex items-start gap-2 text-body text-foreground">
+                      <input
+                        type="checkbox"
+                        className="mt-1 h-4 w-4"
+                        checked={checked}
+                        onChange={() => {
+                          setRejectReasons((prev) =>
+                            prev.includes(option) ? prev.filter((r) => r !== option) : [...prev, option]
+                          );
+                        }}
+                      />
+                      <span>{option}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="text-label text-foreground">Other details (optional)</label>
+                <textarea
+                  value={rejectOtherText}
+                  onChange={(e) => setRejectOtherText(e.target.value)}
+                  placeholder="Add any additional context (optional)"
+                  className="w-full px-3 py-2 bg-background-alt border border-border rounded-lg text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/30 resize-none"
+                  rows={3}
+                />
+              </div>
+
+              {rejectValidationError && (
+                <p className="text-body-small text-destructive">{rejectValidationError}</p>
+              )}
             </div>
             
             <div className="flex items-center gap-3 pt-4">
@@ -1658,7 +1739,9 @@ export default function HomeownerWrittenQuoteReviewModal({
                 variant="secondary" 
                 onClick={() => {
                   setShowRejectConfirmation(false);
-                  setRejectReason('');
+                  setRejectReasons([]);
+                  setRejectOtherText('');
+                  setRejectValidationError(null);
                 }}
                 className="flex-1"
               >

@@ -3758,3 +3758,15 @@ After the payment is done the homeonwer contact still remain msked now. It shoul
 ***Strickt Rules***
 ### Follow the Guidelines:
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+-----------------------------------------------------------------------------------
+
+***Installers Reject Quote failed issues*** 
+The installers are failing to reject the QUote from their side. when they click on the reject button in the Quote builder modal > it opens a modal to write the reason > after writing the reason and clicking on "Submit" button > it shows an error message "Failed to reject the quote." . Check the screenshot for better understanding. You have implimented it recently , so check back the conversation regarding this issue and also checkback your implimentations. I want you to identify the root cause of this issue and fix it accordingly so that the installers can reject the quote successfully from their side without any issues. Audit deeply and implement it accordingly.
+
+***Reject Quote Modal Backend development***
+The both end has this modal while they do the rejection. I want you to check the backend part of this modal and make sure that the reason written by the users are saved in the DB accordingly along with the date and time of rejection. Audit deeply and implement it accordingly. And I want these message to show on the Admin Dashboard > Lead Management Modal > under negotiation windows section. whoever rejects, The Admin will be able to know the reason and see the message. Now the writing reason is optional , I want you to make it mandatory based on a conditon. I want you to enhace this modal with checkbox selection with our preset Questions .e.g The Price is too high , The timeline is not suitable , Found a better offer elsewhere , Other (with text area to write the reason) . The users must select at least one checkbox or write in the text area to proceed with the rejection. Users should be able to select even multiple checkboxes also write in the text area as well. You should set the questions on both end accordingly. think 5 relevant questions for each side and set them accordingly. Audit deeply and implement it accordingly.
+
+***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md

@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -94,13 +94,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
   }, [status, session, router]);
 
   // Fetch lead details
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchLeadDetails();
-    }
-  }, [status, params.id]);
-
-  async function fetchLeadDetails() {
+  const fetchLeadDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/leads/${params.id}`);
@@ -121,7 +115,13 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [params.id]);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      void fetchLeadDetails();
+    }
+  }, [status, fetchLeadDetails]);
 
   function handleCall() {
     if (lead?.homeowner?.phone) {
