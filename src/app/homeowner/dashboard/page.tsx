@@ -828,6 +828,7 @@ export default function HomeownerDashboardPage() {
   const [isWrittenQuoteReviewModalOpen, setIsWrittenQuoteReviewModalOpen] = useState(false); // Phase T13W-7: Written Quote review modal
   const [selectedWrittenQuoteLeadId, setSelectedWrittenQuoteLeadId] = useState<string | null>(null); // Phase T13W-7: Track which Written Quote lead to review
   const [selectedWrittenQuoteLead, setSelectedWrittenQuoteLead] = useState<RecentLeadSummary | null>(null); // Phase T13W-7: Full lead data for property address
+  const [pendingPreviewLeadId, setPendingPreviewLeadId] = useState<string | null>(null);
   const [homeownerInfo, setHomeownerInfo] = useState<{ name: string; phone: string; address: string } | null>(null); // ✅ Phase 12: Store homeowner contact info
   const [isMessagingModalOpen, setIsMessagingModalOpen] = useState(false);
   const [showContactVerificationModal, setShowContactVerificationModal] = useState(false);
@@ -936,20 +937,59 @@ export default function HomeownerDashboardPage() {
     const modalParam = searchParams.get('modal');
     const leadIdParam = searchParams.get('leadId');
 
-    if (modalParam === 'reviewBids' && leadIdParam) {
+    if (!modalParam || !leadIdParam) {
+      return;
+    }
+
+    const cleanUrlParams = () => {
+      if (!window.history.replaceState) return;
+      const url = new URL(window.location.href);
+      url.searchParams.delete('modal');
+      url.searchParams.delete('leadId');
+      window.history.replaceState({}, '', url.toString());
+    };
+
+    if (modalParam === 'reviewBids') {
       console.log('[T402] Auto-opening review bids modal for lead:', leadIdParam);
       setSelectedBiddingLeadId(leadIdParam);
       setIsBiddingReviewModalOpen(true);
+      cleanUrlParams();
+      return;
+    }
 
-      // Clean URL after opening modal (optional - prevents modal reopening on page refresh)
-      if (window.history.replaceState) {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('modal');
-        url.searchParams.delete('leadId');
-        window.history.replaceState({}, '', url.toString());
-      }
+    if (modalParam === 'reviewWrittenQuote') {
+      console.log('[T402] Auto-opening written quote review modal for lead:', leadIdParam);
+      setSelectedWrittenQuoteLeadId(leadIdParam);
+      setIsWrittenQuoteReviewModalOpen(true);
+      cleanUrlParams();
+      return;
+    }
+
+    if (modalParam === 'previewLead') {
+      console.log('[T402] Preview lead requested via URL for lead:', leadIdParam);
+      setPendingPreviewLeadId(leadIdParam);
     }
   }, []);
+
+  // T402: Open preview modal after dashboard summary is available
+  useEffect(() => {
+    if (!pendingPreviewLeadId) return;
+    if (!dashboardSummary?.recentLeads?.length) return;
+
+    const lead = dashboardSummary.recentLeads.find((l) => l.id === pendingPreviewLeadId) || null;
+    if (!lead) return;
+
+    setSelectedLead(lead);
+    setPreviewLeadModalOpen(true);
+    setPendingPreviewLeadId(null);
+
+    if (typeof window !== 'undefined' && window.history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('modal');
+      url.searchParams.delete('leadId');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [pendingPreviewLeadId, dashboardSummary]);
 
   // Listen for global lead limit reached events (fallback trigger from CTA button)
   useEffect(() => {
@@ -1666,7 +1706,7 @@ export default function HomeownerDashboardPage() {
       )}
 
       {/* Phase T13W-7: Homeowner Written Quote Review Modal */}
-      {isWrittenQuoteReviewModalOpen && selectedWrittenQuoteLeadId && selectedWrittenQuoteLead && (
+      {isWrittenQuoteReviewModalOpen && selectedWrittenQuoteLeadId && (
         <HomeownerWrittenQuoteReviewModal
           isOpen={isWrittenQuoteReviewModalOpen}
           onClose={() => {

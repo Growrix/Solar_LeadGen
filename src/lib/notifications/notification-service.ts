@@ -4,7 +4,7 @@
 import { prisma } from '@/lib/prisma';
 import { NotificationType, UserRole } from '@prisma/client';
 import { MessageKey, getNotificationText } from './message-catalog';
-import { RouteKey, RouteParams } from './route-resolver';
+import { RouteKey, RouteParams, resolveRoute } from './route-resolver';
 import { sendEmail } from '@/lib/sendgrid';
 import { triggerNotification } from '@/lib/pusher';
 import { buildFullUrl } from '@/lib/config/app-url';
@@ -86,7 +86,8 @@ async function sendEmailNotification(
   role: UserRole,
   title: string,
   message: string,
-  routeKey?: string,
+  routeKey?: RouteKey,
+  routeParams?: RouteParams,
   metadata?: Record<string, any>
 ): Promise<void> {
   try {
@@ -101,8 +102,8 @@ async function sendEmailNotification(
       return;
     }
 
-    // Build action URL from route key using canonical helper
-    const actionUrl = routeKey ? buildFullUrl(routeKey) : undefined;
+    // Build action URL from routeKey+params (role-safe)
+    const actionUrl = routeKey ? buildFullUrl(resolveRoute(routeKey, routeParams)) : undefined;
 
     // Extract actor email from metadata (if available)
     // This is the actual homeowner or installer email that triggered the notification
@@ -198,6 +199,7 @@ export async function createNotification(input: CreateNotificationInput) {
         title,
         message,
         input.routeKey,
+        input.routeParams,
         input.metadata
       );
     }

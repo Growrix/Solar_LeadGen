@@ -9,7 +9,10 @@ export type RouteKey =
   | 'installer.leads'
   | 'installer.dashboard'
   | 'homeowner.requests'
-  | 'homeowner.requests.review';
+  | 'homeowner.requests.review'
+  | 'homeowner.dashboard.review_bids'
+  | 'homeowner.dashboard.review_written_quote'
+  | 'homeowner.dashboard.preview_request';
 
 export type RouteParams = {
   leadId?: string;
@@ -20,12 +23,20 @@ export type RouteParams = {
 
 const ROUTE_MAP: Record<RouteKey, (params?: RouteParams) => string> = {
   'admin.dashboard': () => '/admin/dashboard',
-  'admin.lead.manage': () => '/admin/leads',
-  'installer.leads': () => '/installer/leads',
+  'admin.lead.manage': (params) => (params?.leadId ? `/admin/leads/${params.leadId}` : '/admin/leads'),
+  'installer.leads': (params) => (params?.leadId ? `/installer/leads/${params.leadId}` : '/installer/leads'),
   'installer.dashboard': () => '/installer/dashboard',
   'homeowner.requests': () => '/homeowner/dashboard',
   'homeowner.requests.review': (params) =>
     params?.requestId ? `/homeowner/requests/${params.requestId}` : '/homeowner/dashboard',
+  'homeowner.dashboard.review_bids': (params) =>
+    params?.leadId ? `/homeowner/dashboard?modal=reviewBids&leadId=${params.leadId}` : '/homeowner/dashboard',
+  'homeowner.dashboard.review_written_quote': (params) =>
+    params?.leadId
+      ? `/homeowner/dashboard?modal=reviewWrittenQuote&leadId=${params.leadId}`
+      : '/homeowner/dashboard',
+  'homeowner.dashboard.preview_request': (params) =>
+    params?.leadId ? `/homeowner/dashboard?modal=previewLead&leadId=${params.leadId}` : '/homeowner/dashboard',
 };
 
 export function resolveRoute(routeKey: RouteKey, routeParams?: RouteParams): string {

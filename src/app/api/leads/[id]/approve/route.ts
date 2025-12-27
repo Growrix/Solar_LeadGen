@@ -169,7 +169,8 @@ export async function POST(
       role: 'HOMEOWNER',
       actionType: 'REQUEST_RECEIVED',
       messageKey: 'homeowner.request.received',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.preview_request',
+      routeParams: { leadId: id },
       metadata: {
         leadId: id,
         entityType: 'lead',

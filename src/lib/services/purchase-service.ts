@@ -280,7 +280,8 @@ export async function confirmPurchase(
         role: UserRole.HOMEOWNER,
         actionType: NotificationType.LEAD_PURCHASED,
         messageKey: 'homeowner.lead.purchased',
-        routeKey: 'homeowner.requests',
+        routeKey: 'homeowner.dashboard.preview_request',
+        routeParams: { leadId },
         metadata: { leadId },
       }]);
 
@@ -292,6 +293,7 @@ export async function confirmPurchase(
           actionType: NotificationType.ASSIGNMENT_ACCEPTED_COMPETITIVE,
           messageKey: 'admin.assignment.accepted',
           routeKey: 'admin.lead.manage',
+          routeParams: { leadId },
           metadata: { leadId, installerId, location: lead.location, state: lead.state },
         }]);
       }
@@ -303,6 +305,7 @@ export async function confirmPurchase(
         actionType: NotificationType.PURCHASE_CONFIRMED,
         messageKey: 'installer.purchase.confirmed',
         routeKey: 'installer.leads',
+        routeParams: { leadId },
         metadata: { 
           leadId,
           quoteType: lead.quoteType,
@@ -368,7 +371,8 @@ export async function confirmPurchase(
         role: UserRole.HOMEOWNER,
         actionType: NotificationType.LEAD_PURCHASED,
         messageKey: 'homeowner.lead.purchased',
-        routeKey: 'homeowner.requests',
+        routeKey: 'homeowner.dashboard.preview_request',
+        routeParams: { leadId },
         metadata: { leadId },
       }]);
 
@@ -386,6 +390,7 @@ export async function confirmPurchase(
             actionType: NotificationType.LEAD_PURCHASED,
             messageKey: 'admin.lead.purchased',
             routeKey: 'admin.lead.manage',
+            routeParams: { leadId },
             metadata: { 
               leadId, 
               installerId,
@@ -405,6 +410,7 @@ export async function confirmPurchase(
         actionType: NotificationType.PURCHASE_CONFIRMED,
         messageKey: 'installer.purchase.confirmed',
         routeKey: 'installer.leads',
+        routeParams: { leadId },
         metadata: { 
           leadId,
           quoteType: lead.quoteType,
@@ -477,7 +483,8 @@ export async function confirmPurchase(
       role: UserRole.HOMEOWNER,
       actionType: NotificationType.LEAD_PURCHASED,
       messageKey: 'homeowner.lead.purchased',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.preview_request',
+      routeParams: { leadId },
       metadata: { leadId },
     }]);
 
@@ -495,6 +502,7 @@ export async function confirmPurchase(
           actionType: NotificationType.LEAD_PURCHASED,
           messageKey: 'admin.lead.purchased',
           routeKey: 'admin.lead.manage',
+          routeParams: { leadId },
           metadata: { 
             leadId, 
             installerId,
@@ -515,6 +523,7 @@ export async function confirmPurchase(
       actionType: NotificationType.PURCHASE_CONFIRMED,
       messageKey: 'installer.purchase.confirmed',
       routeKey: 'installer.leads',
+      routeParams: { leadId },
       metadata: { 
         leadId,
         quoteType: lead.quoteType,

@@ -126,8 +126,8 @@ export async function POST(
       role: UserRole.HOMEOWNER,
       actionType: NotificationType.LEAD_REJECTED,
       messageKey: 'homeowner.lead.rejected',
-      routeKey: 'homeowner.requests',
-      routeParams: { requestId: id },
+      routeKey: 'homeowner.dashboard.preview_request',
+      routeParams: { leadId: id },
       metadata: {
         leadId: id,
         entityType: 'lead',

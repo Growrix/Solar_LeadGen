@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create WRITTEN_QUOTE_SUBMITTED type
       role: UserRole.HOMEOWNER,
       messageKey: 'homeowner.written_quote.submitted',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.review_written_quote',
       routeParams: { leadId: body.leadId }
     });
     logger.debug('Homeowner notification created');
@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
           actionType: NotificationType.BID_SUBMITTED, // TODO: Create WRITTEN_QUOTE_SUBMITTED type
           role: UserRole.ADMIN,
           messageKey: 'admin.written_quote.submitted',
-          routeKey: 'admin.dashboard',
+          routeKey: 'admin.lead.manage',
           routeParams: { leadId: body.leadId },
           metadata: {
             actorEmail: installer?.email,

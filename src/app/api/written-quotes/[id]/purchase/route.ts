@@ -170,7 +170,7 @@ export async function POST(
       actionType: NotificationType.PURCHASE_CONFIRMED, // Installer confirmed
       role: UserRole.HOMEOWNER,
       messageKey: 'homeowner.written_quote.purchased',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.review_written_quote',
       routeParams: { leadId: writtenQuote.leadId },
       metadata: {
         installerName: writtenQuote.installer.companyName,
@@ -196,8 +196,8 @@ export async function POST(
           actionType: NotificationType.LEAD_PURCHASED,
           role: UserRole.ADMIN,
           messageKey: 'admin.written_quote.purchased',
-          routeKey: 'admin.dashboard',
-          routeParams: { leadId: writtenQuote.leadId, writtenQuoteId: id },
+          routeKey: 'admin.lead.manage',
+          routeParams: { leadId: writtenQuote.leadId },
           metadata: {
             actorEmail: writtenQuote.installer.email,
             leadId: writtenQuote.leadId,

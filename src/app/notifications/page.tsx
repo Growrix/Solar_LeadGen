@@ -32,6 +32,7 @@ interface Notification {
 
 export default function NotificationsPage() {
   const { data: session } = useSession();
+  const userRole = session?.user?.role || 'HOMEOWNER';
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -171,6 +172,35 @@ export default function NotificationsPage() {
     }
   };
 
+  const getCtaLabel = (notification: Notification): string => {
+    const isWrittenQuote = typeof notification.messageKey === 'string' && notification.messageKey.includes('written_quote');
+
+    if (notification.type === 'BID_SUBMITTED') {
+      if (isWrittenQuote) return 'View Quote';
+      return userRole === 'HOMEOWNER' ? 'Review Offers' : 'View Lead';
+    }
+
+    if (notification.type === 'BID_WON') {
+      return userRole === 'HOMEOWNER'
+        ? (isWrittenQuote ? 'View Quote' : 'View Next Steps')
+        : 'Proceed to Payment';
+    }
+
+    if (notification.type === 'PAYMENT_FAILED') {
+      return userRole === 'HOMEOWNER' ? 'View Update' : 'Retry Payment';
+    }
+
+    if (notification.type === 'NEW_MESSAGE') {
+      return 'Reply';
+    }
+
+    if (notification.type === 'NEW_LEAD' || notification.type === 'LEAD_ASSIGNED') {
+      return userRole === 'HOMEOWNER' ? 'View Request' : 'View Lead';
+    }
+
+    return 'View';
+  };
+
   return (
     <main className="max-w-2xl mx-auto py-8 px-4">
       <h1 className="text-heading-1 font-heading-bold mb-6 text-foreground">All Notifications</h1>
@@ -235,7 +265,7 @@ export default function NotificationsPage() {
                             className="px-3 py-1.5 text-caption font-caption-medium rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                             aria-label={`View details for ${displayText.title}`}
                           >
-                            View
+                            {getCtaLabel(notification)}
                           </button>
                         )}
                       </div>

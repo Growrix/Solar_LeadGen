@@ -131,7 +131,7 @@ async function sendBidSubmitNotifications(
       role: 'HOMEOWNER',
       actionType: 'RESPONSES_AVAILABLE',
       messageKey: 'homeowner.bid.received',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.review_bids',
       routeParams: { leadId },
     });
 
@@ -147,8 +147,8 @@ async function sendBidSubmitNotifications(
         role: 'ADMIN',
         actionType: 'BID_SUBMITTED',
         messageKey: 'admin.bid.submitted',
-        routeKey: 'admin.dashboard',
-        routeParams: { bidId },
+        routeKey: 'admin.lead.manage',
+        routeParams: { leadId },
         metadata: { leadId, installerId },
       });
     }

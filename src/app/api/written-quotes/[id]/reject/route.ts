@@ -257,7 +257,7 @@ export async function POST(
           actionType: NotificationType.QUOTE_REJECTED,
           role: UserRole.HOMEOWNER,
           messageKey: 'homeowner.written_quote.rejected',
-          routeKey: 'homeowner.requests',
+          routeKey: 'homeowner.dashboard.review_written_quote',
           routeParams: {
             leadId: writtenQuote.leadId,
           },

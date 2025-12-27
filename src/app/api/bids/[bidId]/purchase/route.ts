@@ -161,7 +161,7 @@ export async function POST(
       actionType: NotificationType.BID_PURCHASE_COMPLETED,
       role: UserRole.HOMEOWNER,
       messageKey: 'homeowner.installer.confirmed',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.review_bids',
       routeParams: { leadId: bid.leadId }
     });
 
@@ -190,7 +190,7 @@ export async function POST(
           actionType: NotificationType.BID_PURCHASE_COMPLETED,
           role: UserRole.ADMIN,
           messageKey: 'admin.bid.payment.completed',
-          routeKey: 'admin.dashboard',
+          routeKey: 'admin.lead.manage',
           routeParams: { leadId: bid.leadId, bidId, installerId: auth.userId },
           metadata: {
             actorEmail: installer?.email,

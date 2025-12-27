@@ -125,12 +125,12 @@ export async function POST(
         // Notification 2: Homeowner notification
         await createNotification({
           recipientUserId: lead.homeownerId,
-        actionType: NotificationType.INSTALLER_RESPONDED,
-        role: UserRole.HOMEOWNER,
-        messageKey: 'homeowner.installer.responded',
-        routeKey: 'homeowner.requests',
-        routeParams: { leadId }
-      });
+          actionType: NotificationType.INSTALLER_RESPONDED,
+          role: UserRole.HOMEOWNER,
+          messageKey: 'homeowner.installer.responded',
+          routeKey: 'homeowner.dashboard.preview_request',
+          routeParams: { leadId }
+        });
 
         // Notification 3: Admin notifications
         if (admins.length > 0) {
@@ -146,7 +146,7 @@ export async function POST(
               actionType: NotificationType.LEAD_PURCHASED,
               role: UserRole.ADMIN,
               messageKey: 'admin.lead.purchased',
-              routeKey: 'admin.dashboard',
+              routeKey: 'admin.lead.manage',
               routeParams: { leadId, installerId },
               metadata: {
                 actorEmail: installer?.email, // Pass installer email for admin to see

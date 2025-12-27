@@ -142,7 +142,7 @@ async function sendLeadPurchaseNotifications(
       role: 'HOMEOWNER',
       actionType: 'INSTALLER_RESPONDED',
       messageKey: 'homeowner.installer.responded',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.preview_request',
       routeParams: { leadId },
     });
 
@@ -158,7 +158,7 @@ async function sendLeadPurchaseNotifications(
         role: 'ADMIN',
         actionType: 'LEAD_PURCHASED',
         messageKey: 'admin.lead.purchased',
-        routeKey: 'admin.dashboard',
+        routeKey: 'admin.lead.manage',
         routeParams: { leadId },
       });
     }

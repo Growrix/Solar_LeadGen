@@ -137,7 +137,7 @@ export async function expireNegotiationIfNeeded(writtenQuoteId: string): Promise
         actionType: NotificationType.SYSTEM,
         role: UserRole.HOMEOWNER,
         messageKey: 'homeowner.written_quote.negotiation_expired',
-        routeKey: 'homeowner.requests',
+        routeKey: 'homeowner.dashboard.review_written_quote',
         routeParams: { leadId: writtenQuote.leadId },
         metadata: { writtenQuoteId },
       }),
@@ -252,7 +252,7 @@ export async function expireLeadNegotiationsByCountdownIfNeeded(
     actionType: NotificationType.SYSTEM,
     role: UserRole.HOMEOWNER,
     messageKey: 'homeowner.written_quote.negotiation_expired',
-    routeKey: 'homeowner.requests',
+    routeKey: 'homeowner.dashboard.review_written_quote',
     routeParams: { leadId },
     metadata: { leadId, reason: 'lead_countdown_expired', writtenQuoteIds: openQuoteIds },
   });

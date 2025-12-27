@@ -34,6 +34,6 @@ These rules are **non-negotiable** and must be followed by all humans and AI whe
 
 - Notification messaging rules: DOC/GUIDELINES & SOT/Messaging-Standards/notification-messaging-guidelines.md
 - Email template standards: DOC/GUIDELINES & SOT/Messaging-Standards/email-template-standards.md
-- Homeowner copy audit (policy violations log): DOC/GUIDELINES & SOT/Messaging-Standards/HOMEOWNER-MESSAGING-AUDIT-2025-12-27.md
+- Homeowner copy audit (policy violations log): DOC/Features/Written Quote/HOMEOWNER-MESSAGING-AUDIT-2025-12-27.md
 
 This keeps a single entry point without merging large indexes.

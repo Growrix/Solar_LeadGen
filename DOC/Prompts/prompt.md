@@ -4010,5 +4010,320 @@ This task is complete only if:
 
 Failure on any point = incomplete.
 
+-------------------------------------------------------------------------------------
+
+- In the notifications I need you to enhance button texts . e.g check the shared screenshots : Mark as read is fine , but "Review Bid" is not appropriate for homeowners while it is a written quote action. There are better alternatives like "View Quote" , "View Offer" etc.
+
+- And these buttons are not useful e.g If I click on View button in the notification > it does not redirect or open the respective modal/page. I want you to fix this issue accordingly. Audit deeply and implement it accordingly. 
+
+- Check the entire notification and email system and compare vs the Industry Standards based on our guidelines . Identify the missing gaps on our implimentations and prepare a plan to impliment these were not implimented yet. 
+
+***Instructions***
+Enhance the button texts in the notifications as per the above instructions. so that the button texts are more user friendly and appropriate for homeowners. Also make sure that the buttons are functional and redirect/open the respective modal/page accordingly without any issues. Audit deeply and implement it accordingly. I want you to identify these issues for the Installers and Admin sides too as well. The entire notification system should be user friendly and functional without any issues. All of your referenced links and buttons should be functional and working perfectly without any issues. 
+
+***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+
+ ----------------------------------------------------------------------------------
+
+ ***Installers Dashboard - UX and UI Enhancement***
+ - The Installers lead is not moving the Rejected leads to anywhere from the lead feed. The lead feed is the place where the installers see all the leads assigned to them. The leads should stay on the lead feed while negotiating, Under bidding. So that the rejected leads should move to a separate section/tab called "Rejected Leads" in the Installers dashboard lead feed. Audit deeply and implement it accordingly.
+
+- I want you to enhance the LeadFeed section in the Installers dashboard with multiple tabs for better lead management and organization. currently the lead moving to purchased leads page under 3 different tabs (Written Quote leads, Call/Visit leads, Bidding leads) after purchasing. But This is only for the purchased leads. I want you to improve the UX. Evertyhing should be under the LeadFeed section only with multiple tabs for better organization and management. You can create tabs : Market Place, QUote Submitted , Rejected Leads, Purchased Leads etc. Audit deeply the current system and implement it accordingly.
+
+- Also I need Idea to enhace the UI UX Of the Leadfeed page. I will not need the Purchased leads page anymore if everything is under the LeadFeed section only with multiple tabs for better organization and management. come up with enhancement Ideas.  Audit deeply and implement it accordingly.
+
+- Also check the filters and enhance it accordingly for better lead management and organization. Audit deeply and implement it accordingly.
+
+- Also check the Screenshots for the cards in the leadfeed which has mock data. I want you to enhance the UI of these cards with real analytics for better user experience and user friendly. You can add more cards if needed. Repalce all the existing mock data on the cards with relevant real data analytics. Audit deeply and implement it accordingly.
+
+***Instructions*** your job is to understand what I mentioned above and perform the necessaary audits and comeup with the implimentation plan accordingly.  in that plan on the top write a summary explaing what idea you have generated + my requirements of enhancement and what we are going to impliment. After that will confirm you to start the implimentation phase.
+
+***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ### Implimenation Plan : 
+ prepare the plan here D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote
+
+ FINAL PROMPT :
+
+ 
+
+**Installers Dashboard — LeadFeed UX & UI Enhancement (Audit → Plan Only)**
+
 ---
+
+## 1. ROLE
+
+You are a **Senior Full-Stack SaaS Engineer AI** assigned to **audit and redesign the UX flow (not visual redesign yet)** of the **Installers Dashboard → LeadFeed section** in an **existing production Solar Lead Generation SaaS**.
+
+Your responsibility is to:
+
+* Audit the current LeadFeed behavior deeply
+* Identify broken or missing state transitions
+* Propose a **clear implementation plan**
+* **Do NOT implement yet**
+
+You must **read and follow all internal project guidelines** before producing any output.
+
+---
+
+## 2. PROJECT CONTEXT
+
+* Product: Solar Lead Generation SaaS
+* Dashboard: **Installer Dashboard**
+* Feature Area: **LeadFeed (Primary lead management area for installers)**
+
+Current understanding:
+
+* Installers receive leads via LeadFeed
+* Purchased leads currently move out of LeadFeed into a separate Purchased Leads page
+* Lead types include:
+
+  * Written Quote leads
+  * Call/Visit leads
+  * Bidding leads
+
+This task is focused on **UX structure, state flow, and data correctness**, not cosmetic UI only.
+
+---
+
+## 3. EXISTING STATE (What Already Works)
+
+Based strictly on the provided prompt (to be verified in audit):
+
+* LeadFeed exists and shows assigned leads
+* Leads can be:
+
+  * Negotiated
+  * Under bidding
+  * Purchased
+* Purchased leads are moved to a **separate Purchased Leads page**
+* Purchased Leads page has **three tabs by lead type**
+* LeadFeed cards currently display **mock data**
+* Filters exist but are limited or insufficient
+
+Known issue (must be confirmed in code):
+
+* **Rejected leads do not move anywhere**
+* Rejected leads remain stuck in LeadFeed or disappear incorrectly
+
+❗ No assumption beyond this list is allowed.
+
+---
+
+## 4. REQUIRED CHANGES (Converted to Explicit Behaviors)
+
+### A. Rejected Lead State Handling
+
+* When an installer **rejects a lead**:
+
+  * The lead must **leave the active LeadFeed**
+  * The lead must appear under a **“Rejected Leads” tab**
+* Rejected leads must:
+
+  * Remain visible for historical reference
+  * Be isolated from active negotiation flows
+
+---
+
+### B. LeadFeed UX Restructure (Single Source of Truth)
+
+* The **LeadFeed section must become the only lead management area**
+* The **Purchased Leads page will no longer be needed**
+* All lead states must be accessible via **tabs inside LeadFeed**
+
+Proposed tabs (to be validated in audit):
+
+* Marketplace (new / assigned leads)
+* Quote Submitted
+* Negotiation / Under Bidding
+* Purchased Leads
+* Rejected Leads
+
+❗ This is a UX restructuring, not a deletion of data.
+
+---
+
+### C. Lead Lifecycle Visibility
+
+* Leads must remain in LeadFeed while:
+
+  * Under bidding
+  * Negotiating
+* Leads move tabs based on **state transitions**, not page navigation
+* No lead should “disappear” without a visible state
+
+---
+
+### D. LeadFeed UI Enhancement (Analytics-Driven)
+
+* All mock data on LeadFeed cards must be:
+
+  * Identified
+  * Replaced with **real, meaningful analytics**
+* Cards may be:
+
+  * Enhanced
+  * Added
+  * Reorganized
+* Data must be:
+
+  * Actionable
+  * Installer-relevant
+  * Derived from real system values
+
+---
+
+### E. Filters Enhancement
+
+* Existing filters must be audited
+* Filters must support:
+
+  * Lead state
+  * Lead type
+  * Timeline / urgency
+  * Value or potential (if available)
+* Filters must work **within tabs**, not globally breaking context
+
+---
+
+## 5. BUSINESS RULES & PERMISSIONS
+
+* Only installers see the LeadFeed
+* Installers can:
+
+  * View all assigned leads
+  * Reject leads
+  * Purchase leads
+  * Negotiate leads
+* Installers cannot:
+
+  * Modify lead states retroactively
+  * Access leads outside their assignment
+
+State transitions must respect:
+
+* Lead ownership
+* Payment state
+* Quote submission state
+
+---
+
+## 6. TECHNICAL CONSTRAINTS
+
+Strict rules:
+
+* ❌ No assumptions about database schema
+* ❌ No API changes unless discovered as necessary during audit
+* ❌ No UI refactor during planning
+* ❌ No deletion of Purchased Leads data
+* ❌ No visual redesign without approval
+
+This phase is **audit + plan only**.
+
+---
+
+## 7. AUDIT INSTRUCTIONS (MANDATORY)
+
+Before proposing any plan, you must:
+
+1. Audit:
+
+   * LeadFeed logic
+   * Lead state transitions
+   * Purchased Leads page logic
+2. Identify:
+
+   * Where rejected leads currently fail
+   * Why purchased leads are separated
+   * Which data is mock vs real
+3. Map:
+
+   * Lead lifecycle states → UI placement
+4. Identify:
+
+   * Dependencies that block moving everything under LeadFeed
+
+❗ No implementation before audit completion.
+
+---
+
+## 8. IMPLEMENTATION PLAN OUTPUT RULES
+
+### Output Location
+
+Prepare the **Implementation Plan** at:
+
+```
+D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote
+```
+
+### Plan Structure (Mandatory)
+
+At the **top of the document**, include:
+
+#### 1️⃣ Executive Summary
+
+* Restate:
+
+  * Your UX idea
+  * User’s requirements
+  * Final proposed LeadFeed structure
+
+#### 2️⃣ Audit Findings
+
+* Current behavior
+* Broken flows
+* UX pain points
+
+#### 3️⃣ Proposed LeadFeed Tab Structure
+
+* Tabs
+* Purpose
+* Lead states per tab
+
+#### 4️⃣ Lead State Transition Table
+
+* Action → From → To
+* Visible tab change
+
+#### 5️⃣ UI Card Enhancements (Conceptual)
+
+* What data replaces mock data
+* Why it matters to installers
+
+#### 6️⃣ Filter Enhancements
+
+* Existing filters
+* Proposed additions
+* Scope of each filter
+
+#### 7️⃣ Risks & Dependencies
+
+* What could break
+* What must be confirmed before coding
+
+---
+
+## 9. VALIDATION / SUCCESS CRITERIA
+
+This phase is successful only if:
+
+* ✅ Rejected leads have a clear destination
+* ✅ LeadFeed becomes the single lead management area
+* ✅ No lead disappears silently
+* ✅ UX improvements are logical, not cosmetic
+* ✅ Implementation plan is clear enough to code without re-interpretation
+
+---
+
+## ASSUMPTIONS
+
+None allowed.
+If data, states, or flows are unclear → **explicitly list them as unknowns**.
+
 

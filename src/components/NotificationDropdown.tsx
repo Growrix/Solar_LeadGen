@@ -290,6 +290,22 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       return 'Quote';
     }
 
+    // Homeowner-safe badges: never show lead/purchase/payment language
+    if (userRole === 'HOMEOWNER') {
+      switch (type) {
+        case 'NEW_LEAD':
+          return 'Request';
+        case 'LEAD_ASSIGNED':
+        case 'LEAD_PURCHASED':
+        case 'LEAD_RESOLD':
+          return 'Update';
+        case 'PAYMENT_RECEIVED':
+          return 'Confirmed';
+        case 'PAYMENT_FAILED':
+          return 'Action';
+      }
+    }
+
     switch (type) {
       case 'NEW_LEAD': return 'Lead';
       case 'LEAD_ASSIGNED': return 'Assigned';
@@ -332,6 +348,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
   const getSmartActionButton = (notification: Notification) => {
     const baseClasses = "px-3 py-1.5 text-button rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary";
     const disabled = !canNavigateNotification(notification);
+    const isWrittenQuote = typeof notification.messageKey === 'string' && notification.messageKey.includes('written_quote');
     
     switch (notification.type) {
       case 'BID_WON':
@@ -341,7 +358,9 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             className={baseClasses}
             disabled={disabled}
           >
-            Proceed to Payment
+            {userRole === 'HOMEOWNER'
+              ? (isWrittenQuote ? 'View Quote' : 'View Next Steps')
+              : 'Proceed to Payment'}
           </button>
         );
       
@@ -352,7 +371,9 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             className={baseClasses}
             disabled={disabled}
           >
-            Review Bids
+            {isWrittenQuote
+              ? (userRole === 'ADMIN' ? 'View Quote' : userRole === 'INSTALLER' ? 'View Quote' : 'View Quote')
+              : (userRole === 'HOMEOWNER' ? 'Review Offers' : 'View Lead')}
           </button>
         );
       
@@ -364,7 +385,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             className={baseClasses}
             disabled={disabled}
           >
-            View Lead
+            {userRole === 'HOMEOWNER' ? 'View Request' : 'View Lead'}
           </button>
         );
       
@@ -386,7 +407,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
             className={baseClasses}
             disabled={disabled}
           >
-            Retry Payment
+            {userRole === 'HOMEOWNER' ? 'View Update' : 'Retry Payment'}
           </button>
         );
       

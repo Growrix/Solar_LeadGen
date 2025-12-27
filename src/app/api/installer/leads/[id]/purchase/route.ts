@@ -155,7 +155,7 @@ export async function POST(
       actionType: NotificationType.INSTALLER_RESPONDED,
       role: UserRole.HOMEOWNER,
       messageKey: 'homeowner.installer.responded',
-      routeKey: 'homeowner.requests',
+      routeKey: 'homeowner.dashboard.preview_request',
       routeParams: { leadId }
     });
     logger.debug('Homeowner notification created');
@@ -174,8 +174,8 @@ export async function POST(
           actionType: NotificationType.LEAD_PURCHASED,
           role: UserRole.ADMIN,
           messageKey: 'admin.lead.purchased',
-          routeKey: 'admin.dashboard',
-          routeParams: { leadId, installerId },
+          routeKey: 'admin.lead.manage',
+          routeParams: { leadId },
           metadata: {
             actorEmail: installer?.email,
             leadId,
