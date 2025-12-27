@@ -27,6 +27,7 @@ type WrittenQuoteWithFullData = GetWrittenQuotesResponse['writtenQuotes'][number
 interface HomeownerWrittenQuoteReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onNegotiationUpdated?: () => void | Promise<void>;
   leadId: string;
   propertyAddress: string;
   writtenQuotes: WrittenQuoteWithFullData[];
@@ -36,6 +37,7 @@ interface HomeownerWrittenQuoteReviewModalProps {
 export default function HomeownerWrittenQuoteReviewModal({
   isOpen,
   onClose,
+  onNegotiationUpdated,
   leadId,
   propertyAddress,
   writtenQuotes: initialWrittenQuotes,
@@ -439,6 +441,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       }
 
       await fetchWrittenQuotes();
+      await onNegotiationUpdated?.();
     } catch (error) {
       console.error('[HomeownerWrittenQuoteReviewModal] Error accepting done-deal:', error);
       setNegotiationError(error instanceof Error ? error.message : 'Failed to accept done-deal');
@@ -464,6 +467,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       }
 
       await fetchWrittenQuotes();
+      await onNegotiationUpdated?.();
     } catch (error) {
       console.error('[HomeownerWrittenQuoteReviewModal] Error rejecting done-deal:', error);
       setNegotiationError(error instanceof Error ? error.message : 'Failed to reject done-deal');
@@ -516,6 +520,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       setRejectValidationError(null);
 
       await fetchWrittenQuotes();
+      await onNegotiationUpdated?.();
     } catch (error) {
       console.error('[HomeownerWrittenQuoteReviewModal] Error rejecting quote:', error);
       setNegotiationError(error instanceof Error ? error.message : 'Failed to reject quote');
@@ -549,6 +554,7 @@ export default function HomeownerWrittenQuoteReviewModal({
 
       setCounterAmount('');
       await fetchWrittenQuotes();
+      await onNegotiationUpdated?.();
     } catch (error) {
       console.error('[HomeownerWrittenQuoteReviewModal] Error submitting counter:', error);
       setNegotiationError(error instanceof Error ? error.message : 'Failed to submit counter offer');
@@ -1385,7 +1391,12 @@ export default function HomeownerWrittenQuoteReviewModal({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-body-small text-muted-foreground">Deadline</span>
-                          {(selectedWrittenQuote as any).negotiationDeadlineAt ? (
+                          {(selectedWrittenQuote as any).negotiationDeadlineAt &&
+                          selectedWrittenQuote.negotiationStatus !== 'AGREED' &&
+                          selectedWrittenQuote.negotiationStatus !== 'REJECTED' &&
+                          selectedWrittenQuote.negotiationStatus !== 'NEGOTIATION_EXPIRED' &&
+                          !(selectedWrittenQuote as any).negotiationExpiredAt &&
+                          !selectedWrittenQuote.purchasedAt ? (
                             <LiveCountdownBarCompact
                               expiresAt={(selectedWrittenQuote as any).negotiationDeadlineAt}
                               leadId={String(leadId)}

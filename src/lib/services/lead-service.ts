@@ -491,6 +491,16 @@ export async function getLeads(input: GetLeadsInput) {
   const { userId, userRole, filters } = input;
   const { page, limit, status, quoteType, postcode, marketplace, purchased, assigned } = filters;
 
+  const formatRejectedByParty = (role: unknown): string => {
+    const raw = typeof role === 'string' ? role : null;
+    if (!raw) return 'Unknown';
+    const normalized = raw.toUpperCase();
+    if (normalized === 'HOMEOWNER') return 'Homeowner';
+    if (normalized === 'INSTALLER') return 'Installer';
+    if (normalized === 'ADMIN') return 'Admin';
+    return 'Unknown';
+  };
+
   const skip = (page - 1) * limit;
 
   // If installer requests assigned leads, use dedicated function
@@ -595,6 +605,30 @@ export async function getLeads(input: GetLeadsInput) {
             email: true,
           },
         },
+
+        writtenQuotes: {
+          select: {
+            id: true,
+            negotiationStatus: true,
+            rejectedByRole: true,
+            homeownerCounterAmount: true,
+            homeownerCounterAt: true,
+            installerRevisedAmount: true,
+            installerRevisedAt: true,
+            agreedAmount: true,
+            agreedAt: true,
+            finalTotal: true,
+            amount: true,
+            createdAt: true,
+            installer: {
+              select: {
+                installerProfile: {
+                  select: { companyName: true },
+                },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.lead.count({ where: whereClause }),
@@ -604,8 +638,74 @@ export async function getLeads(input: GetLeadsInput) {
     leads as Array<{ id: string; quoteType?: unknown; expiresAt?: Date | null; status?: unknown }>,
   );
 
+  const leadsWithWrittenQuoteSummary = leads.map((lead: any) => {
+    if (lead?.quoteType !== 'WRITTEN_QUOTE' || !Array.isArray(lead?.writtenQuotes)) {
+      return lead;
+    }
+
+    const quotes = lead.writtenQuotes as Array<any>;
+    if (quotes.length === 0) return lead;
+
+    const getLatestAt = (q: any): Date => {
+      const timestamps: Array<Date | null | undefined> = [
+        q.agreedAt,
+        q.installerRevisedAt,
+        q.homeownerCounterAt,
+        q.createdAt,
+      ];
+      const latest = timestamps
+        .filter((d): d is Date => d instanceof Date)
+        .map((d) => d.getTime())
+        .reduce((max, t) => (t > max ? t : max), 0);
+      return new Date(latest);
+    };
+
+    const latestQuote = quotes
+      .slice()
+      .sort((a, b) => getLatestAt(b).getTime() - getLatestAt(a).getTime())[0];
+
+    const negotiationStatus = String(latestQuote.negotiationStatus || 'PENDING');
+    const latestAmount =
+      negotiationStatus === 'PENDING_ACCEPTANCE'
+        ? (latestQuote.agreedAmount ?? null)
+        : (latestQuote.installerRevisedAmount ??
+            latestQuote.homeownerCounterAmount ??
+            latestQuote.agreedAmount ??
+            latestQuote.finalTotal ??
+            latestQuote.amount ??
+            null);
+
+    const statusLabel =
+      negotiationStatus === 'PENDING_ACCEPTANCE'
+        ? 'Done deal pending acceptance'
+        : negotiationStatus === 'AGREED'
+          ? 'Finalized (Done deal)'
+          : negotiationStatus === 'NEGOTIATION_EXPIRED'
+            ? 'Negotiation expired'
+            : negotiationStatus === 'REJECTED'
+              ? `Negotiation closed - Deal rejected by ${formatRejectedByParty((latestQuote as any).rejectedByRole)}`
+              : negotiationStatus === 'HOMEOWNER_COUNTERED'
+                ? 'Waiting on installer response'
+                : negotiationStatus === 'INSTALLER_RESPONDED'
+                  ? 'Installer updated the offer'
+                  : 'Not started';
+
+    const installerCompanyName = latestQuote.installer?.installerProfile?.companyName ?? null;
+
+    return {
+      ...lead,
+      writtenQuoteSummary: {
+        negotiationStatus,
+        statusLabel,
+        latestAmount,
+        latestAt: getLatestAt(latestQuote).toISOString(),
+        installerCompanyName,
+      },
+    };
+  });
+
   return {
-    leads,
+    leads: leadsWithWrittenQuoteSummary,
     pagination: {
       page,
       limit,
@@ -622,6 +722,16 @@ export async function getHomeownerLeadSummary(
   userId: string,
   options: GetHomeownerLeadSummaryOptions = {},
 ): Promise<HomeownerLeadSummary> {
+  const formatRejectedByParty = (role: unknown): string => {
+    const raw = typeof role === 'string' ? role : null;
+    if (!raw) return 'Unknown';
+    const normalized = raw.toUpperCase();
+    if (normalized === 'HOMEOWNER') return 'Homeowner';
+    if (normalized === 'INSTALLER') return 'Installer';
+    if (normalized === 'ADMIN') return 'Admin';
+    return 'Unknown';
+  };
+
   const homeowner = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -683,6 +793,7 @@ export async function getHomeownerLeadSummary(
           select: {
             id: true,
             negotiationStatus: true,
+            rejectedByRole: true,
             homeownerCounterAmount: true,
             homeownerCounterAt: true,
             installerRevisedAmount: true,
@@ -789,8 +900,10 @@ export async function getHomeownerLeadSummary(
                   ? 'Done deal pending acceptance'
                   : negotiationStatus === 'AGREED'
                     ? 'Finalized (Done deal)'
+                    : negotiationStatus === 'NEGOTIATION_EXPIRED'
+                      ? 'Negotiation expired'
                     : negotiationStatus === 'REJECTED'
-                      ? 'Rejected'
+                      ? `Negotiation closed - Deal rejected by ${formatRejectedByParty((latestQuote as any).rejectedByRole)}`
                       : negotiationStatus === 'HOMEOWNER_COUNTERED'
                         ? 'Waiting on installer response'
                         : negotiationStatus === 'INSTALLER_RESPONDED'

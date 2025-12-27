@@ -775,7 +775,16 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                               </span>
                             )}
                             {/* Live Countdown Timer - Only for APPROVED leads (not PURCHASED) */}
-                            {lead.expiresAt && lead.status === LeadStatusEnum.APPROVED && (
+                            {(() => {
+                              const isWrittenQuoteClosed =
+                                lead.quoteType === 'WRITTEN_QUOTE' &&
+                                (lead.writtenQuoteSummary?.negotiationStatus === 'REJECTED' ||
+                                  lead.writtenQuoteSummary?.negotiationStatus === 'AGREED' ||
+                                  lead.writtenQuoteSummary?.negotiationStatus === 'NEGOTIATION_EXPIRED');
+
+                              if (isWrittenQuoteClosed) return null;
+
+                              return lead.expiresAt && lead.status === LeadStatusEnum.APPROVED ? (
                               <LiveCountdownBar
                                 expiresAt={lead.expiresAt}
                                 leadId={lead.id}
@@ -783,7 +792,8 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
                                 leadStatus={lead.status}
                                 quoteType={lead.quoteType}
                               />
-                            )}
+                              ) : null;
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -1663,6 +1673,9 @@ export default function HomeownerDashboardPage() {
             setIsWrittenQuoteReviewModalOpen(false);
             setSelectedWrittenQuoteLeadId(null);
             setSelectedWrittenQuoteLead(null);
+          }}
+          onNegotiationUpdated={async () => {
+            await fetchDashboardSummary();
           }}
           leadId={selectedWrittenQuoteLeadId}
           propertyAddress={

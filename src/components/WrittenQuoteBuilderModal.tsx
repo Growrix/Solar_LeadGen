@@ -1654,7 +1654,12 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-body-small text-muted-foreground">Deadline</span>
-                          {(negotiationQuote as any).negotiationDeadlineAt ? (
+                          {(negotiationQuote as any).negotiationDeadlineAt &&
+                          negotiationQuote.negotiationStatus !== 'AGREED' &&
+                          negotiationQuote.negotiationStatus !== 'REJECTED' &&
+                          negotiationQuote.negotiationStatus !== 'NEGOTIATION_EXPIRED' &&
+                          !(negotiationQuote as any).negotiationExpiredAt &&
+                          !negotiationQuote.purchasedAt ? (
                             <LiveCountdownBarCompact
                               expiresAt={(negotiationQuote as any).negotiationDeadlineAt}
                               leadId={String(lead?.id ?? 'unknown')}

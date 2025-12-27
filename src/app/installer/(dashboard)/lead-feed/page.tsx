@@ -46,7 +46,7 @@ function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
     isUnlocked: !isLocked,
     unlockedBy: !isLocked ? [1] : [],
     quotesReceived: apiLead.quotesCount || 0,
-    expiresAt: apiLead.expiresAt ? new Date(apiLead.expiresAt) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    expiresAt: apiLead.expiresAt ? new Date(apiLead.expiresAt) : null,
     priority: 'medium',
     notes: apiLead.assignmentNotes || undefined,
     quoteData: apiLead.quoteData || null,

@@ -23,6 +23,13 @@ interface Lead {
   createdAt: string;
   approvedAt: string | null;
   expiresAt: string | null;
+  writtenQuoteSummary?: {
+    negotiationStatus: string;
+    statusLabel: string;
+    latestAmount: number | null;
+    latestAt: string | null;
+    installerCompanyName: string | null;
+  };
 }
 
 export default function AdminLeadsPage() {
@@ -340,15 +347,31 @@ export default function AdminLeadsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {lead.expiresAt && lead.status === 'APPROVED' && (
-                        <LiveCountdownBar
-                          expiresAt={lead.expiresAt}
-                          leadId={lead.id}
-                          leadStatus={lead.status}
-                          quoteType={lead.quoteType}
-                          position="inline"
-                        />
-                      )}
+                      {(() => {
+                        const isWrittenQuoteClosed =
+                          lead.quoteType === 'WRITTEN_QUOTE' &&
+                          (lead.writtenQuoteSummary?.negotiationStatus === 'REJECTED' ||
+                            lead.writtenQuoteSummary?.negotiationStatus === 'AGREED' ||
+                            lead.writtenQuoteSummary?.negotiationStatus === 'NEGOTIATION_EXPIRED');
+
+                        if (isWrittenQuoteClosed) {
+                          return (
+                            <div className="text-caption text-muted-foreground">
+                              {lead.writtenQuoteSummary?.statusLabel || 'Negotiation closed'}
+                            </div>
+                          );
+                        }
+
+                        return lead.expiresAt && lead.status === 'APPROVED' ? (
+                          <LiveCountdownBar
+                            expiresAt={lead.expiresAt}
+                            leadId={lead.id}
+                            leadStatus={lead.status}
+                            quoteType={lead.quoteType}
+                            position="inline"
+                          />
+                        ) : null;
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {lead.phoneVerified ? (

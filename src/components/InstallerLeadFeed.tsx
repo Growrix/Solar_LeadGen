@@ -63,7 +63,7 @@ export interface Lead {
   isPurchasedByAnother?: boolean;
   unlockedBy: number[];
   quotesReceived: number;
-  expiresAt: Date; // TODO: Change to string (ISO) for countdown timer integration with real API
+  expiresAt: Date | null; // Countdown timer (null means no active countdown)
   priority: 'low' | 'medium' | 'high';
   notes?: string;
   // Extended fields from API
@@ -98,6 +98,7 @@ export interface Lead {
     amount: number;
     finalTotal: number;
     negotiationStatus: string;
+    rejectedByRole?: string | null;
     homeownerCounterAmount?: number | null;
     homeownerCounterAt?: string | null;
     installerRevisedAmount?: number | null;
@@ -471,7 +472,7 @@ const ViewDetailsModal: React.FC<{
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-body-small text-muted-foreground">Expires:</span>
-                <span className="text-body-small text-foreground">{new Date(lead.expiresAt).toLocaleDateString()}</span>
+                <span className="text-body-small text-foreground">{lead.expiresAt ? new Date(lead.expiresAt).toLocaleDateString() : '—'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-body-small text-muted-foreground">Quotes Received:</span>
@@ -504,7 +505,7 @@ const ViewDetailsModal: React.FC<{
               )}
               <div className="flex items-center justify-between">
                 <span className="text-body-small text-muted-foreground">Expires:</span>
-                <span className="text-body-small text-foreground">{new Date(lead.expiresAt).toLocaleDateString()}</span>
+                <span className="text-body-small text-foreground">{lead.expiresAt ? new Date(lead.expiresAt).toLocaleDateString() : '—'}</span>
               </div>
             </div>
           </div>
@@ -819,7 +820,11 @@ const LeadCard: React.FC<{
           <div className="flex items-center space-x-2">
             <AlertCircleIcon className="h-5 w-5 text-warning" />
             <p className="text-body text-warning">
-              The homeowner rejected your deal.
+              {(() => {
+                const role = String((myWrittenQuote as any)?.rejectedByRole || '').toUpperCase();
+                const party = role === 'HOMEOWNER' ? 'Homeowner' : role === 'INSTALLER' ? 'Installer' : role === 'ADMIN' ? 'Admin' : 'Unknown';
+                return `Negotiation closed - Deal rejected by ${party}`;
+              })()}
             </p>
           </div>
         </div>
@@ -910,7 +915,19 @@ const LeadCard: React.FC<{
 
         <div className="space-y-2">
           {/* Countdown timer - Show for active marketplace leads */}
-          {lead.status === 'new' && (
+          {(() => {
+            const writtenNegotiationStatus = (myWrittenQuote as any)?.negotiationStatus as string | undefined;
+            const isWrittenQuoteClosed =
+              lead.type === 'written' &&
+              (writtenNegotiationStatus === 'REJECTED' ||
+                writtenNegotiationStatus === 'AGREED' ||
+                writtenNegotiationStatus === 'NEGOTIATION_EXPIRED');
+
+            if (isWrittenQuoteClosed) return null;
+            if (lead.status !== 'new') return null;
+            if (!lead.expiresAt) return null;
+
+            return (
             <div className="flex items-center space-x-2 text-body-small">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               <LiveCountdownBar
@@ -921,7 +938,8 @@ const LeadCard: React.FC<{
                 position="inline"
               />
             </div>
-          )}
+            );
+          })()}
           
           <div className="flex items-center space-x-2 text-body-small">
             <FileTextIcon className="h-4 w-4 text-muted-foreground" />

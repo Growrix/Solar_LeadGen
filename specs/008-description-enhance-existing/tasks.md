@@ -118,6 +118,32 @@ References:
 
 Status: PLANNED
 Priority: P1
+
+---
+
+## Phase 13W.5 — Negotiation Countdown Panels (Stop on Terminal States)
+
+Status: IN PROGRESS
+Priority: P1
+Date: December 27, 2025
+References:
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-COUNTDOWN-PANELS-AUDIT-2025-12-27.md
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T13W.5-1: Stop countdown in negotiation panels after terminal actions
+- Stop showing countdown timer after:
+  - Rejection
+  - Done-deal acceptance (AGREED)
+  - Negotiation expiry
+- Files:
+  - `src/components/WrittenQuoteBuilderModal.tsx`
+  - `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+  - `src/components/admin/AdminLeadManagementModal.tsx`
+
+### T13W.5-2: Validation
+- `npm run lint` → pass
+- `npm run build` → pass
+
 Date: December 24, 2025
 References:
   - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-REALTIME-PRESENCE-TIMEWINDOW-AUDIT-2025-12-24.md

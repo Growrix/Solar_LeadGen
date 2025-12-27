@@ -669,6 +669,7 @@ export default function AdminLeadManagementModal({
                   {writtenQuotes.map((q) => {
                     const expired = q.negotiationStatus === 'NEGOTIATION_EXPIRED' || !!(q as any).negotiationExpiredAt;
                     const closed = expired || q.negotiationStatus === 'AGREED' || q.negotiationStatus === 'REJECTED' || q.negotiationStatus === 'PENDING_ACCEPTANCE' || !!q.purchasedAt;
+                    const countdownClosed = expired || q.negotiationStatus === 'AGREED' || q.negotiationStatus === 'REJECTED' || !!q.purchasedAt;
 
                     return (
                       <div key={q.id} className="border border-border rounded-lg p-4 bg-background/50 space-y-2">
@@ -693,7 +694,7 @@ export default function AdminLeadManagementModal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-body-small">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Deadline:</span>
-                            {(q as any).negotiationDeadlineAt ? (
+                            {(q as any).negotiationDeadlineAt && !countdownClosed ? (
                               <LiveCountdownBarCompact
                                 expiresAt={(q as any).negotiationDeadlineAt}
                                 leadId={String(lead.id)}
