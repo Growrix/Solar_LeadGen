@@ -1,3 +1,4 @@
+650ca51 | <RUN: git show -s --format="%ai" HEAD> | fix(notifications): correct written-quote messaging, realtime timestamps, and email gating
 0cd9baf6106d341299b48ebd9822a6cc163f5bb2 | 2025-12-23 15:10:22 +0600 | Written Quote purchase flow: e2e audit, lead card state sync, API wiring, UI banners, and type/build validation. Fix Tailwind class errors. Ready for QA.
 
 -- DB backup: backup/backup_20251223_000000.sql (PostgreSQL, Docker, solarmatch-db-1)

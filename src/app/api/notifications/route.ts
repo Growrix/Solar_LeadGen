@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getNotificationText } from '@/lib/notifications/message-catalog';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,8 +51,15 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    const hydratedNotifications = notifications.map((n) => {
+      if (!n.messageKey) return n;
+
+      const { title, message } = getNotificationText(n.messageKey as any);
+      return { ...n, title, message };
+    });
+
     return NextResponse.json({
-      notifications,
+      notifications: hydratedNotifications,
       pagination: {
         page,
         limit,

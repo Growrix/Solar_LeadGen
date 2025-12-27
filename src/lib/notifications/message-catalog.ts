@@ -120,15 +120,15 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   },
   'homeowner.written_quote.done_deal_accepted': {
     title: 'Deal Accepted',
-    message: 'The deal has been accepted. The installer can now proceed to purchase and unlock contact details.',
+    message: 'The deal has been accepted. You\'ll see next steps and updates in your dashboard.',
   },
   'homeowner.written_quote.done_deal_rejected': {
     title: 'Deal Update',
     message: 'The done-deal request was declined. Negotiation is open again in your dashboard.',
   },
   'homeowner.written_quote.purchased': {
-    title: 'Purchase Completed',
-    message: 'The installer completed the purchase and can now contact you. Check your dashboard for details.',
+    title: 'Installer Ready to Contact',
+    message: 'The installer is ready to contact you. Check your dashboard for details.',
   },
   'homeowner.written_quote.negotiation_expired': {
     title: 'Negotiation Expired',

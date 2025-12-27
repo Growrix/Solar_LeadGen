@@ -3770,3 +3770,245 @@ The both end has this modal while they do the rejection. I want you to check the
 ***Strickt Rules***
 ### Follow the Guidelines:
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+-----------------------------------------------------------------------------------   
+
+***Notification message and email template Enhancement***
+- Currently the homeonwers side has inappropriate notification messages which I mentioed below. And also shared the screenshot. The Homeonwers should never see the Purchase/lead this type of words . 
+
+***Guidelines and readme.md Update***
+I need you to create a guideline for the notification and email settings , message template settings etc Which is industry standard and also Follow my instructions for this project. 
+
+### my instructions : The homeonwer side should never see any message that is related to purchse , Lead, etc which is inappropriate. The Homeowners should never feel like we are selling the leads to Installers. The notification and email templates always should avoid those kinds of words where the Homeonwers will never notice that the installers are purchasing. 
+
+### Industry Standard : Crate the notification and email guidelines that any AI model will follow while building the notifications and emails which is industry standard. 
+
+***Instructions***
+
+create the folder/file within this folder D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT in an appropriate folder or separate. And update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md accordingly . SO that Any AI model will follow accordingly. Update the readme.md but do not ovveride anything existing. 
+
+FINAL PROMPT : 
+
+Below is your **raw prompt transformed into a STRICT, EXECUTION-GRADE, PRODUCTION-SAFE AI coding + documentation prompt**, exactly following your required structure and **without adding or removing intent**.
+
+This is written for a **senior full-stack engineer AI auditing an existing SaaS codebase and documentation system**.
+
+---
+
+# EXECUTION-GRADE AI PROMPT
+
+**Notification Message & Email Template Enhancement + Guidelines Definition**
+
+---
+
+## 1. ROLE
+
+You are a **Senior Full-Stack SaaS Engineer AI** auditing and standardizing the **Notification and Email Messaging System** of an **existing production Solar Lead Generation SaaS**.
+
+Your responsibility:
+
+* Audit existing notification and email messages
+* Correct inappropriate homeowner-facing language
+* Define **non-negotiable messaging standards**
+* Update **guidelines documentation** so future AI and developers cannot violate these rules
+
+You must **preserve all existing documentation**, extending it safely without overwriting.
+
+---
+
+## 2. PROJECT CONTEXT
+
+* Product: Solar Lead Generation SaaS Platform
+* Affected Area:
+
+  * Notification message copy
+  * Email template copy
+  * Messaging guidelines for AI-assisted development
+* Users involved:
+
+  * Homeowners
+  * Installers
+  * Admin (indirectly)
+* System status:
+
+  * Notifications and emails already exist
+  * Some homeowner-side messages contain **inappropriate commercial language**
+
+This task focuses on **language, policy, and standards**, not feature logic.
+
+---
+
+## 3. EXISTING STATE (What Already Works)
+
+Confirmed from prompt:
+
+* Homeowners receive notifications and emails
+* Messaging system is active and functional
+* Some notifications currently include terms such as:
+
+  * “Purchase”
+  * “Lead”
+  * Installer-centric commercial language
+* Guidelines & SOT folder and README.md already exist
+
+❗ Existing documentation must remain intact.
+
+---
+
+## 4. REQUIRED CHANGES
+
+### A. Homeowner-Facing Message Correction (Audit Level)
+
+* Audit **all homeowner-facing notification messages and email templates**
+* Identify:
+
+  * Any use of words related to:
+
+    * Purchase
+    * Lead
+    * Payment
+    * Installer buying access
+* Mark these as **policy violations**
+
+No implementation of message replacement yet unless explicitly instructed later.
+
+---
+
+### B. New Messaging Guidelines Creation
+
+You must create **formal, enforceable guidelines** that define:
+
+#### Homeowner Messaging Rules (Mandatory)
+
+* Homeowners must **never** see:
+
+  * “Lead”
+  * “Purchase”
+  * “Payment”
+  * “Installer bought”
+  * Any language implying data resale
+* Messaging tone must:
+
+  * Feel service-oriented
+  * Emphasize “connections”, “matches”, “responses”, “updates”
+  * Maintain homeowner trust
+
+---
+
+### C. Industry-Standard Notification & Email Guidelines
+
+Create a **vendor-neutral, industry-standard guideline** that:
+
+* Any AI model or developer must follow
+* Covers:
+
+  * Message tone
+  * Role-based wording
+  * Event-driven clarity
+  * Privacy-safe language
+  * User-centric framing
+
+This guideline must be **generic enough to scale**, yet **strict enough to prevent violations**.
+
+---
+
+## 5. BUSINESS RULES & PERMISSIONS
+
+* Messaging rules are **role-dependent**
+* Homeowner rules are **non-negotiable**
+* Installers may see commercial terms
+* Admin may see operational terms
+* No cross-role leakage of language is allowed
+
+Any AI generating messages must:
+
+* Check target user role
+* Select wording accordingly
+
+---
+
+## 6. TECHNICAL CONSTRAINTS
+
+Strict constraints:
+
+* ❌ Do not modify application code
+* ❌ Do not rename or delete existing documentation
+* ❌ Do not override README.md content
+* ❌ Do not restructure existing folders
+* ✅ Only **add new files/folders**
+* ✅ Only **append** to README.md
+
+---
+
+## 7. AUDIT INSTRUCTIONS
+
+Before writing guidelines:
+
+1. Review current notification & email wording (conceptually)
+2. Identify language categories:
+
+   * Commercial
+   * System-driven
+   * User-friendly
+3. Explicitly define **forbidden vs allowed terminology** for homeowners
+
+No guessing. No assumptions.
+
+---
+
+## 8. IMPLEMENTATION RULES (Documentation Only)
+
+You must:
+
+### A. Create New Guideline Files
+
+Create appropriate folder/file(s) inside:
+
+```
+D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\
+```
+
+Examples (choose appropriately):
+
+* `notification-messaging-guidelines.md`
+* `email-template-standards.md`
+* or a subfolder like:
+
+  ```
+  Messaging-Standards/
+  ```
+
+---
+
+### B. Update README.md (Append Only)
+
+Update:
+
+```
+D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+```
+
+Rules:
+
+* Do NOT overwrite existing content
+* Add a **new clearly titled section**
+* Reference the new guideline files
+* State that **all AI models must comply**
+
+---
+
+## 9. VALIDATION / SUCCESS CRITERIA
+
+This task is complete only if:
+
+* ✅ A clear, enforceable homeowner messaging policy exists
+* ✅ Forbidden terms are explicitly documented
+* ✅ Industry-standard messaging principles are defined
+* ✅ New guideline files are created (not replacing existing)
+* ✅ README.md is extended safely
+* ✅ Any future AI can follow these rules without interpretation
+
+Failure on any point = incomplete.
+
+---
+

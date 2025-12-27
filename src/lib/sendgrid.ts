@@ -267,13 +267,13 @@ export async function sendLeadPurchasedNotification(
     text: `
 Hi ${leadDetails.homeownerName},
 
-Good news! An installer has purchased your lead and will be in touch shortly.
+Good news! An installer has accepted your request and will be in touch shortly.
 
 Installer: ${leadDetails.installerName} (${leadDetails.installerCompany})
 
-They now have access to your contact details and project information. You can chat with them directly through the platform.
+You can message them directly through the platform, and you’ll see updates in your dashboard.
 
-View your lead:
+View your request:
 ${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}
 
 Best regards,
@@ -282,10 +282,10 @@ The SolarMatch Team
     html: `
 <h2>Installer Interested! 🎉</h2>
 <p>Hi ${leadDetails.homeownerName},</p>
-<p>Good news! An installer has purchased your lead and will be in touch shortly.</p>
+<p>Good news! An installer has accepted your request and will be in touch shortly.</p>
 <p><strong>Installer:</strong> ${leadDetails.installerName} (${leadDetails.installerCompany})</p>
-<p>They now have access to your contact details and project information. You can chat with them directly through the platform.</p>
-<p><a href="${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}">View Your Lead</a></p>
+<p>You can message them directly through the platform, and you’ll see updates in your dashboard.</p>
+<p><a href="${buildFullUrl(`/homeowner/leads/${leadDetails.leadId}`)}">View Your Request</a></p>
 <p>Best regards,<br>The SolarMatch Team</p>
     `.trim(),
   });
