@@ -143,7 +143,7 @@ export async function PATCH(
       recipientUserId: writtenQuote.lead.homeownerId,
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create QUOTE_REVISED type
       role: UserRole.HOMEOWNER,
-      messageKey: 'homeowner.request.received',
+      messageKey: 'homeowner.written_quote.revised',
       routeKey: 'homeowner.requests',
       routeParams: { 
         leadId: writtenQuote.leadId

@@ -114,7 +114,14 @@ export async function triggerNotification(
     type: string;
     title: string;
     message: string;
-    timestamp: Date;
+    createdAt: string;
+    isRead?: boolean;
+    actionUrl?: string | null;
+    messageKey?: string | null;
+    routeKey?: string | null;
+    routeParams?: Record<string, any> | null;
+    // Back-compat for older clients
+    timestamp?: string;
   }
 ) {
   await pusherServer.trigger(

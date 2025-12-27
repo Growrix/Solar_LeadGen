@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
       recipientUserId: lead.homeownerId,
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create WRITTEN_QUOTE_SUBMITTED type
       role: UserRole.HOMEOWNER,
-      messageKey: 'homeowner.request.received',
+      messageKey: 'homeowner.written_quote.submitted',
       routeKey: 'homeowner.requests',
       routeParams: { leadId: body.leadId }
     });
@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
           recipientUserId: admin.id,
           actionType: NotificationType.BID_SUBMITTED, // TODO: Create WRITTEN_QUOTE_SUBMITTED type
           role: UserRole.ADMIN,
-          messageKey: 'admin.bid.submitted',
+          messageKey: 'admin.written_quote.submitted',
           routeKey: 'admin.dashboard',
           routeParams: { leadId: body.leadId },
           metadata: {

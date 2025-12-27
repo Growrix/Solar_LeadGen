@@ -150,7 +150,7 @@ export async function PATCH(
       recipientUserId: writtenQuote.installer.id,
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create COUNTER_OFFER_RECEIVED type
       role: UserRole.INSTALLER,
-      messageKey: 'installer.bid.received',
+      messageKey: 'installer.written_quote.counter_received',
       routeKey: 'installer.leads',
       routeParams: { 
         leadId: writtenQuote.leadId

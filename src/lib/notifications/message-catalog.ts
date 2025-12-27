@@ -14,6 +14,12 @@ export type MessageKey =
   | 'homeowner.system.limit_updated'
   | 'homeowner.system.bidding_limit_updated' // Phase 13S.2
   | 'homeowner.lead.purchased'
+  | 'homeowner.written_quote.submitted'
+  | 'homeowner.written_quote.revised'
+  | 'homeowner.written_quote.done_deal_requested'
+  | 'homeowner.written_quote.done_deal_accepted'
+  | 'homeowner.written_quote.done_deal_rejected'
+  | 'homeowner.written_quote.purchased'
   | 'homeowner.written_quote.negotiation_expired'
   | 'homeowner.written_quote.rejected'
   // Installer messages (professional tone)
@@ -26,6 +32,12 @@ export type MessageKey =
   | 'installer.bid.payment.success'
   | 'installer.assignment.removed'
   | 'installer.lead.resold'
+  | 'installer.written_quote.submitted'
+  | 'installer.written_quote.counter_received'
+  | 'installer.written_quote.done_deal_requested'
+  | 'installer.written_quote.done_deal_accepted'
+  | 'installer.written_quote.done_deal_rejected'
+  | 'installer.written_quote.purchased'
   | 'installer.written_quote.negotiation_expired'
   | 'installer.written_quote.rejected'
   // Admin messages (operational tone)
@@ -40,6 +52,12 @@ export type MessageKey =
   | 'admin.phone.verified'
   | 'admin.lead.assigned'
   | 'admin.assignment.accepted'
+  | 'admin.written_quote.submitted'
+  | 'admin.written_quote.rejected'
+  | 'admin.written_quote.done_deal_requested'
+  | 'admin.written_quote.done_deal_accepted'
+  | 'admin.written_quote.done_deal_rejected'
+  | 'admin.written_quote.purchased'
   | 'admin.written_quote.extension_requested';
 
 export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: string }> = {
@@ -88,6 +106,30 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
     title: 'Request Accepted',
     message: 'An installer has accepted your request and will contact you soon.',
   },
+  'homeowner.written_quote.submitted': {
+    title: 'New Written Quote',
+    message: 'An installer submitted a written quote for your request. Review and respond in your dashboard.',
+  },
+  'homeowner.written_quote.revised': {
+    title: 'Quote Updated',
+    message: 'The installer updated the written quote. Review the latest offer in your dashboard.',
+  },
+  'homeowner.written_quote.done_deal_requested': {
+    title: 'Action Needed',
+    message: 'The installer requested to finalize the deal on the latest offer. Review and accept or reject.',
+  },
+  'homeowner.written_quote.done_deal_accepted': {
+    title: 'Deal Accepted',
+    message: 'The deal has been accepted. The installer can now proceed to purchase and unlock contact details.',
+  },
+  'homeowner.written_quote.done_deal_rejected': {
+    title: 'Deal Update',
+    message: 'The done-deal request was declined. Negotiation is open again in your dashboard.',
+  },
+  'homeowner.written_quote.purchased': {
+    title: 'Purchase Completed',
+    message: 'The installer completed the purchase and can now contact you. Check your dashboard for details.',
+  },
   'homeowner.written_quote.negotiation_expired': {
     title: 'Negotiation Expired',
     message: 'The negotiation window has expired. Please contact support if you need more time.',
@@ -133,6 +175,30 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'installer.lead.resold': {
     title: 'Lead Resold',
     message: 'A purchased lead was resold by admin and removed from your account.',
+  },
+  'installer.written_quote.submitted': {
+    title: 'Written Quote Submitted',
+    message: 'Your written quote has been submitted successfully. You will be notified of any updates.',
+  },
+  'installer.written_quote.counter_received': {
+    title: 'Counter Offer Received',
+    message: 'The homeowner sent a counter offer on your written quote. Review and respond in your leads.',
+  },
+  'installer.written_quote.done_deal_requested': {
+    title: 'Action Needed',
+    message: 'The homeowner requested to finalize the deal on the latest offer. Review and accept or reject.',
+  },
+  'installer.written_quote.done_deal_accepted': {
+    title: 'Deal Accepted',
+    message: 'The deal has been accepted. You can now proceed to purchase and unlock contact details.',
+  },
+  'installer.written_quote.done_deal_rejected': {
+    title: 'Deal Update',
+    message: 'The done-deal request was declined. Negotiation is open again in your leads.',
+  },
+  'installer.written_quote.purchased': {
+    title: 'Purchase Confirmed',
+    message: 'Purchase confirmed. Contact details are unlocked for this written quote.',
   },
   'installer.written_quote.negotiation_expired': {
     title: 'Negotiation Expired',
@@ -187,6 +253,30 @@ export const MESSAGE_CATALOG: Record<MessageKey, { title: string; message: strin
   'admin.assignment.accepted': {
     title: 'Assignment Accepted',
     message: 'Installer accepted a lead assignment. Track progress in dashboard.',
+  },
+  'admin.written_quote.submitted': {
+    title: 'New Written Quote Submitted',
+    message: 'An installer submitted a written quote. Review the lead and negotiation details.',
+  },
+  'admin.written_quote.rejected': {
+    title: 'Written Quote Rejected',
+    message: 'A written quote negotiation was rejected. Review the lead timeline for details.',
+  },
+  'admin.written_quote.done_deal_requested': {
+    title: 'Done-Deal Requested',
+    message: 'A user requested to finalize a written quote deal. Track acceptance status in the lead view.',
+  },
+  'admin.written_quote.done_deal_accepted': {
+    title: 'Deal Accepted',
+    message: 'A written quote deal was accepted. Await purchase completion to unlock contact details.',
+  },
+  'admin.written_quote.done_deal_rejected': {
+    title: 'Done-Deal Declined',
+    message: 'A done-deal request was declined and negotiation reopened. Review the lead timeline.',
+  },
+  'admin.written_quote.purchased': {
+    title: 'Written Quote Purchased',
+    message: 'A written quote purchase was completed. Review transaction and lead details.',
   },
   'admin.written_quote.extension_requested': {
     title: 'Extension Requested',

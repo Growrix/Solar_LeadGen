@@ -144,6 +144,47 @@ References:
 - `npm run lint` → pass
 - `npm run build` → pass
 
+---
+
+## Phase 13W.6 — Notifications & Emails (Written Quote Flow E2E)
+
+Status: IN PROGRESS
+Priority: P1
+Date: December 27, 2025
+References:
+  - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NOTIFICATION-EMAIL-E2E-AUDIT-2025-12-27.md
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T13W.6-1: Fix realtime timestamp (“Invalid Date”) for new notifications
+- Align Pusher payload contract to UI model (`createdAt` ISO string)
+- Keep backward compatibility (`timestamp` retained as ISO string)
+- Files:
+  - `src/lib/pusher.ts`
+  - `src/lib/notifications/notification-service.ts`
+  - `src/components/NotificationDropdown.tsx`
+
+### T13W.6-2: Remove bid-related copy/tags from Written Quote notifications
+- Replace bid/request `messageKey` usage in Written Quote endpoints with `*.written_quote.*`
+- Add missing Written Quote message keys to the centralized catalog
+- Files:
+  - `src/app/api/written-quotes/**`
+  - `src/lib/notifications/message-catalog.ts`
+
+### T13W.6-3: Email policy — major milestones only
+- Gate Written Quote emails by `messageKey` allowlist (submitted, done-deal accepted, purchased, rejected, expired)
+- Preserve in-app + realtime notifications for all actions
+- File:
+  - `src/lib/notifications/notification-service.ts`
+
+### T13W.6-4: Validation
+- `npm run lint` → pass
+- `npm run build` → pass
+
+### T13W.6-5: Commit & Push
+- Commit with descriptive message
+- Push to `NegotiationModal_Enhancement`
+- Update `DOC/Prompts/gitstatus.md`
+
 Date: December 24, 2025
 References:
   - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-REALTIME-PRESENCE-TIMEWINDOW-AUDIT-2025-12-24.md

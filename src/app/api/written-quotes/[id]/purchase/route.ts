@@ -169,7 +169,7 @@ export async function POST(
       recipientUserId: writtenQuote.lead.homeownerId,
       actionType: NotificationType.PURCHASE_CONFIRMED, // Installer confirmed
       role: UserRole.HOMEOWNER,
-      messageKey: 'homeowner.installer.confirmed',
+      messageKey: 'homeowner.written_quote.purchased',
       routeKey: 'homeowner.requests',
       routeParams: { leadId: writtenQuote.leadId },
       metadata: {
@@ -183,7 +183,7 @@ export async function POST(
       recipientUserId: auth.userId,
       actionType: NotificationType.PURCHASE_CONFIRMED,
       role: UserRole.INSTALLER,
-      messageKey: 'installer.bid.payment.success',
+      messageKey: 'installer.written_quote.purchased',
       routeKey: 'installer.leads',
       routeParams: { leadId: writtenQuote.leadId }
     });
@@ -195,7 +195,7 @@ export async function POST(
           recipientUserId: admin.id,
           actionType: NotificationType.LEAD_PURCHASED,
           role: UserRole.ADMIN,
-          messageKey: 'admin.bid.payment.completed',
+          messageKey: 'admin.written_quote.purchased',
           routeKey: 'admin.dashboard',
           routeParams: { leadId: writtenQuote.leadId, writtenQuoteId: id },
           metadata: {

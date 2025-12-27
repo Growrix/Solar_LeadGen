@@ -285,7 +285,11 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
   };
 
   // T356: Get type label for badge
-  const getTypeLabel = (type: string): string => {
+  const getTypeLabel = (type: string, messageKey?: string | null): string => {
+    if (typeof messageKey === 'string' && messageKey.includes('written_quote')) {
+      return 'Quote';
+    }
+
     switch (type) {
       case 'NEW_LEAD': return 'Lead';
       case 'LEAD_ASSIGNED': return 'Assigned';
@@ -301,6 +305,11 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       case 'SYSTEM': return 'System';
       default: return type;
     }
+  };
+
+  const canNavigateNotification = (notification: Notification): boolean => {
+    if (notification.routeKey && validateRouteKey(notification.routeKey)) return true;
+    return !!notification.actionUrl;
   };
 
   // T356: Get type badge classes based on priority
@@ -322,6 +331,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
   // T357: Get smart action button for notification
   const getSmartActionButton = (notification: Notification) => {
     const baseClasses = "px-3 py-1.5 text-button rounded-button border border-primary text-primary bg-transparent hover:bg-surface-hover transition-colors focus:outline-none focus:ring-2 focus:ring-primary";
+    const disabled = !canNavigateNotification(notification);
     
     switch (notification.type) {
       case 'BID_WON':
@@ -329,7 +339,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <button
             onClick={(e) => handleViewClick(notification, e)}
             className={baseClasses}
-            disabled={!notification.actionUrl}
+            disabled={disabled}
           >
             Proceed to Payment
           </button>
@@ -340,7 +350,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <button
             onClick={(e) => handleViewClick(notification, e)}
             className={baseClasses}
-            disabled={!notification.actionUrl}
+            disabled={disabled}
           >
             Review Bids
           </button>
@@ -352,7 +362,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <button
             onClick={(e) => handleViewClick(notification, e)}
             className={baseClasses}
-            disabled={!notification.actionUrl}
+            disabled={disabled}
           >
             View Lead
           </button>
@@ -363,7 +373,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <button
             onClick={(e) => handleViewClick(notification, e)}
             className={baseClasses}
-            disabled={!notification.actionUrl}
+            disabled={disabled}
           >
             Reply
           </button>
@@ -374,14 +384,14 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           <button
             onClick={(e) => handleViewClick(notification, e)}
             className={baseClasses}
-            disabled={!notification.actionUrl}
+            disabled={disabled}
           >
             Retry Payment
           </button>
         );
       
       default:
-        return notification.actionUrl ? (
+        return canNavigateNotification(notification) ? (
           <button
             onClick={(e) => handleViewClick(notification, e)}
             className={baseClasses}
@@ -497,7 +507,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
                       getIcon={getNotificationIcon}
                       iconContainerClasses={iconContainerClasses}
                       typeBadgeClasses={typeBadgeClasses}
-                      typeLabel={getTypeLabel(notification.type)}
+                      typeLabel={getTypeLabel(notification.type, notification.messageKey)}
                       getRelativeTime={getRelativeTime}
                       smartActionButton={getSmartActionButton(notification)}
                       userRole={userRole}

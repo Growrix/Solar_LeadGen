@@ -99,7 +99,9 @@ export async function POST(
       recipientUserId: otherPartyId,
       actionType: NotificationType.BID_SUBMITTED,
       role: otherPartyRole,
-      messageKey: isInstaller ? 'homeowner.request.received' : 'installer.bid.received',
+      messageKey: isInstaller
+        ? 'homeowner.written_quote.done_deal_rejected'
+        : 'installer.written_quote.done_deal_rejected',
       routeKey: isInstaller ? 'homeowner.requests' : 'installer.leads',
       routeParams: { leadId: writtenQuote.leadId },
       metadata: {

@@ -164,7 +164,9 @@ export async function POST(
       recipientUserId: otherPartyId,
       actionType: NotificationType.BID_SUBMITTED, // TODO: Create QUOTE_AGREED type
       role: otherPartyRole,
-      messageKey: isInstaller ? 'homeowner.request.received' : 'installer.bid.received',
+      messageKey: isInstaller
+        ? 'homeowner.written_quote.done_deal_requested'
+        : 'installer.written_quote.done_deal_requested',
       routeKey: isInstaller ? 'homeowner.requests' : 'installer.leads',
       routeParams: { 
         leadId: writtenQuote.leadId

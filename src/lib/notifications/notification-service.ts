@@ -23,7 +23,29 @@ export interface CreateNotificationInput {
  * Determine if notification type should trigger email
  * Based on audit report findings (Phase 8, T102)
  */
-function shouldSendEmail(type: NotificationType): boolean {
+function shouldSendEmail(input: { type: NotificationType; messageKey: MessageKey }): boolean {
+  // Written Quote: only email major milestones (batched-by-importance policy)
+  // NOTE: We use messageKey gating so we don't need schema changes/new enums.
+  if (input.messageKey.includes('written_quote')) {
+    const writtenQuoteEmailKeys = new Set<MessageKey>([
+      'homeowner.written_quote.submitted',
+      'homeowner.written_quote.rejected',
+      'homeowner.written_quote.done_deal_accepted',
+      'homeowner.written_quote.purchased',
+      'installer.written_quote.submitted',
+      'installer.written_quote.rejected',
+      'installer.written_quote.done_deal_accepted',
+      'installer.written_quote.purchased',
+      'admin.written_quote.submitted',
+      'admin.written_quote.purchased',
+      // Negotiation expiry is a critical closure event
+      'homeowner.written_quote.negotiation_expired',
+      'installer.written_quote.negotiation_expired',
+    ]);
+
+    return writtenQuoteEmailKeys.has(input.messageKey);
+  }
+
   const emailNotificationTypes: NotificationType[] = [
     // Admin notifications
     'NEW_LEAD',
@@ -53,7 +75,7 @@ function shouldSendEmail(type: NotificationType): boolean {
     'SYSTEM', // ✅ Enables emails for limit updates
   ];
 
-  return emailNotificationTypes.includes(type);
+  return emailNotificationTypes.includes(input.type);
 }
 
 /**
@@ -146,19 +168,30 @@ export async function createNotification(input: CreateNotificationInput) {
 
     // 2. Send Pusher real-time notification (async, non-blocking)
     try {
+      const createdAt = notification.createdAt instanceof Date
+        ? notification.createdAt.toISOString()
+        : new Date(notification.createdAt as any).toISOString();
+
       await triggerNotification(input.recipientUserId, {
         id: notification.id,
         type: input.actionType,
         title,
         message,
-        timestamp: notification.createdAt,
+        createdAt,
+        isRead: false,
+        actionUrl: (notification as any).actionUrl ?? null,
+        messageKey: input.messageKey,
+        routeKey: input.routeKey,
+        routeParams: input.routeParams || {},
+        // Back-compat
+        timestamp: createdAt,
       });
     } catch (pusherError) {
       console.error('⚠️ [Notification Service] Pusher failed (non-critical):', pusherError);
     }
 
     // 3. Send email notification (for important notifications)
-    if (shouldSendEmail(input.actionType)) {
+    if (shouldSendEmail({ type: input.actionType, messageKey: input.messageKey })) {
       await sendEmailNotification(
         input.recipientUserId,
         input.role,
