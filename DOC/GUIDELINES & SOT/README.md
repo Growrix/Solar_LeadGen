@@ -37,3 +37,19 @@ These rules are **non-negotiable** and must be followed by all humans and AI whe
 - Homeowner copy audit (policy violations log): DOC/Features/Written Quote/HOMEOWNER-MESSAGING-AUDIT-2025-12-27.md
 
 This keeps a single entry point without merging large indexes.
+
+---
+
+## Product Planning Standard (6-Phase, Legacy-Safe)
+
+All feature planning in this repo must follow the **Legacy-Safe 6-Phase Product Build Framework**.
+
+- Canonical framework (read before creating any feature plan):
+	- DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md
+
+Folderization rule (to prevent planning chaos):
+
+- Default: one feature = one SOT file:
+	- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+- If multiple supporting files are unavoidable:
+	- `DOC/Features/<Feature Name>/SOT/INDEX.md` must exist and list all related docs

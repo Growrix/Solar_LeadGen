@@ -236,6 +236,91 @@ This phase **MUST adapt to existing work**.
 
 ---
 
+# ✅ REPO-SPECIFIC: HOW TO FOLDERIZE THE 6 PHASES (SOT-FIRST, MINIMAL CHAOS)
+
+This section is an **add-on** to the framework above.
+It exists to solve a practical problem in this repo:
+**planning documents get scattered and the AI stops reading the Source of Truth (SOT)**.
+
+## Goals
+
+- Keep a **single canonical SOT file** per feature.
+- Allow supporting documents **only when necessary**, with a single index.
+- Ensure any AI/developer can always “re-load” the SOT and avoid hallucinating.
+
+## The Rule: One Feature = One SOT File (Default)
+
+For each feature, the default output is **one file** that contains Phases 0–6.
+
+Canonical location:
+
+- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+
+If you already start from an idea/research file (Raw Plan), keep it separate:
+
+- `DOC/Features/<Feature Name>/RAW PLAN/<your raw notes>.md`
+
+## When Multiple Files Are Allowed (and How to Keep Order)
+
+Only create multiple files when at least one is true:
+
+- You have large diagrams/screenshots that don’t belong in the main SOT
+- You have vendor docs or long research that would bloat the SOT
+- You have multiple audits/reports that must remain separate for traceability
+
+If multiple files are created, they MUST live under **one folder** and have **one index**:
+
+- Folder: `DOC/Features/<Feature Name>/SOT/`
+- Index: `DOC/Features/<Feature Name>/SOT/INDEX.md`
+
+Index rules:
+
+- `INDEX.md` lists every SOT-related file with a 1-line purpose.
+- `FEATURE-SOT.md` remains the canonical “single source of truth.”
+- No other file can override the SOT; supporting files only extend it.
+
+## Mandatory Header Pattern (for Every Feature SOT)
+
+At the top of every `FEATURE-SOT.md`, include:
+
+- Feature name
+- Status: Draft / Approved / In Progress / Done
+- Owner: Human or AI
+- Canonical SOT pointer:
+  - `This is the canonical SOT for this feature. All planning and coding must align to this file.`
+- Links:
+  - Raw Plan: `DOC/Features/<Feature Name>/RAW PLAN/...`
+  - Index (if exists): `DOC/Features/<Feature Name>/SOT/INDEX.md`
+
+## Your Workflow (Supported)
+
+You described:
+
+1) You share an idea via a RawPlan file (example: `DOC/Features/Blog Feature/RAW PLAN/Initial_idea.md`)
+2) You reference the main `DOC/GUIDELINES & SOT/README.md`
+3) The AI reads the framework + guidelines, then creates the feature SOT in the directory you mention
+4) After approval, implementation begins
+
+This is the recommended “no chaos” sequence for that workflow:
+
+1. AI reads:
+   - `DOC/GUIDELINES & SOT/README.md`
+   - `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md`
+   - This 6-phase framework file
+2. AI reads your RawPlan file
+3. AI creates ONLY:
+   - `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+   - (Optional) `DOC/Features/<Feature Name>/SOT/INDEX.md` if more than one supporting file is unavoidable
+4. AI writes phases incrementally and asks for approval at phase gates.
+5. Only after Phase 5 approval does AI start implementation work.
+
+## Enforcement Notes (For Any AI Builder)
+
+- If a feature already has `DOC/Features/<Feature>/SOT/FEATURE-SOT.md`, the AI MUST read it before writing any new plan or code.
+- The AI MUST NOT create multiple “competing” plans across random folders.
+- If the user requests a new feature without specifying a feature folder, the AI MUST ask where to place `FEATURE-SOT.md`.
+
+
 
 
 
