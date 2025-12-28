@@ -113,3 +113,9 @@ This entry records the DB backup before Blog Feature DB modeling. All files now 
 - Branch: BLOG
 - Description: chore(build): mark auth/session-dependent API routes as force-dynamic to eliminate build-time `Dynamic server usage` noise. `npm run build` verified clean.
 ---
+
+- Commit: 2715434d6dfd173b9e3aad5e3a59ef4315e59b30
+- Date: 2025-12-28 15:51:54 +0600
+- Branch: Blog_Safety
+- Description: feat(blog): add admin blog CMS mock UI (list + editor), localStorage-backed CMS store with drafts/revisions/scheduling, and client-side merge so published drafts appear on public /blog. Typecheck + Next build verified clean.
+---
