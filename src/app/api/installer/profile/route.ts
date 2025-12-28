@@ -6,6 +6,8 @@ import { installerProfileUpdateSchema } from '@/lib/validation/installer';
 import { ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/installer/profile
 // Aggregates User + InstallerProfile + InstallerVerification + InstallerPreferences
 export async function GET(_req: NextRequest) {

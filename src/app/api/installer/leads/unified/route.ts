@@ -17,6 +17,8 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { calculateCountdown } from '@/lib/services/countdown-service';
 
+export const dynamic = 'force-dynamic';
+
 type LeadQuoteTypeLower = 'call_visit' | 'written' | 'bidding';
 
 function normalizeQuoteType(quoteType: string): LeadQuoteTypeLower {
