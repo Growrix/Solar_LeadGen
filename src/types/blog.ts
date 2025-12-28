@@ -36,6 +36,16 @@ export interface BlogMediaAsset {
   bytes?: number;
 }
 
+export interface BlogPostRevision {
+  id: string;
+  createdAt: string; // ISO timestamp
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  contentFormat: 'markdown' | 'html' | 'plaintext';
+}
+
 export interface BlogPostSummary {
   id: string;
   slug: string;
@@ -52,8 +62,13 @@ export interface BlogPost extends BlogPostSummary {
   status: BlogPostStatus;
   content: string;
   contentFormat: 'markdown' | 'html' | 'plaintext';
+  createdAt?: string; // ISO timestamp
+  updatedAt?: string; // ISO timestamp
+  publishedAt?: string; // ISO timestamp
+  scheduledPublishAt?: string; // ISO timestamp
   seoTitle?: string;
   seoDescription?: string;
   ogImageUrl?: string;
   tags?: BlogTag[];
+  revisions?: BlogPostRevision[];
 }

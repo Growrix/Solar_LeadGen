@@ -1,5 +1,6 @@
 import { allArticles } from '@/data/blogData';
 import type { BlogCategory, BlogPost, BlogPostSummary, Post } from '@/types/blog';
+import { applyScheduledPublishes, getCmsPostBySlug, listCmsPosts, slugify as cmsSlugify } from '@/lib/blog/cms-store';
 
 export interface BlogContentProvider {
   listPublishedPostSummaries(): BlogPostSummary[];
@@ -14,6 +15,10 @@ function slugify(value: string): string {
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+}
+
+function isBrowser(): boolean {
+  return typeof window !== 'undefined';
 }
 
 function mockContentForTitle(title: string): string {
@@ -75,24 +80,55 @@ function createMockBlogContentProvider(): BlogContentProvider {
   const posts = allArticles.map(toPost);
   const postsBySlug = new Map(posts.map((p) => [p.slug, p] as const));
 
+  function listLocalPublished(): BlogPost[] {
+    if (!isBrowser()) return [];
+    applyScheduledPublishes();
+    return listCmsPosts().filter((p) => p.status === 'PUBLISHED');
+  }
+
+  function mergePublishedSummaries(): BlogPostSummary[] {
+    const base = posts.map(({ id, slug, title, excerpt, authorName, publishedDateLabel, readTimeLabel, categoryName, featuredImageUrl }) => ({
+      id,
+      slug,
+      title,
+      excerpt,
+      authorName,
+      publishedDateLabel,
+      readTimeLabel,
+      categoryName,
+      featuredImageUrl,
+    }));
+
+    const local = listLocalPublished().map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      excerpt: p.excerpt,
+      authorName: p.authorName,
+      publishedDateLabel: p.publishedDateLabel,
+      readTimeLabel: p.readTimeLabel,
+      categoryName: p.categoryName,
+      featuredImageUrl: p.featuredImageUrl,
+    }));
+
+    if (local.length === 0) return base;
+
+    const bySlug = new Map(base.map((p) => [p.slug, p] as const));
+    for (const item of local) {
+      bySlug.set(item.slug, item);
+    }
+    return Array.from(bySlug.values());
+  }
+
   return {
     listPublishedPostSummaries(): BlogPostSummary[] {
-      return posts.map(({ id, slug, title, excerpt, authorName, publishedDateLabel, readTimeLabel, categoryName, featuredImageUrl }) => ({
-        id,
-        slug,
-        title,
-        excerpt,
-        authorName,
-        publishedDateLabel,
-        readTimeLabel,
-        categoryName,
-        featuredImageUrl,
-      }));
+      return mergePublishedSummaries();
     },
 
     listCategories(): BlogCategory[] {
-      const categories = uniqueBy(posts, (p) => p.categoryName).map((p) => {
-        const slug = slugify(p.categoryName);
+      const mergedPosts = [...posts, ...listLocalPublished()];
+      const categories = uniqueBy(mergedPosts, (p) => p.categoryName).map((p) => {
+        const slug = (isBrowser() ? cmsSlugify(p.categoryName) : slugify(p.categoryName));
         return {
           id: `mock:cat:${slug}`,
           name: p.categoryName,
@@ -104,6 +140,10 @@ function createMockBlogContentProvider(): BlogContentProvider {
     },
 
     getPublishedPostBySlug(slug: string): BlogPost | null {
+      if (isBrowser()) {
+        const local = getCmsPostBySlug(slug);
+        if (local && local.status === 'PUBLISHED') return local;
+      }
       return postsBySlug.get(slug) ?? null;
     },
   };
