@@ -101,3 +101,15 @@ This entry records the rollback to the Written_Quote branch for full restoration
 This entry records the DB backup before Blog Feature DB modeling. All files now reflect the state of commit afe8fbc1507ae32b5533f8dd98f215894ea5e9e0 as of 2025-12-28 13:09:11.
 
 ---
+
+- Commit: df1c50bc3e14d098b6dbe22cf86aa240d423b65c
+- Date: 2025-12-28 14:33:22 +0600
+- Branch: BLOG
+- Description: docs: lock Blog Feature planning, clarify execution workflow (Docs Lock, SOT Index, frontend-first tasks, AI continuity). All docs now unambiguous for E2E AI-driven implementation.
+---
+
+- Commit: 8f1e39760a83c95d1e4af5f68bf5f6b979c08e68
+- Date: 2025-12-28 15:28:42 +0600
+- Branch: BLOG
+- Description: chore(build): mark auth/session-dependent API routes as force-dynamic to eliminate build-time `Dynamic server usage` noise. `npm run build` verified clean.
+---

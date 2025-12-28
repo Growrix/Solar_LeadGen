@@ -3,11 +3,11 @@
 Purpose: one page that lets AI/humans reload *exactly* what is locked, what is executable next, and where to go for details.
 
 ## Current Status
-- Planning SOT status: Draft (until you set `Locked (Approved)` in FEATURE-SOT.md)
-- Execution status: Not started (use specs/014-blog-feature/tasks.md)
+- Planning SOT status: Locked (Approved)
+- Execution status: EXEC-1 + EXEC-2 complete (mock provider + public blog canonical routing)
 
 ## Next Action (single source)
-- Do **EXEC-0** and **EXEC-0.5** in specs/014-blog-feature/tasks.md.
+- Continue at **EXEC-3** in specs/014-blog-feature/tasks.md (Admin Blog CMS, mock provider).
 
 ## 1) Canonical Plan (LOCK THIS)
 - Planning SOT (6-Phase Framework Phases 0–5 docs + Phase 6 intent): DOC/Features/Blog Feature/SOT/FEATURE-SOT.md

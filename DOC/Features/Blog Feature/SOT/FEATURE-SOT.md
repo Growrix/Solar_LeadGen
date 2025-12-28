@@ -1,6 +1,6 @@
 # Blog Feature — AI-Powered SEO Blog System (E2E)
 
-- Status: Draft (Planning)
+- Status: Locked (Approved)
 - Owner: AI (GitHub Copilot / GPT-5.2) + Human Owner
 
 This file is the canonical **Planning SOT** for this feature (6-Phase Framework).
