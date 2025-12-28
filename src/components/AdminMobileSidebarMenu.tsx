@@ -165,6 +165,7 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
         // Route to correct page
         if (page === 'Dashboard') router.push('/admin/dashboard');
         else if (page === 'Leads') router.push('/admin/leads');
+      else if (page === 'Blog') router.push('/admin/blog');
         else if (page === 'Homeowners') router.push('/admin/homeowners');
         else if (page === 'Installers') router.push('/admin/installers');
         else if (page === 'Newsletter') router.push('/admin/newsletter');
@@ -208,6 +209,12 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
                         isActive={activePage === 'Leads'} 
                         onClick={() => handleNavClick('Leads')} 
                     />
+                  <NavItem 
+                    icon={<FileTextIcon />} 
+                    title="Blog" 
+                    isActive={activePage === 'Blog'} 
+                    onClick={() => handleNavClick('Blog')} 
+                  />
                     <NavItem 
                         icon={<HomeIcon />} 
                         title="Homeowners" 

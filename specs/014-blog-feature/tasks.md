@@ -1,10 +1,14 @@
-# Blog Feature (WordPress-level + AI) — Execution Tasks (AI-Controlled)
+# Blog Feature (Strapi-based + AI Automation) — Execution Tasks (AI-Controlled)
 
-Status: Ready (pre-implementation)
+Status: PAUSED (Change Request Pending — Switch to Strapi)
 
 Source of Truth:
 - Planning SOT (6-Phase Framework: Phases 0–5 docs + Phase 6 intent): DOC/Features/Blog Feature/SOT/FEATURE-SOT.md
 - SOT Index (AI Continuity Pack / restart point): DOC/Features/Blog Feature/SOT/INDEX.md
+
+Supporting (Strapi):
+- Strapi decision + architecture: DOC/Features/Blog Feature/SOT/STRAPI-DECISION-AND-ARCHITECTURE.md
+- Automation pipeline: DOC/Features/Blog Feature/SOT/AUTOMATION-PIPELINE.md
 
 Supporting:
 - Audit: DOC/Features/Blog Feature/BLOG-FEATURE-AUDIT-2025-12-28.md
@@ -27,9 +31,12 @@ Stop if any check fails.
 Goal: lock the plan so AI never loses the “what/why/how” across sessions.
 
 Tasks:
-- Confirm SOT is complete for Phases 0–5 (audit → vision → stories → scope → flows → technical proposal).
-- Confirm the execution approach is **contract-first + frontend-first**.
-- Mark SOT status as `Locked (Approved)`.
+- Confirm the updated SOT reflects the Strapi change request.
+- Confirm execution approach:
+  - Public blog pages remain in Next.js
+  - CMS authoring happens in Strapi
+  - Automation creates drafts/publishes via Strapi APIs
+- When approved, mark SOT status as `Locked (Approved)`.
 
 Checkpoint:
 - SOT is explicitly locked and referenced from the SOT Index.
@@ -37,42 +44,30 @@ Checkpoint:
 
 ---
 
-## EXEC-1 — CONTRACT-FIRST (Types + Mock Data Provider) (No DB yet)
+## EXEC-1 — STRAPI SETUP (CMS foundation)
 
-Goal: define the canonical “shape” of the blog system once, so the frontend is built against the same contract the backend will later implement.
-
-Rules:
-- Do NOT change the database in this phase.
-- Define types/interfaces that mirror the planned Prisma entities.
-- The UI must consume a single provider interface (mock now, real backend later).
+Goal: establish Strapi as the system of record for Blog.
 
 Tasks:
-- Define domain types for:
-  - BlogPost (status state machine; slug; SEO fields)
-  - BlogCategory
-  - BlogTag
-  - BlogPostRevision (basic snapshots)
-  - BlogMediaAsset (media library metadata)
-  - BlogAuthorProfile
-- Add a mock provider implementing the contract (in-memory/static data).
+- Create Strapi project (environment-dependent; local + hosted strategy as decided)
+- Define content types:
+  - Post, Category, Tag, Author (+ media usage)
+- Enable Draft/Publish and confirm editorial workflow approach
 
 Checkpoint:
-- `npx tsc --noEmit` passes
-- `npm run build` passes
+- Strapi Admin accessible
+- API can list published posts
 
 ---
 
-## EXEC-2 — FRONTEND FIRST: Public Blog (Contract-backed)
+## EXEC-2 — FRONTEND: Public Blog (Strapi-backed)
 
 Goal: keep `/blog` working while moving to canonical URLs, without waiting for backend.
 
 Tasks:
-- Public list:
-  - Migrate `/blog` to consume the contract provider (mock provider initially).
-- Canonical route:
-  - Add `/blog/[slug]` (server-rendered; SEO metadata) consuming the contract provider.
-- Deprecation:
-  - Replace `/blog/post` sessionStorage flow with redirect to `/blog/[slug]` once safe.
+- Public list: `/blog` fetches published posts from Strapi
+- Canonical route: `/blog/[slug]` fetches by slug and renders SEO meta
+- Deprecation: safely remove/redirect `/blog/post` sessionStorage flow
 
 Checkpoint:
 - Manual: `/blog` renders list (mock provider)
@@ -81,99 +76,65 @@ Checkpoint:
 
 ---
 
-## EXEC-3 — FRONTEND FIRST: Admin Blog CMS (WordPress parity)
+## EXEC-3 — ADMIN INTEGRATION (Our dashboard entrypoint)
 
-Goal: production-grade manual CMS under `/admin/blog`, built against the same contract provider.
+Goal: make Blog accessible from our admin without rebuilding the CMS UI.
 
 Tasks:
-- Admin list: drafts/pending/published/archived (mock provider)
-- Admin editor (mock provider):
-  - Title, slug, excerpt
-  - Content editor supports both: Markdown + rich text
-  - Categories/tags
-  - Featured image (select from media library contract)
-  - Preview
-  - Schedule / publish now
-- Revisions (UI + contract only in this phase):
-  - Show revision list
-  - Allow selecting a revision to restore (mocked behavior)
+- Add/keep an Admin sidebar entry that links to Strapi Admin ("Blog (Strapi)")
+- Optional: add a small read-only page that deep-links to Strapi entries (no editing)
 
 Checkpoint:
-- `npx tsc --noEmit` passes
-- `npm run build` passes
-- Manual: create draft → preview → publish → appears on public blog (mock provider)
+- Admin can reach Strapi quickly from our dashboard
 
 ---
 
-## EXEC-4 — BACKEND: Database + APIs (Match the Locked Contract)
+## EXEC-4 — AUTOMATION MVP (Create drafts in Strapi)
 
-Goal: implement the real backend to match the contract the UI already uses.
-
-Rules:
-- Follow DB Operations Standard (backup-first; no destructive commands).
-- After schema edits run `npx prisma generate` immediately.
-- Do NOT change frontend contracts in this phase unless a written Change Request is approved.
+Goal: generate drafts automatically per the raw plan.
 
 Tasks:
-- Add Prisma models (delta-based) for:
-  - BlogPost, BlogCategory, BlogTag, BlogPostTag join
-  - BlogPostRevision
-  - BlogMediaAsset
-  - BlogAuthorProfile
-  - BlogDraftJob
-  - BlogSource
-- Add backend data access + API surface that returns the same shapes as the contract.
+- n8n (or worker) generates draft content (topic → outline → draft → SEO fields)
+- Create draft posts in Strapi via API
+- Store source links and job metadata (location decided in SOT)
 
 Checkpoint:
-- `npx prisma validate` passes
-- `npx tsc --noEmit` passes
-- `npm run build` passes
+- Manual: automation creates a Strapi draft
+- Admin can approve/publish in Strapi
 
 ---
 
-## EXEC-5 — INTEGRATION: Swap Mock Provider → Real Backend
+## EXEC-5 — SCHEDULING + REVALIDATION
 
-Goal: wire the existing UI to the backend without rewriting UI components.
+Goal: scheduled publishing is reliable and reflected on the public site.
 
 Tasks:
-- Replace mock provider implementation with real backend calls.
-- Keep UI behavior identical; only data source changes.
-- Implement media upload pipeline end-to-end:
-  - Prefer S3 using existing `src/lib/s3.ts` patterns
-  - Persist `BlogMediaAsset` rows (key/url/type/size/createdBy)
-  - Provide presigned upload and presigned read where needed
+- Scheduling approach:
+  - Use Strapi scheduling (if available in chosen setup), OR
+  - Use n8n/worker to publish at scheduled time
+- After publish:
+  - Trigger Next.js revalidation (if using caching)
+  - Regenerate sitemap
 
 Checkpoint:
-- Manual: `/blog` and `/blog/<slug>` load from DB
-- Manual: admin create draft → publish → appears in public blog (DB)
-- Manual: upload image → appears in library → selectable as featured image
-- `npm run build` passes
+- Manual: scheduled post publishes at the right time and appears publicly
 
 ---
 
-## EXEC-6 — AI Drafting (Admin-assisted)
+## EXEC-6 — RSS RESEARCH SIGNALS (Optional, Blog module only)
 
 Goal: AI generates drafts, admin approves.
 
 Tasks:
-- Add admin action: generate draft from topic
-- Store:
-  - prompt inputs
-  - model metadata
-  - source links used for topic discovery
-  - job status + errors
-- Default workflow: PENDING_APPROVAL
-- Optional: allow auto-publish toggle
-
-Checkpoint:
-- Manual: generate → appears as pending → approve → schedule/publish
+- Fetch RSS from allowlisted sources
+- Convert RSS items into topic ideas + citation links
+- Ensure no verbatim copying into generated posts
 
 ---
 
-## EXEC-7 — Scheduling + SEO Plumbing
+## EXEC-7 — SEO Plumbing
 
 Tasks:
-- Scheduled publish executor (simple cron approach first; n8n later)
 - Blog sitemap integration
 
 Checkpoint:

@@ -157,6 +157,7 @@ const AdminSidebar: React.FC<{ activePage?: string }> = ({ activePage = 'Dashboa
       <nav className={`dashboard-sidebar-nav ${isCollapsed ? 'dashboard-sidebar-nav--collapsed' : 'dashboard-sidebar-nav--expanded'}`}>
         <NavItem icon={<LayoutDashboardIcon />} title="Dashboard" isActive={activePage === 'Dashboard'} onClick={() => { window.location.href = '/admin/dashboard'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<ClipboardListIcon />} title="Leads" isActive={activePage === 'Leads'} onClick={() => { window.location.href = '/admin/leads'; }} isCollapsed={isCollapsed} />
+        <NavItem icon={<FileTextIcon />} title="Blog" isActive={activePage === 'Blog'} onClick={() => { window.location.href = '/admin/blog'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<LayersIcon />} title="Components" isActive={activePage === 'Components'} onClick={() => { window.location.href = '/admin/components'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<MailIcon />} title="Newsletter" isActive={activePage === 'Newsletter'} onClick={() => { window.location.href = '/admin/newsletter'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<CalculatorIcon />} title="Instant Quotes" isActive={activePage === 'Instant Quotes'} onClick={() => { window.location.href = '/admin/instant-quotes'; }} isCollapsed={isCollapsed} />

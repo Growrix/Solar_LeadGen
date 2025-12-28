@@ -3,20 +3,24 @@
 Purpose: one page that lets AI/humans reload *exactly* what is locked, what is executable next, and where to go for details.
 
 ## Current Status
-- Planning SOT status: Locked (Approved)
-- Execution status: EXEC-1 + EXEC-2 complete (mock provider + public blog canonical routing)
+- Planning SOT status: Change Request Pending (Switch to Strapi)
+- Execution status: PAUSED — prior Prisma-based plan is superseded by Change Request
 
 ## Next Action (single source)
-- Continue at **EXEC-3** in specs/014-blog-feature/tasks.md (Admin Blog CMS, mock provider).
+- Review and approve the updated SOT plan (Strapi architecture + automation). Then lock SOT again.
 
 ## 1) Canonical Plan (LOCK THIS)
 - Planning SOT (6-Phase Framework Phases 0–5 docs + Phase 6 intent): DOC/Features/Blog Feature/SOT/FEATURE-SOT.md
+
+Supporting (Strapi):
+- Architecture decision + integration notes: DOC/Features/Blog Feature/SOT/STRAPI-DECISION-AND-ARCHITECTURE.md
+- Automation pipeline (AI + RSS + scheduling): DOC/Features/Blog Feature/SOT/AUTOMATION-PIPELINE.md
 
 ## 2) Audit / Current State
 - Audit report: DOC/Features/Blog Feature/BLOG-FEATURE-AUDIT-2025-12-28.md
 
 ## 3) Execution Plan (Phase-by-phase tasks)
-- Tasks checklist (execution phases EXEC-0..EXEC-7): specs/014-blog-feature/tasks.md
+- Tasks checklist: specs/014-blog-feature/tasks.md (to be updated to Strapi-based execution)
 
 ## 4) Workflow Authority
 - Authority index: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md

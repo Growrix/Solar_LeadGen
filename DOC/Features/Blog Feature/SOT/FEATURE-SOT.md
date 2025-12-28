@@ -1,6 +1,6 @@
 # Blog Feature — AI-Powered SEO Blog System (E2E)
 
-- Status: Locked (Approved)
+- Status: Change Request Pending (Switch to Strapi)
 - Owner: AI (GitHub Copilot / GPT-5.2) + Human Owner
 
 This file is the canonical **Planning SOT** for this feature (6-Phase Framework).
@@ -22,6 +22,28 @@ Links:
   - Framework: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md
   - Authority Index: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
    - SOT Index (AI Continuity Pack / restart point): DOC/Features/Blog Feature/SOT/INDEX.md
+
+Strapi supporting docs:
+   - Strapi decision + architecture: DOC/Features/Blog Feature/SOT/STRAPI-DECISION-AND-ARCHITECTURE.md
+   - Automation pipeline: DOC/Features/Blog Feature/SOT/AUTOMATION-PIPELINE.md
+
+---
+
+## Change Request (Approved Direction, Plan Update Required)
+
+Change: Switch Blog CMS backend from in-app custom CMS (Prisma + Next.js Admin) to **Strapi headless CMS**.
+
+Reason:
+- You decided to use Strapi for better CMS capability and scalability.
+- We still need automation for blog post creation (AI + RSS research signals + scheduling), as described in the Raw Plan.
+
+Immediate implications:
+- Public blog pages remain in this Next.js app, but content source becomes Strapi.
+- Our Next.js Admin dashboard should not attempt to copy Strapi’s admin UI.
+- Any partially built in-app Blog admin/editor UI becomes “legacy/paused” until we decide to remove it safely.
+
+Locking rule:
+- This SOT is now **unlocked** (Change Request Pending). Do not continue execution tasks until you re-approve and we set status back to `Locked (Approved)`.
 
 ---
 
@@ -73,6 +95,10 @@ Newsletter (partial real backend):
 - Newsletter subscription API exists: `src/app/api/newsletter/subscribe/route.ts`.
 - Prisma model exists: `NewsletterSubscriber` in `prisma/schema.prisma`.
 
+Admin blog UI (partially implemented):
+- `/admin/blog` entry was added to the admin navigation.
+- A rich text editor UI was integrated for blog authoring (in-app), but this will be superseded by Strapi authoring once the change request is adopted.
+
 ## 0.2 What Does NOT Exist Yet (Gaps)
 
 - No Prisma models for blog posts, categories, tags, authorship, publishing states.
@@ -82,6 +108,12 @@ Newsletter (partial real backend):
 - No SEO sitemap / RSS feed generation for blog content.
 - No AI generation pipeline (prompts, auditability, job history, approvals).
 - No automation hooks (n8n/cron) for scheduled publishing.
+
+Strapi-specific gaps (new plan):
+- No Strapi instance configured for Blog content yet.
+- No Strapi content model defined (Post/Category/Tag/Author + media usage).
+- No Next.js public blog pages fetching content from Strapi yet.
+- No automation pipeline wiring to create drafts/publish via Strapi APIs.
 
 ## 0.3 Locked / Do-Not-Touch Areas (Current constraints)
 
@@ -95,6 +127,7 @@ However, to preserve stability:
 - Content quality + SEO risk if AI content is not controlled/approved.
 - Copyright risk if RSS content is copied verbatim; the system must treat RSS as “signals + sources”, not as copy.
 - Must follow repo authority hierarchy before implementation (SYSTEM_CONSTITUTION / Blueprint / AI Implementation Guidelines).
+- Automation must not copy RSS text verbatim (copyright + trust risk). RSS is for discovery + citations only.
 
 ---
 
@@ -135,6 +168,8 @@ Current blog experience is mock-data based and not connected to real content man
 - Edit title/meta before publishing.
 - Manage categories/tags.
 
+Note: With Strapi, these actions happen in Strapi Admin by default (not in our Next.js admin).
+
 ## 2.2b Admin (Manual Blog — WordPress Parity)
 - Create a new blog post manually (title, slug, excerpt, content).
 - Save drafts and continue editing later.
@@ -145,6 +180,8 @@ Current blog experience is mock-data based and not connected to real content man
 - Edit an existing published post and republish updates.
 - Archive/unpublish a post.
 - View basic revision history and restore a previous revision (industry standard; can be MVP-lite).
+
+Note: With Strapi, “WordPress parity” is achieved via Strapi’s editor + media system, and optionally extensions/plugins.
 
 ## 2.3 System / AI / Automation (Blog module only)
 - Suggest blog topics from:
@@ -168,36 +205,33 @@ Current blog experience is mock-data based and not connected to real content man
 
 # PHASE 3 — FEATURE SCOPE & MODULES
 
-## 3.1 Modules (Blog Only)
+## 3.1 Modules (Blog Only, Strapi-based)
 
-1) Public Blog (New/Modify)
-- Modify existing mock `/blog` and `/blog/post` into real routes.
-- Provide canonical post URLs.
+1) Strapi CMS for Blog (New)
+- Strapi becomes the system of record for blog content and media.
+- Admin/editor workflow primarily happens in Strapi Admin.
 
-2) Blog Content Model (New)
-- Persist posts, publish states, categories/tags.
+2) Public Blog (Modify)
+- Keep Next.js public blog UI and routes, but change data source to Strapi.
+- Provide canonical post URLs (prefer `/blog/[slug]`).
 
-3) Admin Blog CMS (New)
-- Minimal admin UI for approvals, edits, scheduling.
+3) Admin Dashboard Integration (Modify)
+- Our Next.js admin should expose a clear entrypoint (e.g., “Blog (Strapi)”) linking to Strapi Admin.
+- Optional: add read-only status panels later (draft count, publish schedule), but do not re-implement the CMS UI.
 
-3b) Manual Blog Authoring (New)
-- Modern WordPress-like editor workflow for manual posts (with preview + featured image + categories/tags).
-- Revision history (at least basic version snapshots).
+4) AI Drafting + Automation (New)
+- Use n8n and/or a small worker to generate drafts and create them in Strapi via API.
+- Admin approves/schedules/publishes in Strapi (minimal actions).
 
-4) AI Drafting (New)
-- Generate drafts; admin approves.
-
-5) Automation Hooks (New)
-- Scheduled publish workflow (future: n8n).
-
-6) SEO Infrastructure (New)
-- Meta tags per post.
-- Sitemap + (optional) RSS feed.
+5) SEO Infrastructure (Modify/New)
+- Per-post metadata + OpenGraph driven from Strapi fields.
+- Sitemap includes published blog posts.
+- Optional: Blog RSS feed for subscribers.
 
 ## 3.2 Reuse vs Modify vs New
-- Reuse (concept/UI only): existing BlogSection/blog pages as starting point.
-- Modify: replace static data/sessionStorage with real routing + DB-backed content.
-- New: Admin pages, Prisma models, API routes, AI job tracking.
+- Reuse (concept/UI): existing BlogSection/blog pages as starting point.
+- Modify: replace static data/sessionStorage with canonical URLs and Strapi-backed content.
+- New: Strapi CMS content model + automation pipeline; optional job audit store.
 
 ---
 
@@ -210,32 +244,36 @@ Current blog experience is mock-data based and not connected to real content man
 4) Post page loads content server-side; renders SEO meta.
 5) Related posts appear based on tags/category.
 
+Data source:
+- Next.js fetches published content from Strapi API.
+
 ## 4.2 Admin Minimal Workflow
-1) System generates a draft (AI).
-2) Admin sees “Pending Approval” list.
-3) Admin actions:
+1) Automation generates a draft (AI) and creates it in Strapi.
+2) Admin reviews drafts in Strapi (optional: keep a “PENDING_APPROVAL” workflow state).
+3) Admin actions (Strapi):
    - Approve (optionally edit title/meta)
    - Reject (optional reason)
-   - Schedule publish time
-4) At publish time, the system publishes and updates sitemap.
+   - Schedule publish time (either Strapi scheduling or automation-driven)
+4) At publish time, publish occurs and the public site is revalidated/sitemap updated.
 
 ## 4.2b Admin Manual Authoring Flow (WordPress-like)
+In Strapi Admin:
 1) Admin creates a new post (manual) and saves as draft.
-2) Admin adds/edits content, sets featured image, categories/tags, SEO fields.
-3) Admin previews the post.
-4) Admin either publishes now, or schedules.
-5) Editing a published post creates a new revision; admin can roll back if needed.
+2) Admin edits content, sets featured image/media, categories/tags, SEO fields.
+3) Admin previews (either in Strapi or via optional Next.js preview mode).
+4) Admin publishes now or schedules.
+5) Revision strategy depends on Strapi capabilities and/or an additional “revisions” layer (optional).
 
 ## 4.3 AI Draft Generation Flow (Blog)
 1) Input:
    - Admin enters topic OR system proposes topics (RSS research optional).
 2) AI generates:
    - Outline → Draft → SEO meta.
-3) System stores:
-   - Draft content
-   - Model metadata
+3) Automation stores (minimum):
    - Source URLs used for research
-   - Admin approval decision
+   - Model metadata
+   - Job status/errors
+4) Automation creates the draft post in Strapi (Draft).
 
 ## 4.4 RSS Research Flow (Blog, optional)
 1) System fetches RSS from approved “blog sources list”.
@@ -250,23 +288,27 @@ Current blog experience is mock-data based and not connected to real content man
 - If AI generation fails: draft remains in “failed” state with error; admin can retry.
 - If scheduled publish fails: system logs event and alerts admin (notification/email in later feature).
 
+Reference for Strapi + automation details:
+- DOC/Features/Blog Feature/SOT/STRAPI-DECISION-AND-ARCHITECTURE.md
+- DOC/Features/Blog Feature/SOT/AUTOMATION-PIPELINE.md
+
 ---
 
 # PHASE 5 — TECHNICAL DESIGN (PROPOSAL ONLY, REQUIRES APPROVAL BEFORE CODING)
 
-## 5.1 Data Model (Prisma) — Proposed
-- BlogPost (slug, title, excerpt, body, status: DRAFT/PENDING/PUBLISHED/ARCHIVED, publishedAt, scheduledAt, heroImageUrl, seoTitle, seoDescription, ogImageUrl, author fields)
-- BlogCategory
-- BlogTag
-- BlogPostTag join
-- BlogDraftJob / ContentGenerationJob (topic input, status, model, sourceLinks, generatedAt, error)
-- BlogSource (approved RSS sources list)
+## 5.1 Data Model (Strapi) — Proposed
 
-Additional (WordPress parity, can be MVP-lite):
-- BlogPostRevision (postId, createdAt, title/body/meta snapshot, createdBy)
-- BlogMediaAsset (optional if you want admin-uploaded images instead of only URLs)
+Strapi becomes the canonical data model for Blog.
 
-Note: Exact schema must be designed delta-based and follow repo DB operations standard before any migration.
+Minimum types:
+- Post (title, slug, excerpt, content, featuredImage, categories, tags, author, seoTitle, seoDescription, ogImage, publishedAt)
+- Category (name, slug)
+- Tag (name, slug)
+- Author (displayName, bio, avatar)
+
+Automation/job audit storage (two options):
+1) Store in Strapi (GenerationJob type) for simplicity
+2) Store in this app (separate feature later) for stronger auditability and scaling
 
 ## 5.2 Pages / Routes — Proposed
 Public:
@@ -274,14 +316,15 @@ Public:
 - `/blog/[slug]` (published post)
 
 Admin:
-- `/admin/blog` (queue + list)
-- `/admin/blog/new` (manual creation)
-- `/admin/blog/[id]` (edit/approve/schedule)
+- Our app:
+   - `/admin` sidebar includes “Blog (Strapi)” entrypoint (link-out)
+- Strapi:
+   - Strapi Admin is the authoring CMS UI
 
 ## 5.3 API Routes — Proposed
-- Public: read-only endpoints (or server actions) for listing + fetching by slug.
-- Admin: CRUD endpoints guarded by admin role.
-- AI: generate endpoints guarded by admin role.
+- Public: server-side fetches from Strapi for listing + fetching by slug.
+- Automation: privileged Strapi API calls for creating drafts and publishing.
+- Optional: Next.js “revalidate” endpoint to update cached pages after publish.
 
 ## 5.4 SEO
 - Per-post metadata + OpenGraph.
@@ -290,8 +333,8 @@ Admin:
 
 ## 5.5 Security
 - Public can only read PUBLISHED posts.
-- Admin operations require authenticated admin.
-- AI generation endpoints must be rate limited and logged.
+- Strapi Admin is protected by Strapi auth and network/environment controls.
+- Automation tokens must be least-privilege and never exposed to client.
 
 ---
 
@@ -342,29 +385,25 @@ Note: We should verify each feed’s stability and any content usage restriction
 
 ---
 
-# PHASE 6 — LEGACY-AWARE DEVELOPMENT EXECUTION PLAN
+# PHASE 6 — LEGACY-AWARE DEVELOPMENT EXECUTION PLAN (Strapi)
 
-This is an incremental build plan intended to preserve the existing `/blog` UX while making it real.
+This is an incremental build plan intended to preserve the existing `/blog` UX while moving content ownership to Strapi.
 
 ## Step-by-step Plan
-1) Confirm authorities before coding (Constitution/Blueprint/AI Guidelines).
-2) Add Prisma blog models (delta-only) + migrations (following DB ops standards).
-3) Implement public read flows:
-   - Replace static blog data with DB queries.
-   - Replace `/blog/post` sessionStorage routing with `/blog/[slug]`.
-4) Add admin CMS MVP:
-   - Create/edit drafts.
-   - Approve/publish.
-   - Schedule publish.
-5) Add AI drafting MVP:
-   - Topic → outline → draft.
-   - Store job history + source links.
-6) Add SEO infrastructure:
-   - Metadata per post.
-   - Sitemap.
-7) Add automation hook for scheduled publishing:
-   - Simple cron strategy first.
-   - n8n integration later.
+1) Confirm authorities before any implementation (Constitution/Blueprint/AI Guidelines).
+2) Stand up Strapi instance and define Blog content types (Post/Category/Tag/Author + media).
+3) Switch Next.js public blog routes to fetch published content from Strapi:
+   - `/blog` list
+   - `/blog/[slug]` canonical post page
+   - Deprecate `/blog/post` sessionStorage flow safely
+4) Admin dashboard integration:
+   - Add/keep an admin navigation entry that takes admins to Strapi (link-out)
+5) Automation MVP:
+   - n8n (or worker) generates drafts and creates them in Strapi
+   - Admin approves/schedules/publishes in Strapi
+6) SEO plumbing:
+   - Per-post metadata
+   - Sitemap generation + publish-triggered revalidation
 
 ## Testing / Validation (per incremental step)
 - Gate 0 typecheck/build checks after each major step.
@@ -376,6 +415,6 @@ This is an incremental build plan intended to preserve the existing `/blog` UX w
 ## Rollback Strategy
 - Keep changes incremental:
   - Maintain `/blog` route and update internals.
-  - Avoid deleting old mock data until the DB-backed flow is proven.
+   - Avoid deleting old mock data or legacy admin UI until Strapi-backed flow is proven.
 
 ---

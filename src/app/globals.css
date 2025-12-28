@@ -732,6 +732,36 @@ body {
     box-shadow: var(--shadow-inset-md), 0 0 0 1px rgb(var(--color-accent)) !important;
   }
 
+  /* TipTap editor placeholder + base text styling */
+  .tiptap-editor .tiptap {
+    @apply outline-none text-foreground;
+  }
+
+  .tiptap-editor .tiptap p {
+    margin: 0;
+  }
+
+  .tiptap-editor .tiptap h2 {
+    margin: 0;
+  }
+
+  .tiptap-editor .tiptap ul,
+  .tiptap-editor .tiptap ol {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .tiptap-editor .tiptap li {
+    margin: 0;
+  }
+
+  .tiptap-editor .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    @apply text-muted-foreground pointer-events-none;
+    height: 0;
+  }
+
   /* Form select semantic class - neumorphic design with theme colors */
   .form-select {
     appearance: none !important;

@@ -4340,3 +4340,38 @@ I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PR
  My initial research with the chatGPT is D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Feature\RAW PLAN\Initial_idea.md . in this .md file there are 2 prompts and output shared. Understand the conversation first. As there are multiple feature to build in the prompt 2 output , I want you to focus on Blog Feature e2e to build first only. But make sure the Prompt 2 output is my goal. your job is to follow the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md and prepare the plan accordingly to build the Blog Feature e2e .
 
  - Create any folder/files under this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Feature accordingly for the plan.
+---------------------------------------------------------------------------------------------
+
+
+The UI implimentation was not accurately done . the  Placehoder class is wrong . You need to use the right class . e.g check the texts inside the boxes are not well aligned.  And also there is no Editor such as TIP TAP editor, It is very poor UI  which is not industry standard.  ANd I want the Blog Feature should be routed to the Admin Sidebar menu ,SO I can easily access . 
+
+-  It is better to follow the wordpress CMS and just simply copy it. or comeup with better idea than wordpress CMS for the Blog feature UI . Or let me know If we can copy any blog CMS which is open source and free to use. So that we can just copy the UI and functionality from that CMS. 
+
+- Comeup with the best options for the Blog Feature UI instead of buidling poor UI and strugle with it. 
+
+***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ----------------------------------------------------------------------------------------
+
+ From the plannig to the implimentation we are missing somethng so that I am getting surprised when I see that you have build Poor UI for the Blog feature. As We had no such UI/UX planning documents shared before the implimentation. I want you to create a proper UI/UX planning document for the Blog feature before doing anything further. And Update the readme.md file and all the necessary files/folders accordingly within this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Feature folder.
+
+ I prefer you to follow the wordpress CMS and just simply copy it. or comeup with better idea than wordpress CMS for the Blog feature UI . Or let me know If we can copy any blog CMS which is open source like payload CMS and free to use. So that we can just copy the UI and functionality from that CMS. 
+
+ We will update our entire feature plan if we have better option to build this entire blog feature. And also expand Intigrate with payload CMS if needed for better management.
+
+ lets discuss on this and find a better solution. Becuase I need the frontend first and then create the backend based on the frontend. we cannot build poor UI and strugle with it. 
+
+ -----------------------------------------------------------------------------------------
+
+ lets replan the blog feature and prepare/update the SOT D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Feature\SOT.
+ AS per your recommendation I chose the Strapi headless CMS for better management of the blog feature. So I want you to prepare the new plan accordingly based on the strapi headless CMS . ALso keep in mind that we need the Automation of blog posts as per the initial plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Feature\RAW PLAN\Initial_idea.md .
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ------------------------------------------------------------------------------------
+
+ set the SOT status back to Locked (Approved) and lets move forward as per todos and task plan.  but before that you should remove the recent tasks were done. e.g installation of Tiptap , UI changes etc. becauase I do not need them anymore . Can you 

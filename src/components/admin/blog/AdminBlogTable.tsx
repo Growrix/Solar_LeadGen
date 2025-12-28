@@ -115,7 +115,7 @@ export default function AdminBlogTable() {
           placeholder="Search by title, slug, or category…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="form-input w-full"
+          className="form-input w-full px-4 py-3"
         />
       </div>
 

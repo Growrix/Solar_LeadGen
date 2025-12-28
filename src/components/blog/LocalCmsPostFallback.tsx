@@ -1,34 +1,59 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Metadata } from 'next';
 import FooterNav from '@/components/FooterNav';
-import { blogContentProvider } from '@/lib/blog/content-provider';
-import LocalCmsPostFallback from '@/components/blog/LocalCmsPostFallback';
+import type { BlogPost } from '@/types/blog';
+import { applyScheduledPublishes, getCmsPostBySlug } from '@/lib/blog/cms-store';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 
-type BlogPostPageProps = {
-  params: { slug: string };
-};
+export default function LocalCmsPostFallback({ slug }: { slug: string }) {
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [checked, setChecked] = useState(false);
 
-export function generateMetadata({ params }: BlogPostPageProps): Metadata {
-  const post = blogContentProvider.getPublishedPostBySlug(params.slug);
-  if (!post) return {};
+  useEffect(() => {
+    try {
+      applyScheduledPublishes();
+      const found = getCmsPostBySlug(slug);
+      if (found && found.status === 'PUBLISHED') {
+        setPost(found);
+      } else {
+        setPost(null);
+      }
+    } finally {
+      setChecked(true);
+    }
+  }, [slug]);
 
-  return {
-    title: post.seoTitle ?? post.title,
-    description: post.seoDescription ?? post.excerpt,
-    openGraph: {
-      title: post.seoTitle ?? post.title,
-      description: post.seoDescription ?? post.excerpt,
-      images: post.ogImageUrl ? [post.ogImageUrl] : undefined,
-    },
-  };
-}
+  if (!checked) {
+    return (
+      <div className="min-h-screen flex flex-col blog-post-page-bg animate-fade-in">
+        <main className="flex-grow pb-20 md:pb-0">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <p className="text-body-small text-muted-foreground">Loading…</p>
+          </div>
+        </main>
+        <FooterNav />
+      </div>
+    );
+  }
 
-export default function BlogPostBySlugPage({ params }: BlogPostPageProps) {
-  const post = blogContentProvider.getPublishedPostBySlug(params.slug);
   if (!post) {
-    return <LocalCmsPostFallback slug={params.slug} />;
+    return (
+      <div className="min-h-screen flex flex-col blog-post-page-bg animate-fade-in">
+        <main className="flex-grow pb-20 md:pb-0">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <h1 className="text-heading-2 text-foreground mb-3">Article not found</h1>
+            <p className="text-body-small text-muted-foreground mb-6">This post isn’t available.</p>
+            <Link href="/blog" className="inline-flex items-center text-primary hover:text-primary/80 text-body-small">
+              Back to All Articles
+            </Link>
+          </div>
+        </main>
+        <FooterNav />
+      </div>
+    );
   }
 
   return (

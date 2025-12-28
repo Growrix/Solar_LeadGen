@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import type { BlogPost } from '@/types/blog';
+import RichTextEditor from '@/components/admin/blog/RichTextEditor';
 import {
   addRevisionSnapshot,
   getCmsPostById,
@@ -187,7 +188,8 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
           <div>
             <label className="text-body-small text-muted-foreground">Title</label>
             <input
-              className="form-input w-full mt-2"
+              className="form-input w-full mt-2 px-4 py-3"
+              placeholder="Post title"
               value={post.title}
               onChange={(e) => {
                 const nextTitle = e.target.value;
@@ -202,7 +204,8 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
           <div>
             <label className="text-body-small text-muted-foreground">Slug</label>
             <input
-              className="form-input w-full mt-2"
+              className="form-input w-full mt-2 px-4 py-3"
+              placeholder="post-slug"
               value={post.slug}
               onChange={(e) => {
                 setHasEditedSlug(true);
@@ -216,7 +219,8 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
         <div>
           <label className="text-body-small text-muted-foreground">Excerpt</label>
           <textarea
-            className="form-input w-full mt-2"
+            className="form-input w-full mt-2 px-4 py-3 resize-none"
+            placeholder="Short summary shown in lists and previews"
             rows={3}
             value={post.excerpt}
             onChange={(e) => setPost((prev) => (prev ? { ...prev, excerpt: e.target.value } : prev))}
@@ -227,7 +231,8 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
           <div>
             <label className="text-body-small text-muted-foreground">Category</label>
             <input
-              className="form-input w-full mt-2"
+              className="form-input w-full mt-2 px-4 py-3"
+              placeholder="Uncategorized"
               value={post.categoryName}
               onChange={(e) => setPost((prev) => (prev ? { ...prev, categoryName: e.target.value } : prev))}
             />
@@ -235,7 +240,8 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
           <div>
             <label className="text-body-small text-muted-foreground">Featured image URL</label>
             <input
-              className="form-input w-full mt-2"
+              className="form-input w-full mt-2 px-4 py-3"
+              placeholder="https://…"
               value={post.featuredImageUrl}
               onChange={(e) => setPost((prev) => (prev ? { ...prev, featuredImageUrl: e.target.value } : prev))}
             />
@@ -243,13 +249,15 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
         </div>
 
         <div>
-          <label className="text-body-small text-muted-foreground">Content (Markdown)</label>
-          <textarea
-            className="form-input w-full mt-2"
-            rows={14}
-            value={post.content}
-            onChange={(e) => setPost((prev) => (prev ? { ...prev, content: e.target.value, contentFormat: 'markdown' } : prev))}
-          />
+          <label className="text-body-small text-muted-foreground">Content</label>
+          <div className="mt-2">
+            <RichTextEditor
+              value={post.content}
+              onChange={(nextHtml) =>
+                setPost((prev) => (prev ? { ...prev, content: nextHtml, contentFormat: 'html' } : prev))
+              }
+            />
+          </div>
         </div>
 
         <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
@@ -258,7 +266,7 @@ export default function AdminBlogEditor({ postId }: { postId: string }) {
               <label className="text-body-small text-muted-foreground">Schedule publish (optional)</label>
               <input
                 type="datetime-local"
-                className="form-input w-full mt-2"
+                className="form-input w-full mt-2 px-4 py-3"
                 value={scheduleValue}
                 onChange={(e) => setScheduleValue(e.target.value)}
               />
