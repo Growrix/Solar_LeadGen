@@ -78,3 +78,15 @@ This entry records the rollback to the Written_Quote branch for full restoration
 - Branch: Notification_IndustryStandard
 - Description: Notification & CTA routing: All producers now use deep-link routeKeys and params; homeowner/admin/installer CTAs open correct modal/page; all labels policy-compliant. Typecheck clean. Ready for industry standardization.
 ---
+
+- Commit: cf3daf3cd0d1e7dbe37a917e3f72321c94753cf2
+- Date: 2025-12-28 11:44:32 +0600
+- Branch: Notification_IndustryStandard
+- Description: feat(installer-leads): add unified API endpoint, update canonical page to use single fetch, and fix Next.js build errors (pathname nullability, _document shim)
+---
+
+- Commit: 8c991006889f75d70a5cbca17c83933aa7d45d30
+- Date: 2025-12-28 12:17:10 +0600
+- Branch: Notification_IndustryStandard
+- Description: docs(guidelines): move legacy-safe 6-phase framework into SOT and add feature SOT folderization rules
+---
