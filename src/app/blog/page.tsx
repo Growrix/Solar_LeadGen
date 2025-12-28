@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
 import Button from '@/components/ui/button';
-import type { Post } from '@/types/blog';
-import { allArticles, categories } from '@/data/blogData';
+import type { BlogPostSummary } from '@/types/blog';
+import { blogContentProvider } from '@/lib/blog/content-provider';
 
 // --- Icon Components ---
 const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted-foreground"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
@@ -17,8 +17,8 @@ const ArrowRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" 
 const ARTICLES_PER_PAGE = 6;
 
 interface ArticleCardProps {
-  article: Post;
-  onNavigateToPost: (post: Post) => void;
+  article: BlogPostSummary;
+  onNavigateToPost: (post: BlogPostSummary) => void;
 }
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, onNavigateToPost }) => (
@@ -31,20 +31,20 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onNavigateToPost }) 
     onKeyPress={(e) => e.key === 'Enter' && onNavigateToPost(article)}
   >
     <div className="relative w-full h-48">
-      <Image src={article.image} alt={article.title} fill className="object-cover" />
+      <Image src={article.featuredImageUrl} alt={article.title} fill className="object-cover" />
     </div>
     <div className="p-6 flex flex-col flex-grow">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-caption text-primary bg-primary/10 px-3 py-1 rounded-full">{article.category}</span>
-        <span className="text-caption text-muted-foreground">{article.readTime}</span>
+        <span className="text-caption text-primary bg-primary/10 px-3 py-1 rounded-full">{article.categoryName}</span>
+        <span className="text-caption text-muted-foreground">{article.readTimeLabel}</span>
       </div>
       <h3 className="text-heading-4 text-foreground mb-3 leading-snug group-hover:text-primary transition-colors flex-grow">
         {article.title}
       </h3>
       <p className="text-muted-foreground mb-4 leading-relaxed text-body-small">{article.excerpt}</p>
       <div className="flex items-center justify-between text-body-small text-muted-foreground mt-auto pt-4 border-t border-border">
-        <div className="flex items-center space-x-2"><UserIcon /><span>{article.author}</span></div>
-        <div className="flex items-center space-x-2"><CalendarIcon /><span>{article.date}</span></div>
+        <div className="flex items-center space-x-2"><UserIcon /><span>{article.authorName}</span></div>
+        <div className="flex items-center space-x-2"><CalendarIcon /><span>{article.publishedDateLabel}</span></div>
       </div>
       <div className="text-primary group-hover:text-primary/80 transition-colors inline-flex items-center space-x-2 mt-4">
         <span>Read Article</span><ArrowRightIcon />
@@ -59,18 +59,19 @@ export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [visibleCount, setVisibleCount] = useState(ARTICLES_PER_PAGE);
 
+  const allArticles = useMemo(() => blogContentProvider.listPublishedPostSummaries(), []);
+
   const filteredArticles = useMemo(() => {
     return allArticles
-      .filter(article => selectedCategory === 'All' || article.category === selectedCategory)
+      .filter(article => selectedCategory === 'All' || article.categoryName === selectedCategory)
       .filter(article => 
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
         article.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
       );
-  }, [searchTerm, selectedCategory]);
+  }, [allArticles, searchTerm, selectedCategory]);
 
-  const handleNavigateToPost = (post: Post) => {
-    sessionStorage.setItem('currentBlogPost', JSON.stringify(post));
-    router.push('/blog/post');
+  const handleNavigateToPost = (post: BlogPostSummary) => {
+    router.push(`/blog/${post.slug}`);
   };
 
   const handleBecomePartner = () => router.push('/installer');
