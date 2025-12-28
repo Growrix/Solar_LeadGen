@@ -2,12 +2,26 @@
 
 - Status: Draft (Planning)
 - Owner: AI (GitHub Copilot / GPT-5.2) + Human Owner
-- Canonical SOT Pointer:
-  - This is the canonical SOT for this feature. All planning and coding must align to this file.
-- Links:
+
+This file is the canonical **Planning SOT** for this feature (6-Phase Framework).
+
+Execution (implementation) is tracked separately in:
+- specs/014-blog-feature/tasks.md (execution phases EXEC-0..EXEC-7; contract-first + frontend-first)
+
+## Locking & Change Control (AI Safety)
+
+Lock rule:
+- When you approve this plan, change `Status` at the top of this file to: `Locked (Approved)`.
+
+After lock:
+- Any scope/order/data-contract change must be recorded as a written **Change Request** inside this SOT.
+- Execution must follow specs/014-blog-feature/tasks.md phase-by-phase; do not improvise.
+
+Links:
   - Raw Plan (source conversation + Prompt 1/2 outputs): DOC/Features/Blog Feature/RAW PLAN/Initial_idea.md
   - Framework: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md
   - Authority Index: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
+   - SOT Index (AI Continuity Pack / restart point): DOC/Features/Blog Feature/SOT/INDEX.md
 
 ---
 

@@ -166,6 +166,28 @@ See existing `specs/*/tasks.md` files for template patterns.
 
 ---
 
+## 📌 Documentation Lock (AI Continuity Pack) — Required for Large Features
+
+Problem this solves: AI context drift after a few implementation steps.
+
+Rule: For any multi-phase feature (like Blog/CMS), you MUST create and lock an E2E documentation pack BEFORE writing production code.
+
+Required artifacts:
+- Feature SOT (Phases 0–5 planning): `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+- Feature SOT Index (Continuity Pack): `DOC/Features/<Feature Name>/SOT/INDEX.md`
+   - Must list: canonical SOT, audit, execution tasks, and authority pointers
+- Execution Tasks (Phase 6 execution plan): `specs/<feature>/tasks.md`
+
+Lock protocol:
+- When the user approves the plan, set Feature SOT status to `Locked (Approved)`.
+- After lock: changes require a written “Change Request” section in the SOT (scope/ordering/data contract changes).
+- Implementation MUST follow `specs/<feature>/tasks.md` phase-by-phase; do not improvise.
+
+AI session restart rule:
+- Always start a new implementation session by opening the Feature SOT Index first and following its “next step”.
+
+---
+
 ### Step 4: IMPLEMENT - Execute Phase by Phase
 
 **For each phase:**

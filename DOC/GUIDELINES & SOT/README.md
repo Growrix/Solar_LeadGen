@@ -15,6 +15,9 @@ Start here for all tasks (human or AI).
 - Then read IMPLEMENTATION SOT/README.md to determine required authorities.
 - When technical details are needed, follow TECHNICAL DOCUMENTATIONS/README.md.
 
+Workflow note:
+- The official, AI-controlled feature workflow (Docs Lock → Execution Tasks) is defined in: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
+
 ## Quick Links
 - AI Workflow & Safety Standard: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
 - System Constitution (highest authority): DOC/GUIDELINES & SOT/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md
