@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { getPresignedUploadUrl, generateFileKey, isValidFileType, ALLOWED_DOCUMENT_TYPES, ALLOWED_IMAGE_TYPES } from '@/lib/s3';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const presignRequestSchema = z.object({
   filename: z.string().min(1).max(255),
   contentType: z.string().min(1),

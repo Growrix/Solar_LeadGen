@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { installerPreferencesSchema } from '@/lib/validation/installer';
 import { ZodError } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/installer/preferences
 // Read installer notification preferences
 export async function GET(_req: NextRequest) {
