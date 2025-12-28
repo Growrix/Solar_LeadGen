@@ -37,6 +37,30 @@ Read in this order before any task:
   - Theming: TECHNICAL DOCUMENTATIONS/theming/**, IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md
 - Finally: Locate feature-specific materials in specs/** and any related DOC/AUDIT-REPORTS/** entries.
 
+---
+
+## Official Feature Workflow (AI-Controlled, E2E)
+
+Goal: prevent AI context loss by locking documentation before coding, and by making execution mechanically follow a phase checklist.
+
+1) **Plan & Lock (Docs Only)**
+- Create/maintain the feature SOT (Phases 0–5) at: `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+- If the feature has any supporting docs, add a single index at: `DOC/Features/<Feature Name>/SOT/INDEX.md`
+- When the plan is approved, explicitly set SOT status to: `Locked (Approved)`
+
+2) **Execute (Phase-by-phase Tasks)**
+- Create/maintain execution tasks at: `specs/<feature>/tasks.md`
+- Tasks must include testing checkpoints and stop rules.
+
+3) **Execution Style (When you want Frontend-first)**
+- Use **contract-first + frontend-first**:
+  - Define domain types + provider interface first
+  - Build the UI against a mock provider
+  - Implement backend to match the locked contract
+  - Swap mock provider → real backend (no UI rewrite)
+
+Rule: If execution order changes, it must be documented in the feature SOT and reflected in `specs/<feature>/tasks.md`.
+
 Token discipline:
 - Load only the minimum set of documents required for the current task.
 - Do not preload unrelated files; reference paths here to fetch precisely.
