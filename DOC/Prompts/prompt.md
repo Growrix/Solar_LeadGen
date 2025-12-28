@@ -4327,3 +4327,10 @@ None allowed.
 If data, states, or flows are unclear → **explicitly list them as unknowns**.
 
 
+---------------------------------------------------------------------------------------
+
+I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Written Quote\INSTALLER-LEADFEED-UX-AUDIT-PLAN-2025-12-27.md findings. All my answers is witin (### MY answers : ###) in this Audit file, check for that. After that Start the implimentation phase accordingly based on the plan you prepared.
+
+***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md

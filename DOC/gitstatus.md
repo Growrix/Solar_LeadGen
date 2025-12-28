@@ -71,3 +71,10 @@ This entry records the rollback to the Written_Quote branch for full restoration
 - Date: 2025-12-24 14:23:48 +0600
 - Branch: NegotiationModal_Enhancement
 - Description: Enhance negotiation modals: add live presence, expiry, extension, admin controls; typecheck and production build clean
+---
+
+- Commit: 408ad02daad3356baa57dd9fdc797e7205c3c465
+- Date: 2025-12-27 15:42:31 +0600
+- Branch: Notification_IndustryStandard
+- Description: Notification & CTA routing: All producers now use deep-link routeKeys and params; homeowner/admin/installer CTAs open correct modal/page; all labels policy-compliant. Typecheck clean. Ready for industry standardization.
+---

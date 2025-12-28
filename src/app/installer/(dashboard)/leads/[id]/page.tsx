@@ -141,7 +141,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
   }
 
   function handleBack() {
-    router.push('/installer/purchased-leads');
+    router.push('/installer/leads?tab=purchased');
   }
 
   if (loading) {
@@ -169,7 +169,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
             className="mb-6 flex items-center text-muted hover:text-foreground"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to Purchased Leads
+            Back to Leads
           </button>
           <div className="bg-error/10 border border-error rounded-lg p-6">
             <p className="text-error">

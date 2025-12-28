@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import InstallerLeadFeed from '@/components/InstallerLeadFeed';
@@ -11,6 +11,11 @@ import type { Lead, InstallerProfile } from '@/components/InstallerLeadFeed';
 // Map API AssignedLead to Component Lead format
 function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
   const isLocked = apiLead.homeowner.name === '***LOCKED***';
+  const isPurchased = Boolean(
+    apiLead.isPurchased ||
+      apiLead.purchasedAt ||
+      String((apiLead as any).status || '').toUpperCase() === 'PURCHASED'
+  );
   // API now returns lowercase: 'call_visit', 'written', 'bidding'
   const quoteTypeMap: Record<string, Lead['type']> = {
     'call_visit': 'call_visit',
@@ -22,11 +27,21 @@ function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
     'BIDDING': 'bidding'
   };
 
+  const expiresAt = apiLead.expiresAt ? new Date(apiLead.expiresAt) : null;
+  const isExpired =
+    !isPurchased &&
+    expiresAt != null &&
+    Number.isFinite(expiresAt.getTime()) &&
+    expiresAt.getTime() <= Date.now();
+
+  const isRejected = String((apiLead as any).status || '').toUpperCase() === 'REJECTED';
+
   return {
     id: apiLead.id,
     homeownerId: apiLead.homeownerId,
     type: quoteTypeMap[apiLead.quoteType] || 'call_visit',
-    status: isLocked ? 'new' : 'unlocked', // TODO: map backend LeadStatus to UI statuses
+    status: isRejected ? 'REJECTED' : isPurchased ? 'PURCHASED' : isExpired ? 'expired' : (isLocked ? 'new' : 'unlocked'),
+    backendStatus: (apiLead as any).status ?? null,
     dateSubmitted: new Date(apiLead.createdAt),
     location: {
       suburb: apiLead.location || 'Unknown',
@@ -45,11 +60,11 @@ function mapAssignedLeadToComponentLead(apiLead: AssignedLead): Lead {
       phone: apiLead.homeowner.phone || '***LOCKED***'
     },
     unlockPrice: apiLead.leadPrice || 0,
-    isUnlocked: !isLocked,
-    isPurchasedByAnother: apiLead.isPurchasedByAnother || false,
-    unlockedBy: !isLocked ? [1] : [],
+    isUnlocked: isPurchased ? true : !isLocked,
+    isPurchasedByAnother: isPurchased ? false : (apiLead.isPurchasedByAnother || false),
+    unlockedBy: isPurchased ? [1] : (!isLocked ? [1] : []),
     quotesReceived: apiLead.quotesCount || 0,
-    expiresAt: apiLead.expiresAt ? new Date(apiLead.expiresAt) : null,
+    expiresAt,
     priority: 'medium',
     notes: apiLead.assignmentNotes || undefined,
     // Add all extended fields from API (available after purchase)
@@ -84,6 +99,39 @@ export default function InstallerLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialTab, setInitialTab] = useState<any>(undefined);
+  const [initialPurchasedType, setInitialPurchasedType] = useState<any>(undefined);
+
+  useEffect(() => {
+    // Avoid useSearchParams() here to keep production builds happy (it requires a Suspense boundary).
+    const params = new URLSearchParams(window.location.search);
+
+    const tabRaw = (params.get('tab') || '').toLowerCase();
+    switch (tabRaw) {
+      case 'marketplace':
+      case 'quote_submitted':
+      case 'negotiation':
+      case 'purchased':
+      case 'rejected':
+      case 'expired':
+        setInitialTab(tabRaw);
+        break;
+      default:
+        setInitialTab(undefined);
+    }
+
+    const purchasedTypeRaw = (params.get('purchasedType') || '').toLowerCase();
+    switch (purchasedTypeRaw) {
+      case 'all':
+      case 'call_visit':
+      case 'written':
+      case 'bidding':
+        setInitialPurchasedType(purchasedTypeRaw);
+        break;
+      default:
+        setInitialPurchasedType(undefined);
+    }
+  }, []);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -103,15 +151,10 @@ export default function InstallerLeadsPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch assigned leads
-        const leadsRes = await fetch('/api/installer/leads/assigned');
-        if (!leadsRes.ok) {
-          throw new Error('Failed to fetch assigned leads');
-        }
-        const leadsData = await leadsRes.json();
-        
-        // Map API leads to component format
-        const mappedLeads = (leadsData.leads || []).map(mapAssignedLeadToComponentLead);
+        const unifiedRes = await fetch('/api/installer/leads/unified?expired=true');
+        if (!unifiedRes.ok) throw new Error('Failed to fetch leads');
+        const unifiedData = await unifiedRes.json();
+        const mappedLeads = (unifiedData.leads || []).map(mapAssignedLeadToComponentLead);
         setLeads(mappedLeads);
 
         // Set installer profile (simplified for component)
@@ -138,6 +181,14 @@ export default function InstallerLeadsPage() {
     fetchData();
   }, [status, session]);
 
+  const refreshUnifiedFeed = async (): Promise<void> => {
+    const unifiedRes = await fetch('/api/installer/leads/unified?expired=true');
+    if (!unifiedRes.ok) return;
+    const unifiedData = await unifiedRes.json();
+    const mappedLeads = (unifiedData.leads || []).map(mapAssignedLeadToComponentLead);
+    setLeads(mappedLeads);
+  };
+
   const handleUnlockLead = async (leadId: string): Promise<boolean> => {
     try {
       const response = await fetch(`/api/installer/leads/${leadId}/purchase`, {
@@ -155,13 +206,7 @@ export default function InstallerLeadsPage() {
       const data = await response.json();
       console.log('Lead purchased successfully:', data);
 
-      // Refresh leads to show updated contact info
-      const leadsRes = await fetch('/api/installer/leads/assigned');
-      if (leadsRes.ok) {
-        const leadsData = await leadsRes.json();
-        const mappedLeads = (leadsData.leads || []).map(mapAssignedLeadToComponentLead);
-        setLeads(mappedLeads);
-      }
+      await refreshUnifiedFeed();
 
       return true;
     } catch (error) {
@@ -201,13 +246,7 @@ export default function InstallerLeadsPage() {
       const result = await response.json();
       console.log('[T13W-8.2] Quote submitted successfully:', result);
 
-      // Refresh leads to show updated status
-      const leadsRes = await fetch('/api/installer/leads/assigned');
-      if (leadsRes.ok) {
-        const leadsData = await leadsRes.json();
-        const mappedLeads = (leadsData.leads || []).map(mapAssignedLeadToComponentLead);
-        setLeads(mappedLeads);
-      }
+      await refreshUnifiedFeed();
 
       alert('Quote submitted successfully!');
       return true;
@@ -264,6 +303,8 @@ export default function InstallerLeadsPage() {
       <InstallerLeadFeed
         installer={installer}
         leads={leads}
+        initialTab={initialTab}
+        initialPurchasedType={initialPurchasedType}
         onUnlockLead={handleUnlockLead}
         onSubmitQuote={handleSubmitQuote}
         onStartChat={handleStartChat}

@@ -142,8 +142,8 @@ export default function InstallerMarketplacePage() {
         // Refresh leads list
         fetchMarketplaceLeads();
         
-        // Redirect to purchased leads
-        router.push('/installer/purchased-leads');
+        // Redirect to canonical leads page (Purchased tab)
+        router.push('/installer/leads?tab=purchased');
       } else {
         // Production mode: Would show Stripe payment form here
         // TODO: Implement Stripe Elements payment form

@@ -7,7 +7,7 @@ import AdminBottomNavBar from '@/components/AdminBottomNavBar';
 import AdminHeader from '@/components/AdminHeader';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? '';
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 	
 	// If on login page (/admin root), don't show sidebar/header - just return children

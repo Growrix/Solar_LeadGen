@@ -7,7 +7,7 @@ import HomeownerBottomNavBar from '@/components/HomeownerBottomNavBar';
 import { HomeownerDashboardHeader } from '@/components/homeowner/HomeownerDashboardHeader';
 
 export default function HomeownerLayout({ children }: { children: React.ReactNode }) {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? '';
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 	const [showMessagingModal, setShowMessagingModal] = React.useState(false);

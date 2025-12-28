@@ -185,6 +185,40 @@ References:
 - Push to `NegotiationModal_Enhancement`
 - Update `DOC/Prompts/gitstatus.md`
 
+---
+
+## Phase 14I — Installer LeadFeed Tabs (Single Source of Truth)
+
+Status: PLANNED
+Priority: P1
+Date: December 27, 2025
+References:
+  - Audit: DOC/Features/Written Quote/INSTALLER-LEADFEED-UX-AUDIT-PLAN-2025-12-27.md
+  - Plan: DOC/Features/Written Quote/INSTALLER-LEADFEED-IMPLEMENTATION-TASK-PLAN-2025-12-27.md
+  - Guidelines: DOC/GUIDELINES & SOT/README.md
+
+### T14I-1: Consolidate LeadFeed entry points
+- Canonical: `/installer/leads`
+- Redirect legacy pages:
+  - `/installer/lead-feed` → `/installer/leads`
+  - `/installer/purchased-leads` → `/installer/leads`
+
+### T14I-2: Unified installer leads feed contract
+- Add a unified API endpoint that supports LeadFeed tabs (assigned + purchased + expired) in one consistent view model.
+- Ensure written quote + bidding per-installer state is included so lead cards can render without opening modals.
+
+### T14I-3: Implement LeadFeed tabs + Purchased sub-tabs
+- Tabs (top-level): Marketplace, Quote Submitted, Negotiation/Under Bidding, Purchased, Rejected, Expired
+- Purchased must be sub-tabbed by quoteType: Call/Visit, Written, Bidding
+- Tab placement rules must follow the audit plan and the `### MY answers : ###` confirmations.
+
+### T14I-4: Replace mock LeadFeed analytics
+- Remove/replace mocked stat values with real counts derived from the unified feed dataset.
+
+### T14I-5: Validation
+- `npx tsc --noEmit` → pass
+- `npm run build` → pass
+
 Date: December 24, 2025
 References:
   - Audit: DOC/Features/Written Quote/WRITTEN-QUOTE-NEGOTIATION-REALTIME-PRESENCE-TIMEWINDOW-AUDIT-2025-12-24.md

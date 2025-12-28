@@ -34,13 +34,17 @@ const LoaderIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xm
 
 // --- Types ---
 export type LeadType = 'call_visit' | 'written' | 'bidding';
-export type LeadStatus = 'new' | 'unlocked' | 'submitted' | 'expired' | 'contacted' | 'APPROVED' | 'PURCHASED' | 'ACCEPTED';
+export type LeadStatus = 'new' | 'unlocked' | 'submitted' | 'expired' | 'contacted' | 'APPROVED' | 'PURCHASED' | 'ACCEPTED' | 'REJECTED';
+
+type LeadFeedTab = 'marketplace' | 'quote_submitted' | 'negotiation' | 'purchased' | 'rejected' | 'expired';
+type PurchasedSubTab = 'all' | LeadType;
 
 export interface Lead {
   id: string;
   homeownerId: string;
   type: LeadType;
   status: LeadStatus;
+  backendStatus?: string | null;
   dateSubmitted: Date;
   location: {
     suburb: string;
@@ -137,6 +141,8 @@ interface LeadFilters {
 interface InstallerLeadFeedProps {
   installer: InstallerProfile;
   leads?: Lead[]; // Optional: use provided leads or fallback to empty array
+  initialTab?: LeadFeedTab;
+  initialPurchasedType?: PurchasedSubTab;
   onUnlockLead: (leadId: string) => Promise<boolean>;
   onSubmitQuote: (leadId: string, quoteData: any) => Promise<boolean>;
   onStartChat: (leadId: string) => void;
@@ -1195,12 +1201,16 @@ const LeadCard: React.FC<{
 const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
   installer,
   leads: propLeads,
+  initialTab,
+  initialPurchasedType,
   onUnlockLead,
   onSubmitQuote,
   onStartChat
 }) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<LeadFeedTab>(initialTab ?? 'marketplace');
+  const [activePurchasedType, setActivePurchasedType] = useState<PurchasedSubTab>(initialPurchasedType ?? 'all');
   const [filters, setFilters] = useState<LeadFilters>({
     leadType: 'all',
     status: 'all',
@@ -1228,6 +1238,15 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
     setLoading(false);
   }, [propLeads]);
 
+  // Sync initial tab changes (e.g., via navigation query param)
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (initialPurchasedType) setActivePurchasedType(initialPurchasedType);
+  }, [initialPurchasedType]);
+
   // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1236,8 +1255,107 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  const installerIdStr = String((installer as any)?.id ?? '');
+
+  const isExpiredLead = (lead: Lead) => {
+    if (lead.status === 'expired') return true;
+    if (!lead.expiresAt) return false;
+    return lead.expiresAt.getTime() <= Date.now();
+  };
+
+  const isPurchasedLead = (lead: Lead) => {
+    return !!lead.purchasedAt || lead.status === 'PURCHASED';
+  };
+
+  const myBidForLead = (lead: Lead) => {
+    return lead.bids?.find((b: any) => String(b.installerId) === installerIdStr);
+  };
+
+  const myWrittenQuoteForLead = (lead: Lead) => {
+    return lead.writtenQuotes?.find((wq: any) => String(wq.installerId) === installerIdStr);
+  };
+
+  const isWrittenQuoteRejected = (lead: Lead) => {
+    const wq = myWrittenQuoteForLead(lead);
+    return wq?.negotiationStatus === 'REJECTED';
+  };
+
+  const isWrittenQuoteSubmitted = (lead: Lead) => {
+    const wq = myWrittenQuoteForLead(lead);
+    if (!wq) return false;
+    const rejected = wq?.negotiationStatus === 'REJECTED';
+    const purchased = wq?.purchasedAt != null;
+    const agreed = wq?.negotiationStatus === 'AGREED' && !purchased;
+    return !rejected && !purchased && !agreed;
+  };
+
+  const isWrittenNegotiationInProgress = (lead: Lead) => {
+    const wq = myWrittenQuoteForLead(lead);
+    if (!wq) return false;
+    const rejected = wq?.negotiationStatus === 'REJECTED';
+    const purchased = wq?.purchasedAt != null;
+    if (rejected || purchased) return false;
+    return wq?.negotiationStatus === 'AGREED' || wq?.negotiationTurnCount != null;
+  };
+
+  // Under-bidding (per user decision): bid submitted and not accepted/rejected yet
+  const isUnderBidding = (lead: Lead) => {
+    if (lead.type !== 'bidding') return false;
+    if (isPurchasedLead(lead)) return false;
+    const bid = myBidForLead(lead);
+    if (!bid) return false;
+    const status = String(bid.status || '').toUpperCase();
+    return status !== 'SELECTED' && status !== 'REJECTED';
+  };
+
+  const isBidRejected = (lead: Lead) => {
+    if (lead.type !== 'bidding') return false;
+    const bid = myBidForLead(lead);
+    return String(bid?.status || '').toUpperCase() === 'REJECTED';
+  };
+
+  const isHomeownerRejected = (lead: Lead) => {
+    const status = String(lead.backendStatus || lead.status || '').toUpperCase();
+    return status === 'REJECTED';
+  };
+
+  const isRejectedLead = (lead: Lead) => {
+    return isHomeownerRejected(lead) || isWrittenQuoteRejected(lead) || isBidRejected(lead);
+  };
+
+  const leadsForActiveTab = leads.filter((lead) => {
+    const expired = isExpiredLead(lead);
+    const purchased = isPurchasedLead(lead);
+    const rejected = isRejectedLead(lead);
+
+    switch (activeTab) {
+      case 'marketplace':
+        return !purchased && !expired && !rejected && !isWrittenQuoteSubmitted(lead) && !isWrittenNegotiationInProgress(lead) && !isUnderBidding(lead);
+      case 'quote_submitted':
+        // No “quote submitted” concept for call/visit (per user decision)
+        return !purchased && !expired && !rejected && lead.type === 'written' && isWrittenQuoteSubmitted(lead);
+      case 'negotiation':
+        return !purchased && !expired && !rejected && (isWrittenNegotiationInProgress(lead) || isUnderBidding(lead));
+      case 'purchased':
+        return purchased;
+      case 'rejected':
+        return rejected;
+      case 'expired':
+        return expired && !purchased;
+      default:
+        return true;
+    }
+  });
+
+  const purchasedLeadsForSubTab =
+    activeTab !== 'purchased'
+      ? leadsForActiveTab
+      : activePurchasedType === 'all'
+        ? leadsForActiveTab
+        : leadsForActiveTab.filter((lead) => lead.type === activePurchasedType);
+
   // Filter and search leads
-  const filteredLeads = leads.filter(lead => {
+  const filteredLeads = purchasedLeadsForSubTab.filter(lead => {
     if (filters.leadType !== 'all' && lead.type !== filters.leadType) return false;
     if (filters.status !== 'all' && lead.status !== filters.status) return false;
     if (filters.postcode && !lead.location.postcode.includes(filters.postcode)) return false;
@@ -1264,6 +1382,61 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
     
     return true;
   });
+
+  const tabCounts: Record<LeadFeedTab, number> = {
+    marketplace: 0,
+    quote_submitted: 0,
+    negotiation: 0,
+    purchased: 0,
+    rejected: 0,
+    expired: 0,
+  };
+
+  for (const lead of leads) {
+    const expired = isExpiredLead(lead);
+    const purchased = isPurchasedLead(lead);
+    const rejected = isRejectedLead(lead);
+
+    if (purchased) {
+      tabCounts.purchased += 1;
+      continue;
+    }
+
+    if (expired) {
+      tabCounts.expired += 1;
+      continue;
+    }
+
+    if (rejected) {
+      tabCounts.rejected += 1;
+      continue;
+    }
+
+    if (lead.type === 'written' && isWrittenQuoteSubmitted(lead)) {
+      tabCounts.quote_submitted += 1;
+      continue;
+    }
+
+    if (isWrittenNegotiationInProgress(lead) || isUnderBidding(lead)) {
+      tabCounts.negotiation += 1;
+      continue;
+    }
+
+    tabCounts.marketplace += 1;
+  }
+
+  const purchasedTypeCounts: Record<PurchasedSubTab, number> = {
+    all: 0,
+    call_visit: 0,
+    written: 0,
+    bidding: 0,
+  };
+
+  for (const lead of leads) {
+    if (!isPurchasedLead(lead)) continue;
+    purchasedTypeCounts.all += 1;
+    purchasedTypeCounts[lead.type] += 1;
+  }
 
   const handleUnlockLead = (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
@@ -1350,8 +1523,8 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
         <div className="theme-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-body-small text-muted-foreground">Available Leads</p>
-              <p className="text-heading-2 text-foreground">{filteredLeads.length}</p>
+              <p className="text-body-small text-muted-foreground">Marketplace</p>
+              <p className="text-heading-2 text-foreground">{tabCounts.marketplace}</p>
             </div>
             <div className="w-10 h-10 bg-info/10 rounded-lg flex items-center justify-center">
               <FileTextIcon className="h-5 w-5 text-info" />
@@ -1362,8 +1535,8 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
         <div className="theme-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-body-small text-muted-foreground">Unlocked Today</p>
-              <p className="text-heading-2 text-foreground">3</p>
+              <p className="text-body-small text-muted-foreground">In Progress</p>
+              <p className="text-heading-2 text-foreground">{tabCounts.quote_submitted + tabCounts.negotiation}</p>
             </div>
             <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center">
               <UnlockIcon className="h-5 w-5 text-success" />
@@ -1374,8 +1547,8 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
         <div className="theme-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-body-small text-muted-foreground">Credit Balance</p>
-              <p className="text-heading-2 text-foreground">${installer.creditBalance}</p>
+              <p className="text-body-small text-muted-foreground">Purchased</p>
+              <p className="text-heading-2 text-foreground">{tabCounts.purchased}</p>
             </div>
             <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
               <CreditCardIcon className="h-5 w-5 text-primary" />
@@ -1386,14 +1559,95 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
         <div className="theme-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-body-small text-muted-foreground">Success Rate</p>
-              <p className="text-heading-2 text-foreground">{installer.successRate}%</p>
+              <p className="text-body-small text-muted-foreground">Rejected</p>
+              <p className="text-heading-2 text-foreground">{tabCounts.rejected}</p>
             </div>
             <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
               <CheckCircleIcon className="h-5 w-5 text-primary" />
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="theme-card p-4">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={activeTab === 'marketplace' ? 'primary' : 'secondary'}
+            className="px-3"
+            onClick={() => setActiveTab('marketplace')}
+          >
+            Marketplace ({tabCounts.marketplace})
+          </Button>
+          <Button
+            variant={activeTab === 'quote_submitted' ? 'primary' : 'secondary'}
+            className="px-3"
+            onClick={() => setActiveTab('quote_submitted')}
+          >
+            Quote Submitted ({tabCounts.quote_submitted})
+          </Button>
+          <Button
+            variant={activeTab === 'negotiation' ? 'primary' : 'secondary'}
+            className="px-3"
+            onClick={() => setActiveTab('negotiation')}
+          >
+            Negotiation / Under Bidding ({tabCounts.negotiation})
+          </Button>
+          <Button
+            variant={activeTab === 'purchased' ? 'primary' : 'secondary'}
+            className="px-3"
+            onClick={() => setActiveTab('purchased')}
+          >
+            Purchased ({tabCounts.purchased})
+          </Button>
+          <Button
+            variant={activeTab === 'rejected' ? 'primary' : 'secondary'}
+            className="px-3"
+            onClick={() => setActiveTab('rejected')}
+          >
+            Rejected ({tabCounts.rejected})
+          </Button>
+          <Button
+            variant={activeTab === 'expired' ? 'primary' : 'secondary'}
+            className="px-3"
+            onClick={() => setActiveTab('expired')}
+          >
+            Expired ({tabCounts.expired})
+          </Button>
+        </div>
+
+        {activeTab === 'purchased' && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              variant={activePurchasedType === 'all' ? 'primary' : 'secondary'}
+              className="px-3"
+              onClick={() => setActivePurchasedType('all')}
+            >
+              All ({purchasedTypeCounts.all})
+            </Button>
+            <Button
+              variant={activePurchasedType === 'call_visit' ? 'primary' : 'secondary'}
+              className="px-3"
+              onClick={() => setActivePurchasedType('call_visit')}
+            >
+              Call/Visit ({purchasedTypeCounts.call_visit})
+            </Button>
+            <Button
+              variant={activePurchasedType === 'written' ? 'primary' : 'secondary'}
+              className="px-3"
+              onClick={() => setActivePurchasedType('written')}
+            >
+              Written ({purchasedTypeCounts.written})
+            </Button>
+            <Button
+              variant={activePurchasedType === 'bidding' ? 'primary' : 'secondary'}
+              className="px-3"
+              onClick={() => setActivePurchasedType('bidding')}
+            >
+              Bidding ({purchasedTypeCounts.bidding})
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Filters and Search */}

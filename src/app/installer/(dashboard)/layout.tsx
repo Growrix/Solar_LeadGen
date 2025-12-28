@@ -7,13 +7,13 @@ import InstallerBottomNavBar from '@/components/InstallerBottomNavBar';
 import { InstallerDashboardHeader } from '@/components/installer/InstallerDashboardHeader';
 
 export default function InstallerDashboardLayout({ children }: { children: React.ReactNode }) {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? '';
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 	const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
 	
 	// Determine active page based on pathname
 	const getActivePage = () => {
-		if (pathname.includes('/purchased-leads')) return 'Purchased Leads';
+		if (pathname.includes('/purchased-leads')) return 'Lead Feed';
 		if (pathname.includes('/leads')) return 'Lead Feed';
 		if (pathname.includes('/profile')) return 'Profile';
 		return 'Dashboard';
