@@ -2,15 +2,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import FooterNav from '@/components/FooterNav';
-import { getBlogPostBySlug } from '@/lib/blog/strapi';
+import { blogContentProvider } from '@/lib/blog/content-provider';
 import LocalCmsPostFallback from '@/components/blog/LocalCmsPostFallback';
 
 type BlogPostPageProps = {
   params: { slug: string };
 };
 
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = await getBlogPostBySlug(params.slug);
+export function generateMetadata({ params }: BlogPostPageProps): Metadata {
+  const post = blogContentProvider.getPublishedPostBySlug(params.slug);
   if (!post) return {};
 
   return {
@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   };
 }
 
-export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) {
-  const post = await getBlogPostBySlug(params.slug);
+export default function BlogPostBySlugPage({ params }: BlogPostPageProps) {
+  const post = blogContentProvider.getPublishedPostBySlug(params.slug);
   if (!post) {
     return <LocalCmsPostFallback slug={params.slug} />;
   }
