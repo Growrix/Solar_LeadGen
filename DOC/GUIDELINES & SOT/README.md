@@ -80,6 +80,62 @@ Notes:
 
 ---
 
+## Frontend-Plan.md Requirement (Mandatory for All Features)
+
+Every feature SOT folder **must include** a `Frontend-Plan.md` file:
+
+- **Purpose**: To provide a clear, implementation-ready description of all pages, routes, modals, and UX flows to be built for the feature, before any coding begins.
+- **Scope**: Must cover both public and admin UX, routing, navigation, and any legacy/compatibility handling.
+- **Enforcement**: No implementation work may begin until the `Frontend-Plan.md` is present, approved, and referenced in the SOT `INDEX.md`.
+- **Reference**: See `DOC/Features/Blog Manual/SOT/Frontend-Plan.md` for a canonical example.
+
+This rule is non-negotiable and applies to all new and existing features. Update the SOT `INDEX.md` and planning workflow to reflect this requirement.
+
+### Frontend-Plan.md Style Requirements (Contract + Visual + Bangla)
+
+Every `Frontend-Plan.md` must be written as a **visual contract**:
+
+- Must include “What you will see” sections with clear page-by-page layouts (ASCII is allowed and encouraged).
+- Must include a **Bangla explanation (বাংলা ব্যাখ্যা)** for the key user-facing flows (at minimum: the public/guest flow; include admin flows if they are major).
+- Must include an explicit “Baseline: Existing UI will NOT be lost” statement when the feature touches existing UI.
+
+Reference example:
+- `DOC/Features/Blog Manual/SOT/Frontend-Plan.md`
+
+---
+
+## Current State Audit Requirement (Mandatory Before Planning)
+
+For any feature that touches existing behavior/UI, the feature SOT folder must include a current-state audit report **before** finalizing plans.
+
+This audit is **E2E comprehensive** and must cover:
+- Frontend UI (routes/pages/components, navigation, state/storage coupling)
+- Backend/API (existing endpoints, auth/roles, request/response contracts)
+- Prisma/DB (models/enums/relations, what exists vs what is missing)
+- Integrations/automation (webhooks/cron/3rd-party calls) where relevant
+
+Goal: give a **100% clear picture** of the current site/feature reality so the AI/human knows what already exists, what is broken, and what must be implemented next.
+
+- File: `DOC/Features/<Feature Name>/SOT/CURRENT-UI-AUDIT-*.md`
+- Purpose: document the **as-is** routes, pages, UX flows, data sources, APIs, DB schema touchpoints, and any tight couplings (e.g., sessionStorage/localStorage dependencies).
+
+Enforcement rules:
+- No implementation work may begin until the audit report exists and is referenced from the feature’s `SOT/INDEX.md`.
+- New plans (`FEATURE-SOT.md`, `Frontend-Plan.md`, `IMPLEMENTATION-PLAN.md`, `tasks.md`) must explicitly state:
+	- what already exists and should be kept,
+	- what exists but is broken and must be fixed,
+	- what does not exist and must be built,
+	- what exists but must be intentionally changed (requires explicit approval).
+
+Anti-duplication rule:
+- If the audit says a UI element/flow already exists (e.g., blog share section), the plan must NOT re-add it; it must say “keep” or “fix” with scope.
+
+Detailed audit rules:
+- `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/E2E-CURRENT-STATE-AUDIT-RULES.md`
+
+Reference example:
+- `DOC/Features/Blog Manual/SOT/CURRENT-UI-AUDIT-GUEST-BLOG.md`
+
 ## Tasks.md Template (Mandatory)
 
 For **any** `tasks.md` created or updated in this repo (including both locations below), the author MUST follow:

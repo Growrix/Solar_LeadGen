@@ -4355,8 +4355,9 @@ I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PR
 
  ---------------------------------------------------------------------------------
 
- here is my plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_MIRROR_STRAPI\Plan\ChatGPTplan.md . I want you to audit this plan deeply and prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_MIRROR_STRAPI\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+ here is my plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\PLAN\mainplan.md . I want you to  prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
 
+ 
   ***Strickt Rules***
 ### Follow the Guidelines:
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
@@ -4364,3 +4365,19 @@ I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PR
  ----------------------------------------------------------------------------------------
 
  here is my plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\PLAN\ChatGPT.md . I want you to audit this plan deeply and prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+ --------------------------------------------------------------------------------------
+
+ - I liked the new way of explaining the frontend-plan.md file in the SOT folder. So you need to make sure that I always get this kind of explanation in the frontend-plan.md file in the SOT folder for any feature that is being built. Also add instructions that , it should explain also in benglli language as well for better understanding.  And also update the relevant files and indexes and also the global index if needed. 
+
+ - I want you to audit back the UI of the guest's Blog and create a detailed current state audit report in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\SOT folder . And checkback the entire SOT folder if anything is missing as per the 6 phase framework which has no existing UI conflicts . The goal is to make sure that any AI or human can restart the session from this SOT folder without any context loss and also make sure to work on the existing UI without any conflicts. I want you to update the relevant files and indexes and also the global index as well by adding this audit report in the SOT along with other documents. 
+
+ - whatever the plan is, the AI should always audit the existing thing clearly and then make all the doucments based on the Audit report , so that the new plans matches with the existing builts. THe AI must follow this rule strictly. Update the guidelines and index.md accordingly to reflect these changes.
+
+--------------------------------------------------------------------------------------
+
+As we have update the documentation process , I want you to start over again with the documentation as per the updated workflow. here is the plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\PLAN\mainplan.md . I want you to audit this plan deeply and prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\SOT folder as per the updated 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
