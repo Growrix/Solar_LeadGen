@@ -1,7 +1,7 @@
 commit all the changes to your local repository:
 git add .
 git commit -m "Your commit message"
-Push the changes to the remote repository: git push to the branch-name: Strapi_Start
+Push the changes to the remote repository: git push to the branch-name: Strapi_mess
 
 
  ***backup instruction***

@@ -4352,3 +4352,15 @@ I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PR
  ---------------------------------------------------------------------------------
 
  I want you to follow this template for finalizing the tasks.md D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\.specify\templates\tasks-template.md and built the tasks.md accordingly. I also want you to update the global index.md and also all the necessary files in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file as well to reflect these changes. For any tasks.md the AI must follow the template that I mentioned. 
+
+ ---------------------------------------------------------------------------------
+
+ here is my plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_MIRROR_STRAPI\Plan\ChatGPTplan.md . I want you to audit this plan deeply and prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_MIRROR_STRAPI\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ----------------------------------------------------------------------------------------
+
+ here is my plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\PLAN\ChatGPT.md . I want you to audit this plan deeply and prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
