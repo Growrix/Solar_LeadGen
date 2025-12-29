@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { BlogPost } from '@/types/blog';
 import { allArticles } from '@/data/blogData';
+import { slugify } from '@/lib/blog/slugify';
 
 type StrapiImageLike = {
   url?: string;
@@ -40,15 +41,6 @@ type StrapiPostEntity = {
 type StrapiListResponse<T> = {
   data?: T[];
 };
-
-function slugify(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/['"]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
 
 function resolveStrapiMediaUrl(strapiUrl: string, image: StrapiImageLike | undefined | null): string | null {
   const raw = image?.data?.attributes?.url ?? image?.url;
@@ -114,6 +106,28 @@ function fallbackFromSeed(slug: string): BlogPost | null {
   };
 }
 
+function fallbackListFromSeed(): BlogPost[] {
+  return allArticles.map((seed) => {
+    const slug = slugify(seed.title);
+    return {
+      id: `seed:${slug}`,
+      slug,
+      title: seed.title,
+      excerpt: seed.excerpt,
+      authorName: seed.author,
+      publishedDateLabel: seed.date,
+      readTimeLabel: seed.readTime,
+      categoryName: seed.category,
+      featuredImageUrl: seed.image,
+      content: seed.excerpt,
+      contentFormat: 'plaintext',
+      seoTitle: seed.title,
+      seoDescription: seed.excerpt,
+      ogImageUrl: seed.image,
+    };
+  });
+}
+
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   const strapiUrl = process.env.STRAPI_URL;
 
@@ -138,4 +152,36 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   if (!entity) return null;
 
   return mapStrapiPost(strapiUrl, entity);
+}
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  const strapiUrl = process.env.STRAPI_URL;
+
+  if (!strapiUrl) {
+    return fallbackListFromSeed();
+  }
+
+  const token = process.env.STRAPI_TOKEN;
+  const url = new URL('/api/posts', strapiUrl);
+  url.searchParams.set('populate', 'featuredImage,ogImage');
+  url.searchParams.set('sort', 'publishedAt:desc');
+  url.searchParams.set('filters[publishedAt][$notNull]', 'true');
+  url.searchParams.set('pagination[pageSize]', '50');
+
+  const res = await fetch(url.toString(), {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    next: { revalidate: 60 },
+  });
+
+  if (!res.ok) {
+    return fallbackListFromSeed();
+  }
+
+  const json = (await res.json()) as StrapiListResponse<StrapiPostEntity>;
+  const entities = json.data ?? [];
+  const mapped = entities
+    .map((entity) => mapStrapiPost(strapiUrl, entity))
+    .filter((post): post is BlogPost => Boolean(post));
+
+  return mapped.length > 0 ? mapped : fallbackListFromSeed();
 }

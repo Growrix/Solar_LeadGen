@@ -50,6 +50,7 @@ Goal: prevent AI context loss by locking documentation before coding, and by mak
 
 2) **Execute (Phase-by-phase Tasks)**
 - Create/maintain execution tasks at: `specs/<feature>/tasks.md`
+- Tasks must follow `.specify/templates/tasks-template.md`.
 - Tasks must include testing checkpoints and stop rules.
 
 3) **Execution Style (When you want Frontend-first)**

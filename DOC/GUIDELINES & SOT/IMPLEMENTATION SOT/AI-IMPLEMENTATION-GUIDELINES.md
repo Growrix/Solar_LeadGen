@@ -156,13 +156,16 @@ Create audit report in `DOC/[folder]/[FEATURE]-AUDIT.md` with:
 
 ### Step 3: PLAN - Create Implementation Tasks
 
-Create/update `specs/[feature]/tasks.md` following structure from existing task files:
-- Clear phases (PHASE 0, 1, 2...)
-- Testing checkpoints after each phase
-- Stop criteria (when to halt if tests fail)
-- Rollback procedures
+Create/update `specs/[feature]/tasks.md` using the canonical template:
+- `.specify/templates/tasks-template.md`
 
-See existing `specs/*/tasks.md` files for template patterns.
+Minimum requirements:
+- Clear phases (Phase 1, Phase 2, ...)
+- Tasks grouped by user story (US1, US2, ...)
+- IDs in `T###` format and `[P]` label where parallel-safe
+- Explicit file paths in task descriptions
+- Testing checkpoints after each phase
+- Stop criteria (when to halt if checks fail)
 
 ---
 

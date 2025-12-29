@@ -663,8 +663,13 @@ export default function Home() {
 
   const handleNavigateToPost = (post: Post) => {
     // Store post in sessionStorage and navigate
-    sessionStorage.setItem('currentBlogPost', JSON.stringify(post));
-    router.push('/blog/post');
+    const slug = post.title
+      .trim()
+      .toLowerCase()
+      .replace(/['"]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    router.push(`/blog/${encodeURIComponent(slug)}`);
   };
 
   return (

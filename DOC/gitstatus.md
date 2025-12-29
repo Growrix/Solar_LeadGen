@@ -21,6 +21,12 @@
 
 ---
 
+- Commit: fa32b3b8828404ca7c86e1405eca9f3cc2a8aa90
+- Date: 2025-12-29T11:55:50+06:00
+- Branch: Before_Strapi_Integation
+- Description: Remove legacy admin blog backend, local CMS, and rewire public blog UI for Strapi integration. All public blog UI preserved. Typecheck and build pass. Ready for Strapi API connection.
+---
+
 - Commit: 6af7fe9280a9c77ae65a24f4212d57316089045b
 - Date: 2025-12-27 14:03:51 +0600
 - Branch: NegotiationModal_Enhancement

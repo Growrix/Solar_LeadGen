@@ -4336,3 +4336,19 @@ I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PR
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
 
  ----------------------------------------------------------------------------------
+
+ Here is the plan to build the Blog Feature D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_STRAPI\PLAN . read the Idea carefully and prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_STRAPI\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared. 
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ------------------------------------------------------------------------------------
+
+ I am confused about your implimentations. I did not see that you have created any implimentation plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_STRAPI\SOT and also the tasks.md file update based on the implimentation plan in the same directory D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_STRAPI\SOT . 
+
+ - Think I have missed to mention these Instructions in the Guidelines . So , You need to update the relevant files and the index.md D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file as well in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT . Lets enhace the Workflow, becuase now you have created the Feature-Sot.md and the index.md in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_STRAPI\SOT folder which is fine and as per my instruction . But I feel there is lackings of further implimentation and Execution plan in the tasks.md file in the same directory D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\BLOG_STRAPI\SOT . I want both files to create there so that any AI will not lost the contexts. Now the planning base is strong but not the executional level. Even I have no Idea what are you implimenting and baesd on what. re-think and update and also let me know further if you have more idea to improve this workflow. 
+
+ ---------------------------------------------------------------------------------
+
+ I want you to follow this template for finalizing the tasks.md D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\.specify\templates\tasks-template.md and built the tasks.md accordingly. I also want you to update the global index.md and also all the necessary files in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file as well to reflect these changes. For any tasks.md the AI must follow the template that I mentioned. 

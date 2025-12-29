@@ -1,0 +1,138 @@
+﻿
+> solarmatch@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.33
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/48) ...
+   Generating static pages (12/48) 
+   Generating static pages (24/48) 
+prisma:error 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5432`
+
+Please make sure your database server is running at `localhost:5432`.
+   Generating static pages (36/48) 
+ Γ£ô Generating static pages (48/48)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                           Size     First Load JS
+Γöî Γùï /                                                 13.8 kB         245 kB
+Γö£ Γùï /_not-found                                       880 B          88.4 kB
+Γö£ Γùï /admin                                            2.65 kB        99.9 kB
+Γö£ Γùï /admin/components                                 271 B          87.8 kB
+Γö£ Γùï /admin/dashboard                                  162 B          87.7 kB
+Γö£ Γùï /admin/homeowners                                 5.46 kB        98.2 kB
+Γö£ Γùï /admin/installers                                 4.16 kB        96.9 kB
+Γö£ ╞Æ /admin/installers/[id]                            4.39 kB        91.9 kB
+Γö£ Γùï /admin/instant-quotes                             7.17 kB         197 kB
+Γö£ Γùï /admin/leads                                      5.97 kB        93.5 kB
+Γö£ ╞Æ /admin/leads/[id]                                 20.1 kB         111 kB
+Γö£ Γùï /admin/newsletter                                 2.35 kB        89.9 kB
+Γö£ ╞Æ /api/admin/homeowners                             0 B                0 B
+Γö£ ╞Æ /api/admin/homeowners/[id]/bidding-limit          0 B                0 B
+Γö£ ╞Æ /api/admin/homeowners/[id]/lead-limit             0 B                0 B
+Γö£ ╞Æ /api/admin/homeowners/analytics                   0 B                0 B
+Γö£ ╞Æ /api/admin/installers/[id]/logs                   0 B                0 B
+Γö£ ╞Æ /api/admin/installers/[id]/status                 0 B                0 B
+Γö£ ╞Æ /api/admin/installers/[id]/verification           0 B                0 B
+Γö£ ╞Æ /api/admin/installers/[id]/verification/logs      0 B                0 B
+Γö£ ╞Æ /api/admin/installers/[id]/verification/status    0 B                0 B
+Γö£ ╞Æ /api/admin/installers/list                        0 B                0 B
+Γö£ ╞Æ /api/admin/instant-quotes                         0 B                0 B
+Γö£ ╞Æ /api/admin/leads/[id]/assign                      0 B                0 B
+Γö£ ╞Æ /api/admin/leads/[id]/assignments/[installerId]   0 B                0 B
+Γö£ ╞Æ /api/admin/written-quotes/[id]/extend             0 B                0 B
+Γö£ ╞Æ /api/auth/[...nextauth]                           0 B                0 B
+Γö£ ╞Æ /api/auth/oauth-register                          0 B                0 B
+Γö£ ╞Æ /api/auth/register/homeowner                      0 B                0 B
+Γö£ ╞Æ /api/auth/register/installer                      0 B                0 B
+Γö£ ╞Æ /api/bids                                         0 B                0 B
+Γö£ ╞Æ /api/bids/[bidId]/purchase                        0 B                0 B
+Γö£ ╞Æ /api/bids/[bidId]/select                          0 B                0 B
+Γö£ ╞Æ /api/debug-admin                                  0 B                0 B
+Γö£ ╞Æ /api/fix-admin                                    0 B                0 B
+Γö£ ╞Æ /api/homeowner/dashboard                          0 B                0 B
+Γö£ ╞Æ /api/homeowner/profile                            0 B                0 B
+Γö£ ╞Æ /api/installer/account/change-password            0 B                0 B
+Γö£ ╞Æ /api/installer/account/status                     0 B                0 B
+Γö£ ╞Æ /api/installer/leads/[id]/purchase                0 B                0 B
+Γö£ ╞Æ /api/installer/leads/assigned                     0 B                0 B
+Γö£ ╞Æ /api/installer/leads/purchased                    0 B                0 B
+Γö£ ╞Æ /api/installer/leads/unified                      0 B                0 B
+Γö£ ╞Æ /api/installer/preferences                        0 B                0 B
+Γö£ ╞Æ /api/installer/profile                            0 B                0 B
+Γö£ ╞Æ /api/installer/uploads/presign                    0 B                0 B
+Γö£ ╞Æ /api/installer/verification/submit                0 B                0 B
+Γö£ ╞Æ /api/instant-quote                                0 B                0 B
+Γö£ ╞Æ /api/leads                                        0 B                0 B
+Γö£ ╞Æ /api/leads/[id]                                   0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/approve                           0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/archive                           0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/bids                              0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/cancel                            0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/purchase                          0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/reject                            0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/resell                            0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/reset-timer                       0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/unarchive                         0 B                0 B
+Γö£ ╞Æ /api/leads/[id]/update-countdown                  0 B                0 B
+Γö£ ╞Æ /api/newsletter/subscribe                         0 B                0 B
+Γö£ ╞Æ /api/notifications                                0 B                0 B
+Γö£ ╞Æ /api/notifications/[id]/read                      0 B                0 B
+Γö£ ╞Æ /api/notifications/mark-all-read                  0 B                0 B
+Γö£ ╞Æ /api/settings                                     0 B                0 B
+Γö£ ╞Æ /api/test/sent-emails                             0 B                0 B
+Γö£ ╞Æ /api/user/update-phone                            0 B                0 B
+Γö£ ╞Æ /api/verification/send-otp                        0 B                0 B
+Γö£ ╞Æ /api/verification/verify-otp                      0 B                0 B
+Γö£ ╞Æ /api/webhooks/stripe                              0 B                0 B
+Γö£ ╞Æ /api/written-quotes                               0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/accept                   0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/agree                    0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/counter                  0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/deal-reject              0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/extend                   0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/presence                 0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/purchase                 0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/reject                   0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/request-admin-extension  0 B                0 B
+Γö£ ╞Æ /api/written-quotes/[id]/revise                   0 B                0 B
+Γö£ Γùï /blog                                             3.14 kB        98.2 kB
+Γö£ ╞Æ /blog/[slug]                                      408 B           104 kB
+Γö£ Γùï /blog/post                                        643 B          88.2 kB
+Γö£ Γùï /component-library                                20.9 kB         108 kB
+Γö£ Γùï /dev/written-quote                                1.73 kB        89.3 kB
+Γö£ Γùï /homeowner                                        2.87 kB        92.9 kB
+Γö£ Γùï /homeowner/dashboard                              63.8 kB         315 kB
+Γö£ Γùï /installer                                        5.57 kB         105 kB
+Γö£ Γùï /installer/dashboard                              466 B            88 kB
+Γö£ Γùï /installer/lead-feed                              162 B          87.7 kB
+Γö£ Γùï /installer/leads                                  25.3 kB         264 kB
+Γö£ ╞Æ /installer/leads/[id]                             4 kB            101 kB
+Γö£ Γùï /installer/marketplace                            5.18 kB         102 kB
+Γö£ Γùï /installer/profile                                30.1 kB         132 kB
+Γö£ Γùï /installer/purchased-leads                        162 B          87.7 kB
+Γö£ Γùï /instant-quote/complete                           5.62 kB         103 kB
+Γö£ Γùï /notifications                                    5.74 kB         103 kB
+Γö£ Γùï /test/quote-builder                               698 B           221 kB
+Γöö Γùï /theme-test                                       1.83 kB        89.4 kB
++ First Load JS shared by all                         87.5 kB
+  Γö£ chunks/2117-44ed699cfae4d65b.js                   31.9 kB
+  Γö£ chunks/fd9d1056-bbeac11d9cbdac38.js               53.6 kB
+  Γöö other shared chunks (total)                       2.02 kB
+
+
+╞Æ Middleware                                          49.6 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

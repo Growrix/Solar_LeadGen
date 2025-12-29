@@ -56,3 +56,41 @@ Folderization rule (to prevent planning chaos):
 	- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
 - If multiple supporting files are unavoidable:
 	- `DOC/Features/<Feature Name>/SOT/INDEX.md` must exist and list all related docs
+
+---
+
+## Workflow Enhancement: Execution Artifacts (Required for Implementation)
+
+When a feature moves from **planning** to **implementation**, the feature SOT folder must include execution-level artifacts so a new AI/human can continue without losing context.
+
+Required additions under `DOC/Features/<Feature Name>/SOT/`:
+
+- `IMPLEMENTATION-PLAN.md`
+	- Purpose: clearly state *what is being implemented now*, *why*, *sequencing*, *acceptance checks*, and *stop rules*.
+	- Must remain consistent with the locked `FEATURE-SOT.md`.
+
+- `tasks.md`
+	- Purpose: a **portable execution checklist** that lives with the SOT.
+	- Must link to the repo-wide engineering tracker in `specs/<feature>/tasks.md` if one exists.
+
+Notes:
+- `FEATURE-SOT.md` remains the canonical planning SOT (Phases 0–6).
+- `specs/<feature>/tasks.md` remains the repo-wide engineering execution tracker.
+- The SOT-local `tasks.md` is the continuity-first checklist to prevent context loss.
+
+---
+
+## Tasks.md Template (Mandatory)
+
+For **any** `tasks.md` created or updated in this repo (including both locations below), the author MUST follow:
+
+- `.specify/templates/tasks-template.md`
+
+Applies to:
+- `specs/<feature>/tasks.md`
+- `DOC/Features/<Feature Name>/SOT/tasks.md`
+
+Minimum enforcement:
+- Must use the task ID format (`T###`) and the `[P]` + `[US#]` labeling rules.
+- Must group work by phases and user stories.
+- Must include explicit file paths in task descriptions.
