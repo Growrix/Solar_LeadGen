@@ -39,6 +39,8 @@ function slugify(value: string): string {
 export default function AdminBlogNewPage() {
   const router = useRouter();
   const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(false);
   const [form, setForm] = React.useState<FormState>({
     title: '',
     slug: '',
@@ -63,14 +65,25 @@ export default function AdminBlogNewPage() {
 
   const handleTitleChange = (value: string) => {
     setForm((prev) => {
-      const nextSlug = prev.slug ? prev.slug : slugify(value);
+      const nextSlug = isSlugManuallyEdited ? prev.slug : slugify(value);
       return { ...prev, title: value, slug: nextSlug };
     });
+  };
+
+  const handleSlugChange = (value: string) => {
+    setIsSlugManuallyEdited(true);
+    setForm((prev) => ({ ...prev, slug: value }));
+  };
+
+  const handleResetSlugFromTitle = () => {
+    setIsSlugManuallyEdited(false);
+    setForm((prev) => ({ ...prev, slug: slugify(prev.title) }));
   };
 
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
+    setError(null);
     try {
       const post = await createAdminBlogPost({
         title: form.title,
@@ -94,20 +107,19 @@ export default function AdminBlogNewPage() {
       });
 
       router.push(`/admin/blog/${post.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create blog post');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-4 mb-6">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-heading-2 text-foreground">Create Draft</h1>
-            <p className="text-muted-foreground text-body-small mt-1">
-              Creates a new blog post in the database.
-            </p>
+            <h1 className="text-heading-1 text-foreground mb-2">Create Draft</h1>
+            <p className="text-heading-4 text-muted-foreground">Creates a new blog post in the database.</p>
           </div>
 
           <div className="flex gap-3">
@@ -120,8 +132,14 @@ export default function AdminBlogNewPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
+        {error ? (
+          <div className="mb-6 bg-error/10 border border-error/20 rounded-2xl p-4">
+            <p className="text-body text-error">{error}</p>
+          </div>
+        ) : null}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-body-small text-muted-foreground mb-2">Title</label>
@@ -134,11 +152,21 @@ export default function AdminBlogNewPage() {
 
               <div>
                 <label className="block text-body-small text-muted-foreground mb-2">Slug</label>
-                <input
-                  className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
-                  value={form.slug}
-                  onChange={(e) => onChange('slug', e.target.value)}
-                />
+                <div className="flex gap-3">
+                  <input
+                    className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
+                    value={form.slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                  />
+                  <Button
+                    variant="secondary"
+                    className="h-12 px-4"
+                    onClick={handleResetSlugFromTitle}
+                    disabled={!form.title}
+                  >
+                    Reset
+                  </Button>
+                </div>
               </div>
 
               <div>
@@ -214,7 +242,7 @@ export default function AdminBlogNewPage() {
             </div>
           </div>
 
-          <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
+        <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-body-small text-muted-foreground mb-2">Markdown Editor</label>
@@ -282,7 +310,6 @@ export default function AdminBlogNewPage() {
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

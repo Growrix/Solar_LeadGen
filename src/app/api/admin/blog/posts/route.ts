@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 
@@ -91,6 +92,16 @@ export async function GET(request: NextRequest) {
     }
     if (error instanceof Error && error.message.includes('Forbidden')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json(
+        {
+          error:
+            'Database schema missing blog tables. Apply migrations (npx prisma migrate deploy) and retry.',
+        },
+        { status: 500 }
+      );
     }
 
     console.error('❌ [GET /api/admin/blog/posts] Error:', error);
@@ -191,6 +202,16 @@ export async function POST(request: NextRequest) {
     }
     if (error instanceof Error && error.message.includes('Forbidden')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json(
+        {
+          error:
+            'Database schema missing blog tables. Apply migrations (npx prisma migrate deploy) and retry.',
+        },
+        { status: 500 }
+      );
     }
 
     console.error('❌ [POST /api/admin/blog/posts] Error:', error);

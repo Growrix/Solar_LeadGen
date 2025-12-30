@@ -40,6 +40,35 @@ type AiDraft = {
   readTime: string;
 };
 
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function mapPostToForm(post: AdminBlogPost): FormState {
+  return {
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt,
+    content: post.content,
+    coverImageUrl: post.coverImageUrl,
+    readTime: post.readTime,
+    category: post.category,
+    tagsCsv: (post.tags || []).join(', '),
+    seoTitle: post.seoTitle,
+    seoDescription: post.seoDescription,
+    ogImageUrl: post.ogImageUrl,
+    canonicalUrl: post.canonicalUrl,
+    robots: post.robots,
+    status: post.status,
+    scheduledFor: post.scheduledFor,
+  };
+}
+
 export default function AdminBlogEditPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -47,7 +76,9 @@ export default function AdminBlogEditPage() {
 
   const [loaded, setLoaded] = React.useState<AdminBlogPost | null>(null);
   const [form, setForm] = React.useState<FormState | null>(null);
+  const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(true);
 
   const [aiTopic, setAiTopic] = React.useState('');
   const [aiKeywords, setAiKeywords] = React.useState('');
@@ -57,45 +88,64 @@ export default function AdminBlogEditPage() {
   const [aiLoading, setAiLoading] = React.useState(false);
   const [aiError, setAiError] = React.useState<string | null>(null);
 
+  const [error, setError] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (!id) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
     (async () => {
       const post = await getAdminBlogPostById(id);
+      if (cancelled) return;
+
       setLoaded(post);
-
-      if (!post) {
+      setForm(post ? mapPostToForm(post) : null);
+      setIsSlugManuallyEdited(true);
+    })()
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Failed to load blog post');
+        setLoaded(null);
         setForm(null);
-        return;
-      }
-
-      setForm({
-        title: post.title,
-        slug: post.slug,
-        excerpt: post.excerpt,
-        content: post.content,
-        coverImageUrl: post.coverImageUrl,
-        readTime: post.readTime,
-        category: post.category,
-        tagsCsv: (post.tags || []).join(', '),
-        seoTitle: post.seoTitle,
-        seoDescription: post.seoDescription,
-        ogImageUrl: post.ogImageUrl,
-        canonicalUrl: post.canonicalUrl,
-        robots: post.robots,
-        status: post.status,
-        scheduledFor: post.scheduledFor,
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
       });
-    })().catch(() => {
-      setLoaded(null);
-      setForm(null);
-    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const onChange = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
+  const handleTitleChange = (value: string) => {
+    setForm((prev) => {
+      if (!prev) return prev;
+      const nextSlug = isSlugManuallyEdited ? prev.slug : slugify(value);
+      return { ...prev, title: value, slug: nextSlug };
+    });
+  };
+
+  const handleSlugChange = (value: string) => {
+    setIsSlugManuallyEdited(true);
+    onChange('slug', value);
+  };
+
+  const handleResetSlugFromTitle = () => {
+    setIsSlugManuallyEdited(false);
+    setForm((prev) => {
+      if (!prev) return prev;
+      return { ...prev, slug: slugify(prev.title) };
+    });
+  };
+
   const handleSave = async () => {
+    setError(null);
     if (!form) return;
     if (saving) return;
     setSaving(true);
@@ -122,14 +172,23 @@ export default function AdminBlogEditPage() {
         scheduledFor: form.scheduledFor,
       });
 
+      if (!updated) {
+        setError('Post not found');
+        setLoaded(null);
+        setForm(null);
+        return;
+      }
+
       setLoaded(updated);
+      setForm(mapPostToForm(updated));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save blog post');
     } finally {
       setSaving(false);
     }
   };
 
   const handleGenerateDraft = async () => {
-    if (!form) return;
     if (aiLoading) return;
 
     setAiLoading(true);
@@ -178,14 +237,46 @@ export default function AdminBlogEditPage() {
           readTime: draft.readTime || prev.readTime,
         };
       });
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'AI request failed');
     } finally {
       setAiLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-3xl mx-auto bg-surface rounded-2xl shadow-neu-outset p-12 text-center">
+          <h1 className="text-heading-3 text-foreground">Loading…</h1>
+          <p className="text-muted-foreground mt-2">Fetching blog post data.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && (!loaded || !form)) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-3xl mx-auto bg-surface rounded-2xl shadow-neu-outset p-12 text-center">
+          <h1 className="text-heading-3 text-foreground">Could not load post</h1>
+          <p className="text-muted-foreground mt-2">{error}</p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
+              Back to Blog Posts
+            </Button>
+            <Button variant="primary" onClick={() => router.refresh()}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!loaded || !form) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-3xl mx-auto bg-surface rounded-2xl shadow-neu-outset p-12 text-center">
           <h1 className="text-heading-3 text-foreground">Post not found</h1>
           <p className="text-muted-foreground mt-2">This draft may have been deleted.</p>
@@ -200,46 +291,61 @@ export default function AdminBlogEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-heading-2 text-foreground">Edit Post</h1>
-            <p className="text-muted-foreground text-body-small mt-1">ID: {loaded.id}</p>
-          </div>
-
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
-              Back
-            </Button>
-            <Button variant="secondary" onClick={() => router.push(`/admin/blog/${loaded.id}/preview`)}>
-              Preview
-            </Button>
-            <Button variant="primary" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving…' : 'Save'}
-            </Button>
-          </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-heading-1 text-foreground mb-2">Edit Post</h1>
+          <p className="text-heading-4 text-muted-foreground">ID: {loaded.id}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
+        <div className="flex gap-3">
+          <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
+            Back
+          </Button>
+          <Button variant="secondary" onClick={() => router.push(`/admin/blog/${loaded.id}/preview`)}>
+            Preview
+          </Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </Button>
+        </div>
+      </div>
+
+        {error ? (
+          <div className="mb-6 bg-error/10 border border-error/20 rounded-2xl p-4">
+            <p className="text-body text-error">{error}</p>
+          </div>
+        ) : null}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-body-small text-muted-foreground mb-2">Title</label>
                 <input
                   className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
                   value={form.title}
-                  onChange={(e) => onChange('title', e.target.value)}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                 />
               </div>
 
               <div>
                 <label className="block text-body-small text-muted-foreground mb-2">Slug</label>
-                <input
-                  className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
-                  value={form.slug}
-                  onChange={(e) => onChange('slug', e.target.value)}
-                />
+                <div className="flex gap-3">
+                  <input
+                    className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
+                    value={form.slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                  />
+                  <Button
+                    variant="secondary"
+                    className="h-12 px-4"
+                    onClick={handleResetSlugFromTitle}
+                    disabled={!form.title}
+                  >
+                    Reset
+                  </Button>
+                </div>
               </div>
 
               <div>
@@ -315,7 +421,7 @@ export default function AdminBlogEditPage() {
             </div>
           </div>
 
-          <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
+        <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
                 <div className="flex items-center justify-between gap-3">
@@ -450,7 +556,6 @@ export default function AdminBlogEditPage() {
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

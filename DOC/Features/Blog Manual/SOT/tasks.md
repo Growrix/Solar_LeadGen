@@ -99,6 +99,22 @@ description: "Tasks for Blog Manual feature implementation"
 
 ---
 
+## Phase 8: Fixes & Hardening (Post‑Audit, Priority: P0)
+
+**Authority**: `DOC/Features/Blog Manual/PLAN/FIX-AUDIT-AND-PLAN.md`
+
+**Goal**: Resolve runtime create failures, improve admin CMS usability, and align admin blog pages with admin/dashboard standards.
+
+- [x] T031 [US2] Ensure blog migrations are applied in the active DB before testing (backup + `npx prisma migrate deploy` + verify `npx prisma migrate status`) — see `DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/operations/database-operations-standard.md`
+- [x] T032 [P] [US3] Improve API error clarity for Prisma missing-table scenarios (detect `P2021` and return actionable message) in `src/app/api/admin/blog/posts/route.ts` and `src/app/api/admin/blog/posts/[id]/route.ts`
+- [x] T033 [P] [US2] Prevent unhandled runtime errors in admin blog UI by catching API client errors and showing inline error UI in `src/app/admin/blog/page.tsx` and `src/app/admin/blog/new/page.tsx`
+- [x] T034 [P] [US2] Add Admin sidebar “Blog” section with submenu routes (All Posts, Create Post, Categories, Tags) in `src/components/AdminSidebar.tsx`, `src/components/AdminMobileSidebarMenu.tsx`, and active-page mapping in `src/app/admin/layout.tsx`
+- [x] T035 [P] [US2] Slug UX: auto-generate from Title until user edits slug; add “Reset from title” action in `src/app/admin/blog/new/page.tsx` and `src/app/admin/blog/[id]/page.tsx`
+- [x] T036 [P] [US2] Align admin blog pages wrapper spacing/typography with established admin patterns (match existing admin pages: `p-4 sm:p-6 lg:p-8` wrapper; avoid extra `min-h-screen`/`bg-background` shells) in `src/app/admin/blog/*/page.tsx`
+- [x] T037 [US2] Add minimal placeholder pages for `/admin/blog/categories` and `/admin/blog/tags` if required by sidebar structure
+
+---
+
 ## Dependencies & Execution Order
 
 - Phase 2 blocks Phase 5 (no DB until frontend-first is approved).

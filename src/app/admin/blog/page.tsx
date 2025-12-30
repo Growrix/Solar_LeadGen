@@ -26,12 +26,16 @@ export default function AdminBlogListPage() {
   const router = useRouter();
   const [posts, setPosts] = React.useState<AdminBlogPost[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const refresh = React.useCallback(async () => {
     setLoading(true);
     try {
+      setError(null);
       const next = await listAdminBlogPosts();
       setPosts(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch blog posts');
     } finally {
       setLoading(false);
     }
@@ -46,26 +50,30 @@ export default function AdminBlogListPage() {
   }, [refresh]);
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-heading-2 text-foreground">Blog Posts</h1>
-            <p className="text-muted-foreground text-body-small mt-1">
-              Admin blog CMS.
-            </p>
-          </div>
-
-          <Button
-            variant="primary"
-            onClick={() => router.push('/admin/blog/new')}
-          >
-            Create New Post
-          </Button>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-heading-1 text-foreground mb-2">Blog Posts</h1>
+          <p className="text-heading-4 text-muted-foreground">Admin blog CMS.</p>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
-          {loading ? (
+        <Button variant="primary" onClick={() => router.push('/admin/blog/new')}>
+          Create New Post
+        </Button>
+      </div>
+
+      <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
+          {error ? (
+            <div className="p-12 text-center">
+              <h2 className="text-heading-4 text-foreground">Unable to load posts</h2>
+              <p className="text-muted-foreground mt-2">{error}</p>
+              <div className="mt-6 flex justify-center">
+                <Button variant="primary" onClick={() => void refresh()}>
+                  Retry
+                </Button>
+              </div>
+            </div>
+          ) : loading ? (
             <div className="p-12 text-center">
               <h2 className="text-heading-4 text-foreground">Loading…</h2>
               <p className="text-muted-foreground mt-2">Fetching posts from the server.</p>
@@ -128,7 +136,6 @@ export default function AdminBlogListPage() {
               </table>
             </div>
           )}
-        </div>
       </div>
     </div>
   );

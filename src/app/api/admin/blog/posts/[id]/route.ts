@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 
@@ -76,6 +77,16 @@ export async function GET(
     }
     if (error instanceof Error && error.message.includes('Forbidden')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json(
+        {
+          error:
+            'Database schema missing blog tables. Apply migrations (npx prisma migrate deploy) and retry.',
+        },
+        { status: 500 }
+      );
     }
 
     console.error('❌ [GET /api/admin/blog/posts/[id]] Error:', error);
@@ -184,6 +195,16 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
 
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json(
+        {
+          error:
+            'Database schema missing blog tables. Apply migrations (npx prisma migrate deploy) and retry.',
+        },
+        { status: 500 }
+      );
+    }
+
     console.error('❌ [PATCH /api/admin/blog/posts/[id]] Error:', error);
     return NextResponse.json({ error: 'Failed to update blog post' }, { status: 500 });
   }
@@ -206,6 +227,16 @@ export async function DELETE(
     }
     if (error instanceof Error && error.message.includes('Forbidden')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
+      return NextResponse.json(
+        {
+          error:
+            'Database schema missing blog tables. Apply migrations (npx prisma migrate deploy) and retry.',
+        },
+        { status: 500 }
+      );
     }
 
     console.error('❌ [DELETE /api/admin/blog/posts/[id]] Error:', error);
