@@ -27,6 +27,17 @@ export type AdminBlogPostCreateInput = Omit<AdminBlogPost, 'id' | 'createdAt' | 
 
 export type AdminBlogPostUpdateInput = Partial<Omit<AdminBlogPost, 'id' | 'createdAt'>>;
 
+export type AdminBlogPostListCounts = {
+  all: number;
+  published: number;
+  drafts: number;
+};
+
+export type AdminBlogPostListResult = {
+  posts: AdminBlogPost[];
+  counts: AdminBlogPostListCounts;
+};
+
 type AdminApiPost = {
   id: string;
   title: string;
@@ -109,6 +120,31 @@ function mapAdminApiPostToAdminBlogPost(post: AdminApiPost): AdminBlogPost {
 export async function listAdminBlogPosts(): Promise<AdminBlogPost[]> {
   const data = await requestJson<{ posts: AdminApiPost[] }>('/api/admin/blog/posts', { method: 'GET' });
   return (data.posts ?? []).map(mapAdminApiPostToAdminBlogPost);
+}
+
+export async function listAdminBlogPostsWithMeta(options?: {
+  status?: AdminBlogStatus | 'ALL';
+  q?: string;
+}): Promise<AdminBlogPostListResult> {
+  const params = new URLSearchParams();
+  if (options?.status && options.status !== 'ALL') params.set('status', options.status);
+  if (options?.q) params.set('q', options.q);
+
+  const qs = params.toString();
+  const url = qs ? `/api/admin/blog/posts?${qs}` : '/api/admin/blog/posts';
+
+  const data = await requestJson<{ posts: AdminApiPost[]; counts?: Partial<AdminBlogPostListCounts> }>(url, {
+    method: 'GET',
+  });
+
+  return {
+    posts: (data.posts ?? []).map(mapAdminApiPostToAdminBlogPost),
+    counts: {
+      all: Number(data.counts?.all ?? 0),
+      published: Number(data.counts?.published ?? 0),
+      drafts: Number(data.counts?.drafts ?? 0),
+    },
+  };
 }
 
 export async function getAdminBlogPostById(id: string): Promise<AdminBlogPost | null> {

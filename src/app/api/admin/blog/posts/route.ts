@@ -50,13 +50,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get('status');
     const status = statusParam ? normalizeStatus(statusParam) : null;
+    const q = normalizeString(searchParams.get('q')).trim();
+
+    const baseWhere = {
+      archivedAt: null as Date | null,
+      ...(q
+        ? {
+            title: {
+              contains: q,
+              mode: 'insensitive' as const,
+            },
+          }
+        : {}),
+    };
+
+    const [allCount, publishedCount, draftCount] = await Promise.all([
+      prisma.blogPost.count({ where: baseWhere }),
+      prisma.blogPost.count({ where: { ...baseWhere, status: 'PUBLISHED' } }),
+      prisma.blogPost.count({ where: { ...baseWhere, status: 'DRAFT' } }),
+    ]);
 
     const posts = await prisma.blogPost.findMany({
       where: status
         ? { status }
-        : {
-            archivedAt: null,
-          },
+        : baseWhere,
       orderBy: { updatedAt: 'desc' },
       include: {
         author: { select: { id: true, name: true, email: true } },
@@ -66,6 +83,11 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({
+      counts: {
+        all: allCount,
+        published: publishedCount,
+        drafts: draftCount,
+      },
       posts: posts.map((p) => ({
         id: p.id,
         title: p.title,
