@@ -4406,3 +4406,26 @@ I want the next plan to be made in this D:\Desktop Mass\SOLAR LEAD GEN PROJECT M
   ***Strickt Rules***
 ### Follow the Guidelines:
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+
+ -------------------------------------------------------------------------------------
+
+ i have built a prototype blog CMS UI with the google ai studio . I want to mirror all the pages with all the fields and options and functions but it must be adapted with my theme system and saas.  here is the prototype D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\luminacms-admin . I want you to deeply analyze this prototype and prepare a detailed plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\Plan folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+The pages I want : Posts , Comments , Categories & tags , Media . 
+
+As there is no backend was planned and this is only UI UX , you need to prepare the backend plan as well along with the frontend plan in the same document. Audit deeply and prepare it accordingly. 
+
+### Additionally : as we have implimented partial blog UI and Backend, Is there any option to modify the UI easily ? and drop the tables and recreate the backend ? will it be messy? or should we start fresh from the fresh branch where the blog was not implimented? also need your decision. the existings will be no needed at all in this case, I think refactoring might take more time. or you decide and let me know. 
+
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ --------------------------------------------------------------------------------------
+
+I will go as per your recommendation Refactor. here is the plan that you have generated D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\Plan\LUMINACMS-PROTOTYPE-MIRROR-PLAN.md . I want you to prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md

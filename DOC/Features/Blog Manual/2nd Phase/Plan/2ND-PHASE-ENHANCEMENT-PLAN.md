@@ -1,5 +1,10 @@
 # Blog Manual — 2nd Phase Enhancement Plan (WordPress-like CMS)
 
+## Prototype Mirror Plan (Implementation-Ready)
+For the detailed, page-by-page plan that mirrors the LuminaCMS prototype UX (Posts, Editor, Comments, Categories & Tags, Media Library) and includes the backend plan, see:
+
+- `DOC/Features/Blog Manual/2nd Phase/Plan/LUMINACMS-PROTOTYPE-MIRROR-PLAN.md`
+
 ## Goal
 Upgrade the admin blog experience from “developer CRUD” to a practical CMS suitable for daily content operations (WordPress-like), while preserving the existing Next.js + Prisma foundation and multi-theme design system constraints.
 
