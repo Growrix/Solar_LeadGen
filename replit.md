@@ -28,3 +28,4 @@ SolarMatch is a platform connecting homeowners with solar installers. It feature
 - Project imported from GitHub.
 - Configured development server workflow.
 - Initialized `replit.md` for project tracking.
+- Fixed platform-specific dependency issue (`@next/swc-win32-x64-msvc`).
