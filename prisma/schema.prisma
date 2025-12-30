@@ -104,6 +104,8 @@ model User {
   biddingLeadsLimit        Int                      @default(1)
   accounts                 Account[]
   bidsAsInstaller          Bid[]                    @relation("installer_bids")
+  blogPosts                BlogPost[]
+  blogAiRequestLogs         BlogAiRequestLog[]
   verificationTokens       EmailVerificationToken[]
   installerPreferences     InstallerPreferences?
   installerProfile         InstallerProfile?
@@ -121,6 +123,122 @@ model User {
   @@index([email])
   @@index([role])
   @@map("users")
+}
+
+enum BlogPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BlogJobType {
+  PUBLISH_SCHEDULED
+  N8N_CREATE_DRAFT
+  N8N_SCHEDULE_POST
+}
+
+enum BlogJobStatus {
+  SUCCESS
+  FAILURE
+}
+
+model BlogCategory {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  posts     BlogPost[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("blog_categories")
+}
+
+model BlogTag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  posts     BlogPostTag[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("blog_tags")
+}
+
+model BlogPost {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  excerpt        String         @default("")
+  content        String         @default("")
+  coverImageUrl  String         @default("")
+  readTime       String         @default("")
+  status         BlogPostStatus @default(DRAFT)
+  robots         String         @default("index,follow")
+  seoTitle       String         @default("")
+  seoDescription String         @default("")
+  ogImageUrl     String         @default("")
+  canonicalUrl   String         @default("")
+  scheduledFor   DateTime?
+  publishedAt    DateTime?
+  archivedAt     DateTime?
+  authorId       String
+  author         User           @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  categoryId     String?
+  category       BlogCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags           BlogPostTag[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([scheduledFor])
+  @@index([authorId])
+  @@index([categoryId])
+  @@map("blog_posts")
+}
+
+model BlogPostTag {
+  postId String
+  tagId  String
+  post   BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    BlogTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("blog_post_tags")
+}
+
+model BlogAiRequestLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  action    String
+  input     Json
+  output    Json?
+  success   Boolean  @default(false)
+  error     String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("blog_ai_request_logs")
+}
+
+model BlogJobLog {
+  id         String       @id @default(cuid())
+  type       BlogJobType
+  status     BlogJobStatus
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  meta       Json?
+  error      String?
+
+  @@index([startedAt])
+  @@index([type])
+  @@index([status])
+  @@map("blog_job_logs")
 }
 
 model Account {

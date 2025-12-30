@@ -7,7 +7,7 @@ import {
   createAdminBlogPost,
   type AdminBlogRobots,
   type AdminBlogStatus,
-} from '@/lib/blog/adminMockStore';
+} from '@/lib/blog/adminApiClient';
 
 type FormState = {
   title: string;
@@ -15,6 +15,7 @@ type FormState = {
   excerpt: string;
   content: string;
   coverImageUrl: string;
+  readTime: string;
   category: string;
   tagsCsv: string;
   seoTitle: string;
@@ -37,12 +38,14 @@ function slugify(value: string): string {
 
 export default function AdminBlogNewPage() {
   const router = useRouter();
+  const [saving, setSaving] = React.useState(false);
   const [form, setForm] = React.useState<FormState>({
     title: '',
     slug: '',
     excerpt: '',
     content: '',
     coverImageUrl: '',
+    readTime: '',
     category: '',
     tagsCsv: '',
     seoTitle: '',
@@ -65,28 +68,35 @@ export default function AdminBlogNewPage() {
     });
   };
 
-  const handleSave = () => {
-    const post = createAdminBlogPost({
-      title: form.title,
-      slug: form.slug || slugify(form.title) || 'untitled',
-      excerpt: form.excerpt,
-      content: form.content,
-      coverImageUrl: form.coverImageUrl,
-      category: form.category,
-      tags: form.tagsCsv
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
-      seoTitle: form.seoTitle,
-      seoDescription: form.seoDescription,
-      ogImageUrl: form.ogImageUrl,
-      canonicalUrl: form.canonicalUrl,
-      robots: form.robots,
-      status: form.status,
-      scheduledFor: form.scheduledFor,
-    });
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const post = await createAdminBlogPost({
+        title: form.title,
+        slug: form.slug || slugify(form.title) || 'untitled',
+        excerpt: form.excerpt,
+        content: form.content,
+        coverImageUrl: form.coverImageUrl,
+        readTime: form.readTime,
+        category: form.category,
+        tags: form.tagsCsv
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        seoTitle: form.seoTitle,
+        seoDescription: form.seoDescription,
+        ogImageUrl: form.ogImageUrl,
+        canonicalUrl: form.canonicalUrl,
+        robots: form.robots,
+        status: form.status,
+        scheduledFor: form.scheduledFor,
+      });
 
-    router.push(`/admin/blog/${post.id}`);
+      router.push(`/admin/blog/${post.id}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -96,7 +106,7 @@ export default function AdminBlogNewPage() {
           <div>
             <h1 className="text-heading-2 text-foreground">Create Draft</h1>
             <p className="text-muted-foreground text-body-small mt-1">
-              This is mocked persistence using localStorage.
+              Creates a new blog post in the database.
             </p>
           </div>
 
@@ -104,8 +114,8 @@ export default function AdminBlogNewPage() {
             <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
               Back
             </Button>
-            <Button variant="primary" onClick={handleSave}>
-              Save
+            <Button variant="primary" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
             </Button>
           </div>
         </div>
@@ -146,6 +156,16 @@ export default function AdminBlogNewPage() {
                   className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
                   value={form.coverImageUrl}
                   onChange={(e) => onChange('coverImageUrl', e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-body-small text-muted-foreground mb-2">Read Time</label>
+                <input
+                  className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body px-4"
+                  value={form.readTime}
+                  onChange={(e) => onChange('readTime', e.target.value)}
+                  placeholder="e.g. 5 min read"
                 />
               </div>
 

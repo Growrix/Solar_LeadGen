@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import Button from '@/components/Button';
-import { getAdminBlogPostById } from '@/lib/blog/adminMockStore';
+import { getAdminBlogPostById, type AdminBlogPost } from '@/lib/blog/adminApiClient';
 
 export default function AdminBlogPreviewPage() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function AdminBlogPreviewPage() {
   const id = typeof params?.id === 'string' ? params.id : '';
 
   const [mounted, setMounted] = React.useState(false);
-  const [post, setPost] = React.useState<ReturnType<typeof getAdminBlogPostById>>(null);
+  const [post, setPost] = React.useState<AdminBlogPost | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
@@ -21,7 +21,12 @@ export default function AdminBlogPreviewPage() {
   React.useEffect(() => {
     if (!mounted) return;
     if (!id) return;
-    setPost(getAdminBlogPostById(id));
+    (async () => {
+      const loaded = await getAdminBlogPostById(id);
+      setPost(loaded);
+    })().catch(() => {
+      setPost(null);
+    });
   }, [mounted, id]);
 
   if (!mounted) return null;
@@ -49,7 +54,7 @@ export default function AdminBlogPreviewPage() {
           <div>
             <h1 className="text-heading-2 text-foreground">Preview</h1>
             <p className="text-muted-foreground text-body-small mt-1">
-              Admin-only preview (mocked content).
+              Admin-only preview.
             </p>
           </div>
 

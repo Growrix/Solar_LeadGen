@@ -74,10 +74,27 @@ These are “decision points” that the plan mentions but does not fully lock d
 - No DB migrations until the frontend-first approach is approved.
 
 ### Open questions (approval required)
-1. Should `/blog/[slug]` be introduced immediately in Phase 1 (frontend-only), or should we keep `/blog/post` until backend exists?
-2. Do you want visitors to see search + category filter UI in Phase 1 (currently logic exists but UI is missing)?
-3. For Phase 1, do we keep the current comments demo as-is, make read-only, or hide it?
-4. For admin workflows, is “review/approval” mandatory or optional for MVP?
+These were locked on **2025-12-30** and are no longer open questions:
+
+1) **Routing choice**
+- Canonical detail route is `/blog/[slug]`.
+- `/blog/post` remains as a compatibility route that attempts to redirect using the existing `sessionStorage` payload.
+
+2) **Search + category filter controls**
+- Exposed in `/blog` UI for MVP.
+
+3) **Comments scope**
+- Demo comments UI is **hidden** for MVP (no public comments feature yet).
+
+4) **Slug rules**
+- Slugify algorithm: lowercased, trimmed, quotes removed, non-alphanumerics to `-`, collapse `-`, trim `-`.
+- Uniqueness: enforced at DB level (unique `slug`).
+- Create behavior: if slug collides, auto-suffix `-2`, `-3`, ... until unique.
+- Update behavior: if admin explicitly sets a colliding slug, return conflict (no auto-suffix on edits).
+
+5) **Scheduling mechanism**
+- MVP uses **n8n-driven scheduling** calling authenticated webhooks (shared secret in env).
+- A scheduler runner endpoint publishes due scheduled posts and writes a job log entry.
 
 ---
 
@@ -184,6 +201,35 @@ Build a production-grade blog inside the SolarMatch SaaS that is SEO-friendly, a
 1. Admin provides topic/keywords/tone/constraints.
 2. System generates draft + SEO fields.
 3. Draft saved for human review.
+
+---
+
+## AI Prompt Contract + Guardrails (T023)
+
+**Purpose**: Generate a safe blog draft and SEO fields for an admin to review and edit.
+
+**Inputs (admin-provided)**
+- Topic
+- Keywords (optional)
+- Tone (optional)
+- Target audience (optional)
+- CTA (optional)
+
+**Outputs (server returns JSON)**
+- `title`
+- `excerpt`
+- `content` (markdown/plain text)
+- `seoTitle`
+- `seoDescription`
+- `category`
+- `tags[]`
+- `readTime`
+
+**Guardrails**
+- Admin-only endpoint; API keys never exposed client-side.
+- Basic rate limiting per admin user.
+- Audit log written for each AI request (success/failure + minimal metadata).
+- No unsafe HTML is assumed; content is stored as text.
 
 ### n8n flow
 1. n8n calls authenticated webhook.

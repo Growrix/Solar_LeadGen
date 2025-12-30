@@ -7,7 +7,7 @@ import {
   listAdminBlogPosts,
   type AdminBlogPost,
   type AdminBlogStatus,
-} from '@/lib/blog/adminMockStore';
+} from '@/lib/blog/adminApiClient';
 
 function getStatusBadgeClasses(status: AdminBlogStatus): string {
   const base = 'px-3 py-1 rounded-full text-body-small';
@@ -25,15 +25,22 @@ function getStatusBadgeClasses(status: AdminBlogStatus): string {
 export default function AdminBlogListPage() {
   const router = useRouter();
   const [posts, setPosts] = React.useState<AdminBlogPost[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const refresh = React.useCallback(() => {
-    setPosts(listAdminBlogPosts());
+  const refresh = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const next = await listAdminBlogPosts();
+      setPosts(next);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   React.useEffect(() => {
-    refresh();
+    void refresh();
 
-    const onFocus = () => refresh();
+    const onFocus = () => void refresh();
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, [refresh]);
@@ -45,7 +52,7 @@ export default function AdminBlogListPage() {
           <div>
             <h1 className="text-heading-2 text-foreground">Blog Posts</h1>
             <p className="text-muted-foreground text-body-small mt-1">
-              Mocked admin blog CMS (local-only persistence).
+              Admin blog CMS.
             </p>
           </div>
 
@@ -58,7 +65,12 @@ export default function AdminBlogListPage() {
         </div>
 
         <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
-          {posts.length === 0 ? (
+          {loading ? (
+            <div className="p-12 text-center">
+              <h2 className="text-heading-4 text-foreground">Loading…</h2>
+              <p className="text-muted-foreground mt-2">Fetching posts from the server.</p>
+            </div>
+          ) : posts.length === 0 ? (
             <div className="p-12 text-center">
               <h2 className="text-heading-4 text-foreground">No posts yet</h2>
               <p className="text-muted-foreground mt-2">
