@@ -52,7 +52,11 @@ export async function GET(request: NextRequest) {
     const status = statusParam ? normalizeStatus(statusParam) : null;
 
     const posts = await prisma.blogPost.findMany({
-      where: status ? { status } : undefined,
+      where: status
+        ? { status }
+        : {
+            archivedAt: null,
+          },
       orderBy: { updatedAt: 'desc' },
       include: {
         author: { select: { id: true, name: true, email: true } },

@@ -219,8 +219,20 @@ export async function DELETE(
 
     const { id } = await context.params;
 
-    await prisma.blogPost.delete({ where: { id } });
-    return NextResponse.json({ success: true });
+    const archived = await prisma.blogPost.update({
+      where: { id },
+      data: {
+        status: 'ARCHIVED',
+        archivedAt: new Date(),
+      },
+      select: {
+        id: true,
+        status: true,
+        archivedAt: true,
+      },
+    });
+
+    return NextResponse.json({ success: true, post: archived });
   } catch (error) {
     if (error instanceof Error && error.message.includes('Unauthorized')) {
       return NextResponse.json({ error: error.message }, { status: 401 });
