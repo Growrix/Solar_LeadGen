@@ -38,6 +38,18 @@ export type AdminBlogPostListResult = {
   counts: AdminBlogPostListCounts;
 };
 
+export type AdminBlogCategory = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+export type AdminBlogTag = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 type AdminApiPost = {
   id: string;
   title: string;
@@ -114,6 +126,14 @@ function mapAdminApiPostToAdminBlogPost(post: AdminApiPost): AdminBlogPost {
     scheduledFor: normalizeString(post.scheduledFor ?? ''),
     createdAt: normalizeString(post.createdAt),
     updatedAt: normalizeString(post.updatedAt),
+  };
+}
+
+function mapTaxonomyItem(value: any): { id: string; name: string; slug: string } {
+  return {
+    id: normalizeString(value?.id),
+    name: normalizeString(value?.name),
+    slug: normalizeString(value?.slug),
   };
 }
 
@@ -199,6 +219,70 @@ export async function updateAdminBlogPost(
 
 export async function deleteAdminBlogPost(id: string): Promise<boolean> {
   await requestJson<{ success: boolean }>(`/api/admin/blog/posts/${encodeURIComponent(id)}`,
+    { method: 'DELETE' }
+  );
+  return true;
+}
+
+export async function listAdminBlogCategories(): Promise<AdminBlogCategory[]> {
+  const data = await requestJson<{ categories: unknown[] }>('/api/admin/blog/categories', { method: 'GET' });
+  return Array.isArray(data.categories) ? data.categories.map(mapTaxonomyItem) : [];
+}
+
+export async function createAdminBlogCategory(input: { name: string }): Promise<AdminBlogCategory> {
+  const data = await requestJson<{ category: unknown }>('/api/admin/blog/categories', {
+    method: 'POST',
+    body: JSON.stringify({ name: input.name }),
+  });
+  return mapTaxonomyItem(data.category);
+}
+
+export async function updateAdminBlogCategory(
+  id: string,
+  patch: { name: string }
+): Promise<AdminBlogCategory> {
+  const data = await requestJson<{ category: unknown }>(
+    `/api/admin/blog/categories/${encodeURIComponent(id)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ name: patch.name }),
+    }
+  );
+  return mapTaxonomyItem(data.category);
+}
+
+export async function deleteAdminBlogCategory(id: string): Promise<boolean> {
+  await requestJson<{ success: boolean }>(`/api/admin/blog/categories/${encodeURIComponent(id)}`,
+    { method: 'DELETE' }
+  );
+  return true;
+}
+
+export async function listAdminBlogTags(): Promise<AdminBlogTag[]> {
+  const data = await requestJson<{ tags: unknown[] }>('/api/admin/blog/tags', { method: 'GET' });
+  return Array.isArray(data.tags) ? data.tags.map(mapTaxonomyItem) : [];
+}
+
+export async function createAdminBlogTag(input: { name: string }): Promise<AdminBlogTag> {
+  const data = await requestJson<{ tag: unknown }>('/api/admin/blog/tags', {
+    method: 'POST',
+    body: JSON.stringify({ name: input.name }),
+  });
+  return mapTaxonomyItem(data.tag);
+}
+
+export async function updateAdminBlogTag(id: string, patch: { name: string }): Promise<AdminBlogTag> {
+  const data = await requestJson<{ tag: unknown }>(`/api/admin/blog/tags/${encodeURIComponent(id)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ name: patch.name }),
+    }
+  );
+  return mapTaxonomyItem(data.tag);
+}
+
+export async function deleteAdminBlogTag(id: string): Promise<boolean> {
+  await requestJson<{ success: boolean }>(`/api/admin/blog/tags/${encodeURIComponent(id)}`,
     { method: 'DELETE' }
   );
   return true;
