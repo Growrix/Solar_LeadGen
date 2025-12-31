@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import { NeumorphicInput } from '@/components/ui/neumorphic-input';
 import { NeumorphicSelect } from '@/components/ui/neumorphic-select';
+import { EditorTabs, type EditorTabKey } from '@/components/admin/blog/editor/EditorTabs';
 import {
   getAdminBlogPostById,
   updateAdminBlogPost,
@@ -14,7 +15,7 @@ import {
   type AdminBlogStatus,
 } from '@/lib/blog/adminApiClient';
 
-type EditorTab = 'GENERAL' | 'SEO' | 'AI';
+type EditorTab = EditorTabKey;
 
 type FormState = {
   title: string;
@@ -44,6 +45,17 @@ type AiDraft = {
   tags: string[];
   readTime: string;
 };
+
+function parseCsvTags(value: string): string[] {
+  return value
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
+function formatCsvTags(tags: string[]): string {
+  return tags.map((t) => t.trim()).filter(Boolean).join(', ');
+}
 
 function slugify(value: string): string {
   return value
@@ -111,6 +123,11 @@ export default function AdminBlogEditPage() {
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(true);
   const [activeTab, setActiveTab] = React.useState<EditorTab>('GENERAL');
   const [archiving, setArchiving] = React.useState(false);
+  const [isEditingSlug, setIsEditingSlug] = React.useState(false);
+  const [isEditingStatus, setIsEditingStatus] = React.useState(false);
+  const [isEditingSchedule, setIsEditingSchedule] = React.useState(false);
+  const [keywordInput, setKeywordInput] = React.useState('');
+  const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
 
   const [aiTopic, setAiTopic] = React.useState('');
   const [aiKeywords, setAiKeywords] = React.useState('');
@@ -199,10 +216,7 @@ export default function AdminBlogEditPage() {
         coverImageUrl: nextForm.coverImageUrl,
         readTime: nextForm.readTime,
         category: nextForm.category,
-        tags: nextForm.tagsCsv
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
+        tags: parseCsvTags(nextForm.tagsCsv),
         seoTitle: nextForm.seoTitle,
         seoDescription: nextForm.seoDescription,
         ogImageUrl: nextForm.ogImageUrl,
@@ -221,6 +235,7 @@ export default function AdminBlogEditPage() {
 
       setLoaded(updated);
       setForm(mapPostToForm(updated));
+      setLastSavedAt(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save blog post');
     } finally {
@@ -279,15 +294,22 @@ export default function AdminBlogEditPage() {
 
       setForm((prev) => {
         if (!prev) return prev;
+
+        const appendedContent = draft.content
+          ? prev.content
+            ? `${prev.content}\n\n${draft.content}`
+            : draft.content
+          : prev.content;
+
         return {
           ...prev,
           title: draft.title || prev.title,
           excerpt: draft.excerpt || prev.excerpt,
-          content: draft.content || prev.content,
+          content: appendedContent,
           seoTitle: draft.seoTitle || prev.seoTitle,
           seoDescription: draft.seoDescription || prev.seoDescription,
           category: draft.category || prev.category,
-          tagsCsv: (draft.tags && draft.tags.length ? draft.tags.join(', ') : prev.tagsCsv) || '',
+          tagsCsv: draft.tags && draft.tags.length ? draft.tags.join(', ') : prev.tagsCsv,
           readTime: draft.readTime || prev.readTime,
         };
       });
@@ -346,26 +368,40 @@ export default function AdminBlogEditPage() {
 
   const permalinkPath = `/blog/${form.slug}`;
   const canSchedule = Boolean(form.scheduledFor.trim());
+  const keywords = parseCsvTags(form.tagsCsv);
+  const seoPreviewTitle = (form.seoTitle || form.title).trim() || 'Post title';
+  const seoPreviewUrl = form.canonicalUrl.trim() || permalinkPath;
+  const seoPreviewDescription = (form.seoDescription || form.excerpt).trim() || 'Meta description…';
+
+  const addKeyword = (raw: string) => {
+    const next = raw.trim();
+    if (!next) return;
+    const normalized = next.toLowerCase();
+    const existing = keywords.map((k) => k.toLowerCase());
+    if (existing.includes(normalized)) return;
+    onChange('tagsCsv', formatCsvTags([...keywords, next]));
+  };
+
+  const removeKeyword = (keyword: string) => {
+    onChange(
+      'tagsCsv',
+      formatCsvTags(keywords.filter((k) => k.toLowerCase() !== keyword.toLowerCase()))
+    );
+  };
+
+  const handlePrimaryPublish = async () => {
+    if (canSchedule) {
+      await handleSaveWithOverrides({ status: 'SCHEDULED' });
+      return;
+    }
+    await handleSaveWithOverrides({ status: 'PUBLISHED', scheduledFor: '' });
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-heading-1 text-foreground mb-2">Edit Post</h1>
-          <p className="text-heading-4 text-muted-foreground">ID: {loaded.id}</p>
-        </div>
-
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
-            Back
-          </Button>
-          <Button variant="secondary" onClick={() => router.push(`/admin/blog/${loaded.id}/preview`)}>
-            Preview
-          </Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
-          </Button>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-heading-1 text-foreground">Edit Post</h1>
+        <div className="text-body-small text-muted-foreground mt-2">ID: {loaded.id}</div>
       </div>
 
         {error ? (
@@ -377,297 +413,389 @@ export default function AdminBlogEditPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              <button
-                type="button"
-                className={`px-4 py-2 rounded-full border border-border bg-surface text-body-small shadow-neu-outset transition-colors ${
-                  activeTab === 'GENERAL'
-                    ? 'shadow-neu-inset text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => setActiveTab('GENERAL')}
-              >
-                General
-              </button>
-              <button
-                type="button"
-                className={`px-4 py-2 rounded-full border border-border bg-surface text-body-small shadow-neu-outset transition-colors ${
-                  activeTab === 'SEO' ? 'shadow-neu-inset text-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => setActiveTab('SEO')}
-              >
-                SEO
-              </button>
-              <button
-                type="button"
-                className={`px-4 py-2 rounded-full border border-border bg-surface text-body-small shadow-neu-outset transition-colors ${
-                  activeTab === 'AI' ? 'shadow-neu-inset text-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => setActiveTab('AI')}
-              >
-                AI
-              </button>
-            </div>
+            <div className="space-y-4">
+              <NeumorphicInput
+                label="Title"
+                value={form.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                className="text-heading-3"
+              />
 
-            {activeTab === 'GENERAL' ? (
-              <div className="space-y-5">
-                <NeumorphicInput
-                  label="Title"
-                  value={form.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                />
+              <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                <div className="text-body-small text-muted-foreground">Permalink</div>
+                <div className="text-body text-foreground mt-1">{permalinkPath}</div>
 
-                <div className="space-y-2">
-                  <label className="block text-body-small text-foreground">Slug</label>
-                  <div className="flex flex-col md:flex-row gap-3">
-                    <NeumorphicInput value={form.slug} onChange={(e) => handleSlugChange(e.target.value)} />
+                {isEditingSlug ? (
+                  <div className="mt-3 flex flex-col md:flex-row gap-3">
+                    <NeumorphicInput
+                      value={form.slug}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                    />
                     <Button
                       variant="secondary"
                       className="h-12 px-5"
-                      onClick={handleResetSlugFromTitle}
+                      onClick={() => {
+                        setIsEditingSlug(false);
+                      }}
+                    >
+                      OK
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="h-12 px-5"
+                      onClick={() => {
+                        handleResetSlugFromTitle();
+                      }}
                       disabled={!form.title}
                     >
                       Reset
                     </Button>
                   </div>
-                  <div className="text-body-small text-muted-foreground">
-                    Permalink: <span className="text-foreground">{permalinkPath}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-body-small text-foreground mb-2">Excerpt</label>
-                  <textarea
-                    className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3 h-28"
-                    value={form.excerpt}
-                    onChange={(e) => onChange('excerpt', e.target.value)}
-                  />
-                </div>
-
-                <NeumorphicInput
-                  label="Cover Image URL"
-                  value={form.coverImageUrl}
-                  onChange={(e) => onChange('coverImageUrl', e.target.value)}
-                />
-
-                <NeumorphicInput
-                  label="Read Time"
-                  value={form.readTime}
-                  onChange={(e) => onChange('readTime', e.target.value)}
-                  placeholder="e.g. 5 min read"
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <NeumorphicInput
-                    label="Category"
-                    value={form.category}
-                    onChange={(e) => onChange('category', e.target.value)}
-                  />
-                  <NeumorphicInput
-                    label="Tags (comma separated)"
-                    value={form.tagsCsv}
-                    onChange={(e) => onChange('tagsCsv', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-body-small text-foreground mb-2">Markdown Editor</label>
-                  <textarea
-                    className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3 h-56"
-                    value={form.content}
-                    onChange={(e) => onChange('content', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-body-small text-foreground mb-2">Preview</label>
-                  <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border whitespace-pre-wrap text-body text-foreground min-h-32">
-                    {form.content || 'Nothing to preview yet.'}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeTab === 'SEO' ? (
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <NeumorphicInput
-                    label="Meta Title"
-                    value={form.seoTitle}
-                    onChange={(e) => onChange('seoTitle', e.target.value)}
-                  />
-                  <NeumorphicInput
-                    label="OG Image URL"
-                    value={form.ogImageUrl}
-                    onChange={(e) => onChange('ogImageUrl', e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-body-small text-foreground mb-2">Meta Description</label>
-                  <textarea
-                    className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3 h-24"
-                    value={form.seoDescription}
-                    onChange={(e) => onChange('seoDescription', e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <NeumorphicInput
-                    label="Canonical URL"
-                    value={form.canonicalUrl}
-                    onChange={(e) => onChange('canonicalUrl', e.target.value)}
-                  />
-                  <NeumorphicSelect
-                    label="Robots"
-                    value={form.robots}
-                    onChange={(e) => onChange('robots', e.target.value as AdminBlogRobots)}
-                  >
-                    <option value="index,follow">index,follow</option>
-                    <option value="noindex,nofollow">noindex,nofollow</option>
-                  </NeumorphicSelect>
-                </div>
-              </div>
-            ) : null}
-
-            {activeTab === 'AI' ? (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-heading-4 text-foreground">AI Drafting</h2>
-                      <p className="text-muted-foreground text-body-small mt-1">
-                        Generates draft content and SEO fields (admin-only).
-                      </p>
-                    </div>
-                    <Button variant="secondary" onClick={handleGenerateDraft} disabled={aiLoading}>
-                      {aiLoading ? 'Generating…' : 'Generate'}
+                ) : (
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <Button variant="secondary" onClick={() => setIsEditingSlug(true)}>
+                      Edit Slug
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => router.push(`/admin/blog/${loaded.id}/preview`)}
+                    >
+                      Preview
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => window.open(permalinkPath, '_blank')}
+                      disabled={!form.slug}
+                    >
+                      View
                     </Button>
                   </div>
-
-                  {aiError ? <p className="text-body-small text-muted-foreground mt-3">{aiError}</p> : null}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <NeumorphicInput
-                      label="Topic"
-                      value={aiTopic}
-                      onChange={(e) => setAiTopic(e.target.value)}
-                      placeholder="e.g. Solar rebates in Australia 2025"
-                    />
-                    <NeumorphicInput
-                      label="Keywords"
-                      value={aiKeywords}
-                      onChange={(e) => setAiKeywords(e.target.value)}
-                      placeholder="comma separated"
-                    />
-                    <NeumorphicInput
-                      label="Tone"
-                      value={aiTone}
-                      onChange={(e) => setAiTone(e.target.value)}
-                      placeholder="e.g. friendly, practical"
-                    />
-                    <NeumorphicInput
-                      label="Audience"
-                      value={aiAudience}
-                      onChange={(e) => setAiAudience(e.target.value)}
-                      placeholder="e.g. homeowners comparing installers"
-                    />
-                  </div>
-
-                  <NeumorphicInput
-                    label="CTA"
-                    value={aiCta}
-                    onChange={(e) => setAiCta(e.target.value)}
-                    placeholder="e.g. Get a free solar quote"
-                    className="mt-4"
-                  />
-                </div>
+                )}
               </div>
-            ) : null}
+
+              <div>
+                <label className="block text-body-small text-foreground mb-2">Markdown Editor</label>
+                <textarea
+                  className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3 h-80"
+                  value={form.content}
+                  onChange={(e) => onChange('content', e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-3">
-              <Button variant="secondary" onClick={() => router.push('/admin/blog')} disabled={saving}>
-                Cancel
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleSaveWithOverrides({ status: 'DRAFT', scheduledFor: '' })}
-                disabled={saving}
-              >
-                Save Draft
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => handleSaveWithOverrides({ status: 'PUBLISHED', scheduledFor: '' })}
-                disabled={saving}
-              >
-                Publish Now
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => handleSaveWithOverrides({ status: 'SCHEDULED' })}
-                disabled={saving || !canSchedule}
-              >
-                Schedule
-              </Button>
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-heading-3 text-foreground">Post Settings</h2>
+              <EditorTabs active={activeTab} onChange={setActiveTab} />
+            </div>
+
+            <div className="mt-6">
+              {activeTab === 'GENERAL' ? (
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-body-small text-foreground mb-2">Excerpt</label>
+                    <textarea
+                      className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3 h-28"
+                      value={form.excerpt}
+                      onChange={(e) => onChange('excerpt', e.target.value)}
+                    />
+                  </div>
+
+                  <NeumorphicInput
+                    label="Cover Image URL"
+                    value={form.coverImageUrl}
+                    onChange={(e) => onChange('coverImageUrl', e.target.value)}
+                  />
+
+                  <NeumorphicInput
+                    label="Read Time"
+                    value={form.readTime}
+                    onChange={(e) => onChange('readTime', e.target.value)}
+                    placeholder="e.g. 5 min read"
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <NeumorphicInput
+                      label="Category"
+                      value={form.category}
+                      onChange={(e) => onChange('category', e.target.value)}
+                    />
+                    <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                      <div className="text-body-small text-muted-foreground">Author</div>
+                      <div className="text-body text-foreground mt-1">Current admin</div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeTab === 'SEO' ? (
+                <div className="space-y-5">
+                  <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                    <div className="text-body-small text-muted-foreground">Search Preview</div>
+                    <div className="mt-2">
+                      <div className="text-body text-foreground">{seoPreviewTitle}</div>
+                      <div className="text-body-small text-muted-foreground mt-1">{seoPreviewUrl}</div>
+                      <div className="text-body-small text-muted-foreground mt-2">
+                        {seoPreviewDescription}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <NeumorphicInput
+                      label="Meta Title"
+                      value={form.seoTitle}
+                      onChange={(e) => onChange('seoTitle', e.target.value)}
+                    />
+                    <NeumorphicInput
+                      label="OG Image URL"
+                      value={form.ogImageUrl}
+                      onChange={(e) => onChange('ogImageUrl', e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <label className="block text-body-small text-foreground">Meta Description</label>
+                      <div className="text-body-small text-muted-foreground">
+                        {form.seoDescription.trim().length}/160
+                      </div>
+                    </div>
+                    <textarea
+                      className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3 h-24 mt-2"
+                      value={form.seoDescription}
+                      onChange={(e) => onChange('seoDescription', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <NeumorphicInput
+                      label="Canonical URL"
+                      value={form.canonicalUrl}
+                      onChange={(e) => onChange('canonicalUrl', e.target.value)}
+                    />
+                    <NeumorphicSelect
+                      label="Robots"
+                      value={form.robots}
+                      onChange={(e) => onChange('robots', e.target.value as AdminBlogRobots)}
+                    >
+                      <option value="index,follow">index,follow</option>
+                      <option value="noindex,nofollow">noindex,nofollow</option>
+                    </NeumorphicSelect>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                    <div className="text-body-small text-muted-foreground">Focus Keywords</div>
+
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {keywords.length ? (
+                        keywords.map((k) => (
+                          <button
+                            key={k}
+                            type="button"
+                            className="btn-neu px-3 py-1 text-body-small"
+                            onClick={() => removeKeyword(k)}
+                            aria-label={`Remove keyword ${k}`}
+                          >
+                            {k}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="text-body-small text-muted-foreground">No keywords yet.</div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex gap-3">
+                      <input
+                        className="form-input w-full rounded-2xl shadow-neu-inset text-body px-4 py-3"
+                        value={keywordInput}
+                        onChange={(e) => setKeywordInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addKeyword(keywordInput);
+                            setKeywordInput('');
+                          }
+                        }}
+                        placeholder="Type keyword and press Enter"
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          addKeyword(keywordInput);
+                          setKeywordInput('');
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeTab === 'AI' ? (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-heading-4 text-foreground">AI Drafting</h2>
+                        <p className="text-muted-foreground text-body-small mt-1">
+                          Generates a draft and appends it to your content.
+                        </p>
+                      </div>
+                      <Button variant="secondary" onClick={handleGenerateDraft} disabled={aiLoading}>
+                        {aiLoading ? 'Generating…' : 'Generate'}
+                      </Button>
+                    </div>
+
+                    {aiError ? <p className="text-body-small text-muted-foreground mt-3">{aiError}</p> : null}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <NeumorphicInput
+                        label="Topic"
+                        value={aiTopic}
+                        onChange={(e) => setAiTopic(e.target.value)}
+                        placeholder="e.g. Solar rebates in Australia 2025"
+                      />
+                      <NeumorphicInput
+                        label="Keywords"
+                        value={aiKeywords}
+                        onChange={(e) => setAiKeywords(e.target.value)}
+                        placeholder="comma separated"
+                      />
+                      <NeumorphicInput
+                        label="Tone"
+                        value={aiTone}
+                        onChange={(e) => setAiTone(e.target.value)}
+                        placeholder="e.g. friendly, practical"
+                      />
+                      <NeumorphicInput
+                        label="Audience"
+                        value={aiAudience}
+                        onChange={(e) => setAiAudience(e.target.value)}
+                        placeholder="e.g. homeowners comparing installers"
+                      />
+                    </div>
+
+                    <NeumorphicInput
+                      label="CTA"
+                      value={aiCta}
+                      onChange={(e) => setAiCta(e.target.value)}
+                      placeholder="e.g. Get a free solar quote"
+                      className="mt-4"
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="sticky bottom-0">
+            <div className="bg-surface rounded-2xl shadow-neu-outset p-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="text-body-small text-muted-foreground">
+                  {lastSavedAt ? `Last saved: ${lastSavedAt.toLocaleString()}` : 'No changes saved in this session'}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="secondary" onClick={() => router.push('/admin/blog')} disabled={saving}>
+                    Back
+                  </Button>
+                  <Button variant="secondary" onClick={handleSave} disabled={saving}>
+                    {saving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button variant="primary" onClick={handlePrimaryPublish} disabled={saving}>
+                    {canSchedule ? 'Schedule Post' : 'Publish Now'}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-neu-outset p-6 space-y-5">
-          <h2 className="text-heading-3 text-foreground">Publishing</h2>
+        <div className="space-y-6">
+          <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
+            <h2 className="text-heading-3 text-foreground">Publish</h2>
 
-          <NeumorphicSelect
-            label="Status"
-            value={form.status}
-            onChange={(e) => onChange('status', e.target.value as AdminBlogStatus)}
-          >
-            <option value="DRAFT">DRAFT</option>
-            <option value="SCHEDULED">SCHEDULED</option>
-            <option value="PUBLISHED">PUBLISHED</option>
-            <option value="ARCHIVED">ARCHIVED</option>
-          </NeumorphicSelect>
+            <div className="mt-4 space-y-4">
+              <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-body-small text-muted-foreground">Status</div>
+                    <div className="text-body text-foreground mt-1">{form.status}</div>
+                  </div>
+                  <Button variant="secondary" onClick={() => setIsEditingStatus((v) => !v)}>
+                    Edit
+                  </Button>
+                </div>
 
-          <NeumorphicInput
-            label="Schedule Date/Time"
-            type="datetime-local"
-            value={form.scheduledFor}
-            onChange={(e) => onChange('scheduledFor', e.target.value)}
-          />
+                {isEditingStatus ? (
+                  <div className="mt-4 flex flex-col md:flex-row gap-3">
+                    <NeumorphicSelect
+                      label=""
+                      value={form.status}
+                      onChange={(e) => onChange('status', e.target.value as AdminBlogStatus)}
+                    >
+                      <option value="DRAFT">DRAFT</option>
+                      <option value="SCHEDULED">SCHEDULED</option>
+                      <option value="PUBLISHED">PUBLISHED</option>
+                    </NeumorphicSelect>
+                    <Button variant="secondary" className="h-12 px-5" onClick={() => setIsEditingStatus(false)}>
+                      OK
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
 
-          <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
-            <div className="text-body-small text-muted-foreground">Permalink</div>
-            <div className="text-body text-foreground mt-1">{permalinkPath}</div>
-          </div>
+              <div className="p-4 rounded-2xl bg-background shadow-neu-inset border border-border">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-body-small text-muted-foreground">Publish</div>
+                    <div className="text-body text-foreground mt-1">
+                      {canSchedule ? 'Scheduled' : 'Immediately'}
+                    </div>
+                  </div>
+                  <Button variant="secondary" onClick={() => setIsEditingSchedule((v) => !v)}>
+                    Edit
+                  </Button>
+                </div>
 
-          <Button
-            variant="secondary"
-            className="w-full py-3"
-            onClick={() => window.open(permalinkPath, '_blank')}
-            disabled={!form.slug}
-          >
-            View Public URL
-          </Button>
+                {isEditingSchedule ? (
+                  <div className="mt-4 flex flex-col md:flex-row gap-3">
+                    <NeumorphicInput
+                      label=""
+                      type="datetime-local"
+                      value={form.scheduledFor}
+                      onChange={(e) => onChange('scheduledFor', e.target.value)}
+                    />
+                    <Button variant="secondary" className="h-12 px-5" onClick={() => setIsEditingSchedule(false)}>
+                      OK
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="h-12 px-5"
+                      onClick={() => {
+                        onChange('scheduledFor', '');
+                        setIsEditingSchedule(false);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
 
-          <Button
-            variant="secondary"
-            className="w-full py-3"
-            onClick={() => router.push(`/admin/blog/${loaded.id}/preview`)}
-          >
-            Preview
-          </Button>
-
-          <div className="pt-2">
-            <Button
-              variant="secondary"
-              className="w-full py-3"
-              onClick={handleArchive}
-              disabled={archiving}
-            >
-              {archiving ? 'Moving to Trash…' : 'Trash (Archive)'}
-            </Button>
+              <div className="pt-2">
+                <Button
+                  variant="secondary"
+                  className="w-full py-3"
+                  onClick={handleArchive}
+                  disabled={archiving}
+                >
+                  {archiving ? 'Moving to Trash…' : 'Move to Trash (Archive)'}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
