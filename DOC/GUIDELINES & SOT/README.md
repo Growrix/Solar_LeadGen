@@ -23,6 +23,7 @@ Workflow note:
 - System Constitution (highest authority): DOC/GUIDELINES & SOT/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md
 - System Design Blueprint: DOC/GUIDELINES & SOT/SYSTEM DESIGN/Blueprint.md
 - System Audit Prompt: DOC/GUIDELINES & SOT/SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md
+- Prototype-First Frontend Workflow: DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md
 
 ## Path Alias (Legacy)
 - Any mention of `DOC/Guidelines/*` refers to `DOC/GUIDELINES & SOT/*` (canonical). Treat as the same folder.
@@ -72,11 +73,12 @@ Required additions under `DOC/Features/<Feature Name>/SOT/`:
 - `tasks.md`
 	- Purpose: a **portable execution checklist** that lives with the SOT.
 	- Must link to the repo-wide engineering tracker in `specs/<feature>/tasks.md` if one exists.
+	- Exception (NEW): For **Prototype-First Frontend Workflow** features (Google AI Studio → Frontend UI/UX Prompts), do **NOT** create `DOC/Features/<Feature Name>/SOT/tasks.md`. Track execution only in `specs/<feature>/tasks.md`.
 
 Notes:
 - `FEATURE-SOT.md` remains the canonical planning SOT (Phases 0–6).
 - `specs/<feature>/tasks.md` remains the repo-wide engineering execution tracker.
-- The SOT-local `tasks.md` is the continuity-first checklist to prevent context loss.
+- The SOT-local `tasks.md` is the continuity-first checklist to prevent context loss (except Prototype-First Frontend Workflow features).
 
 ---
 
@@ -146,7 +148,44 @@ Applies to:
 - `specs/<feature>/tasks.md`
 - `DOC/Features/<Feature Name>/SOT/tasks.md`
 
+Exception (NEW): For **Prototype-First Frontend Workflow** features, `DOC/Features/<Feature Name>/SOT/tasks.md` is intentionally **not created**.
+
 Minimum enforcement:
 - Must use the task ID format (`T###`) and the `[P]` + `[US#]` labeling rules.
 - Must group work by phases and user stories.
 - Must include explicit file paths in task descriptions.
+
+---
+
+## Workflow Enhancement: Prototype-First Frontend (Google AI Studio → Frontend UI/UX Prompts)
+
+This workflow is for frontend features where the UI/UX is first prototyped in **Google AI Studio**, and then converted into a **sequence-locked frontend plan + prompts**.
+
+### Goal
+- Prepare the frontend plan and prompting artifacts in the feature’s **Fontend UI UX Prompts** folder, based on the Google AI Studio prototype, so the entire UI/UX flow is already defined before implementation.
+
+### Canonical Prompting References (Must Use)
+- Prompting SOP: `DOC/PROMPTS/AI PROMPTING/AI Prompting Guideline.md`
+- Frontend plan + prompt template: `DOC/PROMPTS/AI PROMPTING/Template_AIfrontend.md`
+
+### Required Folderization (per feature)
+Each frontend feature must follow the same structure as:
+`DOC/FEATURES/NEWS ENGINE/`
+
+Minimum required folders (keep non-used folders empty until needed):
+- `SOT/` (6-phase framework docs)
+- `Plan/` (created by user at feature start)
+- `GoogleAIStudio UI UX/` (prototype exports)
+- `Fontend UI UX Prompts/` (AI prompt artifacts generated from the prototype)
+- `Audit Report/` (audit reports; append future audits here)
+- `BACKEND PLAN/` (empty until frontend is final)
+
+### Sequence (Strict)
+1) User creates the initial plan in `Plan/`.
+2) AI creates/updates the 6-phase SOT docs under `SOT/`.
+3) User provides/pastes Google AI Studio prototype artifacts into `GoogleAIStudio UI UX/`.
+4) AI generates the prompt artifacts under `Fontend UI UX Prompts/` using `Template_AIfrontend.md` and the prompting SOP.
+
+### Important Rule Change
+- Do **NOT** create `DOC/Features/<Feature Name>/SOT/tasks.md` for this workflow.
+- Use `specs/<feature>/tasks.md` if/when implementation begins.

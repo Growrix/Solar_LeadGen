@@ -1,0 +1,5 @@
+{
+  "name": "AI News Engine Admin",
+  "description": "A sophisticated SaaS dashboard for managing AI-driven news generation, featuring KPI tracking, automated feed management, and granular content controls.",
+  "requestFramePermissions": []
+}

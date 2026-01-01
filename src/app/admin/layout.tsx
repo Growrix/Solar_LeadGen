@@ -17,6 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	
 	// Determine active page based on pathname
 	const getActivePage = () => {
+		if (pathname.includes('/news-engine')) return 'News Engine';
 		if (pathname.includes('/blog')) return 'Blog';
 		if (pathname.includes('/leads')) return 'Leads';
 		if (pathname.includes('/homeowners')) return 'Homeowners';
@@ -35,6 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 	
 	// Get page title for header
 	const getPageTitle = () => {
+		if (pathname.includes('/news-engine')) return 'News Engine';
 		if (pathname.includes('/blog')) return 'Blog';
 		if (pathname.includes('/leads')) return 'Lead Management';
 		if (pathname.includes('/homeowners')) return 'Homeowners';
