@@ -93,6 +93,7 @@ Assumption policy:
 - If authority conflicts arise, stop and request clarification; do not choose arbitrarily.
 - Never invent roles, states, permissions, workflows, or design tokens not present in the referenced documents.
 - Enforce Zero-Trust and Separation of Concerns: UI displays, backend validates; business logic does not live in UI.
+- Enforce maintainable Next.js structure during migrations: prototype fidelity applies to rendered UI/UX, not to file organization. Do not ship migrations that concentrate multiple major surfaces (tabs/pages/modals) into a single mega component file.
 - Apply the 6-step universal workflow and GATE 0 checks from AI-IMPLEMENTATION-GUIDELINES.md before any change.
 - Maintain auditability: emit and reference events/logs per Constitution and Blueprint; changes must be traceable.
 
@@ -109,6 +110,9 @@ Assumption policy:
 ## Operational Notes
 
 - Feature migrations and builds must follow specs/007-migration-and-build/plan.md (13-step workflow).
+- Prototype-origin features (Google AI Studio/Vite exports) must follow the Prototype-Preserving Migration Contract in DOC/GUIDELINES & SOT/README.md.
+- Prototype-preserving migrations must ALSO follow Next.js best practices for maintainability: establish a component boundary + file map before porting, keep route/page files thin, and colocate extracted tab/modals as feature components.
+- Prototype-preserving migrations must follow the mandatory 2-part sequencing: (1) structural mirror with UI preserved, then (2) design-system compliance (tokenization + class contracts + multi-theme + verification gates).
 - Multi-theme compliance (Dark, Light, Purple) is mandatory for UI; verification commands must return 0/0/0/0/0/0 before completion.
 - Git hygiene: audit reports and implementation phases should be documented under DOC/AUDIT-REPORTS/** and specs/** respectively, with commit tracking in DOC/Prompts/gitstatus.md when required by project instructions.
 

@@ -158,6 +158,7 @@ const AdminSidebar: React.FC<{ activePage?: string }> = ({ activePage = 'Dashboa
       <nav className={`dashboard-sidebar-nav ${isCollapsed ? 'dashboard-sidebar-nav--collapsed' : 'dashboard-sidebar-nav--expanded'}`}>
         <NavItem icon={<LayoutDashboardIcon />} title="Dashboard" isActive={activePage === 'Dashboard'} onClick={() => { window.location.href = '/admin/dashboard'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<ClipboardListIcon />} title="Leads" isActive={activePage === 'Leads'} onClick={() => { window.location.href = '/admin/leads'; }} isCollapsed={isCollapsed} />
+      <NavItem icon={<FileTextIcon />} title="News Engine" isActive={activePage === 'News Engine'} onClick={() => { window.location.href = '/admin/news-engine'; }} isCollapsed={isCollapsed} />
 
         {!isCollapsed ? (
           <button

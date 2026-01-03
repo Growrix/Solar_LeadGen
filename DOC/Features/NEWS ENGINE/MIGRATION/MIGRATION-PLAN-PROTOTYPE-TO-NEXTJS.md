@@ -1,3 +1,33 @@
+## 3) Non-negotiable constraints (from repo standards)
+
+### 3.1 The 13-step migration workflow is mandatory
+### 3.2 Design token rules (high-level)
+
+From `DESIGN-SYSTEM-SOT.md` (examples):
+### 3.3 Component tree rule
+
+Migration is not “done” until **the page file and all child components** are verified clean.
+### 3.4 Next.js maintainability rule (mandatory)
+
+Prototype-preserving migration applies to **rendered UI/UX** (structure, labels, triggers, modals, flows). It does **not** justify shipping a single-file “mega component”.
+### Step 3 — Ensure flows match V6 (before tokenization)
+
+Output: Next.js UI that matches V6 end-to-end in **behavior and structure**.
+**MANDATORY 2-PART MIGRATION SEQUENCE:**
+
+1. **Structural mirror (UI preserved):**
+  - Mirror V6 file/component boundaries (tabs, modals, shared helpers).
+  - Wire all triggers so the rendered UI/UX matches V6 end-to-end.
+  - Do not combine this with mass token/class rewrites unless a blocker forces it.
+
+2. **Design-system compliance (tokenization + class contracts):**
+  - Replace all prototype styling with repo semantic tokens (no hardcoded palette, no `dark:`).
+  - Fix any repo-enforced `className` violations so commits/builds pass.
+  - Run all multi-theme and hardcoded-style verification gates.
+
+Reference: See `DOC/GUIDELINES & SOT/README.md` → “Prototype-Preserving Migration Contract (Vite Prototype → Next.js)” → “Two-Part Migration Strategy (Mandatory)”.
+
+Output: Next.js UI that matches V6 end-to-end in **behavior and structure** (after Part 1), and passes all repo design-system and verification gates (after Part 2).
 # NEWS ENGINE — Prototype → Next.js Migration Plan (Theme-Semantic + E2E Flow Safe)
 
 **Status**: Draft (Plan)
@@ -20,11 +50,11 @@ This plan defines how to migrate the prototype into the real Next.js app **witho
 - Migration workflow (mandatory): `specs/007-migration-and-build/plan.md`
 
 ### Feature-specific references
-- Audit report (latest referenced): `DOC/FEATURES/NEWS ENGINE/Audit Reports/prototype-audit-google-ai-studio-uiux.md`
+- Audit report (authoritative for current work): `DOC/FEATURES/NEWS ENGINE/Audit Reports/v6-vs-current-nextjs-audit-2026-01-03.md`
 - News Engine planning SOT: `DOC/FEATURES/NEWS ENGINE/SOT/FEATURE-SOT.md`
 - Admin frontend plan: `DOC/FEATURES/NEWS ENGINE/Fontend UI UX Prompts/frontend-plan-admin.md`
 - Public frontend plan: `DOC/FEATURES/NEWS ENGINE/Fontend UI UX Prompts/frontend-plan-public.md`
-- Prototype export(s): `DOC/FEATURES/NEWS ENGINE/GoogleAIStudio UI UX/*` (treat as UX reference, not production code)
+- Prototype export(s): `DOC/FEATURES/NEWS ENGINE/GoogleAIStudio UI UX/*` (**UI SOT**; use the chosen authoritative version only)
 
 ---
 
@@ -49,13 +79,25 @@ The audit report identifies **E2E UI blockers** (even for UI-only state) in the 
 ### A) Preserve E2E flow
 - The Next.js implementation must preserve the same page→modal→action transitions described by the SOT and audit report.
 
+### A2) Preserve prototype UI/UX exactly (prototype-locked)
+- The authoritative prototype (V6) is the UI SOT.
+- Migration must keep:
+  - UI composition and structure
+  - layout and column structures (tables/boards)
+  - labels and button placement
+  - triggers, modals, and their internal steps/tabs
+
 ### B) Make UI semantic to the project theme system
 - Remove hardcoded colors, dark-mode prefixes, and typography utilities that violate the design system.
 - Use semantic design tokens only (e.g., `bg-background`, `bg-surface`, `text-foreground`, `text-muted-foreground`, `border-border`, neumorphic shadows).
 
 ### C) Migrate from Vite to Next.js
-- Prototype code is **not copied as-is** into `src/`.
-- Instead, we rebuild the same surfaces in Next.js App Router using this repo’s patterns.
+- Prototype UI composition is **ported 1:1** into `src/` (inside this repo’s Next.js structure).
+- Only the following changes are allowed during migration:
+  - `className` swaps to semantic tokens
+  - minimal wrapper/layout adjustments required to render inside the existing app shell
+  - minimal accessibility attribute additions if required for correctness
+- Do **NOT** redesign or substitute alternative UIs.
 
 ---
 
@@ -83,6 +125,20 @@ From `DESIGN-SYSTEM-SOT.md` (examples):
 
 ### 3.3 Component tree rule
 Migration is not “done” until **the page file and all child components** are verified clean.
+
+### 3.4 Next.js maintainability rule (mandatory)
+Prototype-preserving migration applies to **rendered UI/UX** (structure, labels, triggers, modals, flows). It does **not** justify shipping a single-file “mega component”.
+
+Primary rule (lowest risk):
+> If the authoritative prototype already has separate files/components, mirror that structure in Next.js.
+
+Required constraints:
+- Keep route/page/hub files thin (orchestrate state + composition only).
+- Mirror prototype component boundaries (tab = module, modal = module).
+- Shared helpers/types belong in feature-scoped utilities (or existing shared libs), not embedded inline everywhere.
+
+Stop rule:
+> If a migration requires adding another major tab/modal/surface into an already-large hub file, stop and perform a UI-preserving component extraction refactor first.
 
 ---
 
@@ -126,6 +182,16 @@ Create a short mapping table (for the migration team/AI) that lists:
 
 Output: a “surface map” section in the migration audit so nothing is forgotten.
 
+### Step 1.5 — Create a component boundary + file map (required)
+Before porting UI, define where each V6 surface will live in the Next.js codebase.
+
+Rules:
+- Mirror the prototype’s existing file/component boundaries (do not invent a new structure unless the prototype lacks one).
+- One tab = one component module; one modal = one component module.
+- The hub/page file should mostly assemble: state + handlers + tab switch + modal open/close.
+
+Output: a short “File Map” section recorded alongside the surface map so the migration stays prototype-accurate and maintainable.
+
 ### Step 2 — Logic audit (E2E flow that must be preserved)
 Based on the audit report, explicitly list:
 - Trigger → Result transitions
@@ -137,12 +203,12 @@ Based on the audit report, explicitly list:
 
 Output: logic audit section used as a “do not break” contract.
 
-### Step 3 — Implement missing UI endpoints FIRST (no styling migration yet)
-In the Next.js version, implement the missing UI-only endpoints as described in the audit.
-- This ensures E2E flows work in the real stack.
-- Styling at this stage can be minimal/rough, but must not introduce hardcoded classes.
+### Step 3 — Ensure flows match V6 (before tokenization)
+In the Next.js version, ensure all flows/triggers/modals match the authoritative prototype.
+- If the prototype includes behavior, match it exactly.
+- If something is ambiguous/missing, follow the feature SOT + frontend plan prompts without introducing new UX surfaces.
 
-Output: Next.js UI that works end-to-end in **behavior**.
+Output: Next.js UI that matches V6 end-to-end in **behavior and structure**.
 
 ### Step 4 — Tokenize + semanticize UI (component-by-component)
 For each page/component, run the 13-step migration workflow:

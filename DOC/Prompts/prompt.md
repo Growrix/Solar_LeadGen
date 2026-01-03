@@ -4582,4 +4582,47 @@ Now we have built the prototype as per the the SOT , But few things we still nee
 Also can read through D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file and let me know what we have to consider before preparing the plan. 
 
 - create the plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Plan Prompts folder. IF you decide to craft prompts for google ai studio further then prepare the prompts in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder as well.
+
+-------------------------------------------------------------------------------
+Check this chat conversation , We have done some tasks as per the tasks.md file. But as we have updated the migration workflow, YOu need to update the tasks.md  that also aligns with this workflow and after that start implimentation. I recommend you to do a audit one the V6 vs the Current state of this site's News engine feature e2e. So that , You will have a crystal clear picture. And after that Also chcek back once again that overall documentation in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md and D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\README.md
+
+--------------------------------------------------------------------------------
+
+You are stucked with your testing. I have tested manually. The overall mirrorring was fine. there are few issues. please check back the layout again , because the Layout is not concistent as per Layout SOT. And also there are few modal triggers are not showing up as per the V6 triggers.
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ --------------------------------------------------------------------------------------
+
+ This phase 1 migration still has some issues . The Triggered modals are not accurate as per the SOT V6. You need to focus on the Modals that opens in triggered actions. Audit back The current implimented Ui vs the SOT v6 modals e2e. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ---------------------------------------------------------------------------------------
+### Issues to fix :
+ there are few Modals are still not migrated as per phase 1. they are : 
+
+ - When user clickes on "Resume Automation" > It opes and modal which is not as per the V6 SOT.
+ - The Review modal > Publish now Button does not open the modal as er SOT V6. 
+
+- Automatic Logic > Publish Windows scheduling has no calander picker 
+
+
+### UI UX enhencement : 
+There are few things that I have noticed, There are there no action and endpoints for some UI that you prompted earlier. e.g - Automatic logic > Operational Rules Section > +Add Rule button does not open any modal and no further actions. I need youto audit this current implimentations and analyze the UI UX deeply to identify gaps/missing gaps and illogical UI UX which has no such functionality in this feature. this UI UX improvement plan is the Fine tuning of this feature. We will wire the backend e2e based on this UI ux and after fine tuning. In this fine tuning , You are allowed to add/remove necessary modals/pages components etc. 
+
+The Goal is to finalzile the UI ux and plan the backend further in the next pahse based on this final UI UX.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ --------------------------------------------------------------------------------
+
+ here is the enhancement plan created by you D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\UX-FINE-TUNING-PLAN-2026-01-03.md . As I will do the further UI UX enhancement based on this plan, and also with do the furhter development/enhencement here in vs code and will not use the google ai studio now. But I need the similar kind of prompts as per this  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING . You have to prepare the prompts accordingly based on this enhancement plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
   ***Strickt Rules***

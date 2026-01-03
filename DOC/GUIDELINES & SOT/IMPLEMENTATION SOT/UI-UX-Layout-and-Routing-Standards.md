@@ -236,6 +236,19 @@ Background Decision Tree (from SOT):
 - Buttons/Links:
   - Use the shared `Button` and link helpers; do not add `as` to native tags.
   - Variants reside in the component; do not copy button class stacks.
+
+### Prototype-Preserving Migration Exception
+When a feature is migrated from a Google AI Studio/Vite prototype and is under the prototype-preserving contract:
+- Do not refactor structure in a way that changes rendered UI/UX.
+- Structural mirroring (extracting tabs/modals/components into separate files to match the prototype’s boundaries) is allowed and encouraged as long as rendered UI/UX remains identical.
+- Follow the mandatory 2-part migration sequencing:
+  - Part 1: Structural mirror (UI preserved)
+  - Part 2: Design-system compliance (tokenization + class contracts + multi-theme + verification gates)
+
+Tokenization and wrapper/layout adjustments remain allowed, but should be treated as Part 2 unless a blocker forces a minimal change.
+
+Authority:
+- See `DOC/GUIDELINES & SOT/README.md` → “Prototype-Preserving Migration Contract (Vite Prototype → Next.js)”.
 - Modals:
   - Backdrop: `fixed inset-0 bg-background/80 backdrop-blur-sm z-modal`
   - Panel: `bg-surface border border-border shadow-neu-outset rounded-xl`

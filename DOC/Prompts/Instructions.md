@@ -30,11 +30,6 @@ This chat becomes very slow after many messages. To start a new chat and keep co
 
 ------------------------------------------------------------------------------------------------------
 
-In the homeowners dashboard there are only 5 leads are showing up, But I have generated a lot. Why all other leads are not showing up in the dahsboard ? Audit and identify the root cause and fix it accordingly. I want the Homeowners dashboard to show all the leads were generated. 
+rayisselectricalandsolar@gmail.com
 
----------------------------------------------------------------------------------------------------
-
-***homeowners review modal Enhancement***
-- Why the homeowners review modal does not show the saving chart graphs? Audit and identify the root cause and fix it accordingly. I want the Homeowners review modal to show the saving chart graphs properly without any issues.
-
-- I do not need this "Original Lead Details" section in the written Quote Review modal. Audit and identify the root cause and fix it accordingly. I want the Homeowners written Quote review modal to not show this "Original Lead Details" section.
+Admin123!Secure

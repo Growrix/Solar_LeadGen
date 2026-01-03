@@ -28,6 +28,22 @@ Create the same structure as `DOC/FEATURES/NEWS ENGINE/`:
 - UX must be decomposed into **pages first**, then **modals**, then **confirmations**.
 - Every click must map to what opens next and what happens after close/submit.
 
+---
+
+## Migration Stage (Prototype → Next.js)
+
+When the prototype UI is migrated into the Next.js app, the migration is **prototype-preserving**:
+- The chosen prototype version (e.g., V6) is the **UI SOT**.
+- Migration must preserve UI composition, layout, triggers, modals, and flows.
+- Allowed changes are limited to semantic token `className` swaps + minimal wrapper/layout adjustments required for embedding inside the repo’s layouts.
+
+Mandatory sequencing (2-part migration):
+- Part 1: Structural mirror (tabs/modals/components in separate files; hub thin; UI preserved)
+- Part 2: Design-system compliance (tokenization + class contracts + multi-theme + verification gates)
+
+Authoritative contract:
+- `DOC/GUIDELINES & SOT/README.md` → “Prototype-Preserving Migration Contract (Vite Prototype → Next.js)”
+
 ## IMPORTANT: Tasks.md Exception
 For this workflow, do **NOT** create:
 - `DOC/Features/<Feature Name>/SOT/tasks.md`

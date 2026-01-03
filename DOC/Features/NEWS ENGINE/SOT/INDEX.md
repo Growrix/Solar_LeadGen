@@ -16,13 +16,13 @@ Authoritative prototype (audit scope: V6 only):
 - `../GoogleAIStudio UI UX/ai-news-engine-admin- V6/` — Google AI Studio V6 export (React/Vite prototype).
 
 Prototype audit (V6):
-- `../Audit Reports/prototype-audit-google-ai-studio-uiux-V6.md` — V6 verification + readiness verdict.
+- `../Audit Reports/v6-vs-current-nextjs-audit-2026-01-03.md` — V6 vs current Next.js parity audit (E2E: routes → tabs → modals → triggers).
 
 Global standards:
-- `../../GUIDELINES & SOT/README.md` — repo-wide SOT workflow + rules.
-- `../../GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md` — canonical 6-phase framework.
-- `../../GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md` — prototype-first frontend workflow (Google AI Studio → prompts/plan).
+- `../../../GUIDELINES & SOT/README.md` — repo-wide SOT workflow + rules.
+- `../../../GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md` — canonical 6-phase framework.
+- `../../../GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md` — prototype-first frontend workflow (Google AI Studio → prompts/plan).
 
 Prompting SOP + templates:
-- `../../PROMPTS/AI PROMPTING/AI Prompting Guideline.md`
-- `../../PROMPTS/AI PROMPTING/Template_AIfrontend.md`
+- `../../../PROMPTS/AI PROMPTING/AI Prompting Guideline.md`
+- `../../../PROMPTS/AI PROMPTING/Template_AIfrontend.md`

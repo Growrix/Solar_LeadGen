@@ -30,6 +30,7 @@ export interface NewsItem {
   relevanceScore: number;
   aiModel: string;
   createdAt: string;
+  sourceType?: 'RSS Feed' | 'AI Agent' | 'Manual Entry';
   publishedAt?: string;
   scheduledFor?: string;
   slug?: string;
@@ -64,6 +65,39 @@ export interface AuditLogEntry {
   origin: string;
   status: AuditLogStatus;
   promptUsed?: string;
+}
+
+function escapeCsvCell(value: unknown): string {
+  const raw = value === null || value === undefined ? '' : String(value);
+  return `"${raw.replace(/"/g, '""')}"`;
+}
+
+export function exportAuditLogsToCsv(logs: AuditLogEntry[], filename?: string): void {
+  if (typeof window === 'undefined') return;
+
+  const defaultName = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+  const safeName = filename?.trim() ? filename.trim() : defaultName;
+
+  const headers = ['timestamp', 'action', 'origin', 'status', 'promptUsed'] as const;
+  const rows = logs.map((log) => [log.timestamp, log.action, log.origin, log.status, log.promptUsed ?? '']);
+
+  const csv = [
+    headers.map(escapeCsvCell).join(','),
+    ...rows.map((row) => row.map(escapeCsvCell).join(',')),
+  ].join('\r\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 export interface NewsEngineState {
@@ -119,6 +153,7 @@ export function seedNewsEngineState(): NewsEngineState {
       relevanceScore: 82,
       aiModel: 'gpt-5.2',
       createdAt: iso(new Date(now.getTime() - 1000 * 60 * 45)),
+      sourceType: 'AI Agent',
       tags: ['pricing', 'market'],
     },
     {
@@ -130,6 +165,7 @@ export function seedNewsEngineState(): NewsEngineState {
       relevanceScore: 74,
       aiModel: 'gpt-5.2',
       createdAt: iso(new Date(now.getTime() - 1000 * 60 * 60 * 6)),
+      sourceType: 'AI Agent',
       tags: ['demand', 'weather'],
     },
     {
@@ -141,6 +177,7 @@ export function seedNewsEngineState(): NewsEngineState {
       relevanceScore: 91,
       aiModel: 'gpt-5.2',
       createdAt: iso(new Date(now.getTime() - 1000 * 60 * 60 * 48)),
+      sourceType: 'RSS Feed',
       publishedAt: iso(published1Date),
       slug: slugify(published1Title),
       tags: ['policy', 'grid'],
@@ -154,6 +191,7 @@ export function seedNewsEngineState(): NewsEngineState {
       relevanceScore: 88,
       aiModel: 'gpt-5.2',
       createdAt: iso(new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7)),
+      sourceType: 'RSS Feed',
       publishedAt: iso(published2Date),
       slug: slugify(published2Title),
       tags: ['battery', 'incentives'],
@@ -271,6 +309,7 @@ export function createDraftFromTitle(title: string, summary: string): NewsItem {
     relevanceScore: 0,
     aiModel: 'gpt-5.2',
     createdAt: new Date().toISOString(),
+    sourceType: 'Manual Entry',
     tags: [],
   };
 }

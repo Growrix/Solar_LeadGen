@@ -33,8 +33,19 @@ No implementation work may begin until ALL of these are true:
 
 Option A = implement directly in the production Next.js app:
 
-- Prototype code is **UX reference only**.
-- The Next.js implementation must follow:
+- Default: the chosen prototype version is the **UI SOT** and must be migrated **prototype-preserving**.
+  - Preserve UI composition, layout, triggers, modals, and labels.
+  - Allowed changes only: semantic token `className` swaps + minimal wrapper/layout adjustments required for Next.js embedding.
+
+Mandatory sequencing (2-part migration):
+- Part 1: Structural mirror (match prototype file/component boundaries; hub thin; UI preserved)
+- Part 2: Design-system compliance (tokenization + class contracts + multi-theme + verification gates)
+- Any alternative approach ("prototype as UX reference only" / redesign / rebuild) must be explicitly approved and recorded in the feature SOT before implementation.
+
+Authoritative contract:
+- `DOC/GUIDELINES & SOT/README.md` → “Prototype-Preserving Migration Contract (Vite Prototype → Next.js)”
+
+The Next.js implementation must follow:
   - semantic tokens only (no hardcoded colors, no `dark:`)
   - multi-theme support (Dark/Light/Purple)
   - existing layout/routing patterns (admin chrome, app router conventions)

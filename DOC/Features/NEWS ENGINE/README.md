@@ -3,13 +3,16 @@
 This folder is the canonical workspace for the **News Engine** feature.
 
 ## Folder Structure (Required)
-  - 6-phase framework documentation (source of truth)
-  - Update `SOT/README.md` as phases complete
-  - Initial plan (created by the user at the beginning)
-  - Google AI Studio prototype exports (pasted by the user)
-  - Prompt artifacts generated from the prototype (AI-created)
-  - Audit reports for this feature (AI-created, ongoing)
-  - Keep empty until the frontend is finalized
+This feature workspace follows the repo’s prototype-first + migration workflow.
+
+Required folders:
+- `SOT/` — 6-phase planning + index + visual contract
+- `Plan/` — initial user-created plan
+- `GoogleAIStudio UI UX/` — prototype exports (V6 is authoritative)
+- `Fontend UI UX Prompts/` — prompt artifacts generated from the prototype
+- `Audit Reports/` — audit reports and findings
+- `MIGRATION/` — migration plans + execution checklist
+- `BACKEND PLAN/` — keep empty until the frontend is finalized
 
 ## Folderization Rule (Migration)
 When creating a new feature folder structure, always create a `MIGRATION/` folder (can be empty at first) to hold all migration planning and execution docs. This ensures a single, predictable location for all migration artifacts.
@@ -40,4 +43,4 @@ See each folder’s README for details. All migration planning and execution doc
 
 ## Notes
 - This workflow does **not** require `SOT/tasks.md`.
-- If implementation begins, track execution in `specs/<feature>/tasks.md`.
+- For News Engine implementation/migration, track execution in `MIGRATION/tasks.md`.

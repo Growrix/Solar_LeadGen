@@ -24,6 +24,25 @@ This work must **not** regress existing Admin areas or existing public routes.
 
 ---
 
+## বাংলা ব্যাখ্যা (Bangla Explanation)
+
+এই ডকুমেন্টটি News Engine ফিচারের **ফ্রন্টএন্ড UI/UX কনট্রাক্ট**—মানে আমরা ঠিক কোন কোন পেজ, ট্যাব, এবং মডাল বানাবো তা এখানে নির্দিষ্ট করা আছে।
+
+**Public (গেস্ট) ফ্লো:**
+- `/news` পেজে শুধু **Published** নিউজ আইটেম দেখাবে।
+- `/news/[slug]` পেজে নির্বাচিত Published আইটেমের ডিটেইল দেখাবে।
+- Share/Copy Link মডাল থাকবে (UI-only আচরণ)।
+
+**Admin (ইন্টারনাল) ফ্লো:**
+- `/admin/news-engine` একটাই হাব স্ক্রিন হবে, যেখানে Dashboard / Drafts & Reviews / Audit Logs / Master Control / Automation Logic / Sources / Settings ট্যাব থাকবে।
+- ট্যাব/বাটন থেকে সংশ্লিষ্ট মডালগুলো (Review, Schedule, Test & Preview, Prompt Details, Confirmations ইত্যাদি) ওপেন হবে—এগুলো UI-only হলেও ফ্লোটা প্রোটোটাইপের মতোই থাকবে।
+
+**গুরুত্বপূর্ণ নিয়ম:**
+- বিদ্যমান অ্যাডমিন লেআউট/নেভিগেশন নষ্ট করা যাবে না।
+- নতুন hardcoded color বা `dark:*` ক্লাস যোগ করা যাবে না; শুধু semantic token ব্যবহার হবে।
+
+---
+
 ## 1) Scope Lock (What WILL and WILL NOT be migrated)
 
 ### In Scope (Option A)
