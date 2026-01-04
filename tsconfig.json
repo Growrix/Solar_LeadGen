@@ -41,6 +41,8 @@
     "__archive__/**",
       "backup",
       "backup/**",
+    "DOC",
+    "DOC/**",
   "solarmatch_SOT",
   "next-gen-web-agency",
     "backup-*",

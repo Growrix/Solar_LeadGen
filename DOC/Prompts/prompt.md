@@ -4381,3 +4381,359 @@ As we have update the documentation process , I want you to start over again wit
   ***Strickt Rules***
 ### Follow the Guidelines:
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+--------------------------------------------------------------------------------------
+
+***blog Feature testing Result***
+
+### Issues : 
+1. check the screenshot, the blog post is not creating.
+2. The UI layout structure did not follow the Layout standard and in result it looks odd and did not matched with other page layouts
+3. It was not routed to the Admin Dashboard. The admin Sidebar menu should Have a collapsible "Blog" section with sub-menu items for "All Posts," "Create Post," "Categories," and "Tags." , ANd there is not such pagers were created in the Admin Dashboard. 
+4. The overall blog feature Admin UI is not Professional. 
+5. The slug should be auto generated from the title field.
+6. The blog post content editor should support basic text formatting options like bold, italics, THe text editor is just talking plain texts. there is no options for H1, H2 , h3 etc. 
+7. The Cover Image field has option the add URL , not upload options.
+
+### My Frustrations :
+I wanted to build a modern blog feature e2e , which is wordpress like CMS. But after the planning and implimentations, I am not happy with the outcome. I need more enhacement of the implimentations
+
+### Instructions: 
+Audit the entire emplimentation and come up with further enhacement plan/ideas to fix the above issues and frustrations. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+I want the next plan to be made in this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\Plan folder. The plan is for further enhancement ,not fixing issues that I mentioned. 
+
+- The fixing plan and audit should be separate from the further enhancement plan.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+
+ -------------------------------------------------------------------------------------
+
+ i have built a prototype blog CMS UI with the google ai studio . I want to mirror all the pages with all the fields and options and functions but it must be adapted with my theme system and saas.  here is the prototype D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\luminacms-admin . I want you to deeply analyze this prototype and prepare a detailed plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\Plan folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+The pages I want : Posts , Comments , Categories & tags , Media . 
+
+As there is no backend was planned and this is only UI UX , you need to prepare the backend plan as well along with the frontend plan in the same document. Audit deeply and prepare it accordingly. 
+
+### Additionally : as we have implimented partial blog UI and Backend, Is there any option to modify the UI easily ? and drop the tables and recreate the backend ? will it be messy? or should we start fresh from the fresh branch where the blog was not implimented? also need your decision. the existings will be no needed at all in this case, I think refactoring might take more time. or you decide and let me know. 
+
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ --------------------------------------------------------------------------------------
+
+I will go as per your recommendation Refactor. here is the plan that you have generated D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\Plan\LUMINACMS-PROTOTYPE-MIRROR-PLAN.md . I want you to prepare all the necessary documents to D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Features\Blog Manual\2nd Phase\SOT folder as per the 6 phase framework. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ---------------------------------------------------------------------
+
+
+ This is my Initial Plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\CHatGPT.md . My Goal is to build the UI UX with the Google AI studio prototype e2e flow with e2e modals and all the pages regarding this feature. You have to prepare the entire frontend plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT. This plan should be very detailed and clear so that any AI or human can start the frontend development without any context loss. 
+
+ ### Your Prompting Instructions : 
+
+ As the Google AI studio has limitation of building complex modals and pages, you need to break down the entire flow into multiple pages and modals accordingly so that any AI or human can understand the flow easily. and also make a sequal of building the UI UX e.g First build the AI news Engine Page With all the sections and filters , then build the modals one by one accordingly. Each should be very detailed to maintain sequal e.g when clicked on "View News Details" button in the news engine page , what should happen next , which modal should open with what fields and options etc. This Is the End to end flow that I want you to prepare in the frontend plan. each break downs should have a sync to the next step. 
+
+
+
+ ***Strickt Rules*** 
+
+ While writing the plan and for the AI prompts , you must follow the prompting guidelines from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\Prompts\AI PROMPTING\AI Prompting Guideline.md
+
+ --------------------------------------------------------------------------------------------------------------------------------
+
+ I need you to build another frontend plan for the public Pages of the News Engine feature e.g The Guest News Page where the News posts will be displayed to the public users. The plan must match the Admin Dashboard News Engine feature UI UX so that the news posts created from the Admin Dashboard News Engine feature will be displayed properly in the Guest News Page. 
+
+ Follow the same instructions D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\README.md as I mentioned in the previous prompt for building the frontend plan. The plan should be very detailed and clear so that any AI or human can start the frontend development without any context loss. And create the plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT folder as well.
+  ***Strickt Rules***
+ For the Alignement and sycn , you must read back the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE for better understanding.  
+
+  ***Strickt Rules***
+  -----------------------------------------------------------------------------------------
+
+
+  I have built the Google AI Studio UI UX prototype for the News Engine feature as per your promots for admin and public frontend from the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT .
+  You have to audit the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\GoogleAIStudio UI UX and validate with the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT and Identify what is missing there as per the admin and public frontend plans that you have prepared. 
+
+  After that , prepare another frontend enhancement plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT by following the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\PROMPTS\AI PROMPTING guideliens and template for next phase UI UX enhancement/ missing implimentation. 
+
+  ### Audit Instructions : 
+  1. Check the Google AI Studio UI UX deeply and compare with the frontend plans that you have prepared.
+  2. Identify what is missing there as per the admin and public frontend plans that you have prepared.
+  3. Identify any missing endpoints of UI UX flow. 
+  
+  ### In the end must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\README.md file accordingly to reflect these changes. This is the main SOT for this feature.
+
+  -----------------------------------------------------------------------------------------
+
+  Here is the updated version D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V2 that built with google ai studio. Your job is to validate the UI is accurately done as per your plan. Audit deeply and prepare another fronend enhencement plan if you found anything missing or not accurate as per your plan. 
+
+  ### My personal UI change requirements to mention in your further plan :
+  1. In the Admin Setting page , I just only need the NewsEngine related UI . NO need any personal profile settings there and also no need Security Two-factor Authentication section as well.
+  2. I want all the pages Shows under the "News Engine" Page with tabs instead of separate pages in the sidebar menu. 
+
+  ***Strickt Rules***
+  For the Alignement and sycn , you must read back the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\README.md and prepare the plan accordingly. 
+
+  ### must update : 
+  After done all , You must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\README.md file accordingly to reflect these changes. This is the main SOT for this feature.
+
+  ------------------------------------------------------------------------------------------
+
+   Here is the updated version D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V6 that built with google ai studio. Your job is to validate the UI is accurately done as per your plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\frontend-enhancement-plan-prototype-alignment-V5.md Audit deeply and prepare another fronend enhencement plan if you found anything missing or not accurate as per your plan. 
+    - you need to make sure the frontend is completely have the e2e flow UI UX and 100% ready to prepare the backend plan after your confirmation.
+
+  ***Strickt Rules***
+  For the Alignement and sycn , you must read back the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\README.md and prepare the plan accordingly. Do not prepare any further plan if everything is accurate as per your plan. If everything is accurate , just update the README.md file accordingly to reflect that the UI is accurately done as per the plan. And create one single Audit file regarding the frontend e2e which is vastly accurate in order to prepare Backend plan further. No need to prepare backend plan yet. 
+  ### Must follow : 
+  Follow the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\PROMPTS\AI PROMPTING  guideliens and template for next phase UI UX enhancement/ missing implimentation.
+
+  ### must update : 
+  After done all , You must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOCS\NEWS ENGINE\SOT\README.md file accordingly to reflect these changes. This is the main SOT for this feature.
+
+  -----------------------------------------------------------------
+
+
+My Recent workflow was followed by this D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md . 
+
+- In order to improve the workflow further, I have tested a new way of buidling the Frontend UI UX first with Google AI Studio prototype and then building the frontend plan based on that prototype. I felt this way is more accurate and easy to follow as the entire UI UX flow is already built with the prototype. 
+- THis is the new workflow that I want you to follow from now on for any frontend feature building : D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT\README.md
+
+As It was a test but I have already finalized the Frontend UI UX with the Google AI Studio prototype for the News Engine feature, But In this built I did not follow the existing workflow that follows 6 phase framework strictly. 
+
+- Now I want to add this workflow into the existing D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file as well for better understanding of the entire process. 
+
+***Workflow Enhancement Instructions :*** 
+
+### What I do not need and what to remove : 
+- I do not need the Tasks.md file to create in the SOT folder for any frontend feature that is being built with this new workflow. So you need to remove that instruction from the guidelines and relevant files.
+
+### What I need to add : 
+
+Add these into the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file by creating new folder/files into the Guidelines folder.
+- D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\AI Prompting Guideline.md
+- D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_AIfrontend.md
+
+*** The Goal is to prepare the Frontend plan in the "Frontend UI UX Prompts" folder based on the Google AI Studio prototype that is being built for any frontend feature. based on the  that you will create in the initial phase of the SOT folder for that feature. 
+
+- The Template_AIfrontend.md file is the main template that you need to follow strictly while building the frontend plan in the SOT folder for any frontend feature. 
+
+*** Folderizing : I want you to follow this folderization D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE . You have to create all the folders and the files which is instructed in your readme.md . 
+
+Floderization Structure and Clarification : 
+- DOC
+  - FEATURES
+    - NEWS ENGINE
+      - SOT (6 phase files as per the framework)
+      - Plan (Initial Plan file that file will be created by me at the begenning)       
+      - GoogleAIStudio UI UX (I will paste the prototype files here)
+      - Fontend UI UX Prompts (You will create the Google AI studito prompting files here as per the guideline)
+      - Audit Report (You will create the audit report files here And save all the future audit reports for the feature)
+      - BACKEND PLAN (Just create the folder empty for now, will fill it later after the frontend is 100% ready)
+    README.md (Main SOT readme for the feature) It is mandatory to update on each phase completion to reflect the changes. 
+
+For better understanding you can read the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE completely so that You will know what is the new workflow that I want you to follow from now on for any frontend feature building. 
+
+***Clarification :*** 
+- I will create the initial plan file in the Plan folder at the begenning of the feature building.
+- I will reffer the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file and will ask you to create the SOT folder files as per the 6 phase framework.
+- You will also create the folders that I have mentioed in the Folder structures under the working feature directory. 
+- After the 6 phase SOT files are created by you, You will create the Prompts in the Frontend UI UX Prompts folder based on the Google AI Studio prototype that I have built for that feature.
+- Keep the other folders in empty state for furter use. 
+
+*** this is the workflow I want for now. Deeply Understand all the contexts and update the files accordingly. 
+
+--------------------------------------------------------------------------------------
+
+
+As i did not follow the 6 phase rules in this Feature but built the prototype already, now I want you to follow the 6 phase rules and crete the files in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT folder accordingly. as per D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file . 
+
+and after that Checkback the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts and also the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V6 and validate with the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT and Identify what is missing there as per the 6 phase framework that you have prepared.
+
+after that , prepare annother frontend enhancement plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts if you found anything missing or not accurate as per your 6 phase framework that you have prepared. If evertyhing is fine then just give me a green signal to move forward. 
+
+Audit the V5 as per the SOT that you will create based on my initial plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Plan\CHatGPT.md .
+
+-----------------------------------------------------------------------------------------
+
+Now we have built the prototype as per the the SOT , But few things we still need to decide by considering : 
+
+- The Prototype UI is not semantic as per our project theme system. 
+- Might Have hardcoded UI 
+- Not adapted as per out theaming system
+- The built framework is vite and not next.js which we are using in our project.
+
+### What we need to do :
+- Need to migrate the UI UX
+- Need to make sure its fully adapted with our theme system and also the e2e flow is maintained.
+- Migrate from vite to Next.js framework.
+
+### My Plan/idea : 
+- Migration takes a lot of time and its another major part of using the prototype. So We need a better plan where we can do more works before even start migrating. But I have no Idea how to plan this properly. Maybe we can give more prompts to the Google Ai studio and build the more accurate prototype as per our theme system and Next.js framework. So that we will have less pain and works while doing the migration. 
+
+### Your Job : 
+- here is the latest audit report D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Audit Reports\prototype-audit-google-ai-studio-uiux.md . You have to deeply analyze this audit report and prepare a detailed plan how we will do the migration properly by considering all the points that I mentioned above.
+
+Also can read through D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file and let me know what we have to consider before preparing the plan. 
+
+- create the plan in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Plan Prompts folder. IF you decide to craft prompts for google ai studio further then prepare the prompts in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder as well.
+
+-------------------------------------------------------------------------------
+Check this chat conversation , We have done some tasks as per the tasks.md file. But as we have updated the migration workflow, YOu need to update the tasks.md  that also aligns with this workflow and after that start implimentation. I recommend you to do a audit one the V6 vs the Current state of this site's News engine feature e2e. So that , You will have a crystal clear picture. And after that Also chcek back once again that overall documentation in the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md and D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\README.md
+
+--------------------------------------------------------------------------------
+
+You are stucked with your testing. I have tested manually. The overall mirrorring was fine. there are few issues. please check back the layout again , because the Layout is not concistent as per Layout SOT. And also there are few modal triggers are not showing up as per the V6 triggers.
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ --------------------------------------------------------------------------------------
+
+ This phase 1 migration still has some issues . The Triggered modals are not accurate as per the SOT V6. You need to focus on the Modals that opens in triggered actions. Audit back The current implimented Ui vs the SOT v6 modals e2e. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
+
+ ---------------------------------------------------------------------------------------
+### Issues to fix :
+ there are few Modals are still not migrated as per phase 1. they are : 
+
+ - When user clickes on "Resume Automation" > It opes and modal which is not as per the V6 SOT.
+ - The Review modal > Publish now Button does not open the modal as er SOT V6. 
+
+- Automatic Logic > Publish Windows scheduling has no calander picker 
+
+
+### UI UX enhencement : 
+There are few things that I have noticed, There are there no action and endpoints for some UI that you prompted earlier. e.g - Automatic logic > Operational Rules Section > +Add Rule button does not open any modal and no further actions. I need youto audit this current implimentations and analyze the UI UX deeply to identify gaps/missing gaps and illogical UI UX which has no such functionality in this feature. this UI UX improvement plan is the Fine tuning of this feature. We will wire the backend e2e based on this UI ux and after fine tuning. In this fine tuning , You are allowed to add/remove necessary modals/pages components etc. 
+
+The Goal is to finalzile the UI ux and plan the backend further in the next pahse based on this final UI UX.
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ --------------------------------------------------------------------------------
+
+ here is the enhancement plan created by you D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\UX-FINE-TUNING-PLAN-2026-01-03.md . As I will do the further UI UX enhancement based on this plan, and also with do the furhter development/enhencement here in vs code and will not use the google ai studio now. But I need the similar kind of prompts as per this  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING . You have to prepare the prompts accordingly based on this enhancement plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+--------------------------------------------------------------------------------------
+
+Now Lets Build the Public pages , post page for this New Engine . Your job is to plan the frontend UI UX based on the current state of this site. E.g The Homepage does not have this section , so we need to create the section and then rotue the News Page and post pages. I will build the UI UX here in vs code using co-pilot . SO I need the detailed frontend plan for the public pages in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ --------------------------------------------------------------------------------
+
+ forget about commit push now, focus on implimentations. finish all the steps first. I have checked your initial build of the Latest News Section in the homepage. Which is poor UI . You can follow the Blog Setion in this case and use similar UI style and also UI classes. The news page, post page, share modal are also poor. It donent look like modern . it is more like unfinished. 
+
+ You should have followed the prompts for the UI . Maybe You did not follow that , instead follewd the requirements I think. 
+
+ ***Instructions*** 
+ I wated to build the UI here to save time instead of building UI UX in google ai studio. but it is dissappointing. you should focus on UI UX deeply here. If needed , enhance the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-plan-public-v2-2026-01-03.md  . And instruct AI to follow the UI UX prompts exactly on each steps. 
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ ---------------------------------------------------------------------------------
+
+ I want you to prepare a UI UX plan for the Public page and post page for the News Feature. Follow the prompt D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Frontend Planning Prompt.md strictly and create the plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder By following the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_Comprehensive_UI UX.md template strictly. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+  ***Strickt Rules***
+
+
+
+  Now I am fixing my workflow . At the begenning I always share my initial plan > Generate 6 phase SOT folder files > Build the prototype with google ai studio > Prepare the frontend plan based on the prototype in the Frontend UI UX Prompts folder > Build the frontend based on the frontend plan > Prepare the backend plan based on the final UI UX flow in the Backend Plan folder > Build the backend based on the backend plan. 
+
+
+***Phase 1 : Building SOT***
+  - Here is my Initial Plan : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Plan\CHatGPT.md
+  - Prepare the 6 phase SOT folder files in 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT as per the 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file . 
+
+***Phase 2 : Frontend Planning***
+- Here is the front end plan based on 6 phase SOT : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md
+- Based on this frontend plan , Prepare the frontend UI UX prompts in
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder by following the :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\AI Prompting Guideline.md Instructions. 
+- The Outcome should be followed by This : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_Comprehensive_UI UX.md
+
+  -----------------------------------------------------------------
+
+  I want you to follow the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-plan-public.md and build the public frontend here in vs code followed by Step 1 of 6 — Public News Listing Page in the plan. only follow the prompts strictly which building each step by step. 
+  - Keep in mind that you are rebuilding these pages here in vs code based on the prompts. not using google ai studio now. So there are alredy existing files that were created earlier in this project. So you need to override those files accordingly based on the prompts. audit back the existing files and then override accordingly. Understand the clear picture first then start implimenting. 
+
+  ------------------------------------------------------------------------------
+
+  ***Frontend Migration Workflow***
+  - Here is the prototype we built with google ai studio :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V6
+ 
+  - Follow the file instructions strictly while preparing the migration plan
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\FRONTEND-PROTOTYPE-WORKFLOW\README.md .
+
+   - Create the Migration plan in the :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\MIGRATION.
+
+  - Based on the Migration plan that you have created , Prepare the tasks.md file in the Migration folder as well followed by the template : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\.specify\templates\tasks-template.md
+
+
+
+***Frontend Migration Workflow***
+  1. CONTEXT
+You are migrating a Google AI Studio prototype (V6) to the production Next.js codebase for the NEWS ENGINE feature. The migration must strictly follow the project’s prototype-first, SOT-driven workflow and all documentation standards.
+
+2. WORKFLOW STEPS
+Prototype Reference
+
+Use the finalized prototype:
+DOC/FEATURES/NEWS ENGINE/GoogleAIStudio UI UX/ai-news-engine-admin- V6
+This prototype is the UI SOT (Source of Truth) for migration.
+Migration Plan Preparation
+
+Strictly follow:
+DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md
+Reference the migration playbook:
+DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/PROTOTYPE-TO-NEXTJS-OPTION-A-PLAYBOOK.md
+Create a detailed migration plan in:
+DOC/FEATURES/NEWS ENGINE/MIGRATION/
+Task Tracking
+
+Prepare tasks.md in the MIGRATION folder using:
+tasks-template.md
+Do NOT create a tasks.md in the SOT folder for prototype-driven frontend features.
+Verification & Documentation
+
+After migration, run all verification gates (typecheck, build, theme checks, etc.) as per the migration contract.
+Document verification results in the MIGRATION folder.
+Update DOC/FEATURES/NEWS ENGINE/SOT/README.md to reflect migration status, deviations, and lessons learned.
+SOT & Documentation Compliance
+
+Ensure all SOT/README and index files are updated to reflect the new workflow and any changes.
+All folderization and file creation must match the structure in DOC/FEATURES/NEWS ENGINE.
+3. ENHANCEMENT RULES
+Explicitly reference the migration playbook in all migration plans.
+SOT/README must be updated after migration to maintain a single source of truth.
+All verification steps must be documented and results stored in the MIGRATION folder.
+Remove any instruction to create tasks.md in SOT for prototype-driven frontend features.
+Ensure all documentation and plans are traceable, auditable, and compliant with the latest workflow.
+4. SUCCESS CRITERIA
+Migration plan and tasks.md exist in the MIGRATION folder, not SOT.
+All steps reference the prototype, workflow README, and migration playbook.
+SOT/README and index files are updated post-migration.
+Verification results are documented.
+No redundant or conflicting instructions remain in the guidelines.

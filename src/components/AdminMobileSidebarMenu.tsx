@@ -82,6 +82,8 @@ const FileTextIcon = () => (
   </svg>
 );
 
+const BlogIcon = () => <FileTextIcon />;
+
 const PaintbrushIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
     <path d="M17 3a2.85 2.85 0 0 0-4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
@@ -165,10 +167,15 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
         // Route to correct page
         if (page === 'Dashboard') router.push('/admin/dashboard');
         else if (page === 'Leads') router.push('/admin/leads');
+        else if (page === 'News Engine') router.push('/admin/news-engine');
         else if (page === 'Homeowners') router.push('/admin/homeowners');
         else if (page === 'Installers') router.push('/admin/installers');
         else if (page === 'Newsletter') router.push('/admin/newsletter');
         else if (page === 'Instant Quotes') router.push('/admin/instant-quotes');
+      else if (page === 'Blog') router.push('/admin/blog');
+      else if (page === 'Blog: Create Post') router.push('/admin/blog/new');
+      else if (page === 'Blog: Categories') router.push('/admin/blog/categories');
+      else if (page === 'Blog: Tags') router.push('/admin/blog/tags');
     };
 
     const handleLogoutClick = () => {
@@ -208,6 +215,12 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
                         isActive={activePage === 'Leads'} 
                         onClick={() => handleNavClick('Leads')} 
                     />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="News Engine"
+                      isActive={activePage === 'News Engine'}
+                      onClick={() => handleNavClick('News Engine')}
+                    />
                     <NavItem 
                         icon={<HomeIcon />} 
                         title="Homeowners" 
@@ -231,6 +244,31 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
                         title="Instant Quotes" 
                         isActive={activePage === 'Instant Quotes'} 
                         onClick={() => handleNavClick('Instant Quotes')} 
+                    />
+
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog"
+                      isActive={activePage === 'Blog'}
+                      onClick={() => handleNavClick('Blog')}
+                    />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog: Create Post"
+                      isActive={activePage === 'Blog: Create Post'}
+                      onClick={() => handleNavClick('Blog: Create Post')}
+                    />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog: Categories"
+                      isActive={activePage === 'Blog: Categories'}
+                      onClick={() => handleNavClick('Blog: Categories')}
+                    />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog: Tags"
+                      isActive={activePage === 'Blog: Tags'}
+                      onClick={() => handleNavClick('Blog: Tags')}
                     />
                 </nav>
                 <div className="mt-6 pt-6 border-t border-border">

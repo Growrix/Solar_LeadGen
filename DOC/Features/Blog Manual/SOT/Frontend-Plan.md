@@ -22,6 +22,15 @@ Any changes below must be treated as **intentional** and approved.
 
 ---
 
+## Locked Decisions (2025-12-30)
+
+- **Canonical post route**: Use `/blog/[slug]` as the canonical, deep-link-safe post URL.
+- **Legacy compatibility**: Keep `/blog/post` as a compatibility route that attempts to redirect to `/blog/[slug]` using the existing `sessionStorage` payload. If it cannot infer a slug, it redirects back to `/blog`.
+- **Comments UX**: Hide the demo comments section for MVP (no public comments feature yet).
+- **Share UX**: Minimum share functionality is **Copy Link**.
+
+---
+
 ## 1) Public Blog UX (Guest)
 
 ### A) `/blog` — Blog Listing Page (Baseline)
@@ -52,15 +61,9 @@ Any changes below must be treated as **intentional** and approved.
 **Current interaction (as-is):**
 - Click card → saves post in `sessionStorage` → navigates to `/blog/post`
 
-**Planned change (requires explicit approval):**
-Choose one:
-
-Option 1 (Conservative): keep the baseline Phase 1
-- Keep navigation `/blog` → `/blog/post` unchanged for Phase 1.
-
-Option 2 (Recommended per plan): introduce canonical route early
+**Implemented change (approved via Locked Decisions):**
 - Click card → navigates to `/blog/[slug]`.
-- `/blog/post` becomes compatibility (redirect or fallback) later.
+- `/blog/post` remains as compatibility only.
 
 ### B) `/blog/post` — Blog Post Detail (Baseline)
 
@@ -87,9 +90,16 @@ Option 2 (Recommended per plan): introduce canonical route early
 - Make “Copy Link” functional at minimum.
 - Later: replace hard-coded body with real content source.
 
+**Implemented change (approved via Locked Decisions):**
+- “Copy Link” is functional.
+- Comments demo is hidden (not part of MVP).
+
 ### C) `/blog/[slug]` — Canonical Post Detail (Future)
 
 This route does not exist today but is recommended by the plan as canonical.
+
+**Implemented change (approved via Locked Decisions):**
+- `/blog/[slug]` is the canonical post detail route.
 
 **What you will see:**
 Same layout as `/blog/post`, but content is loaded by slug and is deep-link safe.

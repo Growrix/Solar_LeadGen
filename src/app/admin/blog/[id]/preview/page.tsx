@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import Button from '@/components/Button';
-import { getAdminBlogPostById } from '@/lib/blog/adminMockStore';
+import { getAdminBlogPostById, type AdminBlogPost } from '@/lib/blog/adminApiClient';
 
 export default function AdminBlogPreviewPage() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function AdminBlogPreviewPage() {
   const id = typeof params?.id === 'string' ? params.id : '';
 
   const [mounted, setMounted] = React.useState(false);
-  const [post, setPost] = React.useState<ReturnType<typeof getAdminBlogPostById>>(null);
+  const [post, setPost] = React.useState<AdminBlogPost | null>(null);
 
   React.useEffect(() => {
     setMounted(true);
@@ -21,14 +21,19 @@ export default function AdminBlogPreviewPage() {
   React.useEffect(() => {
     if (!mounted) return;
     if (!id) return;
-    setPost(getAdminBlogPostById(id));
+    (async () => {
+      const loaded = await getAdminBlogPostById(id);
+      setPost(loaded);
+    })().catch(() => {
+      setPost(null);
+    });
   }, [mounted, id]);
 
   if (!mounted) return null;
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-3xl mx-auto bg-surface rounded-2xl shadow-neu-outset p-12 text-center">
           <h1 className="text-heading-3 text-foreground">Preview unavailable</h1>
           <p className="text-muted-foreground mt-2">This post was not found.</p>
@@ -43,27 +48,24 @@ export default function AdminBlogPreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-heading-2 text-foreground">Preview</h1>
-            <p className="text-muted-foreground text-body-small mt-1">
-              Admin-only preview (mocked content).
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => router.push(`/admin/blog/${post.id}`)}>
-              Back to Edit
-            </Button>
-            <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
-              Back to List
-            </Button>
-          </div>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-heading-1 text-foreground mb-2">Preview</h1>
+          <p className="text-heading-4 text-muted-foreground">Admin-only preview.</p>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
+        <div className="flex gap-3">
+          <Button variant="secondary" onClick={() => router.push(`/admin/blog/${post.id}`)}>
+            Back to Edit
+          </Button>
+          <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
+            Back to List
+          </Button>
+        </div>
+      </div>
+
+      <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
           {post.coverImageUrl ? (
             <div className="relative w-full h-72">
               <Image
@@ -108,7 +110,6 @@ export default function AdminBlogPreviewPage() {
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );

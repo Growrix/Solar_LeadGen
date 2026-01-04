@@ -1,31 +1,79 @@
-# SolarMatch Project
+# SolarMatch - Solar Lead Generation Platform
 
 ## Overview
-SolarMatch is a platform connecting homeowners with solar installers. It features a comprehensive lead management system, bidding process, and admin dashboard.
 
-## Tech Stack
-- **Framework**: Next.js (App Router)
-- **Database**: Prisma with PostgreSQL
-- **Authentication**: NextAuth.js / Clerk (Migration in progress)
-- **Styling**: Tailwind CSS, Shadcn UI
-- **Real-time**: Pusher
-- **Communication**: Twilio, SendGrid, Resend
+SolarMatch is a Next.js 14 solar lead generation web application that connects homeowners seeking solar installations with verified installers. The platform facilitates lead management, competitive bidding, written quotes, and real-time messaging between parties. It features a multi-role system (Admin, Installer, Homeowner) with role-based dashboards and comprehensive notification systems.
 
-## Project Structure
-- `src/app`: Next.js App Router pages and API routes.
-- `src/components`: Reusable UI components.
-- `prisma/`: Database schema and migrations.
-- `DOC/`: Internal documentation and audit reports.
-- `specs/`: Detailed feature specifications and plans.
+## User Preferences
 
-## Workflow
-- **Replit AI**: Use the Agent to implement features, fix bugs, and refactor code.
-- **Git**: Sync changes with GitHub via the Git pane.
-- **Checkpoints**: Use the "View Checkpoints" button to roll back if needed.
-- **Secrets**: Add API keys in the Secrets tab.
+Preferred communication style: Simple, everyday language.
 
-## Recent Changes
-- Project imported from GitHub.
-- Configured development server workflow.
-- Initialized `replit.md` for project tracking.
-- Fixed platform-specific dependency issue (`@next/swc-win32-x64-msvc`).
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: Next.js 14 with App Router and TypeScript
+- **Styling**: Tailwind CSS with custom design tokens defined in `src/design-tokens.js`
+- **State Management**: Redux Toolkit with React-Redux for global state
+- **Form Handling**: React Hook Form with Zod validation via @hookform/resolvers
+- **Real-time Updates**: Pusher.js for WebSocket-based notifications and messaging
+- **UI Components**: Custom component library in `src/components/` with semantic design tokens
+- **Dark Mode**: Class-based dark mode with CSS variables for theme-aware colors
+
+### Backend Architecture
+- **API Layer**: Next.js API routes in `src/app/api/` following RESTful patterns
+- **Authentication**: NextAuth.js v4 with Prisma adapter for session management
+- **Authorization**: Role-based middleware in `src/middleware.ts` with admin bypass capability
+- **Database ORM**: Prisma Client for type-safe database queries
+- **File Storage**: AWS S3 with presigned URLs for secure file uploads
+
+### Data Storage
+- **Database**: PostgreSQL accessed via Prisma ORM
+- **Schema Location**: `prisma/schema.prisma`
+- **Key Models**: User, Lead, Bid, Notification, LeadAssignment, WrittenQuote
+- **Migrations**: Managed via Prisma Migrate in `prisma/migrations/`
+
+### Authentication & Authorization
+- **Provider**: NextAuth.js with credentials-based authentication
+- **Password Hashing**: bcryptjs for secure password storage
+- **Session Strategy**: JWT tokens with role claims
+- **Role System**: Three roles - ADMIN, INSTALLER, HOMEOWNER
+- **Route Protection**: Middleware-based with role verification
+
+### Key Design Patterns
+- **UI-First Development**: Build UI with mock data before backend implementation
+- **Spec-Driven Workflow**: Features documented in specs before implementation
+- **Semantic Design Tokens**: All colors, typography, and spacing use semantic tokens rather than hardcoded values
+- **Feature-based Organization**: Components organized by user role (admin, installer, homeowner)
+
+## External Dependencies
+
+### Payment Processing
+- **Stripe**: Payment processing for lead purchases and subscriptions
+  - Server: `stripe` package
+  - Client: `@stripe/stripe-js`
+
+### Email Services
+- **Resend**: Primary email delivery service
+- **SendGrid**: Alternative email service via `@sendgrid/mail`
+
+### SMS/Phone
+- **Twilio**: SMS notifications and phone verification
+
+### Real-time Communication
+- **Pusher**: WebSocket service for real-time notifications and messaging
+  - Server: `pusher` package
+  - Client: `pusher-js`
+
+### Cloud Storage
+- **AWS S3**: File storage for documents and images
+  - `@aws-sdk/client-s3` for S3 operations
+  - `@aws-sdk/s3-request-presigner` for secure upload URLs
+
+### Testing & Quality
+- **Playwright**: End-to-end testing configured in `playwright.config.ts`
+- **Storybook**: Component development and documentation
+- **ESLint**: Code linting with Next.js and Tailwind plugins
+- **Husky**: Git hooks for pre-commit checks
+
+### Charts & Visualization
+- **Recharts**: Data visualization for analytics dashboards

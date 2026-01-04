@@ -23,6 +23,7 @@ Workflow note:
 - System Constitution (highest authority): DOC/GUIDELINES & SOT/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md
 - System Design Blueprint: DOC/GUIDELINES & SOT/SYSTEM DESIGN/Blueprint.md
 - System Audit Prompt: DOC/GUIDELINES & SOT/SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md
+- Prototype-First Frontend Workflow: DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md
 
 ## Path Alias (Legacy)
 - Any mention of `DOC/Guidelines/*` refers to `DOC/GUIDELINES & SOT/*` (canonical). Treat as the same folder.
@@ -72,11 +73,14 @@ Required additions under `DOC/Features/<Feature Name>/SOT/`:
 - `tasks.md`
 	- Purpose: a **portable execution checklist** that lives with the SOT.
 	- Must link to the repo-wide engineering tracker in `specs/<feature>/tasks.md` if one exists.
+	- Exception (NEW): For **Prototype-First Frontend Workflow** features (Google AI Studio → Frontend UI/UX Prompts), do **NOT** create `DOC/Features/<Feature Name>/SOT/tasks.md`.
+		- Track execution in `DOC/Features/<Feature Name>/MIGRATION/tasks.md` when the work is a prototype-locked migration.
+		- Otherwise track in `specs/<feature>/tasks.md` when using the repo-wide engineering tracker.
 
 Notes:
 - `FEATURE-SOT.md` remains the canonical planning SOT (Phases 0–6).
 - `specs/<feature>/tasks.md` remains the repo-wide engineering execution tracker.
-- The SOT-local `tasks.md` is the continuity-first checklist to prevent context loss.
+- The SOT-local `tasks.md` is the continuity-first checklist to prevent context loss (except Prototype-First Frontend Workflow features).
 
 ---
 
@@ -145,8 +149,119 @@ For **any** `tasks.md` created or updated in this repo (including both locations
 Applies to:
 - `specs/<feature>/tasks.md`
 - `DOC/Features/<Feature Name>/SOT/tasks.md`
+- `DOC/Features/<Feature Name>/MIGRATION/tasks.md` (when a feature has a dedicated `MIGRATION/` execution folder)
+
+Exception (NEW): For **Prototype-First Frontend Workflow** features, `DOC/Features/<Feature Name>/SOT/tasks.md` is intentionally **not created**.
+
+Efficiency rule:
+- Do **not** create extra “results” files (ex: `GATE0-RESULTS.md`) unless explicitly requested.
+- Do **not** re-run gate checks after every small change; run them at meaningful checkpoints (end of a phase / before final validation).
 
 Minimum enforcement:
 - Must use the task ID format (`T###`) and the `[P]` + `[US#]` labeling rules.
 - Must group work by phases and user stories.
 - Must include explicit file paths in task descriptions.
+
+---
+
+## Workflow Enhancement: Prototype-First Frontend (Google AI Studio → Frontend UI/UX Prompts)
+
+This workflow is for frontend features where the UI/UX is first prototyped in **Google AI Studio**, and then converted into a **sequence-locked frontend plan + prompts**.
+
+### Goal
+- Prepare the frontend plan and prompting artifacts in the feature’s **Fontend UI UX Prompts** folder, based on the Google AI Studio prototype, so the entire UI/UX flow is already defined before implementation.
+
+### Canonical Prompting References (Must Use)
+- Prompting SOP: `DOC/PROMPTS/AI PROMPTING/AI Prompting Guideline.md`
+- Frontend plan + prompt template: `DOC/PROMPTS/AI PROMPTING/Template_AIfrontend.md`
+
+### Required Folderization (per feature)
+Each frontend feature must follow the same structure as:
+`DOC/FEATURES/NEWS ENGINE/`
+
+Minimum required folders (keep non-used folders empty until needed):
+- `SOT/` (6-phase framework docs)
+- `Plan/` (created by user at feature start)
+- `GoogleAIStudio UI UX/` (prototype exports)
+- `Fontend UI UX Prompts/` (AI prompt artifacts generated from the prototype)
+- `Audit Report/` (audit reports; append future audits here)
+- `BACKEND PLAN/` (empty until frontend is final)
+
+### Sequence (Strict)
+1) User creates the initial plan in `Plan/`.
+2) AI creates/updates the 6-phase SOT docs under `SOT/`.
+3) User provides/pastes Google AI Studio prototype artifacts into `GoogleAIStudio UI UX/`.
+4) AI generates the prompt artifacts under `Fontend UI UX Prompts/` using `Template_AIfrontend.md` and the prompting SOP.
+
+---
+
+## Prototype-Preserving Migration Contract (Vite Prototype → Next.js)
+
+This section applies when a feature’s UI/UX is already built in a Google AI Studio export (ex: News Engine V6) and we are migrating it into this repo’s Next.js structure.
+
+### Authority
+- The chosen prototype version (e.g., **V6**) is the **UI SOT**: treat it as the authoritative UI/UX spec, not a “concept” or inspiration.
+- The repo’s Next.js architecture, routing, and design-system tokens remain authoritative for structure and styling constraints.
+
+### Goal
+Migrate the prototype into the Next.js app **without changing the UI/UX**:
+- Preserve the same UI composition, layout, triggers, modals, and flows.
+- Adapt only what is required for:
+	- Next.js App Router routing/layout standards
+	- Semantic design tokens/theme compatibility
+
+### Allowed Changes (ONLY)
+- `className` replacement to semantic tokens (and required class-level equivalents)
+- Wrapper/layout adjustments required to render inside the repo’s page layout (e.g., padding/container constraints, overflow handling)
+- Minimal accessibility attribute additions if required for correctness (e.g., missing `aria-label`), without changing UX
+
+### Component Boundary & File Structure (Mandatory)
+When the prototype already has separate files/components (as V6 does), treat that structure as part of the migration contract.
+
+Rules:
+- Mirror the prototype’s component boundaries in the Next.js feature folder (tab = module, modal = module).
+- Keep Next.js route/page files thin (compose/import feature components; avoid embedding whole surfaces inline).
+- Do **not** consolidate multiple tabs + multiple modals into a single “hub mega component” file.
+
+Stop rule:
+> If the next change would add another major surface into an already-large file, stop and mirror/extract using the prototype’s existing file boundaries before continuing.
+
+### Two-Part Migration Strategy (Mandatory)
+To reduce migration risk and prevent “mega PRs”, prototype-origin UI migrations must be executed in **two explicit parts**.
+
+Part 1 — Structural mirror (UI preserved):
+- Mirror the prototype’s file/component boundaries in the Next.js feature folder.
+- Wire all triggers/modals/tabs so the **rendered UI/UX** matches the prototype end-to-end.
+- Keep route/page files thin; hub/orchestrator only.
+
+Part 2 — Design-system compliance (tokenization + class contracts):
+- Replace remaining prototype styling with repo semantic tokens (no hardcoded palette; no `dark:`).
+- Resolve any repo-enforced `className` constraints (e.g., banned utilities) so commits/builds pass.
+- Run the full verification gates and multi-theme checks.
+
+Rule:
+> Do not combine large structural refactors and mass token/class rewrites in the same change unless a blocker forces it.
+
+### Forbidden Changes
+- No redesign, no re-layout, no removing/adding sections
+- No changing table columns, card layouts, labels, iconography, or button placement
+- No renaming actions, tabs, or modifying modal contents/steps
+- No inventing “simplified” substitute UIs (e.g., replacing a Kanban with a list)
+
+### Verification Requirements (Prototype Lock)
+- Verify migrated UI against the prototype export file-by-file:
+	- Same surfaces (tabs/pages)
+	- Same triggers
+	- Same modals
+	- Same control flows (open/close/confirm actions)
+- Verification must be done while keeping the page embedded in the existing app shell (admin sidebar/topbar stays the app’s).
+
+### Standards Requirement (Next.js Integration)
+- Admin UI must render inside the repo’s admin layout/shell; do not embed the prototype’s own sidebar/topbar.
+- Use Next.js App Router routing and the repo’s established layout patterns.
+- Use semantic theme tokens only; do not reintroduce hardcoded palette classes.
+
+### Important Rule Change
+- Do **NOT** create `DOC/Features/<Feature Name>/SOT/tasks.md` for this workflow.
+- Use `specs/<feature>/tasks.md` if/when implementation begins.
+- If the feature has a dedicated execution folder (ex: `DOC/Features/<Feature Name>/MIGRATION/`), the continuity checklist may live in `DOC/Features/<Feature Name>/MIGRATION/tasks.md` instead of SOT.

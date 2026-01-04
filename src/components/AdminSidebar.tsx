@@ -125,6 +125,7 @@ const NavItem: React.FC<{ icon: React.ReactNode; title: string; isActive: boolea
 const AdminSidebar: React.FC<{ activePage?: string }> = ({ activePage = 'Dashboard' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [leadsOpen, setLeadsOpen] = useState(true);
+  const [blogOpen, setBlogOpen] = useState(true);
   return (
     <aside className={`dashboard-sidebar-container ${isCollapsed ? 'dashboard-sidebar-container--collapsed' : 'dashboard-sidebar-container--expanded'}`}>
       <div className="dashboard-sidebar-header">
@@ -157,6 +158,35 @@ const AdminSidebar: React.FC<{ activePage?: string }> = ({ activePage = 'Dashboa
       <nav className={`dashboard-sidebar-nav ${isCollapsed ? 'dashboard-sidebar-nav--collapsed' : 'dashboard-sidebar-nav--expanded'}`}>
         <NavItem icon={<LayoutDashboardIcon />} title="Dashboard" isActive={activePage === 'Dashboard'} onClick={() => { window.location.href = '/admin/dashboard'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<ClipboardListIcon />} title="Leads" isActive={activePage === 'Leads'} onClick={() => { window.location.href = '/admin/leads'; }} isCollapsed={isCollapsed} />
+      <NavItem icon={<FileTextIcon />} title="News Engine" isActive={activePage === 'News Engine'} onClick={() => { window.location.href = '/admin/news-engine'; }} isCollapsed={isCollapsed} />
+
+        {!isCollapsed ? (
+          <button
+            onClick={() => setBlogOpen((prev) => !prev)}
+            className={`dashboard-nav-item dashboard-nav-item--expanded ${activePage === 'Blog' ? 'dashboard-nav-item--active' : ''}`}
+            type="button"
+          >
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center space-x-3">
+                <span className="dashboard-nav-item__icon"><FileTextIcon /></span>
+                <span className="dashboard-nav-item__text">Blog</span>
+              </div>
+              <ChevronDownIcon open={blogOpen} />
+            </div>
+          </button>
+        ) : (
+          <NavItem icon={<FileTextIcon />} title="Blog" isActive={activePage === 'Blog'} onClick={() => { window.location.href = '/admin/blog'; }} isCollapsed={isCollapsed} />
+        )}
+
+        {!isCollapsed && blogOpen ? (
+          <div className="pl-6 space-y-1">
+            <NavItem icon={<FileTextIcon />} title="All Posts" isActive={false} onClick={() => { window.location.href = '/admin/blog'; }} isCollapsed={false} />
+            <NavItem icon={<FileTextIcon />} title="Create Post" isActive={false} onClick={() => { window.location.href = '/admin/blog/new'; }} isCollapsed={false} />
+            <NavItem icon={<FileTextIcon />} title="Categories" isActive={false} onClick={() => { window.location.href = '/admin/blog/categories'; }} isCollapsed={false} />
+            <NavItem icon={<FileTextIcon />} title="Tags" isActive={false} onClick={() => { window.location.href = '/admin/blog/tags'; }} isCollapsed={false} />
+          </div>
+        ) : null}
+
         <NavItem icon={<LayersIcon />} title="Components" isActive={activePage === 'Components'} onClick={() => { window.location.href = '/admin/components'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<MailIcon />} title="Newsletter" isActive={activePage === 'Newsletter'} onClick={() => { window.location.href = '/admin/newsletter'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<CalculatorIcon />} title="Instant Quotes" isActive={activePage === 'Instant Quotes'} onClick={() => { window.location.href = '/admin/instant-quotes'; }} isCollapsed={isCollapsed} />

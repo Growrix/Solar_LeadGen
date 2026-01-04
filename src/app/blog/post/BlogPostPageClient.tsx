@@ -4,18 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
-import Button from '@/components/ui/button';
-import HomeownerSignInModal from '@/components/HomeownerSignInModal';
-import HomeownerSignupModal from '@/components/HomeownerSignupModal';
 import type { Post } from '@/types/blog';
-
-interface Comment {
-  id: number;
-  author: string;
-  avatar: string;
-  text: string;
-  date: string;
-}
 
 // Icon Components
 const ArrowLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
@@ -49,80 +38,58 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-export default function BlogPostPageClient() {
+export default function BlogPostPageClient({
+  initialPost,
+  disableRedirect,
+}: {
+  initialPost?: Post | null;
+  disableRedirect?: boolean;
+}) {
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
-  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [pendingComment, setPendingComment] = useState('');
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      author: 'Alex R.',
-      avatar: 'https://i.pravatar.cc/150?img=1',
-      text: 'Great overview! Really helped clarify the new rebate structure. Thanks for breaking it down so clearly.',
-      date: 'March 15, 2024',
-    },
-    {
-      id: 2,
-      author: 'Brenda M.',
-      avatar: 'https://i.pravatar.cc/150?img=2',
-      text: 'I was on the fence about getting a battery, but this comparison is exactly what I needed. The VPP section was particularly interesting.',
-      date: 'March 11, 2024',
-    },
-  ]);
 
   useEffect(() => {
     // Always scroll to top when this page loads
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 
-    const storedPost = sessionStorage.getItem('currentBlogPost');
-    if (storedPost) {
-      setPost(JSON.parse(storedPost));
+    if (initialPost) {
+      setPost(initialPost);
     } else {
-      router.push('/blog');
-    }
+      const storedPost = sessionStorage.getItem('currentBlogPost');
+      if (!storedPost) {
+        router.push('/blog');
+        return;
+      }
 
-    // Check authentication status from localStorage (same system as dashboard)
-    const checkAuth = () => {
-      const userAuth = localStorage.getItem('homeownerAuth');
-      setIsLoggedIn(userAuth === 'true');
-    };
+      try {
+        const parsed = JSON.parse(storedPost) as Post;
 
-    checkAuth();
+        if (!disableRedirect) {
+          const slug =
+            (parsed?.slug && typeof parsed.slug === 'string' ? parsed.slug : '') ||
+            parsed?.title
+              ?.toLowerCase()
+              .trim()
+              .replace(/['"]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '');
 
-    // Check if there's a pending comment after sign-in/sign-up (from page reload)
-    const pendingCommentFromStorage = sessionStorage.getItem('pendingBlogComment');
-    if (pendingCommentFromStorage && localStorage.getItem('homeownerAuth') === 'true') {
-      // User just signed in and has a pending comment - post it automatically
-      const newCommentObject: Comment = {
-        id: Date.now(),
-        author: 'You',
-        avatar: 'https://i.pravatar.cc/150?img=5',
-        text: pendingCommentFromStorage,
-        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      };
-
-      setComments((prev) => [...prev, newCommentObject]);
-
-      // Clear the pending comment from sessionStorage
-      sessionStorage.removeItem('pendingBlogComment');
-
-      // Scroll to the comment section to show the posted comment
-      setTimeout(() => {
-        const commentSection = document.querySelector('.comments-section');
-        if (commentSection) {
-          commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (slug) {
+            router.replace(`/blog/${slug}`);
+            return;
+          }
         }
-      }, 500);
+
+        setPost(parsed);
+      } catch {
+        router.push('/blog');
+        return;
+      }
     }
 
-    // Listen for storage changes (in case user logs in/out in another tab)
-    window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
-  }, [router]);
+    return;
+  }, [router, initialPost, disableRedirect]);
 
   if (!post) {
     return (
@@ -131,75 +98,6 @@ export default function BlogPostPageClient() {
       </div>
     );
   }
-
-  const handlePostComment = () => {
-    // Check if comment is empty first
-    if (!newComment.trim()) {
-      alert('Please write a comment before posting.');
-      return;
-    }
-
-    // Check if user is logged in
-    const userAuth = localStorage.getItem('homeownerAuth');
-    if (userAuth !== 'true') {
-      // Save the comment temporarily and open sign-in modal
-      setPendingComment(newComment);
-      setIsSignInModalOpen(true);
-      return;
-    }
-
-    // User is authenticated - post the comment
-    const newCommentObject: Comment = {
-      id: Date.now(),
-      author: 'You',
-      avatar: 'https://i.pravatar.cc/150?img=5',
-      text: newComment,
-      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-    };
-
-    setComments((prev) => [...prev, newCommentObject]);
-    setNewComment('');
-  };
-
-  const handleSignInSuccess = () => {
-    setIsSignInModalOpen(false);
-
-    // Set authentication state in localStorage
-    localStorage.setItem('homeownerAuth', 'true');
-
-    // If there's a pending comment, save it to sessionStorage before reload
-    if (pendingComment.trim()) {
-      sessionStorage.setItem('pendingBlogComment', pendingComment);
-    }
-
-    // Force a page reload to update the header and entire app state
-    window.location.reload();
-  };
-
-  const handleSignUpSuccess = () => {
-    setIsSignUpModalOpen(false);
-
-    // Set authentication state in localStorage
-    localStorage.setItem('homeownerAuth', 'true');
-
-    // If there's a pending comment, save it to sessionStorage before reload
-    if (pendingComment.trim()) {
-      sessionStorage.setItem('pendingBlogComment', pendingComment);
-    }
-
-    // Force a page reload to update the header and entire app state
-    window.location.reload();
-  };
-
-  const handleSwitchToSignUp = () => {
-    setIsSignInModalOpen(false);
-    setIsSignUpModalOpen(true);
-  };
-
-  const handleSwitchToSignIn = () => {
-    setIsSignUpModalOpen(false);
-    setIsSignInModalOpen(true);
-  };
 
   const handleBecomePartner = () => router.push('/installer');
   const handlePartnerSignIn = () => router.push('/installer');
@@ -253,23 +151,29 @@ export default function BlogPostPageClient() {
             <div className="prose prose-lg max-w-none space-y-6">
               <p className="text-heading-3 text-muted-foreground">{post.excerpt}</p>
 
-              <p className="text-foreground leading-relaxed">
-                As Australia continues its transition towards a renewable energy future, staying updated on government incentives is crucial for homeowners considering a solar investment. The landscape of rebates and tariffs is constantly evolving, with significant changes implemented at the start of 2024. This guide will walk you through the key updates to ensure you can maximize your savings.
-              </p>
+              {post.content && post.content.trim() ? (
+                <div className="whitespace-pre-wrap text-foreground leading-relaxed">{post.content}</div>
+              ) : (
+                <>
+                  <p className="text-foreground leading-relaxed">
+                    As Australia continues its transition towards a renewable energy future, staying updated on government incentives is crucial for homeowners considering a solar investment. The landscape of rebates and tariffs is constantly evolving, with significant changes implemented at the start of 2024. This guide will walk you through the key updates to ensure you can maximize your savings.
+                  </p>
 
-              <blockquote className="border-l-4 border-primary pl-4 my-6 italic text-foreground">
-                &ldquo;The most significant change is the adjustment to the Small-scale Technology Certificate (STC) calculation, which directly impacts the upfront discount on your system.&rdquo;
-              </blockquote>
+                  <blockquote className="border-l-4 border-primary pl-4 my-6 italic text-foreground">
+                    &ldquo;The most significant change is the adjustment to the Small-scale Technology Certificate (STC) calculation, which directly impacts the upfront discount on your system.&rdquo;
+                  </blockquote>
 
-              <h2 className="text-heading-2 text-foreground mt-8 mb-4">Understanding the STC Deeming Period Reduction</h2>
-              <p className="text-foreground leading-relaxed">
-                Small-scale Technology Certificates (STCs) are a federal government incentive that reduces the initial cost of installing a solar system. The number of STCs you receive is based on your system&apos;s size, your location, and the &quot;deeming period&quot; – the number of years until the scheme ends in 2030.
-              </p>
+                  <h2 className="text-heading-2 text-foreground mt-8 mb-4">Understanding the STC Deeming Period Reduction</h2>
+                  <p className="text-foreground leading-relaxed">
+                    Small-scale Technology Certificates (STCs) are a federal government incentive that reduces the initial cost of installing a solar system. The number of STCs you receive is based on your system&apos;s size, your location, and the &quot;deeming period&quot; – the number of years until the scheme ends in 2030.
+                  </p>
 
-              <h2 className="text-heading-2 text-foreground mt-8 mb-4">State-Based Rebates and Loans</h2>
-              <p className="text-foreground leading-relaxed">
-                While the federal STC scheme is national, several states and territories continue to offer their own incentives. It&apos;s vital to check the specific eligibility criteria for your state, as they often include income thresholds, property valuations, and requirements to use accredited installers.
-              </p>
+                  <h2 className="text-heading-2 text-foreground mt-8 mb-4">State-Based Rebates and Loans</h2>
+                  <p className="text-foreground leading-relaxed">
+                    While the federal STC scheme is national, several states and territories continue to offer their own incentives. It&apos;s vital to check the specific eligibility criteria for your state, as they often include income thresholds, property valuations, and requirements to use accredited installers.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Share Section */}
@@ -299,48 +203,6 @@ export default function BlogPostPageClient() {
                 </p>
               </div>
             </div>
-
-            {/* Comments Section */}
-            <div className="mt-16 comments-section">
-              <h2 className="text-heading-2 text-foreground mb-6">Comments ({comments.length})</h2>
-
-              {/* Comment Form */}
-              <div className="theme-card p-6 mb-8">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write your comment..."
-                  rows={4}
-                  className="form-input w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground"
-                  aria-label="Write a comment"
-                ></textarea>
-                <div className="flex justify-end mt-3">
-                  <Button
-                    onClick={handlePostComment}
-                    variant="primary"
-                    className="px-6 py-2.5 text-body-small"
-                  >
-                    Post Comment
-                  </Button>
-                </div>
-              </div>
-
-              {/* Comments List */}
-              <div className="space-y-8">
-                {comments.map(comment => (
-                  <div key={comment.id} className="theme-card flex items-start gap-4 p-4">
-                    <Image src={comment.avatar} alt={comment.author} width={40} height={40} className="rounded-full flex-shrink-0 mt-1" />
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h5 className="text-foreground">{comment.author}</h5>
-                        <span className="text-caption text-muted-foreground">{comment.date}</span>
-                      </div>
-                      <p className="text-muted-foreground mt-1">{comment.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </article>
       </main>
@@ -352,21 +214,6 @@ export default function BlogPostPageClient() {
         onScrollToRebate={handleScrollToRebate}
         onBlogClick={handleBlogClick}
         onGovernmentNewsClick={handleGovernmentNewsClick}
-      />
-
-      {/* Authentication Modals */}
-      <HomeownerSignInModal
-        isOpen={isSignInModalOpen}
-        onClose={() => setIsSignInModalOpen(false)}
-        onSuccess={handleSignInSuccess}
-        onSwitchToSignUp={handleSwitchToSignUp}
-      />
-
-      <HomeownerSignupModal
-        isOpen={isSignUpModalOpen}
-        onClose={() => setIsSignUpModalOpen(false)}
-        onSuccess={handleSignUpSuccess}
-        onSwitchToSignIn={handleSwitchToSignIn}
       />
     </div>
   );

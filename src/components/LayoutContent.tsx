@@ -365,8 +365,8 @@ export default function LayoutContent({ children }: LayoutContentProps) {
     router.push('/');
   };
 
-  // Check if we're on a guest page (home and all blog pages)
-  const isGuestPage = pathname === '/' || pathname?.startsWith('/blog');
+  // Check if we're on a guest page (home, blog pages, and public news pages)
+  const isGuestPage = pathname === '/' || pathname?.startsWith('/blog') || pathname?.startsWith('/news');
 
   return (
     <>
