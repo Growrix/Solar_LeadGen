@@ -27,7 +27,7 @@ export function ScheduleModal({
       <button
         type="button"
         onClick={() => setPriority(value)}
-        className={`py-2 rounded-lg border transition-all text-body-small uppercase tracking-widest ${
+        className={`py-2 rounded-lg border text-body-small uppercase tracking-widest ${
           active
             ? 'bg-accent text-accent-foreground border-accent shadow-neu-outset'
             : 'bg-background border-border text-muted-foreground hover:bg-surface-hover'
@@ -98,7 +98,7 @@ export function ScheduleModal({
         <div className="p-6 space-y-6">
           <div className="bg-surface p-3 rounded-lg border border-border shadow-neu-inset">
             <p className="text-body-small uppercase tracking-widest text-muted-foreground">Target Story</p>
-            <p className="text-body font-semibold text-foreground truncate mt-1">{item.title}</p>
+            <p className="text-body text-foreground truncate mt-1">{item.title}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -142,7 +142,7 @@ export function ScheduleModal({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TimerOff size={16} className="text-muted-foreground" />
-                <span className="text-body font-semibold text-foreground">Auto-Expiry</span>
+                <span className="text-body text-foreground">Auto-Expiry</span>
               </div>
               <Toggle checked={hasExpiry} onToggle={() => setHasExpiry((v) => !v)} />
             </div>
@@ -164,7 +164,7 @@ export function ScheduleModal({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Pin size={16} className="text-muted-foreground" />
-                <span className="text-body font-semibold text-foreground">Pin as Featured</span>
+                <span className="text-body text-foreground">Pin as Featured</span>
               </div>
               <Toggle checked={isFeatured} onToggle={() => setIsFeatured((v) => !v)} />
             </div>
@@ -179,7 +179,7 @@ export function ScheduleModal({
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2 bg-accent text-accent-foreground rounded-lg text-body font-semibold shadow-neu-outset hover:bg-accent/90 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2 bg-accent text-accent-foreground rounded-lg text-body shadow-neu-outset hover:bg-accent/90 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span className="w-4 h-4 rounded-full border-2 border-accent-foreground/30 border-t-accent-foreground animate-spin" />

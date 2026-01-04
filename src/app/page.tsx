@@ -17,6 +17,7 @@ import FirstQuoteSuccessModal from '../components/homeowner/FirstQuoteSuccessMod
 import OTPVerificationModal from '../components/OTPVerificationModal';
 import Footer from '../components/Footer';
 import BlogSection from '../components/BlogSection';
+import NewsSection from '../components/NewsSection';
 import NewsletterSignup from '../components/NewsletterSignup';
 import type { Post } from '../types/blog';
 
@@ -824,6 +825,11 @@ export default function Home() {
       onSeeAllPostsClick={handleSeeAllBlogPosts}
       onNavigateToPost={handleNavigateToPost}
     />
+  </section>
+
+  {/* News Section */}
+  <section className="w-full py-16 lg:py-24 bg-background">
+    <NewsSection />
   </section>
 
       {/* Newsletter Section */}

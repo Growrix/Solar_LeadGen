@@ -65,7 +65,7 @@ export function DraftsReviewsTabV6({
           <button
             type="button"
             onClick={openManualDraft}
-            className="bg-accent text-background px-4 py-1.5 rounded-lg text-body-small hover:bg-accent-hover shadow-neu-outset transition-all uppercase tracking-widest"
+            className="bg-accent text-background px-4 py-1.5 rounded-lg text-body-small hover:bg-accent-hover shadow-neu-outset transition-colors uppercase tracking-widest"
             aria-label="Create Manual Draft"
           >
             Create Manual Draft
@@ -109,7 +109,7 @@ export function DraftsReviewsTabV6({
                         key={draft.id}
                         type="button"
                         onClick={() => openReviewForItem(draft.id)}
-                        className="bg-background p-4 rounded-xl border border-border shadow-neu-outset hover:shadow-neu-inset hover:border-accent/40 transition-all cursor-pointer text-left w-full mb-3 relative overflow-hidden group"
+                        className="bg-background p-4 rounded-xl border border-border shadow-neu-outset hover:shadow-neu-inset hover:border-accent/40 transition-colors cursor-pointer text-left w-full mb-3 relative overflow-hidden group"
                       >
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-body-small uppercase tracking-wider text-muted-foreground bg-surface px-1.5 py-0.5 rounded">

@@ -176,13 +176,13 @@ export function AutomationLogicTabV6({
     children?: React.ReactNode;
   }) => (
     <div
-      className={`p-5 rounded-xl border transition-all ${
+      className={`p-5 rounded-xl border transition-colors ${
         isActive ? 'bg-background border-accent/20 shadow-neu-outset' : 'bg-surface border-border opacity-80'
       }`}
     >
       <div className="flex justify-between items-start mb-4 gap-4">
         <div className="space-y-1">
-          <h4 className="text-body font-bold text-foreground">{title}</h4>
+          <h4 className="text-body text-foreground">{title}</h4>
           <p className="text-body text-muted-foreground">{description}</p>
         </div>
         <Toggle
@@ -220,7 +220,7 @@ export function AutomationLogicTabV6({
           <ShieldCheck size={20} />
         </div>
         <div className="flex-1">
-          <h3 className="text-body font-bold text-warning">Safety First: Manual Approval Required</h3>
+          <h3 className="text-body text-warning">Safety First: Manual Approval Required</h3>
           <p className="text-body-small text-warning/90 mt-1 leading-relaxed">
             By default, all AI-generated content must be manually approved in the Review queue before going live.
             Automated publishing is currently disabled globally to ensure content quality and factual accuracy.
@@ -266,7 +266,7 @@ export function AutomationLogicTabV6({
                       }}
                       className="w-32 cursor-pointer"
                     />
-                    <span className="text-body font-bold text-brand-accent w-10 text-right">{config.minScore}%</span>
+                    <span className="text-body text-brand-accent w-10 text-right">{config.minScore}%</span>
                   </div>
                 </div>
               </RuleCard>
@@ -325,7 +325,7 @@ export function AutomationLogicTabV6({
                     <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <h4 className={`text-body font-bold ${state.automation.autoPublish ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <h4 className={`text-body ${state.automation.autoPublish ? 'text-foreground' : 'text-muted-foreground'}`}>
                       Direct Auto-Publish
                     </h4>
                     <p className="text-body text-muted-foreground">Publish content immediately without any human review.</p>
@@ -388,13 +388,13 @@ export function AutomationLogicTabV6({
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-body-small uppercase tracking-widest text-muted-foreground">{rule.type}</span>
-                        <h5 className="text-body font-bold text-foreground">{rule.label}</h5>
+                        <h5 className="text-body text-foreground">{rule.label}</h5>
                       </div>
                       <p className="text-body-small text-muted-foreground mt-0.5">{rule.desc}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
-                    <span className="text-body font-bold text-foreground">{rule.value}</span>
+                    <span className="text-body text-foreground">{rule.value}</span>
                     <Toggle
                       active={rule.isActive}
                       onChange={() => {
@@ -502,7 +502,7 @@ export function AutomationLogicTabV6({
                         !slotDraft.endTime ||
                         slotDraft.endTime <= slotDraft.startTime
                       }
-                      className={`flex-1 px-4 py-3 rounded-xl text-body-small uppercase tracking-widest shadow-neu-outset transition-all ${
+                      className={`flex-1 px-4 py-3 rounded-xl text-body-small uppercase tracking-widest shadow-neu-outset transition-colors ${
                         !slotDraft.date ||
                         !slotDraft.startTime ||
                         !slotDraft.endTime ||
@@ -531,14 +531,14 @@ export function AutomationLogicTabV6({
             <div className="pt-6 border-t border-border space-y-4">
               <div className="flex items-center justify-between text-body-small">
                 <span className="text-muted-foreground">Active Automations</span>
-                <span className="font-bold text-success flex items-center gap-1">
+                <span className="text-body-small text-success flex items-center gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                   Healthy
                 </span>
               </div>
               <div className="flex items-center justify-between text-body-small">
                 <span className="text-muted-foreground">Scheduled Today</span>
-                <span className="font-bold text-foreground">8 / 15</span>
+                <span className="text-body-small text-foreground">8 / 15</span>
               </div>
               <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden border border-border shadow-neu-inset">
                 <div className="w-1/2 h-full bg-accent rounded-full" />
@@ -549,7 +549,7 @@ export function AutomationLogicTabV6({
               type="button"
               onClick={saveConfiguration}
               disabled={automationSaved.status === 'saving'}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-foreground text-background rounded-xl font-bold text-body shadow-neu-outset hover:bg-foreground/90 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-foreground text-background rounded-xl text-body shadow-neu-outset hover:bg-foreground/90 transition-colors active:scale-[0.98] disabled:opacity-50"
             >
               {automationSaved.status === 'saving' ? <Loader2 size={18} className="animate-spin" /> : null}
               {automationSaved.status === 'saved' ? <CheckCircle2 size={18} className="text-success" /> : null}

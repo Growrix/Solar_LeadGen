@@ -70,7 +70,7 @@ export function ReviewModalV6({
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-6 py-4 text-body border-b-2 transition-all ${
+      className={`flex items-center gap-2 px-6 py-4 text-body border-b-2 ${
         activeTab === id
           ? 'border-accent text-brand-accent bg-surface'
           : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-surface-hover'
@@ -136,7 +136,7 @@ export function ReviewModalV6({
           <button
             type="button"
             onClick={onClose}
-            className="p-3 text-muted-foreground hover:text-foreground hover:bg-surface rounded-full transition-all"
+            className="p-3 text-muted-foreground hover:text-foreground hover:bg-surface rounded-full"
             aria-label="Close review"
           >
             <X size={24} />
@@ -212,7 +212,7 @@ export function ReviewModalV6({
                       {verifiedSources.map((source) => (
                         <div
                           key={source.ref}
-                          className="p-5 rounded-2xl border border-border bg-background hover:border-accent/40 transition-all group flex items-center justify-between shadow-neu-outset"
+                          className="p-5 rounded-2xl border border-border bg-background hover:border-accent/40 group flex items-center justify-between shadow-neu-outset"
                         >
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted-foreground group-hover:text-brand-accent group-hover:bg-surface-hover transition-colors">
@@ -302,7 +302,7 @@ export function ReviewModalV6({
                         {idx !== historyEvents.length - 1 ? (
                           <div className="absolute left-6 top-10 w-px h-12 bg-border group-hover:bg-accent/30 transition-colors" />
                         ) : null}
-                        <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center text-muted-foreground group-hover:text-brand-accent group-hover:bg-surface-hover transition-all z-10">
+                        <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center text-muted-foreground group-hover:text-brand-accent group-hover:bg-surface-hover z-10">
                           {log.icon}
                         </div>
                         <div className="pt-1.5">
@@ -326,14 +326,14 @@ export function ReviewModalV6({
             <button
               type="button"
               onClick={onReject}
-              className="px-6 py-3 text-body-small text-destructive hover:bg-destructive/10 rounded-2xl transition-all uppercase tracking-widest border border-transparent hover:border-destructive/20"
+              className="px-6 py-3 text-body-small text-destructive hover:bg-destructive/10 rounded-2xl uppercase tracking-widest border border-transparent hover:border-destructive/20"
             >
               Reject
             </button>
             <button
               type="button"
               onClick={onRewrite}
-              className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground bg-surface hover:bg-surface-hover rounded-2xl transition-all uppercase tracking-widest"
+              className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground bg-surface hover:bg-surface-hover rounded-2xl uppercase tracking-widest"
             >
               <RefreshCcw size={16} />
               Request Rewrite
@@ -349,7 +349,7 @@ export function ReviewModalV6({
                 window.setTimeout(() => setIsSaving(false), 1000);
               }}
               disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground border border-border rounded-2xl hover:bg-surface transition-all shadow-neu-outset active:scale-95 disabled:opacity-50 uppercase tracking-widest"
+              className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground border border-border rounded-2xl hover:bg-surface shadow-neu-outset active:scale-95 disabled:opacity-50 uppercase tracking-widest"
             >
               <Save size={18} />
               {isSaving ? 'Saving...' : 'Save as Draft'}
@@ -359,7 +359,7 @@ export function ReviewModalV6({
               type="button"
               onClick={onPublish}
               disabled={isPublished}
-              className={`flex items-center gap-2 px-6 py-3 text-body-small rounded-2xl transition-all uppercase tracking-widest ${
+              className={`flex items-center gap-2 px-6 py-3 text-body-small rounded-2xl uppercase tracking-widest ${
                 isPublished
                   ? 'bg-surface text-muted-foreground cursor-not-allowed border border-border'
                   : 'text-brand-accent bg-surface border border-border hover:bg-surface-hover active:scale-95'
@@ -372,7 +372,7 @@ export function ReviewModalV6({
             <button
               type="button"
               onClick={onApprove}
-              className="flex items-center gap-2 px-10 py-3 bg-foreground text-background rounded-2xl text-body-small shadow-neu-outset hover:opacity-90 transition-all active:scale-[0.98] uppercase tracking-[0.1em]"
+              className="flex items-center gap-2 px-10 py-3 bg-foreground text-background rounded-2xl text-body-small shadow-neu-outset hover:opacity-90 active:scale-[0.98] uppercase tracking-[0.1em]"
             >
               Approve for Scheduling
               <ArrowRight size={18} />

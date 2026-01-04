@@ -89,7 +89,7 @@ export function TestPreviewModal({
                   <button
                     type="button"
                     onClick={() => setSourceType('existing')}
-                    className={`py-2 rounded-md transition-all text-body-small uppercase tracking-widest ${
+                    className={`py-2 rounded-md text-body-small uppercase tracking-widest ${
                       sourceType === 'existing'
                         ? 'bg-surface shadow-neu-outset text-brand-accent'
                         : 'text-muted-foreground hover:text-foreground'
@@ -100,7 +100,7 @@ export function TestPreviewModal({
                   <button
                     type="button"
                     onClick={() => setSourceType('custom')}
-                    className={`py-2 rounded-md transition-all text-body-small uppercase tracking-widest ${
+                    className={`py-2 rounded-md text-body-small uppercase tracking-widest ${
                       sourceType === 'custom'
                         ? 'bg-surface shadow-neu-outset text-brand-accent'
                         : 'text-muted-foreground hover:text-foreground'
@@ -113,7 +113,7 @@ export function TestPreviewModal({
 
               {sourceType === 'existing' ? (
                 <div className="space-y-2">
-                  <label className="text-body text-foreground font-semibold">Select Existing Source</label>
+                  <label className="text-body-small text-foreground">Select Existing Source</label>
                   <select className="w-full px-3 py-2 bg-background border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground">
                     <option>TechCrunch Main Feed</option>
                     <option>Reuters Business</option>
@@ -122,7 +122,7 @@ export function TestPreviewModal({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <label className="text-body text-foreground font-semibold">Target Article URL</label>
+                  <label className="text-body-small text-foreground">Target Article URL</label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
                     <input
@@ -137,7 +137,7 @@ export function TestPreviewModal({
               )}
 
               <div className="space-y-2">
-                <label className="text-body text-foreground font-semibold">Prompt Override Topic (Optional)</label>
+                <label className="text-body-small text-foreground">Prompt Override Topic (Optional)</label>
                 <div className="relative">
                   <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
                   <input
@@ -156,7 +156,7 @@ export function TestPreviewModal({
                 type="button"
                 onClick={handleRunTest}
                 disabled={testState === 'running'}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-accent-foreground rounded-xl text-body font-semibold shadow-neu-outset hover:bg-accent/90 transition-all disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-accent text-accent-foreground rounded-xl text-body-small shadow-neu-outset hover:bg-accent/90 disabled:opacity-50"
               >
                 {testState === 'running' ? (
                   <>
@@ -216,7 +216,7 @@ export function TestPreviewModal({
                     <span>65%</span>
                   </div>
                   <div className="w-full h-2 bg-surface rounded-full overflow-hidden border border-border">
-                    <div className="h-full bg-accent w-[65%] rounded-full transition-all duration-1000" />
+                    <div className="h-full bg-accent w-[65%] rounded-full duration-1000" />
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="h-3 bg-surface rounded w-3/4 animate-pulse" />
@@ -231,7 +231,7 @@ export function TestPreviewModal({
                 <div className="flex items-center justify-between pb-6 border-b border-border">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="text-success" size={20} />
-                    <span className="text-body font-semibold text-foreground">Generation Complete</span>
+                    <span className="text-body-small text-foreground">Generation Complete</span>
                   </div>
                   <div className="flex items-center gap-4 text-body-small uppercase tracking-widest text-muted-foreground">
                     <span>Model: Gemini 3 Pro</span>
@@ -280,20 +280,20 @@ export function TestPreviewModal({
           </button>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              disabled={testState !== 'completed'}
-              onClick={onSimulatePublish}
-              className="px-6 py-2 text-body font-semibold text-foreground bg-background border border-border rounded-lg hover:bg-surface-hover transition-all shadow-neu-outset disabled:opacity-50"
-            >
+              <button
+                type="button"
+                disabled={testState !== 'completed'}
+                onClick={onSimulatePublish}
+                className="px-6 py-2 text-body-small text-foreground bg-background border border-border rounded-lg hover:bg-surface-hover shadow-neu-outset disabled:opacity-50"
+              >
               Simulate Publish
             </button>
-            <button
-              type="button"
-              disabled={testState !== 'completed'}
-              onClick={onSaveToDrafts}
-              className="flex items-center gap-2 px-8 py-2 bg-foreground text-background rounded-xl text-body font-semibold shadow-neu-outset hover:opacity-95 transition-all disabled:opacity-50"
-            >
+              <button
+                type="button"
+                disabled={testState !== 'completed'}
+                onClick={onSaveToDrafts}
+                className="flex items-center gap-2 px-8 py-2 bg-foreground text-background rounded-xl text-body-small shadow-neu-outset hover:opacity-95 disabled:opacity-50"
+              >
               <FileText size={18} />
               Save to Drafts
             </button>

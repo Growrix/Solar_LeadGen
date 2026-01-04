@@ -7,15 +7,16 @@ Purpose: prevent false “done” claims by listing the route → component tree
 ### `/news`
 - [ ] Route entry: `src/app/news/page.tsx`
 - [ ] Child components used directly:
-  - [ ] `src/components/Button.tsx`
+  - [ ] `src/components/Footer.tsx`
 - [ ] Data/state helpers:
   - [ ] `src/lib/ui-stubs/news-engine.ts`
 
 ### `/news/[slug]`
 - [ ] Route entry: `src/app/news/[slug]/page.tsx`
 - [ ] Child components used directly:
-  - [ ] `src/components/Button.tsx`
-  - [ ] Inline component: `ShareModal` (declared inside the route file)
+  - [ ] `src/components/Footer.tsx`
+  - [ ] `src/components/ui/button.tsx`
+  - [ ] Share modal is inline (declared inside the route file)
 - [ ] Data/state helpers:
   - [ ] `src/lib/ui-stubs/news-engine.ts`
 

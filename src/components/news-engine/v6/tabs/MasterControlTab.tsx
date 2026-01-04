@@ -186,7 +186,7 @@ export function MasterControlTabV6({
               type="button"
               onClick={openResumeConfirmation}
               disabled={pipelineStatus === 'NOMINAL'}
-              className="flex items-center gap-2 px-6 py-3 bg-background text-foreground rounded-xl text-body font-bold hover:bg-surface-hover transition-all active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-background text-foreground rounded-xl text-body hover:bg-surface-hover transition-colors active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <PlayCircle size={20} className="text-foreground" />
               Resume All
@@ -196,7 +196,7 @@ export function MasterControlTabV6({
               type="button"
               onClick={openPauseConfirmation}
               disabled={pipelineStatus !== 'NOMINAL'}
-              className="flex items-center gap-2 px-6 py-3 bg-surface text-foreground rounded-xl text-body font-bold hover:bg-surface-hover transition-all active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-surface text-foreground rounded-xl text-body hover:bg-surface-hover transition-colors active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <PauseCircle size={20} className="text-foreground" />
               Pause Pipeline
@@ -206,7 +206,7 @@ export function MasterControlTabV6({
               type="button"
               onClick={openEmergencyStopConfirmation}
               disabled={pipelineStatus === 'EMERGENCY_STOP'}
-              className="flex items-center gap-2 px-6 py-3 bg-destructive text-destructive-foreground rounded-xl text-body font-bold hover:bg-destructive/90 transition-all active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-destructive text-destructive-foreground rounded-xl text-body hover:bg-destructive/90 transition-colors active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShieldAlert size={20} className="text-destructive-foreground" />
               Emergency Stop
@@ -238,13 +238,13 @@ export function MasterControlTabV6({
             {features.map((feature) => (
               <div
                 key={feature.id}
-                className={`p-5 rounded-xl border border-border transition-all bg-background shadow-neu-outset hover:shadow-neu-inset ${
+                className={`p-5 rounded-xl border border-border transition-colors bg-background shadow-neu-outset hover:shadow-neu-inset ${
                   !feature.isActive ? 'opacity-80' : ''
                 }`}
               >
                 <div className="flex justify-between items-start mb-4 gap-4">
                   <div className="space-y-1">
-                    <h4 className="text-body font-bold text-foreground">{feature.name}</h4>
+                    <h4 className="text-body text-foreground">{feature.name}</h4>
                     <p className="text-body-small text-muted-foreground leading-relaxed">{feature.description}</p>
                   </div>
 
@@ -291,7 +291,7 @@ export function MasterControlTabV6({
           <div className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden divide-y divide-border">
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-body font-semibold text-muted-foreground">Human Checkpoint</span>
+                <span className="text-body text-muted-foreground">Human Checkpoint</span>
                 <span className="text-body-small uppercase tracking-widest text-success bg-success/10 px-2 py-0.5 rounded border border-success/20">
                   Enforced
                 </span>
@@ -303,7 +303,7 @@ export function MasterControlTabV6({
 
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-body font-semibold text-muted-foreground">Rate Limiting</span>
+                <span className="text-body text-muted-foreground">Rate Limiting</span>
                 <span className="text-body-small uppercase tracking-widest text-brand-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20">
                   Nominal
                 </span>
@@ -316,7 +316,7 @@ export function MasterControlTabV6({
 
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-body font-semibold text-muted-foreground">Safety Filters</span>
+                <span className="text-body text-muted-foreground">Safety Filters</span>
                 <span className="text-body-small uppercase tracking-widest text-success bg-success/10 px-2 py-0.5 rounded border border-success/20">
                   Active
                 </span>

@@ -83,7 +83,7 @@ export function RewriteModal({
         <div className="p-6 space-y-6">
           <div className="bg-accent/10 p-3 rounded-xl border border-accent/20 shadow-neu-inset">
             <p className="text-body-small uppercase tracking-widest text-muted-foreground">Target Draft</p>
-            <p className="text-body font-semibold text-foreground truncate mt-1">{item.title}</p>
+            <p className="text-body text-foreground truncate mt-1">{item.title}</p>
           </div>
 
           <div className="space-y-2">
@@ -97,7 +97,7 @@ export function RewriteModal({
                 if (error) setError('');
               }}
               placeholder="Tell the AI what needs to change (e.g., 'Make it more professional and focus more on the economic impact')..."
-              className={`w-full h-28 px-4 py-3 bg-background border rounded-xl text-body focus:outline-none focus:ring-2 transition-all resize-none text-foreground placeholder:text-muted-foreground ${
+              className={`w-full h-28 px-4 py-3 bg-background border rounded-xl text-body focus:outline-none focus:ring-2 resize-none text-foreground placeholder:text-muted-foreground ${
                 error ? 'border-destructive focus:ring-destructive/10' : 'border-border focus:ring-accent/20'
               }`}
             />
@@ -136,7 +136,7 @@ export function RewriteModal({
                     key={option}
                     type="button"
                     onClick={() => toggleFocusArea(option)}
-                    className={`px-3 py-1.5 rounded-full border transition-all text-body-small ${
+                    className={`px-3 py-1.5 rounded-full border text-body-small ${
                       active
                         ? 'bg-accent text-accent-foreground border-accent shadow-neu-outset'
                         : 'bg-background border-border text-muted-foreground hover:bg-surface-hover'
@@ -158,7 +158,7 @@ export function RewriteModal({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2 bg-accent text-accent-foreground rounded-xl text-body font-semibold shadow-neu-outset hover:bg-accent/90 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2 bg-accent text-accent-foreground rounded-xl text-body shadow-neu-outset hover:bg-accent/90 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span className="w-4 h-4 rounded-full border-2 border-accent-foreground/30 border-t-accent-foreground animate-spin" />

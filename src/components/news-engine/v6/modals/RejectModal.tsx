@@ -85,7 +85,7 @@ export function RejectModal({
         <div className="p-6 space-y-6">
           <div className="bg-destructive/10 p-4 rounded-xl border border-destructive/20 shadow-neu-inset">
             <p className="text-body-small uppercase tracking-widest text-muted-foreground">Permanently Rejecting</p>
-            <p className="text-body font-semibold text-foreground truncate mt-1">{item.title}</p>
+            <p className="text-body text-foreground truncate mt-1">{item.title}</p>
           </div>
 
           <div className="space-y-3">
@@ -100,7 +100,7 @@ export function RejectModal({
                     key={cat}
                     type="button"
                     onClick={() => toggleCategory(cat)}
-                    className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border text-left ${
                       active
                         ? 'bg-destructive/10 border-destructive/20 text-destructive'
                         : 'bg-background border-border text-muted-foreground hover:bg-surface-hover'
@@ -127,7 +127,7 @@ export function RejectModal({
               onChange={(e) => setReason(e.target.value)}
               onBlur={() => setTouched(true)}
               placeholder="Provide specific feedback on why this draft is being rejected..."
-              className={`w-full h-24 px-4 py-3 bg-background border rounded-xl text-body focus:outline-none focus:ring-2 transition-all resize-none text-foreground placeholder:text-muted-foreground ${
+              className={`w-full h-24 px-4 py-3 bg-background border rounded-xl text-body focus:outline-none focus:ring-2 resize-none text-foreground placeholder:text-muted-foreground ${
                 touched && !isFormValid
                   ? 'border-destructive focus:ring-destructive/10'
                   : 'border-border focus:ring-accent/20'
@@ -149,7 +149,7 @@ export function RejectModal({
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting || !isFormValid}
-            className={`flex items-center gap-2 px-6 py-2 rounded-xl text-body font-semibold shadow-neu-outset transition-all disabled:opacity-50 ${
+            className={`flex items-center gap-2 px-6 py-2 rounded-xl text-body shadow-neu-outset disabled:opacity-50 ${
               isFormValid ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : 'bg-border text-muted-foreground'
             }`}
           >

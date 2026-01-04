@@ -88,7 +88,7 @@ export function DashboardTabV6({
         ].map((kpi) => (
           <div
             key={kpi.label}
-            className="bg-surface p-6 rounded-xl border border-border shadow-neu-outset transition-all hover:shadow-neu-inset"
+            className="bg-surface p-6 rounded-xl border border-border shadow-neu-outset transition-colors hover:shadow-neu-inset"
           >
             <div className="flex justify-between items-start mb-4">
               <div className="p-2 bg-background rounded-lg text-brand-accent shadow-neu-inset">{kpi.icon}</div>
@@ -113,7 +113,7 @@ export function DashboardTabV6({
             <input
               type="text"
               placeholder="Search articles, summaries or categories..."
-              className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all text-body text-foreground"
+              className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-colors text-body text-foreground"
               value={dashboardSearchTerm}
               onChange={(e) => setDashboardSearchTerm(e.target.value)}
             />
@@ -122,7 +122,7 @@ export function DashboardTabV6({
           <button
             type="button"
             onClick={clearDashboardFilters}
-            className={`flex items-center gap-1.5 text-body-small px-3 py-2 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 text-body-small px-3 py-2 rounded-lg transition-colors ${
               hasActiveDashboardFilters
                 ? 'text-brand-accent bg-background hover:bg-surface-hover'
                 : 'text-muted-foreground bg-background cursor-not-allowed opacity-50'

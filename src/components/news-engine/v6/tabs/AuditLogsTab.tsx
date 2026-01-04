@@ -155,7 +155,7 @@ export function AuditLogsTabV6({ auditLogs, openPromptDetails, openLogDetails, d
                       {formatDateTime(log.timestamp)}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-foreground">{log.action}</span>
+                      <span className="text-body text-foreground">{log.action}</span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -176,7 +176,7 @@ export function AuditLogsTabV6({ auditLogs, openPromptDetails, openLogDetails, d
                         <button
                           type="button"
                           onClick={() => openPromptDetails(log)}
-                          className="p-2 text-muted-foreground hover:text-brand-accent bg-surface hover:bg-background rounded-lg transition-all"
+                          className="p-2 text-muted-foreground hover:text-brand-accent bg-surface hover:bg-background rounded-lg transition-colors"
                           title="View Prompt Details"
                           aria-label="View Prompt Details"
                         >
@@ -186,7 +186,7 @@ export function AuditLogsTabV6({ auditLogs, openPromptDetails, openLogDetails, d
                         <button
                           type="button"
                           onClick={() => openLogDetails(log)}
-                          className="p-2 text-muted-foreground hover:text-foreground bg-surface hover:bg-background rounded-lg transition-all"
+                          className="p-2 text-muted-foreground hover:text-foreground bg-surface hover:bg-background rounded-lg transition-colors"
                           title="View Log Details"
                           aria-label="View Log Details"
                         >

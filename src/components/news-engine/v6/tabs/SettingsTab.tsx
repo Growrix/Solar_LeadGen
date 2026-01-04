@@ -58,7 +58,7 @@ export function SettingsTabV6({ state, setState, settingsSaved }: Props) {
   }) => (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="space-y-0.5">
-        <p className="text-body font-semibold text-foreground">{label}</p>
+        <p className="text-body text-foreground">{label}</p>
         {description ? <p className="text-body-small text-muted-foreground">{description}</p> : null}
       </div>
       <div className="flex-shrink-0">{children}</div>
@@ -215,7 +215,7 @@ export function SettingsTabV6({ state, setState, settingsSaved }: Props) {
               }}
               className="w-48 h-1.5 bg-surface rounded-lg appearance-none cursor-pointer"
             />
-            <span className="text-body font-bold text-brand-accent w-12 text-right">{dedupSensitivity}%</span>
+            <span className="text-body text-brand-accent w-12 text-right">{dedupSensitivity}%</span>
           </div>
         </SettingRow>
 
@@ -299,7 +299,7 @@ export function SettingsTabV6({ state, setState, settingsSaved }: Props) {
           type="button"
           onClick={saveConfiguration}
           disabled={settingsSaved.status === 'saving'}
-          className="flex items-center gap-2 px-8 py-2.5 bg-foreground text-background rounded-xl font-bold text-body shadow-neu-outset hover:bg-foreground/90 transition-all active:scale-[0.98] disabled:opacity-50"
+          className="flex items-center gap-2 px-8 py-2.5 bg-foreground text-background rounded-xl text-body shadow-neu-outset hover:bg-foreground/90 transition-colors active:scale-[0.98] disabled:opacity-50"
         >
           {settingsSaved.status === 'saving' ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           {settingsSaved.status === 'saved' ? 'Saved' : 'Save Configuration'}

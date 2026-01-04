@@ -4624,5 +4624,116 @@ The Goal is to finalzile the UI ux and plan the backend further in the next pahs
  --------------------------------------------------------------------------------
 
  here is the enhancement plan created by you D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\UX-FINE-TUNING-PLAN-2026-01-03.md . As I will do the further UI UX enhancement based on this plan, and also with do the furhter development/enhencement here in vs code and will not use the google ai studio now. But I need the similar kind of prompts as per this  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING . You have to prepare the prompts accordingly based on this enhancement plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+--------------------------------------------------------------------------------------
+
+Now Lets Build the Public pages , post page for this New Engine . Your job is to plan the frontend UI UX based on the current state of this site. E.g The Homepage does not have this section , so we need to create the section and then rotue the News Page and post pages. I will build the UI UX here in vs code using co-pilot . SO I need the detailed frontend plan for the public pages in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ --------------------------------------------------------------------------------
+
+ forget about commit push now, focus on implimentations. finish all the steps first. I have checked your initial build of the Latest News Section in the homepage. Which is poor UI . You can follow the Blog Setion in this case and use similar UI style and also UI classes. The news page, post page, share modal are also poor. It donent look like modern . it is more like unfinished. 
+
+ You should have followed the prompts for the UI . Maybe You did not follow that , instead follewd the requirements I think. 
+
+ ***Instructions*** 
+ I wated to build the UI here to save time instead of building UI UX in google ai studio. but it is dissappointing. you should focus on UI UX deeply here. If needed , enhance the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-plan-public-v2-2026-01-03.md  . And instruct AI to follow the UI UX prompts exactly on each steps. 
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ ---------------------------------------------------------------------------------
+
+ I want you to prepare a UI UX plan for the Public page and post page for the News Feature. Follow the prompt D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Frontend Planning Prompt.md strictly and create the plan in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder By following the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_Comprehensive_UI UX.md template strictly. After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
 
   ***Strickt Rules***
+
+
+
+  Now I am fixing my workflow . At the begenning I always share my initial plan > Generate 6 phase SOT folder files > Build the prototype with google ai studio > Prepare the frontend plan based on the prototype in the Frontend UI UX Prompts folder > Build the frontend based on the frontend plan > Prepare the backend plan based on the final UI UX flow in the Backend Plan folder > Build the backend based on the backend plan. 
+
+
+***Phase 1 : Building SOT***
+  - Here is my Initial Plan : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Plan\CHatGPT.md
+  - Prepare the 6 phase SOT folder files in 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT as per the 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file . 
+
+***Phase 2 : Frontend Planning***
+- Here is the front end plan based on 6 phase SOT : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md
+- Based on this frontend plan , Prepare the frontend UI UX prompts in
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder by following the :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\AI Prompting Guideline.md Instructions. 
+- The Outcome should be followed by This : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_Comprehensive_UI UX.md
+
+  -----------------------------------------------------------------
+
+  I want you to follow the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-plan-public.md and build the public frontend here in vs code followed by Step 1 of 6 — Public News Listing Page in the plan. only follow the prompts strictly which building each step by step. 
+  - Keep in mind that you are rebuilding these pages here in vs code based on the prompts. not using google ai studio now. So there are alredy existing files that were created earlier in this project. So you need to override those files accordingly based on the prompts. audit back the existing files and then override accordingly. Understand the clear picture first then start implimenting. 
+
+  ------------------------------------------------------------------------------
+
+  ***Frontend Migration Workflow***
+  - Here is the prototype we built with google ai studio :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V6
+ 
+  - Follow the file instructions strictly while preparing the migration plan
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\FRONTEND-PROTOTYPE-WORKFLOW\README.md .
+
+   - Create the Migration plan in the :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\MIGRATION.
+
+  - Based on the Migration plan that you have created , Prepare the tasks.md file in the Migration folder as well followed by the template : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\.specify\templates\tasks-template.md
+
+
+
+***Frontend Migration Workflow***
+  1. CONTEXT
+You are migrating a Google AI Studio prototype (V6) to the production Next.js codebase for the NEWS ENGINE feature. The migration must strictly follow the project’s prototype-first, SOT-driven workflow and all documentation standards.
+
+2. WORKFLOW STEPS
+Prototype Reference
+
+Use the finalized prototype:
+DOC/FEATURES/NEWS ENGINE/GoogleAIStudio UI UX/ai-news-engine-admin- V6
+This prototype is the UI SOT (Source of Truth) for migration.
+Migration Plan Preparation
+
+Strictly follow:
+DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md
+Reference the migration playbook:
+DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/PROTOTYPE-TO-NEXTJS-OPTION-A-PLAYBOOK.md
+Create a detailed migration plan in:
+DOC/FEATURES/NEWS ENGINE/MIGRATION/
+Task Tracking
+
+Prepare tasks.md in the MIGRATION folder using:
+tasks-template.md
+Do NOT create a tasks.md in the SOT folder for prototype-driven frontend features.
+Verification & Documentation
+
+After migration, run all verification gates (typecheck, build, theme checks, etc.) as per the migration contract.
+Document verification results in the MIGRATION folder.
+Update DOC/FEATURES/NEWS ENGINE/SOT/README.md to reflect migration status, deviations, and lessons learned.
+SOT & Documentation Compliance
+
+Ensure all SOT/README and index files are updated to reflect the new workflow and any changes.
+All folderization and file creation must match the structure in DOC/FEATURES/NEWS ENGINE.
+3. ENHANCEMENT RULES
+Explicitly reference the migration playbook in all migration plans.
+SOT/README must be updated after migration to maintain a single source of truth.
+All verification steps must be documented and results stored in the MIGRATION folder.
+Remove any instruction to create tasks.md in SOT for prototype-driven frontend features.
+Ensure all documentation and plans are traceable, auditable, and compliant with the latest workflow.
+4. SUCCESS CRITERIA
+Migration plan and tasks.md exist in the MIGRATION folder, not SOT.
+All steps reference the prototype, workflow README, and migration playbook.
+SOT/README and index files are updated post-migration.
+Verification results are documented.
+No redundant or conflicting instructions remain in the guidelines.

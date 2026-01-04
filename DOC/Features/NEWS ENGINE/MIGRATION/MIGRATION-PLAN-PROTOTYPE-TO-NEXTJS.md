@@ -32,6 +32,17 @@ Output: Next.js UI that matches V6 end-to-end in **behavior and structure** (aft
 
 **Status**: Draft (Plan)
 
+---
+
+## Execution Scope (Current Run)
+
+Per latest instruction, this execution is scoped to **public News only**:
+- `/news` (listing)
+- `/news/[slug]` (details)
+- Share modal (Copy Link)
+
+This plan may include additional admin-related notes for completeness, but they are **not to be executed** as part of this scoped run.
+
 **Purpose**
 You already finalized the UI/UX flow in the Google AI Studio prototype, but:
 - It is not semantic to the repo’s neumorphic theme system.
@@ -55,6 +66,9 @@ This plan defines how to migrate the prototype into the real Next.js app **witho
 - Admin frontend plan: `DOC/FEATURES/NEWS ENGINE/Fontend UI UX Prompts/frontend-plan-admin.md`
 - Public frontend plan: `DOC/FEATURES/NEWS ENGINE/Fontend UI UX Prompts/frontend-plan-public.md`
 - Prototype export(s): `DOC/FEATURES/NEWS ENGINE/GoogleAIStudio UI UX/*` (**UI SOT**; use the chosen authoritative version only)
+
+### Migration playbook (explicit reference)
+- Option A playbook: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/PROTOTYPE-TO-NEXTJS-OPTION-A-PLAYBOOK.md`
 
 ---
 

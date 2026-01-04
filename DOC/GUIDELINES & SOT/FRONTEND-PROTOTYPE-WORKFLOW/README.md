@@ -4,7 +4,7 @@ This workflow is used when the UI/UX is first finalized in **Google AI Studio**,
 
 ## Canonical References (Must Read)
 - Prompting SOP: `DOC/PROMPTS/AI PROMPTING/AI Prompting Guideline.md`
-- Prompt Template (Strict): `DOC/PROMPTS/AI PROMPTING/Template_AIfrontend.md`
+- Prompt Template (Strict): `DOC/PROMPTS/AI PROMPTING/Template_Comprehensive_UI UX.md`
 - Reference folderization: `DOC/FEATURES/NEWS ENGINE/`
 
 ## Required Folderization (Per Feature)

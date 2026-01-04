@@ -62,7 +62,7 @@ export function AuditLogDetailsModal({ log, onClose }: Props) {
 
           <div className="space-y-2">
             <p className="text-body-small text-muted-foreground uppercase tracking-widest">Action</p>
-            <p className="text-body text-foreground font-semibold">{log.action}</p>
+            <p className="text-body text-foreground">{log.action}</p>
           </div>
 
           <div className="space-y-2">

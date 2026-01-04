@@ -4,6 +4,17 @@ description: "Task list for News Engine migration execution"
 
 # Tasks: NEWS ENGINE — Prototype → Next.js Migration
 
+## Execution Scope Override (Current Run)
+
+Per latest instruction, the only migration scope for this run is:
+- Public News Listing Page: `/news`
+- Public News Details Page: `/news/[slug]`
+- Share modal (Copy Link)
+
+Notes:
+- Existing admin migration tasks below are preserved for record/continuity, but they are **out of scope for this run**.
+- Do not start admin tasks unless explicitly re-approved in a separate scope instruction.
+
 **Input**:
 - `DOC/FEATURES/NEWS ENGINE/MIGRATION/MIGRATION-PLAN-PROTOTYPE-TO-NEXTJS.md`
 - `DOC/FEATURES/NEWS ENGINE/SOT/Frontend-Plan.md`
@@ -115,6 +126,25 @@ Authoritative prototype folder:
 - [x] T011 [US3] Implement public details route at `src/app/news/[slug]/page.tsx` per `DOC/FEATURES/NEWS ENGINE/SOT/Frontend-Plan.md`
 - [x] T012 [US3] Implement Share/Copy Link modal behavior inside `src/app/news/[slug]/page.tsx` (or extracted component if already established)
 - [x] T013 [US3] Verify semantic-token compliance for public routes (no `dark:*`, no hardcoded colors/typography) across the full component tree
+- [x] T013a [US3] Run verification scan on `src/app/news/page.tsx` (hardcoded colors, `dark:*`, rgb/hex, hardcoded white/black, raw typography, manual responsive classes)
+- [x] T013b [US3] Run verification scan on `src/app/news/[slug]/page.tsx` (same checks)
+- [x] T013c [US3] Run verification scan on public route dependencies: `src/components/Footer.tsx`, `src/components/ui/button.tsx`, `src/lib/ui-stubs/news-engine.ts` (only for checks that apply)
+
+### Verification Note (Avoid False Positives)
+
+The repo-wide “manual responsive classes” scan is meant to catch **responsive text sizing** (e.g., `md:text-sm`) and should not block on **alignment utilities** like `lg:text-right`.
+
+If you run the raw regex `sm:text-|md:text-|lg:text-`, it will also match alignment utilities.
+
+Preferred scan for responsive typography only:
+```powershell
+# Responsive text sizing only (catches md:text-sm, lg:text-xl, etc.)
+Select-String -Path "src\app\news\page.tsx" -Pattern "(sm|md|lg):text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)"
+Select-String -Path "src\app\news\[slug]\page.tsx" -Pattern "(sm|md|lg):text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)"
+```
+
+Allowed:
+- `lg:text-right`, `md:text-center`, etc. (alignment)
 - [ ] T014 [US3] Manual theme checks: Dark/Light/Purple for `/news` and `/news/[slug]`
 - [ ] T015 [US3] Manual responsive checks: 320 / 375 / 768 / 1024 / 1440 for `/news` and `/news/[slug]`
 - [ ] T016 [US3] Manual a11y checks: keyboard navigation + focus + contrast + ARIA labels where needed
@@ -189,14 +219,46 @@ Note:
 
 ---
 
+
 ## Phase 6: Migration Verification + Build Validation (Cross-Cutting)
 
 **Purpose**: Enforce zero hardcoded styling + multi-theme + build safety.
 
-- [x] T029 [US6] Run full verification command set (6 commands) against News Engine page files and their child components (no hardcoded colors, no `dark:*`, no hardcoded typography)
-- [x] T030 [US6] Confirm component-tree verification is complete (no unscanned children)
-- [x] T031 [US6] Re-run `npx tsc --noEmit` (FINAL ONLY)
-- [x] T032 [US6] Re-run `npm run build` (FINAL ONLY)
+### Phase 6 Token Compliance Checklist (per component-dependency-tree-checklist.md)
+
+- [ ] T029a [US6] Verify `/news` page: `src/app/news/page.tsx`
+- [ ] T029b [US6] Verify `/news/[slug]` page: `src/app/news/[slug]/page.tsx`
+- [ ] T029c [US6] Verify Footer: `src/components/Footer.tsx`
+- [ ] T029d [US6] Verify Button: `src/components/ui/button.tsx`
+- [ ] T029e [US6] Verify news-engine stub: `src/lib/ui-stubs/news-engine.ts`
+
+- [ ] T029f [US6] Verify `/admin/news-engine` page: `src/app/admin/news-engine/page.tsx`
+- [ ] T029g [US6] Verify AdminNewsEngineHub: `src/components/news-engine/AdminNewsEngineHub.tsx`
+- [ ] T029h [US6] Verify DashboardTabV6: `src/components/news-engine/v6/tabs/DashboardTab.tsx`
+- [ ] T029i [US6] Verify DraftsReviewsTabV6: `src/components/news-engine/v6/tabs/DraftsReviewsTab.tsx`
+- [ ] T029j [US6] Verify AuditLogsTabV6: `src/components/news-engine/v6/tabs/AuditLogsTab.tsx`
+- [ ] T029k [US6] Verify MasterControlTabV6: `src/components/news-engine/v6/tabs/MasterControlTab.tsx`
+- [ ] T029l [US6] Verify AutomationLogicTabV6: `src/components/news-engine/v6/tabs/AutomationLogicTab.tsx`
+- [ ] T029m [US6] Verify SourcesTabV6: `src/components/news-engine/v6/tabs/SourcesTab.tsx`
+- [ ] T029n [US6] Verify SettingsTabV6: `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+
+- [ ] T029o [US6] Verify ReviewModalV6: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+- [ ] T029p [US6] Verify ManualDraftModalV6: `src/components/news-engine/v6/modals/ManualDraftModal.tsx`
+- [ ] T029q [US6] Verify ScheduleModal: `src/components/news-engine/v6/modals/ScheduleModal.tsx`
+- [ ] T029r [US6] Verify RewriteModal: `src/components/news-engine/v6/modals/RewriteModal.tsx`
+- [ ] T029s [US6] Verify RejectModal: `src/components/news-engine/v6/modals/RejectModal.tsx`
+- [ ] T029t [US6] Verify TestPreviewModal: `src/components/news-engine/v6/modals/TestPreviewModal.tsx`
+- [ ] T029u [US6] Verify AddEditSourceModal: `src/components/news-engine/v6/modals/AddEditSourceModal.tsx`
+- [ ] T029v [US6] Verify PromptDetailsModal: `src/components/news-engine/v6/modals/PromptDetailsModal.tsx`
+- [ ] T029w [US6] Verify ConfirmationModal: `src/components/news-engine/v6/modals/ConfirmationModal.tsx`
+
+- [ ] T029x [US6] Verify shared primitives: `src/components/news-engine/v6/shared.tsx`
+- [ ] T029y [US6] Verify shared Button: `src/components/Button.tsx`
+- [ ] T029z [US6] Verify news-engine data helpers: `src/lib/ui-stubs/news-engine.ts`
+
+- [ ] T030 [US6] Confirm component-tree verification is complete (no unscanned children)
+- [ ] T031 [US6] Re-run `npx tsc --noEmit` (FINAL ONLY)
+- [ ] T032 [US6] Re-run `npm run build` (FINAL ONLY)
 
 **Checkpoint**: Migration-safe deliverable.
 

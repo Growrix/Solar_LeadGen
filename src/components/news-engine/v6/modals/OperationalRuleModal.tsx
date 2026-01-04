@@ -152,7 +152,7 @@ export function OperationalRuleModal({ onClose, onSave }: Props) {
 
           <div className="pt-2 border-t border-border flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-body font-semibold text-foreground">Active</p>
+              <p className="text-body text-foreground">Active</p>
               <p className="text-body-small text-muted-foreground">Inactive rules remain visible but do not apply.</p>
             </div>
             <Toggle checked={isActive} onToggle={() => setIsActive((v) => !v)} />

@@ -131,7 +131,7 @@ export function ConfirmationModal({
                 type="text"
                 value={typed}
                 onChange={(e) => setTyped(e.target.value)}
-                className={`w-full px-4 py-3 bg-background border rounded-xl text-center text-body focus:outline-none transition-all placeholder:text-muted-foreground ${
+                className={`w-full px-4 py-3 bg-background border rounded-xl text-center text-body focus:outline-none placeholder:text-muted-foreground ${
                   typed === requiredText ? 'border-success focus:ring-2 focus:ring-success/10' : 'border-border focus:ring-2 focus:ring-accent/20'
                 }`}
                 placeholder="Type here..."
@@ -152,7 +152,7 @@ export function ConfirmationModal({
             type="button"
             onClick={handleConfirm}
             disabled={isConfirmDisabled}
-            className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-body-small uppercase tracking-widest shadow-neu-outset transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-body-small uppercase tracking-widest shadow-neu-outset ${
               isConfirmDisabled ? 'bg-border text-muted-foreground shadow-none cursor-not-allowed' : `${theme.ctaClass} hover:opacity-95`
             }`}
           >

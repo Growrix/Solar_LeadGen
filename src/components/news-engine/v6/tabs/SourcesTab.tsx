@@ -120,7 +120,7 @@ export function SourcesTabV6({
             setEditingSourceId(null);
             setSourceModalOpen(true);
           }}
-          className="flex items-center gap-2 bg-accent text-background px-4 py-2 rounded-lg hover:bg-accent-hover shadow-neu-outset transition-all"
+          className="flex items-center gap-2 bg-accent text-background px-4 py-2 rounded-lg hover:bg-accent-hover shadow-neu-outset transition-colors"
         >
           <Plus size={20} />
           Add Source
@@ -451,7 +451,7 @@ export function SourcesTabV6({
                   sourcesSaved.trigger();
                 }}
                 disabled={sourcesSaved.status === 'saving'}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-foreground text-background rounded-lg text-body hover:opacity-90 transition-all shadow-neu-outset active:scale-[0.98] disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-foreground text-background rounded-lg text-body hover:opacity-90 transition-colors shadow-neu-outset active:scale-[0.98] disabled:opacity-50"
               >
                 {sourcesSaved.status === 'saving' ? (
                   <Loader2 size={18} className="animate-spin" />

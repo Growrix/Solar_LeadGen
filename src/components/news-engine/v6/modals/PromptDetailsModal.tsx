@@ -69,15 +69,15 @@ export function PromptDetailsModal({ log, onClose }: { log: AuditLogEntry | null
         <div className="px-8 py-4 bg-surface border-b border-border grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1">
             <div className="text-body-small uppercase tracking-widest text-muted-foreground">Model Endpoint</div>
-            <div className="text-body font-semibold text-foreground">Gemini 3 Pro (Experimental)</div>
+            <div className="text-body text-foreground">Gemini 3 Pro (Experimental)</div>
           </div>
           <div className="space-y-1 sm:px-4 sm:border-x sm:border-border">
             <div className="text-body-small uppercase tracking-widest text-muted-foreground">Timestamp</div>
-            <div className="text-body font-semibold text-foreground">{formatDateTime(log.timestamp)}</div>
+            <div className="text-body text-foreground">{formatDateTime(log.timestamp)}</div>
           </div>
           <div className="space-y-1 sm:pl-4">
             <div className="text-body-small uppercase tracking-widest text-muted-foreground">Action Performed</div>
-            <div className="text-body font-semibold text-brand-accent">{log.action}</div>
+            <div className="text-body text-brand-accent">{log.action}</div>
           </div>
         </div>
 
