@@ -4815,3 +4815,23 @@ I  need you to add one ore column for "Rejected" posts. After rejection I want i
 - Audit this functionality and plan it accordingly. 
 
 After that create a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md.
+---------------------------------------------------------------------------------------
+
+
+***Phase 1 : Building SOT***
+  - Here is my Initial Plan : 
+   DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md
+  - Prepare the 6 phase SOT folder files in 
+  DOC\FEATURES\BLOG as per the 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file . 
+
+
+  ***Phase 2 : Frontend Planning***
+- Here is the front end plan based on 6 phase SOT : 
+  DOC\FEATURES\BLOG\SOT\FEATURE-SOT.md
+- Based on this frontend plan , Prepare the frontend UI UX prompts in
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts
+  folder by following the :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\AI Prompting Guideline.md Instructions. 
+- The Outcome should be followed by This : 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\Template_Comprehensive_UI UX.md
