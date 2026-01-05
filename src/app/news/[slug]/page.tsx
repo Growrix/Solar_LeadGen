@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import NewsletterSignup from '@/components/NewsletterSignup';
-import { loadNewsEngineState, type NewsItem } from '@/lib/ui-stubs/news-engine';
+import { fetchPublicNewsBySlug, type PublicNewsItemDetail } from '@/lib/news-engine/client';
 import Button from '@/components/ui/button';
 
 // Icon Components (mirrors BlogPostPageClient styling)
@@ -86,7 +86,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-function formatDateTime(iso?: string): string {
+function formatDateTime(iso?: string | null): string {
   if (!iso) return '—';
   try {
     return new Date(iso).toLocaleString();
@@ -98,37 +98,35 @@ function formatDateTime(iso?: string): string {
 export default function PublicNewsDetailPage({ params }: { params: { slug: string } }) {
 
   const router = useRouter();
-  const [item, setItem] = React.useState<NewsItem | null>(null);
+  const [item, setItem] = React.useState<PublicNewsItemDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [showSEO, setShowSEO] = React.useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   React.useEffect(() => {
+    let alive = true;
+
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    setIsLoading(true);
-    try {
-      const state = loadNewsEngineState();
-      const published = state.items.filter((it) => it.status === 'PUBLISHED' && Boolean(it.slug));
-      const found = published.find((it) => it.slug === params.slug) ?? null;
-      setItem(found);
-    } catch {
-      setItem(null);
-    } finally {
-      setIsLoading(false);
-    }
-    const onStorage = () => {
+
+    (async () => {
+      setIsLoading(true);
       try {
-        const next = loadNewsEngineState();
-        const publishedNext = next.items.filter((it) => it.status === 'PUBLISHED' && Boolean(it.slug));
-        const nextFound = publishedNext.find((it) => it.slug === params.slug) ?? null;
-        setItem(nextFound);
+        const found = await fetchPublicNewsBySlug(params.slug);
+        if (!alive) return;
+        setItem(found);
       } catch {
+        if (!alive) return;
         setItem(null);
+      } finally {
+        if (!alive) return;
+        setIsLoading(false);
       }
+    })();
+
+    return () => {
+      alive = false;
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
   }, [params.slug]);
 
 
@@ -190,15 +188,33 @@ export default function PublicNewsDetailPage({ params }: { params: { slug: strin
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     };
+
+    const openShareUrl = (href: string) => {
+      try {
+        window.open(href, '_blank', 'noopener,noreferrer');
+      } catch {
+        window.location.href = href;
+      }
+    };
+
+    const encode = (value: string) => encodeURIComponent(value);
+    const shareText = title ? `${title}` : '';
+
     const socialLinks = [
-      { name: 'Twitter', icon: (
+      { name: 'Twitter', onClick: () => openShareUrl(`https://twitter.com/intent/tweet?text=${encode(shareText)}&url=${encode(url)}`), icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0022.4.36a9.09 9.09 0 01-2.88 1.1A4.52 4.52 0 0016.11 0c-2.5 0-4.52 2.02-4.52 4.52 0 .35.04.7.11 1.03C7.69 5.4 4.07 3.7 1.64 1.15c-.38.65-.6 1.4-.6 2.2 0 1.52.77 2.86 1.94 3.65A4.48 4.48 0 01.96 6v.06c0 2.13 1.52 3.91 3.54 4.31-.37.1-.76.16-1.16.16-.28 0-.55-.03-.81-.08.55 1.7 2.16 2.94 4.07 2.97A9.05 9.05 0 010 21.54a12.8 12.8 0 006.95 2.04c8.34 0 12.9-6.91 12.9-12.9 0-.2 0-.39-.01-.58A9.22 9.22 0 0023 3z" /></svg>
       ), color: 'hover:bg-primary/80 hover:text-background' },
-      { name: 'LinkedIn', icon: (
+      { name: 'LinkedIn', onClick: () => openShareUrl(`https://www.linkedin.com/sharing/share-offsite/?url=${encode(url)}`), icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z" /><rect width="4" height="12" x="2" y="9" /></svg>
       ), color: 'hover:bg-primary/80 hover:text-background' },
-      { name: 'Facebook', icon: (
+      { name: 'Facebook', onClick: () => openShareUrl(`https://www.facebook.com/sharer/sharer.php?u=${encode(url)}`), icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M18 2h-3a5 5 0 00-5 5v3H6v4h4v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" /></svg>
+      ), color: 'hover:bg-primary/80 hover:text-background' },
+      { name: 'WhatsApp', onClick: () => openShareUrl(`https://wa.me/?text=${encode(`${shareText} ${url}`.trim())}`), icon: (
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M20 11.5a8.5 8.5 0 0 1-12.74 7.33L4 20l1.25-3.09A8.5 8.5 0 1 1 20 11.5Z" /><path d="M8.8 8.9c.2-.4.4-.4.6-.4h.5c.2 0 .4 0 .5.3l.7 1.7c.1.3.1.5 0 .7l-.4.5c-.1.2-.2.3 0 .6.2.3.8 1.3 1.8 2.1 1.2.9 2.2 1.2 2.5 1.3.3.1.5.1.6-.1l.8-1c.2-.2.4-.2.6-.1l1.6.8c.2.1.3.3.3.5 0 1.2-.7 2.3-1.8 2.6-1 .3-2.3.2-4.4-.9-2.4-1.3-4-3.3-4.6-4.6-.6-1.3-.7-2.4-.5-3.2Z" /></svg>
+      ), color: 'hover:bg-primary/80 hover:text-background' },
+      { name: 'Email', onClick: () => (window.location.href = `mailto:?subject=${encode(shareText)}&body=${encode(url)}`), icon: (
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg>
       ), color: 'hover:bg-primary/80 hover:text-background' },
     ];
     return (
@@ -251,9 +267,15 @@ export default function PublicNewsDetailPage({ params }: { params: { slug: strin
             </div>
             <div className="pt-8 border-t border-border space-y-4">
               <p className="text-caption text-muted-foreground uppercase tracking-[0.2em] text-center">Secondary Distribution Channels</p>
-              <div className="flex justify-center gap-3">
+              <div className="flex justify-center gap-3 flex-wrap">
                 {socialLinks.map((social) => (
-                  <button key={social.name} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-surface text-muted-foreground border border-border ${social.color} transition-colors shadow-sm active:scale-95`} title={`Share on ${social.name}`}>
+                  <button
+                    key={social.name}
+                    type="button"
+                    onClick={social.onClick}
+                    className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 rounded-2xl bg-surface text-muted-foreground border border-border ${social.color} transition-colors shadow-sm active:scale-95`}
+                    title={`Share on ${social.name}`}
+                  >
                     {social.icon}
                     <span className="text-caption uppercase tracking-widest">{social.name}</span>
                   </button>

@@ -4737,3 +4737,65 @@ All steps reference the prototype, workflow README, and migration playbook.
 SOT/README and index files are updated post-migration.
 Verification results are documented.
 No redundant or conflicting instructions remain in the guidelines.
+
+---------------------------------------------------------------------------------------
+
+
+  I want you to prepare a detailed backend plan for the News Engine feature based on the final UI UX flow that we have now. The plan should be created in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\BACKEND PLAN folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ -------------------------------------------------------------------------------------
+
+ ***BACKEND***
+ ### Step 1 : Planning Prompt
+***Feature Name : News Engine***
+
+  ### Your Job :
+ - I want you to follow the template
+   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\Backend_Planning_Prompt_Template_E2E_Audit_First.md and prepare the backend plan prompt in the
+   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\BACKEND PLAN folder . This prompt will be used to prepare the backend plan in the next step. 
+
+----------------------------------------------------------------------------------------
+
+The backend plan is done but I need you to validate the overall plan deeply. your job is to audit back the backend plan vs the final UI UX flow that we have now. Identify any missing endpoints or any illogical endpoints in the plan. AFter that you have to enhance the backend plan files accordingly including tasks.md. e.g if you noticed an UI modal is needed to add in the final UI UX flow but that is missing in the backend plan, you have to add the necessary endpoints in the backend plan accordingly. Or if you noticed any illogical endpoints in the backend plan that is not needed as per the final UI UX flow, you have to remove those endpoints from the backend plan accordingly. here is the plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\BACKEND PLAN . 
+
+### Also anwer my questions : 
+
+- What I will see in reult after the backend implimenttion is done?
+- Give me a checklist what to check and test after it is done.
+- What about the AI model API key? Are you going to use the API key already in the .env file for AI related taks to accomplish?
+- I need a summary of what the functionality I will get in the end. 
+
+--------------------------------------------------------------------------------------
+
+I am bit confused about the end result of this feature. Feeling like there are still more things to impliment . Understand my goal : Want to have the e2e feature as per planned at the very beginning which is DOC\FEATURES\NEWS ENGINE\Plan\CHatGPT.md . So far we have done the frontend based on the initial plan but during building a lot /few things updated or changed or enhanced on the go > after that we have built the backend plan based on the final UI UX flow that we have now. > but in the end we must get what we planned. Now I have no clear vision what I will get in the end after the backend is done. 
+
+I do not want any partial implimentations on both part frontend and backend, and later struggle it partial working feature and figure out what is working and what is not or may be reqire further builts of UI UX and backend. I want you to think just as like me from the begining to the end. And come up with idea or solution how we will achieve this goal.
+
+--------------------------------------------------------------------------------------
+I have tested visually and here is the issues I have found so far : 
+- The Scheduling is not working. I have scheduled a news post but , it iwas not posted as per the schedule. And also when I check back the schedule modal, it was not showing the exactly scheduled date and time that was set by me. the is a bad UX.And also the scheduled Item was not posted accordingly. Need to improve it and work accordingly. 
+
+- Confirm Live Publication modal enhancement : I do not want this modal to write "PUBLISH" in the field and then it allows to publish. Instead I want just Yes NO button for the confirmation before publishing. The current process is not user friendly. 
+- The share modal enhancement : I want you to add more social media such as : whatsapp etc . and Make sure that the sharing option works e2e. so that anyone can share on social media without having issues. currently it is more like static and no trigger or functions that works on social media . 
+
+***Instructions*** 
+Check the screenshots for better understandings. Audit and identify the issues as per explained and fix/enhance it accordingly. 
+Create a phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md file for these issues and fix them accordingly.
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ ***Questions to Answer*** 
+ - What about the AI and automation functioality?
+ - What about the AI API usage and AI generated news?
+ - What about the RSS based research and auto post functionality. 
+ - Is it already planned in the tasks.md or what? 
+ - As you mentioned all news engive backend and UI implimentations are done, so I am confused about the full functionality. explain why you have dome only maual part and why not the Automation part as well.
+
+ ---------------------------------------------------------
+
+ Now I want you to create the AI and Automation backend e2e plan followed by this DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND\Backend_Planning_Prompt_Template_E2E_Audit_First.md

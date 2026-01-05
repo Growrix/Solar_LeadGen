@@ -1,0 +1,322 @@
+import type { NewsEngineSettings, NewsItem, NewsSource, PipelineStatus, AuditLogEntry, NewsEngineState } from '@/lib/ui-stubs/news-engine';
+
+type ApiErrorShape = { error?: string };
+
+function toErrorMessage(body: unknown, fallback: string): string {
+  if (body && typeof body === 'object' && 'error' in body) {
+    const maybe = (body as ApiErrorShape).error;
+    if (typeof maybe === 'string' && maybe.trim()) return maybe;
+  }
+  return fallback;
+}
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+  });
+
+  const text = await res.text();
+  const data = text ? (JSON.parse(text) as unknown) : null;
+
+  if (!res.ok) {
+    throw new Error(toErrorMessage(data, `Request failed (${res.status})`));
+  }
+
+  return data as T;
+}
+
+function mapSourceTypeToUi(value: unknown): NewsItem['sourceType'] {
+  if (value === 'RSS_FEED') return 'RSS Feed';
+  if (value === 'AI_AGENT') return 'AI Agent';
+  if (value === 'MANUAL_ENTRY') return 'Manual Entry';
+  if (value === 'RSS Feed' || value === 'AI Agent' || value === 'Manual Entry') return value;
+  return 'Manual Entry';
+}
+
+function mapSourceTypeToApi(value: unknown): 'RSS_FEED' | 'AI_AGENT' | 'MANUAL_ENTRY' | undefined {
+  if (value === 'RSS_FEED' || value === 'AI_AGENT' || value === 'MANUAL_ENTRY') return value;
+  if (value === 'RSS Feed') return 'RSS_FEED';
+  if (value === 'AI Agent') return 'AI_AGENT';
+  if (value === 'Manual Entry') return 'MANUAL_ENTRY';
+  return undefined;
+}
+
+function normalizeIso(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function mapAdminItemToUi(item: any): NewsItem {
+  return {
+    id: String(item.id),
+    title: String(item.title ?? ''),
+    summary: String(item.summary ?? ''),
+    status: item.status,
+    category: String(item.category ?? ''),
+    relevanceScore: typeof item.relevanceScore === 'number' ? item.relevanceScore : 0,
+    aiModel: String(item.aiModel ?? ''),
+    createdAt: normalizeIso(item.createdAt) ?? new Date().toISOString(),
+    sourceType: mapSourceTypeToUi(item.sourceType),
+    publishedAt: normalizeIso(item.publishedAt),
+    scheduledFor: normalizeIso(item.scheduledFor),
+    slug: typeof item.slug === 'string' ? item.slug : undefined,
+    tags: Array.isArray(item.tags) ? item.tags.filter((t: any) => typeof t === 'string') : [],
+  };
+}
+
+function mapAdminSourceToUi(src: any): NewsSource {
+  return {
+    id: String(src.id),
+    name: String(src.name ?? ''),
+    url: String(src.url ?? ''),
+    enabled: Boolean(src.enabled),
+    lastSync: normalizeIso(src.lastSync),
+    articleCount: typeof src.articleCount === 'number' ? src.articleCount : undefined,
+  };
+}
+
+function mapAuditLogToUi(log: any): AuditLogEntry {
+  const action = typeof log.action === 'string' ? log.action : '';
+  return {
+    id: String(log.id),
+    timestamp: normalizeIso(log.createdAt) ?? new Date().toISOString(),
+    action,
+    origin: log.actorId ? 'admin' : 'system',
+    status: action.includes('error') ? 'ERROR' : 'INFO',
+    promptUsed: typeof log.promptUsed === 'string' && log.promptUsed.trim() ? log.promptUsed : undefined,
+  };
+}
+
+export type PublicNewsListItem = {
+  id: string;
+  title: string;
+  summary: string;
+  slug: string;
+  publishedAt?: string;
+  category: string;
+  tags: string[];
+  createdAt?: string;
+};
+
+export type PublicNewsItemDetail = {
+  id: string;
+  title: string;
+  summary: string;
+  slug: string;
+  publishedAt?: string;
+  category: string;
+  tags: string[];
+  createdAt?: string;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImageUrl?: string | null;
+  contentHtml?: string;
+};
+
+export async function fetchPublicNewsList(): Promise<PublicNewsListItem[]> {
+  const data = await apiFetch<{ items: any[] }>(`/api/news`);
+  return (data.items ?? [])
+    .map((it) => ({
+      id: String(it.id),
+      title: String(it.title ?? ''),
+      summary: String(it.summary ?? ''),
+      slug: String(it.slug ?? ''),
+      publishedAt: normalizeIso(it.publishedAt),
+      category: String(it.category ?? ''),
+      tags: Array.isArray(it.tags) ? it.tags.filter((t: any) => typeof t === 'string') : [],
+      createdAt: normalizeIso(it.createdAt),
+    }))
+    .filter((it) => Boolean(it.slug));
+}
+
+export async function fetchPublicNewsBySlug(slug: string): Promise<PublicNewsItemDetail> {
+  const data = await apiFetch<{ item: any }>(`/api/news/${encodeURIComponent(slug)}`);
+  const it = data.item;
+  return {
+    id: String(it.id),
+    title: String(it.title ?? ''),
+    summary: String(it.summary ?? ''),
+    slug: String(it.slug ?? ''),
+    publishedAt: normalizeIso(it.publishedAt),
+    category: String(it.category ?? ''),
+    tags: Array.isArray(it.tags) ? it.tags.filter((t: any) => typeof t === 'string') : [],
+    createdAt: normalizeIso(it.createdAt),
+    seoTitle: it.seoTitle ?? null,
+    seoDescription: it.seoDescription ?? null,
+    ogImageUrl: it.ogImageUrl ?? null,
+    contentHtml: typeof it.contentHtml === 'string' ? it.contentHtml : undefined,
+  };
+}
+
+export async function fetchAdminState(): Promise<NewsEngineState> {
+  const [itemsRes, sourcesRes, automationRes, settingsRes, auditRes, pipelineRes] = await Promise.all([
+    apiFetch<{ items: any[] }>(`/api/admin/news-engine/items?limit=200`),
+    apiFetch<{ sources: any[] }>(`/api/admin/news-engine/sources?limit=200`),
+    apiFetch<{ automation: { autoDraft: boolean; autoSchedule: boolean; autoPublish: boolean } }>(
+      `/api/admin/news-engine/automation/config`
+    ),
+    apiFetch<{ settings: NewsEngineSettings }>(`/api/admin/news-engine/settings`),
+    apiFetch<{ logs: any[] }>(`/api/admin/news-engine/audit-logs?limit=200`),
+    apiFetch<{ pipelineStatus: PipelineStatus }>(`/api/admin/news-engine/pipeline/status`),
+  ]);
+
+  return {
+    items: (itemsRes.items ?? []).map(mapAdminItemToUi),
+    sources: (sourcesRes.sources ?? []).map(mapAdminSourceToUi),
+    automation: automationRes.automation,
+    settings: settingsRes.settings,
+    pipelineStatus: pipelineRes.pipelineStatus,
+    auditLogs: (auditRes.logs ?? []).map(mapAuditLogToUi),
+  };
+}
+
+export async function adminCreateItem(input: {
+  title: string;
+  summary?: string;
+  category?: string;
+  tags?: string[];
+  status?: string;
+  aiModel?: string;
+  relevanceScore?: number;
+  sourceType?: NewsItem['sourceType'];
+}): Promise<NewsItem> {
+  const body: Record<string, unknown> = {
+    title: input.title,
+    summary: input.summary ?? '',
+    category: input.category ?? '',
+    tags: input.tags ?? [],
+  };
+  if (input.status) body.status = input.status;
+  if (input.aiModel) body.aiModel = input.aiModel;
+  if (typeof input.relevanceScore === 'number') body.relevanceScore = input.relevanceScore;
+  const sourceType = mapSourceTypeToApi(input.sourceType);
+  if (sourceType) body.sourceType = sourceType;
+
+  const data = await apiFetch<{ item: any }>(`/api/admin/news-engine/items`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+  return mapAdminItemToUi(data.item);
+}
+
+export async function adminUpdateItem(
+  id: string,
+  input: Partial<{
+    title: string;
+    summary: string;
+    category: string;
+    tags: string[];
+    contentHtml: string;
+    status: string;
+  }>
+): Promise<NewsItem> {
+  const data = await apiFetch<{ item: any }>(`/api/admin/news-engine/items/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }
+  );
+
+  return mapAdminItemToUi(data.item);
+}
+
+export async function adminPublishNow(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/publish-now`, {
+    method: 'POST',
+    body: JSON.stringify({ confirmText: 'PUBLISH' }),
+  });
+}
+
+export async function adminSchedule(id: string, scheduledForIso: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/schedule`, {
+    method: 'POST',
+    body: JSON.stringify({ scheduledFor: scheduledForIso }),
+  });
+}
+
+export async function adminReject(id: string, reason: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function adminRewriteRequest(id: string, note: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/rewrite-request`, {
+    method: 'POST',
+    body: JSON.stringify({ note }),
+  });
+}
+
+export async function adminDeleteItem(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+export async function adminToggleSourceEnabled(sourceId: string, enabled: boolean): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/sources/${encodeURIComponent(sourceId)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ enabled }),
+  });
+}
+
+export async function adminUpsertSource(input: {
+  id?: string;
+  name: string;
+  url: string;
+  enabled: boolean;
+}): Promise<void> {
+  if (input.id) {
+    await apiFetch(`/api/admin/news-engine/sources/${encodeURIComponent(input.id)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name: input.name, url: input.url, enabled: input.enabled }),
+    });
+    return;
+  }
+
+  await apiFetch(`/api/admin/news-engine/sources`, {
+    method: 'POST',
+    body: JSON.stringify({ name: input.name, url: input.url, enabled: input.enabled }),
+  });
+}
+
+export async function adminSetPipelineStatus(next: PipelineStatus): Promise<void> {
+  if (next === 'PAUSED') {
+    await apiFetch(`/api/admin/news-engine/pipeline/pause`, { method: 'POST' });
+    return;
+  }
+  if (next === 'NOMINAL') {
+    await apiFetch(`/api/admin/news-engine/pipeline/resume`, { method: 'POST' });
+    return;
+  }
+  await apiFetch(`/api/admin/news-engine/pipeline/emergency-stop`, {
+    method: 'POST',
+    body: JSON.stringify({ confirmText: 'LOCKDOWN' }),
+  });
+}
+
+export async function adminUpdateSettings(input: { settings: NewsEngineSettings }): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/settings`, {
+    method: 'PUT',
+    body: JSON.stringify({ settings: input.settings }),
+  });
+}
+
+export async function adminUpdateAutomation(input: {
+  automation: { autoDraft: boolean; autoSchedule: boolean; autoPublish: boolean };
+  config?: unknown;
+}): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/automation/config`, {
+    method: 'PUT',
+    body: JSON.stringify({ automation: input.automation, ...(input.config !== undefined ? { config: input.config } : {}) }),
+  });
+}

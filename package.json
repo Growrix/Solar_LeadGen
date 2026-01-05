@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:e2e": "next dev --port 3001",
+    "prebuild": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

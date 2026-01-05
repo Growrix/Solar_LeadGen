@@ -1,37 +1,18 @@
 commit all the changes to your local repository:
 git add .
 git commit -m "Your commit message"
-Push the changes to the remote repository: git push to the branch-name: News Engine-Backend
+Push the changes to the remote repository: git push to the branch-name: News-Engine---Backend
 
 
  ***backup instruction***
 Take a backup of the PostgreSQL database running in Docker to ensure data safety before making any significant changes. Use the following command to create a backup:
 docker exec -t your_postgres_container pg_dumpall -c -U your_db_user > /path/to/backup/backup_$(date +%Y%m%d_%H%M%S).sql
 
-***instruction***
-each time you make commits, you must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Prompts\gitstatus.md file with the latest commit information to keep track of changes effectively. with the commit id ,timestamp, and a brief description of the changes made in that commit.make sure the push has the excatly current versions, so that it can be restored if needed. 
-
-Git Backup Instruction Take a local backup of this current state of this site, make sure it restores to this exact state. you must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\gitstatus.md file with the latest commit information to keep track of changes effectively. with the commit id ,timestamp, and a brief description of the changes made in that commit.make sure the push has the excatly current versions, so that it can be restored if needed.
-
---------------------------------------------------------------------------------
-time you make commits, you must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\Prompts\gitstatus.md file with the latest commit information to keep track of changes effectively. Include the commit id, timestamp, and a brief description of the changes made in that commit. Make sure the push and backup have the exact current versions, so that it can be restored if needed.
 
 
-
-***Git Backup Instruction *** 
-Take a local backup of this current state of this site, make sure it restores to this exact state. you must update the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\gitstatus.md file with the latest commit information to keep track of changes effectively. with the commit id ,timestamp, and a brief description of the changes made in that commit.make sure the push has the excatly current versions, so that it can be restored if needed. Take a database backup (PostgreSQL in Docker)
-
-***Git Commit***
-After making changes to the codebase, you must commit those changes to your local Git repository with a descriptive commit message. This helps in tracking changes and maintaining version control. 
-
-***chat/task continuation prompt***
-This chat becomes very slow after many messages. To start a new chat and keep continuity, please crafft a prompt with the tasks are done are what to do next. so that we dont lose context. 
-
-
-------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
 
 rayisselectricalandsolar@gmail.com
-
 Admin123!Secure
 
 
@@ -128,3 +109,46 @@ No redundant or conflicting instructions remain in the guidelines.
   - News Page
   - News Details Page
   - Share Modal.
+
+
+  -----------------------------------------------------------------------------------
+
+  BACKEND PLANNING PROMPT (REUSABLE)
+
+I want you to prepare a detailed, end-to-end backend plan for the News Engine feature based on the final UI/UX flow and all current documentation. The plan must be created in:
+
+MANDATORY STEPS:
+
+Comprehensive Audit
+
+Start with a deep, e2e audit of the current state of the site for this feature.
+Identify all existing backend logic, APIs, data models, and integration points related to the feature.
+Map all connections between backend, admin, and public-facing pages.
+Explicitly list any unknowns, gaps, or inconsistencies.
+Requirements & Functionality Planning
+
+Define all backend requirements to fully support the final UI/UX flow.
+Specify all endpoints, data models, business logic, validation, and security needs.
+Ensure the backend plan covers both admin and public user flows, including all CRUD operations, publishing, scheduling, and analytics if relevant.
+Integration & Public Page Connection
+
+Detail how backend functionality will connect to and power the public pages e2e.
+Include API contracts, data flow diagrams, and error handling strategies.
+Ensure all public endpoints are secure, performant, and follow project conventions.
+Documentation & Compliance
+
+Reference and strictly follow all rules in:
+Do NOT overwrite or delete any existing documentation.
+Only add new files/folders or append to existing documentation as instructed.
+Update the SOT/README for the feature to reflect the backend plan and any new decisions.
+Validation & Success Criteria
+
+The plan must be clear, actionable, and detailed enough for any AI or developer to implement without ambiguity.
+All backend logic must be auditable, testable, and traceable to the UI/UX and business requirements.
+Explicitly list all risks, dependencies, and open questions.
+STRICT RULES:
+
+Follow the Guidelines from the file above before doing anything.
+Do not make assumptions—if anything is unclear, list it as an unknown.
+The plan must be e2e, covering admin, backend, and public flows.
+No implementation until the plan is confirmed.

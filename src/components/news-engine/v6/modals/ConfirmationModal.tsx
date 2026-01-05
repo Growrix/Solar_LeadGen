@@ -53,9 +53,10 @@ export function ConfirmationModal({
     return {
       title: 'Confirm Live Publication',
       message: `You are about to publish "${item?.title ?? ''}" immediately to the live insights feed. This action cannot be undone.`,
-      confirmLabel: 'Publish Now',
+      confirmLabel: 'Yes, Publish',
       variant: 'publish' as const,
-      requireConfirmText: 'PUBLISH',
+      requireConfirmText: null as string | null,
+      cancelLabel: 'No',
     };
   }, [kind.type, item?.title]);
 
@@ -146,7 +147,7 @@ export function ConfirmationModal({
             onClick={onClose}
             className="flex-1 px-4 py-4 text-body-small text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
           >
-            Cancel
+            {'cancelLabel' in config && typeof config.cancelLabel === 'string' ? config.cancelLabel : 'Cancel'}
           </button>
           <button
             type="button"

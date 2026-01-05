@@ -30,6 +30,8 @@ type Props = {
 
   sourcesSaved: SavedIndicator;
 
+  onToggleSourceEnabled: (sourceId: string, enabled: boolean) => void;
+
   setEditingSourceId: (next: string | null) => void;
   setSourceModalOpen: (open: boolean) => void;
 
@@ -59,6 +61,7 @@ export function SourcesTabV6({
   state,
   setState,
   sourcesSaved,
+  onToggleSourceEnabled,
   setEditingSourceId,
   setSourceModalOpen,
   sourcesResearchWeights,
@@ -186,12 +189,14 @@ export function SourcesTabV6({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              const nextEnabled = !src.enabled;
                               const next = {
                                 ...state,
-                                sources: state.sources.map((s) => (s.id === src.id ? { ...s, enabled: !s.enabled } : s)),
+                                sources: state.sources.map((s) => (s.id === src.id ? { ...s, enabled: nextEnabled } : s)),
                               };
                               setState(next);
                               sourcesSaved.trigger();
+                              onToggleSourceEnabled(src.id, nextEnabled);
                             }}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
                               src.enabled ? 'bg-accent' : 'bg-surface'

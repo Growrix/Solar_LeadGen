@@ -11,9 +11,10 @@ type Props = {
   state: NewsEngineState;
   setState: React.Dispatch<React.SetStateAction<NewsEngineState | null>>;
   settingsSaved: SavedIndicator;
+  onSave?: (next: NewsEngineState) => Promise<void> | void;
 };
 
-export function SettingsTabV6({ state, setState, settingsSaved }: Props) {
+export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props) {
   const [tone, setTone] = React.useState('Journalistic');
   const [model, setModel] = React.useState('Gemini 3 Pro');
   const [dedupSensitivity, setDedupSensitivity] = React.useState(85);
@@ -105,10 +106,19 @@ export function SettingsTabV6({ state, setState, settingsSaved }: Props) {
       },
     });
     settingsSaved.trigger();
+    onSave?.({
+      ...state,
+      settings: {
+        regionLocale: 'AU',
+        dailyLimit: 6,
+        deduplicationEnabled: true,
+      },
+    });
   };
 
   const saveConfiguration = () => {
     settingsSaved.trigger();
+    onSave?.(state);
   };
 
   return (

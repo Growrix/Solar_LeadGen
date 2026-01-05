@@ -19,6 +19,8 @@ import { OperationalRuleModal, type OperationalRule } from '../modals/Operationa
 
 type SavedIndicator = ReturnType<typeof useSavedIndicator>;
 
+type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+
 type Props = {
   state: NewsEngineState;
   setState: React.Dispatch<React.SetStateAction<NewsEngineState | null>>;
@@ -27,6 +29,7 @@ type Props = {
   operationalRuleModalOpen: boolean;
   onOpenOperationalRuleModal: () => void;
   onCloseOperationalRuleModal: () => void;
+  onSave?: (payload: { automation: NewsEngineState['automation']; config: JsonValue }) => Promise<void> | void;
 };
 
 export function AutomationLogicTabV6({
@@ -37,6 +40,7 @@ export function AutomationLogicTabV6({
   operationalRuleModalOpen,
   onOpenOperationalRuleModal,
   onCloseOperationalRuleModal,
+  onSave,
 }: Props) {
   const [config, setConfig] = React.useState(() => ({
     minScore: 85,
@@ -106,7 +110,16 @@ export function AutomationLogicTabV6({
 
   const saveConfiguration = React.useCallback(() => {
     automationSaved.trigger();
-  }, [automationSaved]);
+    onSave?.({
+      automation: state.automation,
+      config: {
+        minScore: config.minScore,
+        strategy: config.strategy,
+        windows: config.windows,
+        operationalRules,
+      },
+    });
+  }, [automationSaved, config.minScore, config.strategy, config.windows, onSave, operationalRules, state.automation]);
 
   const deleteRule = React.useCallback(
     (id: number) => {

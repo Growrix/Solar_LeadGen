@@ -106,6 +106,8 @@ model User {
   bidsAsInstaller          Bid[]                    @relation("installer_bids")
   blogPosts                BlogPost[]
   blogAiRequestLogs         BlogAiRequestLog[]
+  newsItemsCreated         NewsItem[]               @relation("news_item_created_by")
+  newsAuditLogs            NewsAuditLog[]           @relation("news_audit_actor")
   verificationTokens       EmailVerificationToken[]
   installerPreferences     InstallerPreferences?
   installerProfile         InstallerProfile?
@@ -239,6 +241,112 @@ model BlogJobLog {
   @@index([type])
   @@index([status])
   @@map("blog_job_logs")
+}
+
+enum NewsItemStatus {
+  DRAFT
+  NEEDS_REVIEW
+  RESEARCH_DONE
+  DRAFT_READY
+  PUBLISHED
+  SCHEDULED
+  REJECTED
+  ERROR
+}
+
+enum NewsItemSourceType {
+  RSS_FEED
+  AI_AGENT
+  MANUAL_ENTRY
+}
+
+model NewsSource {
+  id           String     @id @default(cuid())
+  name         String
+  url          String
+  enabled      Boolean    @default(true)
+  lastSync     DateTime?
+  articleCount Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        NewsItem[]
+  auditLogs    NewsAuditLog[]
+
+  @@index([enabled])
+  @@index([createdAt])
+  @@map("news_sources")
+}
+
+model NewsItem {
+  id              String            @id @default(cuid())
+  title           String
+  summary         String            @default("")
+  contentHtml     String            @default("")
+  status          NewsItemStatus    @default(DRAFT)
+  category        String            @default("")
+  relevanceScore  Int               @default(0)
+  aiModel         String            @default("")
+  sourceType      NewsItemSourceType @default(MANUAL_ENTRY)
+  sourceId        String?
+  source          NewsSource?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdById     String?
+  createdBy       User?             @relation("news_item_created_by", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  publishedAt     DateTime?
+  scheduledFor    DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  slug            String?           @unique
+  tags            String[]
+  deletedAt       DateTime?
+
+  seoTitle        String?
+  seoDescription  String?
+  ogImageUrl      String?
+
+  auditLogs       NewsAuditLog[]
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([scheduledFor])
+  @@index([deletedAt])
+  @@index([sourceId])
+  @@index([createdById])
+  @@map("news_items")
+}
+
+model NewsAutomationRule {
+  id        String   @id @default(cuid())
+  name      String
+  enabled   Boolean  @default(true)
+  config    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled])
+  @@map("news_automation_rules")
+}
+
+model NewsAuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  actorId   String?
+  actor     User?    @relation("news_audit_actor", fields: [actorId], references: [id], onDelete: SetNull)
+  itemId    String?
+  item      NewsItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  sourceId  String?
+  source    NewsSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  metadata  Json?
+  promptUsed String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([actorId])
+  @@index([itemId])
+  @@index([sourceId])
+  @@index([createdAt])
+  @@map("news_audit_logs")
 }
 
 model Account {

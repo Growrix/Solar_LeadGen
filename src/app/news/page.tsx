@@ -3,9 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import { loadNewsEngineState, type NewsItem } from '@/lib/ui-stubs/news-engine';
+import { fetchPublicNewsList, type PublicNewsListItem } from '@/lib/news-engine/client';
 
-function formatDate(iso?: string): string {
+function formatDate(iso?: string | null): string {
   if (!iso) return '—';
   try {
     return new Date(iso).toLocaleDateString();
@@ -52,43 +52,34 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
-function getPublishedNewsItems(stateItems: NewsItem[]): NewsItem[] {
-  return stateItems
-    .filter((it) => it.status === 'PUBLISHED' && Boolean(it.slug))
-    .sort((a, b) => {
-      const aTime = a.publishedAt ? Date.parse(a.publishedAt) : Date.parse(a.createdAt);
-      const bTime = b.publishedAt ? Date.parse(b.publishedAt) : Date.parse(b.createdAt);
-      return bTime - aTime;
-    });
-}
-
 export default function PublicNewsListingPage() {
 
-  const [items, setItems] = React.useState<NewsItem[]>([]);
+  const [items, setItems] = React.useState<PublicNewsListItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeCategory, setActiveCategory] = React.useState('All');
 
   React.useEffect(() => {
-    setIsLoading(true);
-    try {
-      const state = loadNewsEngineState();
-      setItems(getPublishedNewsItems(state.items));
-    } catch {
-      setItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-    const onStorage = () => {
+    let alive = true;
+
+    (async () => {
+      setIsLoading(true);
       try {
-        const next = loadNewsEngineState();
-        setItems(getPublishedNewsItems(next.items));
+        const list = await fetchPublicNewsList();
+        if (!alive) return;
+        setItems(list);
       } catch {
+        if (!alive) return;
         setItems([]);
+      } finally {
+        if (!alive) return;
+        setIsLoading(false);
       }
+    })();
+
+    return () => {
+      alive = false;
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   const publishedNews = React.useMemo(() => items, [items]);
