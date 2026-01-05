@@ -4798,4 +4798,20 @@ Create a phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md file for th
 
  ---------------------------------------------------------
 
- Now I want you to create the AI and Automation backend e2e plan followed by this DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND\Backend_Planning_Prompt_Template_E2E_Audit_First.md
+ Now I want you to create the AI and Automation backend e2e plan followed by this DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\Backend_Planning_Prompt_Template_E2E_Audit_First.md . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+-------------------------------------------------
+
+Answers of your questions : 
+- You should use the OpenAI API keys that are already in the .env . The gemini is just a legacy from the prototype , so update it with openAI . 
+- Yes I want Auto-publish when the Operational state is selected Automatic .
+- I want you to make all the available UI UX functional as per the final UI UX flow that we have now. So that the RSS, Trend , web research all should work accordingly. 
+
+*** Make sure that all the UI UX that we have now, all should be fully functional e2e. 
+
+***Additionally***
+I  need you to add one ore column for "Rejected" posts. After rejection I want it the show there instead of soft delete. the delete should be done when I delet from the rejection. The rejected posts should have the functionality that I can regenerate the post, fix issues and re-schedule or publish again or keep in the draft. 
+
+- Audit this functionality and plan it accordingly. 
+
+After that create a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md.
