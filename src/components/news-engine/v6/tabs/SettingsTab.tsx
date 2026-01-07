@@ -16,7 +16,7 @@ type Props = {
 
 export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props) {
   const [tone, setTone] = React.useState('Journalistic');
-  const [model, setModel] = React.useState('Gemini 3 Pro');
+  const [model, setModel] = React.useState('OpenAI gpt-4o-mini');
   const [dedupSensitivity, setDedupSensitivity] = React.useState(85);
   const [hallucinationCheck, setHallucinationCheck] = React.useState(true);
   const [contentPreservation, setContentPreservation] = React.useState(true);
@@ -88,7 +88,7 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
 
   const resetDefaults = () => {
     setTone('Journalistic');
-    setModel('Gemini 3 Pro');
+    setModel('OpenAI gpt-4o-mini');
     setDedupSensitivity(85);
     setHallucinationCheck(true);
     setContentPreservation(true);
@@ -170,8 +170,8 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
             }}
             className="w-full md:w-64 px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
           >
-            <option>Gemini 3 Pro</option>
-            <option>Gemini 3 Flash</option>
+            <option>OpenAI gpt-4o-mini</option>
+            <option>OpenAI gpt-4o</option>
           </select>
         </SettingRow>
 

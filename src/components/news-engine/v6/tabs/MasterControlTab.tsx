@@ -50,6 +50,7 @@ type Props = {
   openPauseConfirmation: () => void;
   openResumeConfirmation: () => void;
   openEmergencyStopConfirmation: () => void;
+  openRunAutomationNowConfirmation: () => void;
   refreshNonce: number;
   onRefreshHealth: () => void;
 };
@@ -59,6 +60,7 @@ export function MasterControlTabV6({
   openPauseConfirmation,
   openResumeConfirmation,
   openEmergencyStopConfirmation,
+  openRunAutomationNowConfirmation,
   refreshNonce,
   onRefreshHealth,
 }: Props) {
@@ -182,6 +184,16 @@ export function MasterControlTabV6({
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={openRunAutomationNowConfirmation}
+              disabled={pipelineStatus !== 'NOMINAL'}
+              className="flex items-center gap-2 px-6 py-3 bg-accent text-accent-foreground rounded-xl text-body hover:opacity-95 transition-colors active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw size={20} className="text-accent-foreground" />
+              Run Automation Now
+            </button>
+
             <button
               type="button"
               onClick={openResumeConfirmation}

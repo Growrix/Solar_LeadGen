@@ -55,12 +55,18 @@ import {
 
 import {
   adminCreateItem,
+  adminDeleteItem,
+  adminPurgeItem,
   adminPublishNow,
   adminReject,
+  adminRunAutomationNow,
+  adminRegenerateItem,
   adminRewriteRequest,
   adminSchedule,
   adminSetPipelineStatus,
   adminToggleSourceEnabled,
+  adminUpdateSourcesConfig,
+  fetchAdminSourcesConfig,
   adminUpdateAutomation,
   adminUpdateItem,
   adminUpdateSettings,
@@ -138,6 +144,7 @@ export default function AdminNewsEngineHub() {
     | { type: 'PAUSE' }
     | { type: 'RESUME' }
     | { type: 'EMERGENCY_STOP' }
+    | { type: 'RUN_AUTOMATION_NOW' }
     | null
   >(null);
 
@@ -242,6 +249,63 @@ export default function AdminNewsEngineHub() {
   const [sourcesCountryInput, setSourcesCountryInput] = React.useState('');
   const [sourcesBlacklist, setSourcesBlacklist] = React.useState('');
 
+  const sourcesConfigLoadedRef = React.useRef(false);
+  const sourcesConfigHydratingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!state) return;
+    if (sourcesConfigLoadedRef.current) return;
+
+    void (async () => {
+      sourcesConfigHydratingRef.current = true;
+      try {
+        const config = await fetchAdminSourcesConfig();
+        setSourcesResearchWeights(config.researchWeights);
+        setSourcesResearchEnabled(config.researchEnabled);
+        setSourcesRules(config.rules);
+        setSourcesMinSources(config.minSources);
+        setSourcesCountries(config.countries);
+        setSourcesBlacklist(config.blacklist);
+      } catch (error) {
+        console.error('❌ [NewsEngine Sources] Failed to load sources config:', error);
+      } finally {
+        sourcesConfigLoadedRef.current = true;
+        window.setTimeout(() => {
+          sourcesConfigHydratingRef.current = false;
+        }, 0);
+      }
+    })();
+  }, [state]);
+
+  React.useEffect(() => {
+    if (!state) return;
+    if (!sourcesConfigLoadedRef.current) return;
+    if (sourcesConfigHydratingRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      void adminUpdateSourcesConfig({
+        researchWeights: sourcesResearchWeights,
+        researchEnabled: sourcesResearchEnabled,
+        rules: sourcesRules,
+        minSources: sourcesMinSources,
+        countries: sourcesCountries,
+        blacklist: sourcesBlacklist,
+      }).catch((error) => {
+        console.error('❌ [NewsEngine Sources] Failed to save sources config:', error);
+      });
+    }, 650);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    state,
+    sourcesResearchWeights,
+    sourcesResearchEnabled,
+    sourcesRules,
+    sourcesMinSources,
+    sourcesCountries,
+    sourcesBlacklist,
+  ]);
+
   const dashboardCategories = React.useMemo(() => {
     const unique = Array.from(new Set(items.map((n) => n.category))).sort();
     return ['All', ...unique];
@@ -326,6 +390,11 @@ export default function AdminNewsEngineHub() {
           dotClass: 'bg-warning',
         },
         {
+          key: 'REJECTED' as const,
+          label: 'Rejected',
+          dotClass: 'bg-destructive',
+        },
+        {
           key: 'SCHEDULED' as const,
           label: 'Scheduled',
           dotClass: 'bg-success',
@@ -351,6 +420,7 @@ export default function AdminNewsEngineHub() {
         item.status === 'DRAFT_READY' ||
         item.status === 'DRAFT' ||
         item.status === 'NEEDS_REVIEW' ||
+        item.status === 'REJECTED' ||
         item.status === 'SCHEDULED' ||
         item.status === 'PUBLISHED';
       if (!isBoardStatus) return false;
@@ -519,6 +589,10 @@ export default function AdminNewsEngineHub() {
           pipelineStatus={state.pipelineStatus}
           refreshNonce={masterControlRefreshNonce}
           onRefreshHealth={onRefreshHealth}
+          openRunAutomationNowConfirmation={() => {
+            setConfirmationKind({ type: 'RUN_AUTOMATION_NOW' });
+            setConfirmationOpen(true);
+          }}
           openPauseConfirmation={() => {
             setConfirmationKind({ type: 'PAUSE' });
             setConfirmationOpen(true);
@@ -607,9 +681,57 @@ export default function AdminNewsEngineHub() {
           setReviewOpen(false);
           setScheduleOpen(true);
         }}
+        onDelete={() => {
+          if (!selectedItem) return;
+          const isRejected = selectedItem.status === 'REJECTED';
+          const confirmText = isRejected
+            ? 'Delete this rejected item permanently? This cannot be undone.'
+            : 'Delete this item? It will be moved to deleted state.';
+
+          if (!window.confirm(confirmText)) return;
+
+          void (async () => {
+            try {
+              if (isRejected) {
+                await adminPurgeItem(selectedItem.id);
+              } else {
+                await adminDeleteItem(selectedItem.id);
+              }
+              setReviewOpen(false);
+            } finally {
+              await reloadState();
+            }
+          })();
+        }}
         onPublish={() => {
           setConfirmationKind({ type: 'PUBLISH_NOW' });
           setConfirmationOpen(true);
+        }}
+        onRegenerate={() => {
+          if (!selectedItem) return;
+          if (selectedItem.status !== 'REJECTED') return;
+          if (!window.confirm('Regenerate this rejected item with OpenAI and move it back to Draft Ready?')) return;
+
+          void (async () => {
+            try {
+              await adminRegenerateItem(selectedItem.id);
+            } finally {
+              await reloadState();
+            }
+          })();
+        }}
+        onRestore={() => {
+          if (!selectedItem) return;
+          if (selectedItem.status !== 'REJECTED') return;
+
+          void (async () => {
+            try {
+              await adminUpdateItem(selectedItem.id, { status: 'DRAFT_READY' });
+              setReviewOpen(false);
+            } finally {
+              await reloadState();
+            }
+          })();
         }}
         onRewrite={() => {
           setReviewOpen(false);
@@ -778,39 +900,46 @@ export default function AdminNewsEngineHub() {
             setConfirmationOpen(false);
             setConfirmationKind(null);
           }}
-          onConfirm={(typed) => {
+          onConfirm={async (typed) => {
             ensureState(state);
-            void (async () => {
-              try {
-                if (confirmationKind.type === 'PUBLISH_NOW') {
-                  if (!selectedItem) return;
-                  await adminPublishNow(selectedItem.id);
-                  setReviewOpen(false);
-                  setConfirmationOpen(false);
-                  setConfirmationKind(null);
-                  await reloadState();
-                  return;
-                }
-
-                if (confirmationKind.type === 'EMERGENCY_STOP' && typed !== 'LOCKDOWN') {
-                  return;
-                }
-
-                const nextStatus: PipelineStatus =
-                  confirmationKind.type === 'PAUSE'
-                    ? 'PAUSED'
-                    : confirmationKind.type === 'RESUME'
-                      ? 'NOMINAL'
-                      : 'EMERGENCY_STOP';
-
-                await adminSetPipelineStatus(nextStatus);
+            try {
+              if (confirmationKind.type === 'RUN_AUTOMATION_NOW') {
+                await adminRunAutomationNow();
                 setConfirmationOpen(false);
                 setConfirmationKind(null);
                 await reloadState();
-              } catch {
-                await reloadState();
+                return;
               }
-            })();
+
+              if (confirmationKind.type === 'PUBLISH_NOW') {
+                if (!selectedItem) return;
+                await adminPublishNow(selectedItem.id);
+                setReviewOpen(false);
+                setConfirmationOpen(false);
+                setConfirmationKind(null);
+                await reloadState();
+                return;
+              }
+
+              if (confirmationKind.type === 'EMERGENCY_STOP' && typed !== 'LOCKDOWN') {
+                return;
+              }
+
+              const nextStatus: PipelineStatus =
+                confirmationKind.type === 'PAUSE'
+                  ? 'PAUSED'
+                  : confirmationKind.type === 'RESUME'
+                    ? 'NOMINAL'
+                    : 'EMERGENCY_STOP';
+
+              await adminSetPipelineStatus(nextStatus);
+              setConfirmationOpen(false);
+              setConfirmationKind(null);
+              await reloadState();
+            } catch (error) {
+              await reloadState();
+              throw error;
+            }
           }}
         />
       ) : null}

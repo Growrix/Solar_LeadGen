@@ -106,6 +106,7 @@ model User {
   bidsAsInstaller          Bid[]                    @relation("installer_bids")
   blogPosts                BlogPost[]
   blogAiRequestLogs         BlogAiRequestLog[]
+  newsAiRequestLogs         NewsAiRequestLog[]     @relation("news_ai_actor")
   newsItemsCreated         NewsItem[]               @relation("news_item_created_by")
   newsAuditLogs            NewsAuditLog[]           @relation("news_audit_actor")
   verificationTokens       EmailVerificationToken[]
@@ -254,6 +255,40 @@ enum NewsItemStatus {
   ERROR
 }
 
+enum NewsSourceKind {
+  RSS_FEED
+}
+
+enum NewsResearchKind {
+  WEB
+  SOCIAL
+  JOURNAL
+  TREND
+}
+
+enum NewsSourceEntryStatus {
+  NEW
+  PROCESSED
+  IGNORED
+  ERROR
+}
+
+enum NewsJobType {
+  RSS_SYNC
+  RESEARCH_SYNC
+  AI_DRAFT
+  AI_REGENERATE
+  AUTO_RUN
+  AUTO_SCHEDULE
+  AUTO_PUBLISH
+  DEDUP_CLEANUP
+}
+
+enum NewsJobStatus {
+  SUCCESS
+  FAILURE
+}
+
 enum NewsItemSourceType {
   RSS_FEED
   AI_AGENT
@@ -264,17 +299,77 @@ model NewsSource {
   id           String     @id @default(cuid())
   name         String
   url          String
+  kind         NewsSourceKind @default(RSS_FEED)
   enabled      Boolean    @default(true)
   lastSync     DateTime?
   articleCount Int        @default(0)
+
+  etag               String?
+  lastModified       String?
+  lastFetchedAt      DateTime?
+  lastError          String?
+  errorCount         Int        @default(0)
+  fetchIntervalMinutes Int      @default(60)
+
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   items        NewsItem[]
+  entries      NewsSourceEntry[]
   auditLogs    NewsAuditLog[]
 
   @@index([enabled])
   @@index([createdAt])
   @@map("news_sources")
+}
+
+model NewsSourceEntry {
+  id            String               @id @default(cuid())
+  sourceId      String
+  source        NewsSource           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  externalId    String?
+  url           String
+  title         String
+  publishedAt   DateTime?
+  fetchedAt     DateTime             @default(now())
+
+  status        NewsSourceEntryStatus @default(NEW)
+  error         String?
+  rawJson       Json?
+
+  itemId        String?
+  item          NewsItem?            @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, url])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([fetchedAt])
+  @@map("news_source_entries")
+}
+
+model NewsResearchEntry {
+  id            String               @id @default(cuid())
+  kind          NewsResearchKind
+  query         String?
+
+  url           String
+  title         String
+  publishedAt   DateTime?
+  fetchedAt     DateTime             @default(now())
+
+  status        NewsSourceEntryStatus @default(NEW)
+  error         String?
+  rawJson       Json?
+
+  itemId        String?
+  item          NewsItem?            @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@unique([kind, url])
+  @@index([kind])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([fetchedAt])
+  @@map("news_research_entries")
 }
 
 model NewsItem {
@@ -306,6 +401,9 @@ model NewsItem {
   ogImageUrl      String?
 
   auditLogs       NewsAuditLog[]
+  sourceEntries   NewsSourceEntry[]
+  researchEntries NewsResearchEntry[]
+  aiRequestLogs   NewsAiRequestLog[]
 
   @@index([status])
   @@index([publishedAt])
@@ -314,6 +412,45 @@ model NewsItem {
   @@index([sourceId])
   @@index([createdById])
   @@map("news_items")
+}
+
+model NewsAiRequestLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation("news_ai_actor", fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+
+  itemId    String?
+  item      NewsItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  provider  String
+  model     String
+  input     Json
+  output    Json?
+  success   Boolean  @default(false)
+  error     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([itemId])
+  @@map("news_ai_request_logs")
+}
+
+model NewsJobLog {
+  id         String       @id @default(cuid())
+  type       NewsJobType
+  status     NewsJobStatus
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  meta       Json?
+  error      String?
+
+  @@index([startedAt])
+  @@index([type])
+  @@index([status])
+  @@map("news_job_logs")
 }
 
 model NewsAutomationRule {

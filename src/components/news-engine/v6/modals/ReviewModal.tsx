@@ -32,6 +32,9 @@ export function ReviewModalV6({
   onPublish,
   onRewrite,
   onReject,
+  onDelete,
+  onRegenerate,
+  onRestore,
   onSave,
 }: {
   isOpen: boolean;
@@ -41,6 +44,9 @@ export function ReviewModalV6({
   onPublish?: () => void;
   onRewrite?: () => void;
   onReject?: () => void;
+  onDelete?: () => void;
+  onRegenerate?: () => void;
+  onRestore?: () => void;
   onSave?: () => void;
 }) {
   const [activeTab, setActiveTab] = React.useState<ReviewTabV6>('article');
@@ -57,6 +63,7 @@ export function ReviewModalV6({
   if (!isOpen || !item) return null;
 
   const isPublished = item.status === 'PUBLISHED';
+  const isRejected = item.status === 'REJECTED';
 
   const TabButton = ({
     id,
@@ -323,20 +330,51 @@ export function ReviewModalV6({
 
         <footer className="px-8 py-6 border-t border-border bg-background flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
+            {isRejected ? (
+              <button
+                type="button"
+                onClick={onRestore}
+                className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground bg-surface hover:bg-surface-hover rounded-2xl uppercase tracking-widest"
+              >
+                <ArrowRight size={16} />
+                Restore to Draft
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onReject}
+                className="px-6 py-3 text-body-small text-destructive hover:bg-destructive/10 rounded-2xl uppercase tracking-widest border border-transparent hover:border-destructive/20"
+              >
+                Reject
+              </button>
+            )}
+
+            {isRejected ? (
+              <button
+                type="button"
+                onClick={onRegenerate}
+                className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground bg-surface hover:bg-surface-hover rounded-2xl uppercase tracking-widest"
+              >
+                <RefreshCcw size={16} />
+                Regenerate
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onRewrite}
+                className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground bg-surface hover:bg-surface-hover rounded-2xl uppercase tracking-widest"
+              >
+                <RefreshCcw size={16} />
+                Request Rewrite
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={onReject}
+              onClick={onDelete}
               className="px-6 py-3 text-body-small text-destructive hover:bg-destructive/10 rounded-2xl uppercase tracking-widest border border-transparent hover:border-destructive/20"
             >
-              Reject
-            </button>
-            <button
-              type="button"
-              onClick={onRewrite}
-              className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground bg-surface hover:bg-surface-hover rounded-2xl uppercase tracking-widest"
-            >
-              <RefreshCcw size={16} />
-              Request Rewrite
+              {isRejected ? 'Delete Permanently' : 'Delete'}
             </button>
           </div>
 

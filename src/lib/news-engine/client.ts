@@ -262,6 +262,30 @@ export async function adminDeleteItem(id: string): Promise<void> {
   );
 }
 
+export async function adminPurgeItem(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/purge`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminRegenerateItem(
+  id: string,
+  input?: {
+    note?: string;
+    model?: string;
+  }
+): Promise<NewsItem> {
+  const data = await apiFetch<{ item: any }>(
+    `/api/admin/news-engine/items/${encodeURIComponent(id)}/regenerate`,
+    {
+      method: 'POST',
+      body: JSON.stringify(input ?? {}),
+    }
+  );
+
+  return mapAdminItemToUi(data.item);
+}
+
 export async function adminToggleSourceEnabled(sourceId: string, enabled: boolean): Promise<void> {
   await apiFetch(`/api/admin/news-engine/sources/${encodeURIComponent(sourceId)}`, {
     method: 'PUT',
@@ -319,4 +343,69 @@ export async function adminUpdateAutomation(input: {
     method: 'PUT',
     body: JSON.stringify({ automation: input.automation, ...(input.config !== undefined ? { config: input.config } : {}) }),
   });
+}
+
+export async function adminRunAutomationNow(): Promise<{ ok: true; payload: unknown }> {
+  return apiFetch(`/api/admin/news-engine/automation/run-now`, {
+    method: 'POST',
+  });
+}
+
+export type AdminSourcesConfig = {
+  researchWeights: { web: number; social: number; journals: number };
+  researchEnabled: { web: boolean; social: boolean; journals: boolean };
+  rules: { deduplication: boolean; verifyPayload: boolean };
+  minSources: number;
+  countries: string[];
+  blacklist: string;
+};
+
+export async function fetchAdminSourcesConfig(): Promise<AdminSourcesConfig> {
+  const data = await apiFetch<{ config: AdminSourcesConfig }>(`/api/admin/news-engine/sources/config`);
+  return data.config;
+}
+
+export async function adminUpdateSourcesConfig(config: AdminSourcesConfig): Promise<AdminSourcesConfig> {
+  const data = await apiFetch<{ config: AdminSourcesConfig }>(`/api/admin/news-engine/sources/config`, {
+    method: 'PUT',
+    body: JSON.stringify({ config }),
+  });
+  return data.config;
+}
+
+export async function adminSyncSource(sourceId: string): Promise<{ ok: true; status: 'ok' | 'not_modified'; imported: number }> {
+  return apiFetch(`/api/admin/news-engine/sources/${encodeURIComponent(sourceId)}/sync`, {
+    method: 'POST',
+  });
+}
+
+export type AdminSourceEntry = {
+  id: string;
+  sourceId: string;
+  url: string;
+  title: string;
+  externalId: string | null;
+  publishedAt: string | null;
+  fetchedAt: string;
+  status: string;
+  error: string | null;
+  itemId: string | null;
+};
+
+export async function fetchAdminSourceEntries(sourceId: string, limit = 50): Promise<AdminSourceEntry[]> {
+  const data = await apiFetch<{ entries: any[] }>(
+    `/api/admin/news-engine/sources/${encodeURIComponent(sourceId)}/entries?limit=${encodeURIComponent(String(limit))}`
+  );
+  return (data.entries ?? []).map((e) => ({
+    id: String(e.id),
+    sourceId: String(e.sourceId),
+    url: String(e.url ?? ''),
+    title: String(e.title ?? ''),
+    externalId: e.externalId ? String(e.externalId) : null,
+    publishedAt: normalizeIso(e.publishedAt) ?? null,
+    fetchedAt: normalizeIso(e.fetchedAt) ?? new Date().toISOString(),
+    status: String(e.status ?? ''),
+    error: typeof e.error === 'string' ? e.error : null,
+    itemId: e.itemId ? String(e.itemId) : null,
+  }));
 }

@@ -213,88 +213,88 @@ description: "Tasks for News Engine backend implementation"
 
 ### Data model + migrations
 
-- [ ] T070 Add Prisma enums/models for research + automation logs in `prisma/schema.prisma`
+- [x] T070 Add Prisma enums/models for research + automation logs in `prisma/schema.prisma`
   - add `NewsResearchKind` enum
   - add `NewsResearchEntry` model (dedup by `@@unique([kind,url])`)
   - extend `NewsJobType` with `RESEARCH_SYNC` and `AI_REGENERATE`
   - add/extend `NewsJobLog` + `NewsAiRequestLog` as per `BACKEND-PLAN-NEWS-ENGINE-AI-AUTOMATION-2026-01-05.md`
-- [ ] T071 Create migration for the new models under `prisma/migrations/`
-- [ ] T072 Run `npx prisma validate`
+- [x] T071 Create migration for the new models under `prisma/migrations/`
+- [x] T072 Run `npx prisma validate`
 
 ### Research + RSS ingestion endpoints (admin)
 
-- [ ] T073 [US3] Add RSS sync endpoint `POST src/app/api/admin/news-engine/sources/[id]/sync/route.ts`
+- [x] T073 [US3] Add RSS sync endpoint `POST src/app/api/admin/news-engine/sources/[id]/sync/route.ts`
   - fetch/parse RSS/Atom
   - upsert `NewsSourceEntry` by `(sourceId,url)`
   - update `NewsSource.lastSync`/fetch metadata
   - write audit log `news_source_sync_*`
 
-- [ ] T074 [US3] Add source entries viewer endpoint `GET src/app/api/admin/news-engine/sources/[id]/entries/route.ts`
+- [x] T074 [US3] Add source entries viewer endpoint `GET src/app/api/admin/news-engine/sources/[id]/entries/route.ts`
   - cursor pagination + `status` filter
 
-- [ ] T075 [US3] Add research ingestion endpoint(s)
+- [x] T075 [US3] Add research ingestion endpoint(s)
   - `POST src/app/api/admin/news-engine/research/sync/route.ts` (kinds: WEB/SOCIAL/JOURNAL/TREND)
   - persist `NewsResearchEntry`
   - write audit logs for research sync
 
 ### AI generation + regeneration (admin)
 
-- [ ] T076 [US2/US3] Add draft generation from RSS entry `POST src/app/api/admin/news-engine/entries/[entryId]/generate-draft/route.ts`
+- [x] T076 [US2/US3] Add draft generation from RSS entry `POST src/app/api/admin/news-engine/entries/[entryId]/generate-draft/route.ts`
   - calls OpenAI using `OPENAI_API_KEY` / `OPENAI_MODEL`
   - writes `NewsAiRequestLog` + `NewsAuditLog`
 
-- [ ] T077 [US2/US3] Add draft generation from research bundle `POST src/app/api/admin/news-engine/research/generate-draft/route.ts`
+- [x] T077 [US2/US3] Add draft generation from research bundle `POST src/app/api/admin/news-engine/research/generate-draft/route.ts`
   - fetches research results + persists them
   - calls OpenAI and creates `NewsItem`
 
-- [ ] T078 [US2] Add regenerate endpoint for rejected items `POST src/app/api/admin/news-engine/items/[id]/regenerate/route.ts`
+- [x] T078 [US2] Add regenerate endpoint for rejected items `POST src/app/api/admin/news-engine/items/[id]/regenerate/route.ts`
   - only for `status=REJECTED`
   - clears rejection fields + sets status back to `DRAFT_READY` (or `NEEDS_REVIEW`) after regeneration
   - writes `NewsAiRequestLog` + `NewsAuditLog`
 
 ### Automation runner + scheduler entrypoint
 
-- [ ] T079 [US3] Add internal runner endpoint `POST src/app/api/internal/news-engine/automation/run/route.ts`
+- [x] T079 [US3] Add internal runner endpoint `POST src/app/api/internal/news-engine/automation/run/route.ts`
   - secret header auth
   - gates on pipeline status (`PAUSED`/`EMERGENCY_STOP` => no-op)
   - orchestrates RSS sync + research sync + AI drafting + optional schedule/publish
   - writes `NewsJobLog`
 
-- [ ] T080 [US3] Implement auto-publish semantics
+- [x] T080 [US3] Implement auto-publish semantics
   - auto-publish only when `pipelineStatus=NOMINAL` and `automation.autoPublish=true`
   - otherwise generate drafts as `NEEDS_REVIEW`
 
 ### UI wiring (make existing controls real)
 
-- [ ] T081 [US4] Wire “Web & Trend Research” controls in `src/components/news-engine/v6/tabs/SourcesTab.tsx` to backend persistence
+- [x] T081 [US4] Wire “Web & Trend Research” controls in `src/components/news-engine/v6/tabs/SourcesTab.tsx` to backend persistence
   - persist `sourcesResearchEnabled`, `sourcesResearchWeights`, min-sources, countries, blacklist
   - load these values from backend on page load
 
-- [ ] T082 [US4] Update Settings UI labels from Gemini → OpenAI
+- [x] T082 [US4] Update Settings UI labels from Gemini → OpenAI
   - `src/components/news-engine/v6/tabs/SettingsTab.tsx`
   - `src/components/news-engine/v6/modals/TestPreviewModal.tsx`
   - `src/components/news-engine/v6/modals/PromptDetailsModal.tsx`
 
 ### Rejected queue/column behavior (UI + backend)
 
-- [ ] T083 [US4] Add a **Rejected** column to the “Drafts & Reviews” board and include `REJECTED` items in filters
+- [x] T083 [US4] Add a **Rejected** column to the “Drafts & Reviews” board and include `REJECTED` items in filters
   - `src/components/news-engine/AdminNewsEngineHub.tsx`
   - `src/components/news-engine/v6/tabs/DraftsReviewsTab.tsx`
 
-- [ ] T084 [US2/US4] Add permanent delete from rejected queue only
+- [x] T084 [US2/US4] Add permanent delete from rejected queue only
   - backend: `DELETE src/app/api/admin/news-engine/items/[id]/purge/route.ts` (hard delete, only if `status=REJECTED`)
   - UI: rejected column delete button must call purge endpoint; other deletes remain soft delete
 
-- [ ] T085 [US4] Add actions on rejected items
+- [x] T085 [US4] Add actions on rejected items
   - Regenerate (calls `/items/[id]/regenerate`)
   - Restore to Draft (can reuse rewrite-request behavior or add a dedicated restore endpoint)
   - Reschedule / Publish again (existing flows)
 
 ### Verification
 
-- [ ] T086 Run `npx prisma validate`
-- [ ] T087 Run `npx tsc --noEmit`
-- [ ] T088 Run `npm run build`
+- [x] T086 Run `npx prisma validate`
+- [x] T087 Run `npx tsc --noEmit`
+- [x] T088 Run `npm run build`
 - [ ] T089 Manual E2E: enable automation + set pipeline NOMINAL → runner creates drafts → auto-publish occurs when enabled
 
 

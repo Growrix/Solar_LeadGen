@@ -234,7 +234,7 @@ export function TestPreviewModal({
                     <span className="text-body-small text-foreground">Generation Complete</span>
                   </div>
                   <div className="flex items-center gap-4 text-body-small uppercase tracking-widest text-muted-foreground">
-                    <span>Model: Gemini 3 Pro</span>
+                    <span>Model: OpenAI</span>
                     <span>Tokens: 1,420</span>
                     <span>Time: 2.4s</span>
                   </div>

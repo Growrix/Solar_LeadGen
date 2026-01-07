@@ -148,6 +148,13 @@ export async function PUT(
         return NextResponse.json({ error: 'status is invalid' }, { status: 400 });
       }
       data.status = status;
+
+      // If we're moving out of REJECTED, also clear rejection fields.
+      // This is needed for the "Rejected" queue workflows (restore/regenerate).
+      if (status !== 'REJECTED') {
+        data.rejectedAt = null;
+        data.rejectionReason = null;
+      }
     }
     if (body.seoTitle !== undefined) data.seoTitle = seoTitle || null;
     if (body.seoDescription !== undefined) data.seoDescription = seoDescription || null;
