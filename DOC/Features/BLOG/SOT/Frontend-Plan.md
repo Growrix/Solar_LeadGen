@@ -85,6 +85,51 @@ Existing routes already exist and must remain functional until explicitly approv
 
 ## 2) Admin Blog UX
 
+### 2.0) Admin Blog Engine Hub (AI + Automation Control Center)
+
+New admin-only route (does not replace existing admin CRUD pages):
+- `/admin/blog/engine`
+
+Purpose:
+- Provide a single “Blog Engine” control center (News Engine-style) so the admin can run blog creation with **minimal effort**.
+
+**What you will see:**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ Blog Engine                                                         │
+│ Operational Mode: [Manual ▾]  (Manual / Assisted / Automatic)        │
+│ [Pause Automation] [Test Generate]                                   │
+├──────────────────────────────────────────────────────────────────────┤
+│ Tabs: [Dashboard] [Drafts & Reviews] [Automation Logic] [Sources]    │
+│       [Audit Logs] [Master Control] [Settings]                       │
+├──────────────────────────────────────────────────────────────────────┤
+│ Active Tab Content Area                                              │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Core interactions:**
+- Drafts & Reviews → open a draft review surface (page or modal) with actions: Publish Now, Schedule, Request Rewrite, Reject, Save.
+- Automation Logic → configure auto-draft/auto-schedule/auto-publish (UI-only here) + publish windows.
+- Sources → manage RSS sources used for blog research/topic discovery.
+- Audit Logs → show AI + automation + admin actions; allow opening “Prompt Details” when available.
+- Master Control → pause/resume automation + emergency stop confirmation.
+
+**AI control depth (inside existing tabs; no new routes):**
+- Settings tab must include a safe “AI Control Plane” section:
+	- Model Profiles (e.g., Deep Research, Drafting, Rewrite, SEO Metadata, Image Prompting)
+	- Routing map: Operation → Model Profile
+	- Credentials (multiple keys) management UI that is server-backed; UI shows masked keys only
+	- Budgets/limits (daily caps, rate limits) and deterministic failure handling
+- Sources tab must support (BLOG research only):
+	- RSS sources
+	- Scraper sources (URL + extraction rules) as an explicit source type
+- Automation Logic must include rule-level clarity for when the system is allowed to auto-schedule/auto-publish.
+
+Constraints:
+- This hub is **admin-only UI/UX** and must not expose secrets.
+- This does not replace the existing editor pages; it links to them.
+
 ### A) `/admin/blog` — Posts List
 
 **What you will see:**
@@ -128,6 +173,13 @@ Existing routes already exist and must remain functional until explicitly approv
 - Generate draft (title/body/SEO/category/tags) from topic + constraints.
 - Admin reviews/edits before publish.
 
+**AI Image Generation (admin-only):**
+- Engine can generate a hero/OG image (or image prompt) for a post.
+- Admin must be able to approve/regenerate/reject before the post is published.
+
+**Operational visibility (admin UX expectation):**
+- Show clear states beyond simple Draft/Published where applicable: Needs Review, Scheduled, Rejected, Error.
+
 ### C) `/admin/blog/[id]/preview` — Preview
 - Shows public post layout, but admin-only.
 - “Back to edit” control.
@@ -136,12 +188,42 @@ Existing routes already exist and must remain functional until explicitly approv
 - `/admin/blog/categories` — manage categories
 - `/admin/blog/tags` — manage tags
 
+### E) Media Library (Blog CMS)
+
+New admin-only route (does not replace existing admin CRUD pages):
+- `/admin/blog/media`
+
+Purpose:
+- Manage blog media assets (upload, browse, copy URL, delete).
+- Keep UX simple: media can be used by copying a URL into existing editor fields (no new editor integration required in this plan).
+
+### F) Comments Management (Blog CMS)
+
+New admin-only route:
+- `/admin/blog/comments`
+
+Purpose:
+- Moderate comments related to blog posts (approve, hide, mark spam, delete).
+- This plan covers **admin moderation UI only**; public comment submission/display is out of scope unless explicitly approved later.
+
 ---
 
 ## 3) Modals (Keep minimal)
 
 - Confirm delete/trash
 - Confirm publish/schedule
+
+Additional modals required by the updated plan (Blog Engine Hub):
+- Pause automation confirmation
+- Emergency stop confirmation
+- Prompt details (read-only)
+- Reject with reason (if not already represented as a dedicated surface)
+
+Additional modals required by the CMS extensions:
+- Upload media (or “Add media”) modal/drawer
+- Confirm delete media
+- Moderate comment (approve/hide/spam) surface (modal or drawer)
+- Confirm delete comment
 
 ---
 
@@ -156,6 +238,15 @@ Existing routes already exist and must remain functional until explicitly approv
 - `/admin/blog/new` বা `/admin/blog/[id]` এ গিয়ে অ্যাডমিন পোস্ট লিখবে/এডিট করবে, SEO ফিল্ড সেট করবে, Preview দেখবে, তারপর Schedule/Publish করবে।
 - AI Assist ব্যবহার করে টপিক দিলে খসড়া পোস্ট (content + SEO) তৈরি হবে, কিন্তু publish করার আগে অ্যাডমিন review করবে।
 
+### Blog CMS (Media + Comments)
+- `/admin/blog/media` এ Blog-এর জন্য media asset upload/browse করা যাবে এবং URL copy করে editor-এ ব্যবহার করা যাবে।
+- `/admin/blog/comments` এ blog comments moderation করা যাবে (Approve/Hide/Spam/Delete)। Public comment submission/display এই scope-এর বাইরে থাকবে, যতক্ষণ না আলাদা করে অনুমোদন দেওয়া হয়।
+
+### Admin Blog Engine (AI + Automation)
+- `/admin/blog/engine` হলো Blog Engine hub। এখানে **Manual / Assisted / Automatic** মোড সিলেক্ট করা যাবে।
+- Automatic/Assisted মোডে AI draft তৈরি করবে এবং সেগুলো **Drafts & Reviews** ট্যাবে review-এর জন্য যাবে।
+- অ্যাডমিন minimal কাজ করবে: Approve/Reject/Schedule/Publish, এবং দরকার হলে Pause/Emergency Stop।
+
 ---
 
 ## 5) Acceptance Checks (Frontend)
@@ -164,6 +255,13 @@ Existing routes already exist and must remain functional until explicitly approv
 - `/blog/[slug]` is deep-link safe (refresh works).
 - `/blog/post` compatibility remains functional.
 - Admin pages render and support create → edit → preview → schedule/publish flows.
+
+- Admin `/admin/blog/media` renders with upload/browse/copy URL/delete affordances.
+- Admin `/admin/blog/comments` renders with moderation actions (approve/hide/spam/delete).
+
+- Admin `/admin/blog/engine` hub renders with the required tabs and mode selector.
+- Pause/Emergency actions are confirmation-gated.
+- Draft review actions are visible (even if UI-only until backend wiring).
 
 ---
 

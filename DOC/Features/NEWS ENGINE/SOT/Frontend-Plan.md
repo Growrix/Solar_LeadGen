@@ -77,7 +77,9 @@ This work must **not** regress existing Admin areas or existing public routes.
 
 ### Out of Scope (explicitly excluded)
 - Prototype-only extras not required for News Engine pages/modals (generic header/footer dashboards, unrelated widgets)
-- Backend implementation (APIs, DB schema, RSS crawling, AI generation, automation runner)
+- Backend implementation changes (APIs, DB schema, RSS crawling, AI generation, automation runner)
+
+Note: A backend implementation already exists in this repo; this document simply constrains what the frontend work should (and should not) change.
 - Auth/RBAC changes (only UI expectations, no policy changes)
 - New design system/tokens, new hardcoded colors, new `dark:*` classes (not allowed)
 

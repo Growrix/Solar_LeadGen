@@ -1,7 +1,7 @@
 commit all the changes to your local repository:
 git add .
 git commit -m "Your commit message"
-Push the changes to the remote repository: git push to the branch-name: News-Engine---Backend
+Push the changes to the remote repository: git push to the branch-name: NEWS-ENGINE
 
 
  ***backup instruction***
@@ -34,6 +34,44 @@ Admin123!Secure
 - The Outcome should be followed by This : 
   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_Comprehensive_UI UX.md
 
+
+***Phase 3 : Frontend Enhancement ***
+
+ - Here is the updated prototype after implementing all the UI UX building prompts
+  DOC\FEATURES\BLOG\GoogleAIStudio UI UX\solarmatch-blog
+  from the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md
+
+### Analyze & Audit Instructions : 
+  
+  ***step 1 : Audit*** 
+  Deeply audit the prototype as per following audit Instructions : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+  
+  ***step 3 : Enhance***
+  - After that prepare add more frontend enhancement steps in the
+   DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md  
+   Prompts folder if you found anything missing or not accurate as per your analysis. 
+  - If everything is fine then just give me a green signal to move forward. 
+  
+  ***Strickt Rules***
+  - Here is the audit Instruction you have to follow :
+   DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+  
+  - All of your new prompts should be addede in the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md 
+  after the existing prompts. so that we can keep track of all the changes.
+  
+- Make sure to update all the relevant files accordingly to reflect these changes, 
+  check for the  instructions on the top of the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md
+
+  ***Phase 4 : Frontend Prototype vs SOT Audit***
+
+  ***step 2 : Analyze*** 
+  - Now I want you to analyze the prototype vs the updated initial plan 
+  * DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md 
+  * DOC\FEATURES\BLOG\SOT 
+  - Now I want you to analyze the prototype vs the SOT and identify what is missing or not accurate as per the updated plan & SOT. 
 --------------------------------------------------------------------------------------
 
 

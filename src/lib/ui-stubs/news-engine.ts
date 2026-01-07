@@ -65,6 +65,15 @@ export interface NewsEngineSettings {
   regionLocale: string;
   dailyLimit: number;
   deduplicationEnabled: boolean;
+
+  writingTone?: string;
+  modelLabel?: string;
+  dedupSensitivity?: number;
+  hallucinationMonitoring?: boolean;
+  contentPreservation?: boolean;
+  autoArchivePeriod?: string;
+  emailAlerts?: boolean;
+  weeklyDigest?: boolean;
 }
 
 export interface AuditLogEntry {

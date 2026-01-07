@@ -18,7 +18,7 @@ export function ManualDraftModalV6({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate: (data: ManualDraftFormV6) => void;
+  onGenerate: (data: ManualDraftFormV6) => Promise<void> | void;
 }) {
   const [title, setTitle] = React.useState('');
   const [prompt, setPrompt] = React.useState('');
@@ -27,6 +27,7 @@ export function ManualDraftModalV6({
   const [tags, setTags] = React.useState<string[]>([]);
   const [outline, setOutline] = React.useState('');
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   if (!isOpen) return null;
 
@@ -41,18 +42,28 @@ export function ManualDraftModalV6({
     setTags((prev) => prev.filter((t) => t !== tagToRemove));
   };
 
-  const handleGenerate = () => {
-    if (!prompt.trim()) return;
+  const handleGenerate = async () => {
+    const trimmedPrompt = prompt.trim();
+    if (!trimmedPrompt) {
+      setError('Please enter a prompt to generate a draft.');
+      return;
+    }
+
+    setError('');
     setIsGenerating(true);
-    window.setTimeout(() => {
-      onGenerate({ title, prompt, category, tags, outline });
-      setIsGenerating(false);
+    try {
+      await onGenerate({ title, prompt: trimmedPrompt, category, tags, outline });
       setTitle('');
       setPrompt('');
       setCategory('Tech');
       setTags([]);
       setOutline('');
-    }, 2000);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to generate draft';
+      setError(msg);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -125,6 +136,7 @@ export function ManualDraftModalV6({
                   placeholder="What should the AI research and write about? Provide context, key players, or specific data points..."
                   className="w-full h-32 px-4 py-3 bg-background border border-border rounded-2xl text-body text-foreground focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                 />
+                {error ? <p className="text-body-small text-destructive">{error}</p> : null}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

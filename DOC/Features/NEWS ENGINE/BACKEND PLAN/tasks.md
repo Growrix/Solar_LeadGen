@@ -385,5 +385,58 @@ description: "Tasks for News Engine backend implementation"
 | AI Rewrite | ✅ Working | Calls OpenAI with editor instructions |
 | AI Regenerate (Rejected) | ✅ Working | Only for REJECTED items |
 | Public Display | ✅ Working | Uses real contentHtml from DB |
-| Settings Persistence | ⚠️ Partial | 3/12 settings persist (region, daily_limit, dedup) |
-| Test Preview | ❌ Stub | Shows mock data, does NOT call AI |
+| Settings Persistence | ✅ Working | SettingsTab fields now persist via settings API |
+| Test Preview | ✅ Working | Calls real admin test endpoint and renders real AI output |
+
+---
+
+## Phase 12: Close Audit Gaps (Config Persistence + Test Preview) (2026-01-07)
+
+**Purpose**: Implement the remaining high-impact audit gaps so every major UI control is deterministic and persisted.
+
+**Sequencing rule**: Fix **non-functional** surfaces first (Test Preview), then remove fake UI behavior (Manual Draft timer), then persist settings.
+
+### P0 (Critical): Test & Preview must be real
+
+- [x] T101 [US4] Implement AI test/preview endpoint (no DB writes)
+  - `POST src/app/api/admin/news-engine/research/test/route.ts`
+  - Require admin auth
+  - Input: `{ topic?: string, url?: string }`
+  - Output: `{ result: { title, summary, contentHtml, seoTitle?, seoDescription?, citations? }, modelUsed, durationMs }`
+
+- [x] T102 [US4] Wire TestPreviewModal to call the real endpoint
+  - `src/components/news-engine/v6/modals/TestPreviewModal.tsx`
+  - Replace `mockResult` + `setTimeout` with API call + real result rendering
+  - Ensure save-to-drafts uses generated result (not the selected item)
+
+### P1 (High): Remove fake generation timer from Manual Draft
+
+- [x] T103 [US4] Make ManualDraftModal generation deterministic
+  - `src/components/news-engine/v6/modals/ManualDraftModal.tsx`
+  - Replace `setTimeout` with `await onGenerate(...)`
+  - Add minimal inline error handling (no new UX surfaces)
+
+### P1 (High): Persist SettingsTab fields end-to-end
+
+- [x] T104 [US3/US4] Extend News Engine settings keys + persistence
+  - `src/lib/news-engine/settings.ts` add keys for:
+    - `news.ai.writing_tone`
+    - `news.ai.model_label`
+    - `news.ai.hallucination_monitoring`
+    - `news.ai.content_preservation`
+    - `news.settings.dedup_sensitivity`
+    - `news.ops.auto_archive_period`
+    - `news.notifications.email_alerts`
+    - `news.notifications.weekly_digest`
+  - `src/app/api/admin/news-engine/settings/route.ts` GET/PUT must read/write these fields
+
+- [x] T105 [US4] Update SettingsTab to use persisted state (no UI-only local values)
+  - `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+  - Ensure save/reset writes all settings fields and reload shows same values
+
+### Verification
+
+- [x] T106 Run `npx tsc --noEmit`
+- [x] T107 Run `npm run build`
+- [ ] T108 Manual QA: Test & Preview generates real output; Save to Drafts creates item with generated content
+- [ ] T109 Manual QA: Settings values persist across reload

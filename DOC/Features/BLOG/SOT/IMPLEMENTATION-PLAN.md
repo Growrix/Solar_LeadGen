@@ -21,8 +21,18 @@ Primary goal for the next implementation cycle:
 - Stabilize and complete the BLOG feature **as described in the Frontend Plan**, without breaking existing UI.
 
 Out of scope:
-- RSS / government feed ingestion (News feature)
+- RSS / government feed ingestion for publishing news posts (News feature)
 - Newsletter automation (Newsletter feature)
+
+In scope (new):
+- Blog Engine Hub UI/UX (mode selector, review queue surfaces, automation logic UI, sources manager, audit logs, master control)
+- RSS sources for **blog research** (not news publishing)
+- Blog CMS extensions: Media Library (`/admin/blog/media`) and Comments management (`/admin/blog/comments`) (admin-only moderation UI)
+
+In scope (AI + automation enhancements):
+- AI Control Plane UX inside Engine Hub Settings (model profiles, routing per operation, server-backed credential management, budgets/limits)
+- Research ingestion UX expansion (support RSS + approved scraper sources for BLOG research inputs)
+- AI image generation UX (hero/OG generation rules + review/approval flow; surfaced operationally via logs)
 
 ---
 
@@ -62,6 +72,15 @@ Out of scope:
   - Admin can create/edit a draft.
   - Admin can schedule a post.
   - Admin can preview a post.
+
+- Admin Blog Engine Hub
+  - `/admin/blog/engine` renders and provides: mode selector (Manual/Assisted/Automatic) + tabs (Dashboard / Drafts & Reviews / Automation Logic / Sources / Audit Logs / Master Control / Settings).
+  - Pause/Emergency actions are confirmation-gated.
+  - Draft review actions are visible (publish/schedule/rewrite/reject/save).
+
+- Admin CMS Extensions
+  - `/admin/blog/media` renders a Media Library UI (upload/browse/copy URL/delete affordances).
+  - `/admin/blog/comments` renders a Comments moderation UI (approve/hide/spam/delete actions).
 
 - Automation
   - `POST /api/webhooks/n8n/blog/create-draft` works with secret.

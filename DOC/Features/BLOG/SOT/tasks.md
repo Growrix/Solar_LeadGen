@@ -36,6 +36,28 @@
 
 ---
 
+## Phase 2B: User Story 2B — Admin Blog Engine Hub (AI + Automation) (Priority: P1)
+
+**Goal**: Admin has a single Blog Engine hub to operate Manual/Assisted/Automatic workflows with operational visibility (even if some actions remain UI-only until backend wiring).
+
+- [ ] T023 [P] [US2B] Add `/admin/blog/engine` hub route and tabbed surfaces (Dashboard / Drafts & Reviews / Automation Logic / Sources / Audit Logs / Master Control / Settings)
+- [ ] T024 [P] [US2B] Add confirmation-gated Pause/Resume/Emergency Stop actions (re-use existing confirmation modal pattern)
+- [ ] T025 [US2B] Add Prompt Details surface (read-only) for AI-generated items
+- [ ] T026 [US2B] Ensure lifecycle states are visible in admin UX (Needs Review / Draft Ready / Scheduled / Rejected / Error)
+
+---
+
+## Phase 2C: User Story 2C — Admin Blog CMS (Media + Comments) (Priority: P1)
+
+**Goal**: Admin can manage blog media assets and moderate blog comments (CMS extensions).
+
+- [ ] T027 [P] [US2C] Add `/admin/blog/media` Media Library UI (upload/browse/copy URL/delete)
+- [ ] T028 [P] [US2C] Add `/admin/blog/comments` Comments management UI (approve/hide/spam/delete)
+- [ ] T029 [US2C] Add confirmation-gated destructive actions (delete media, delete comment)
+
+
+---
+
 ## Phase 3: User Story 3 — Automation via n8n (Priority: P2)
 
 **Goal**: n8n can create drafts, schedule, and publish due posts using authenticated webhooks.

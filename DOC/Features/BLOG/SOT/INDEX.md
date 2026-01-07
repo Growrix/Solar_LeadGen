@@ -25,8 +25,16 @@ This folder is the **single Source of Truth** for the BLOG feature (planning + e
 ## Scope Guardrail
 
 This SOT is for **BLOG** only.
-- News (RSS/government feeds) belongs in a separate feature folder (e.g., `DOC/FEATURES/NEWS ENGINE/`).
+- News (publishing news posts from government feeds) belongs in a separate feature folder (e.g., `DOC/FEATURES/NEWS ENGINE/`).
 - Newsletter automation belongs in a separate feature folder.
+
+In scope clarification (new):
+- RSS sources used for **blog research/topic discovery** are in scope for BLOG.
+- The Blog Engine Hub (AI + automation control center) is part of BLOG.
+
+Additional in-scope CMS extensions (new):
+- Media Library for blog assets (`/admin/blog/media`).
+- Comments management for moderation (`/admin/blog/comments`). Public commenting UI remains out of scope unless explicitly approved.
 
 ## Approval Gates
 

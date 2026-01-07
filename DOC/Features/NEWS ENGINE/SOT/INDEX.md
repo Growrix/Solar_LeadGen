@@ -5,6 +5,13 @@ This index is the stable restart point for anyone (human/AI) resuming work on Ne
 Canonical planning SOT:
 - `FEATURE-SOT.md` — 6-phase framework, feature-level single source of truth.
 
+Current state inventory (what exists in code):
+- `../Audit Reports/news-engine-inventory-mapping-audit-2026-01-07.md` — implementation inventory + mapping audit (Phase 1).
+
+Current enhancement direction (AI/Automation/Admin deep control):
+- `../Plan/AI-AUTOMATION-ADMIN-ENHANCEMENT-PLAN-2026-01-07.md`
+- `AI-AUTOMATION-ADMIN-SOT-ADDENDUM.md`
+
 Mandatory frontend contract (no implementation without this):
 - `Frontend-Plan.md` — Visual contract for Option A (Next.js routes + connected modals) + বাংলা ব্যাখ্যা.
 

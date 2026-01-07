@@ -2,6 +2,7 @@
 
 import React from 'react';
 import type { NewsItem } from '@/lib/ui-stubs/news-engine';
+import { adminRunTestPreviewGeneration, type TestPreviewGenerationResult } from '@/lib/news-engine/client';
 import {
   AlertCircle,
   CheckCircle2,
@@ -23,7 +24,7 @@ export function TestPreviewModal({
 }: {
   item: NewsItem;
   onClose: () => void;
-  onSaveToDrafts: () => void;
+  onSaveToDrafts: (result: TestPreviewGenerationResult) => void;
   onSimulatePublish: () => void;
 }) {
   const [testState, setTestState] = React.useState<'idle' | 'running' | 'completed'>('idle');
@@ -31,19 +32,45 @@ export function TestPreviewModal({
   const [topic, setTopic] = React.useState('');
   const [url, setUrl] = React.useState('');
 
-  const mockResult = {
-    title: 'Next-Gen Silicon Photonics Breakthrough set to Revolutionize Data Centers',
-    summary:
-      'Researchers at the Global Innovation Hub have successfully demonstrated a 400Gbps transmission over standard fiber using a new silicon-based laser array, potentially slashing cloud latency and energy consumption.',
-  };
+  const [result, setResult] = React.useState<TestPreviewGenerationResult | null>(null);
+  const [modelUsed, setModelUsed] = React.useState<string>('');
+  const [durationMs, setDurationMs] = React.useState<number | null>(null);
+  const [error, setError] = React.useState<string>('');
 
   const handleRunTest = () => {
+    const effectiveUrl = sourceType === 'custom' ? url.trim() : '';
+    const effectiveTopic = topic.trim() || item.title;
+
+    setError('');
+    setResult(null);
+    setModelUsed('');
+    setDurationMs(null);
     setTestState('running');
-    window.setTimeout(() => setTestState('completed'), 2500);
+
+    void (async () => {
+      try {
+        const res = await adminRunTestPreviewGeneration({
+          topic: effectiveTopic,
+          url: effectiveUrl || undefined,
+        });
+        setResult(res.result);
+        setModelUsed(res.modelUsed);
+        setDurationMs(typeof res.durationMs === 'number' ? res.durationMs : null);
+        setTestState('completed');
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Failed to run test generation';
+        setError(msg);
+        setTestState('idle');
+      }
+    })();
   };
 
   const resetTest = () => {
     setTestState('idle');
+    setResult(null);
+    setModelUsed('');
+    setDurationMs(null);
+    setError('');
   };
 
   return (
@@ -175,6 +202,7 @@ export function TestPreviewModal({
                   Clear Results
                 </button>
               ) : null}
+              {error ? <p className="mt-3 text-body-small text-destructive">{error}</p> : null}
             </div>
 
             <div className="p-4 bg-warning/10 rounded-xl border border-warning/30 shadow-neu-outset space-y-2">
@@ -234,27 +262,29 @@ export function TestPreviewModal({
                     <span className="text-body-small text-foreground">Generation Complete</span>
                   </div>
                   <div className="flex items-center gap-4 text-body-small uppercase tracking-widest text-muted-foreground">
-                    <span>Model: OpenAI</span>
-                    <span>Tokens: 1,420</span>
-                    <span>Time: 2.4s</span>
+                    <span>Model: {modelUsed || 'OpenAI'}</span>
+                    <span>Tokens: —</span>
+                    <span>Time: {durationMs !== null ? `${(durationMs / 1000).toFixed(1)}s` : '—'}</span>
                   </div>
                 </div>
 
                 <div className="max-w-2xl mx-auto space-y-6">
                   <div className="space-y-2">
                     <label className="text-body-small uppercase tracking-widest text-muted-foreground">Draft Headline</label>
-                    <h4 className="text-heading-2 text-foreground">{mockResult.title}</h4>
+                    <h4 className="text-heading-2 text-foreground">{result?.title || '—'}</h4>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-body-small uppercase tracking-widest text-muted-foreground">Article Body Preview</label>
                     <div className="bg-surface border border-border rounded-2xl p-5 shadow-neu-inset text-body text-foreground leading-relaxed space-y-4">
-                      <p>{mockResult.summary}</p>
-                      <p>
-                        The technology, which integrates optical components directly onto standard CMOS wafers,
-                        addresses one of the most significant bottlenecks in modern hyperscale computing. Industry
-                        analysts predict that this approach could accelerate the deployment of AI-intensive workloads...
-                      </p>
+                      {result?.contentHtml ? (
+                        <div
+                          className="prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: result.contentHtml }}
+                        />
+                      ) : (
+                        <p>{result?.summary || '—'}</p>
+                      )}
                     </div>
                   </div>
 
@@ -263,10 +293,15 @@ export function TestPreviewModal({
                       <ExternalLink size={16} />
                       <span className="text-body-small uppercase tracking-widest">Research Citations</span>
                     </div>
-                    <ul className="text-body-small text-brand-accent space-y-1 underline">
-                      <li>Source: Nature Electronics (Oct 2023)</li>
-                      <li>Source: Advanced Computing Consortium Analysis</li>
-                    </ul>
+                    {result?.citations && result.citations.length > 0 ? (
+                      <ul className="text-body-small text-brand-accent space-y-1 underline">
+                        {result.citations.slice(0, 6).map((c) => (
+                          <li key={c}>{c}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-body-small text-muted-foreground">No citations available.</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -290,8 +325,11 @@ export function TestPreviewModal({
             </button>
               <button
                 type="button"
-                disabled={testState !== 'completed'}
-                onClick={onSaveToDrafts}
+                disabled={testState !== 'completed' || !result}
+                onClick={() => {
+                  if (!result) return;
+                  onSaveToDrafts(result);
+                }}
                 className="flex items-center gap-2 px-8 py-2 bg-foreground text-background rounded-xl text-body-small shadow-neu-outset hover:opacity-95 disabled:opacity-50"
               >
               <FileText size={18} />

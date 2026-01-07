@@ -19,6 +19,12 @@ function parseBool(raw: string | undefined, fallback: boolean): boolean {
   return fallback;
 }
 
+function parseString(raw: string | undefined, fallback: string): string {
+  if (raw === undefined) return fallback;
+  const v = raw.trim();
+  return v ? v : fallback;
+}
+
 // GET /api/admin/news-engine/settings
 export async function GET() {
   try {
@@ -33,6 +39,15 @@ export async function GET() {
         regionLocale: raw['news.settings.region_locale'] || 'AU',
         dailyLimit: parseNumber(raw['news.settings.daily_limit'], 6),
         deduplicationEnabled: parseBool(raw['news.settings.deduplication_enabled'], true),
+
+        writingTone: parseString(raw['news.ai.writing_tone'], 'Journalistic'),
+        modelLabel: parseString(raw['news.ai.model_label'], 'OpenAI o3-mini'),
+        dedupSensitivity: parseNumber(raw['news.settings.dedup_sensitivity'], 85),
+        hallucinationMonitoring: parseBool(raw['news.ai.hallucination_monitoring'], true),
+        contentPreservation: parseBool(raw['news.ai.content_preservation'], true),
+        autoArchivePeriod: parseString(raw['news.ops.auto_archive_period'], '48 Hours'),
+        emailAlerts: parseBool(raw['news.notifications.email_alerts'], true),
+        weeklyDigest: parseBool(raw['news.notifications.weekly_digest'], false),
       },
       notifications: {
         enabled: parseBool(raw['news.notifications.enabled'], true),
@@ -79,6 +94,32 @@ export async function PUT(request: NextRequest) {
       }
       if (typeof body.settings.deduplicationEnabled === 'boolean') {
         updates.push(setNewsEngineSetting('news.settings.deduplication_enabled', body.settings.deduplicationEnabled, auth.userId));
+      }
+
+      if (typeof body.settings.writingTone === 'string') {
+        updates.push(setNewsEngineSetting('news.ai.writing_tone', body.settings.writingTone.trim(), auth.userId));
+      }
+      if (typeof body.settings.modelLabel === 'string') {
+        updates.push(setNewsEngineSetting('news.ai.model_label', body.settings.modelLabel.trim(), auth.userId));
+      }
+      if (typeof body.settings.dedupSensitivity === 'number' && Number.isFinite(body.settings.dedupSensitivity)) {
+        const v = Math.max(0, Math.min(100, Math.floor(body.settings.dedupSensitivity)));
+        updates.push(setNewsEngineSetting('news.settings.dedup_sensitivity', v, auth.userId));
+      }
+      if (typeof body.settings.hallucinationMonitoring === 'boolean') {
+        updates.push(setNewsEngineSetting('news.ai.hallucination_monitoring', body.settings.hallucinationMonitoring, auth.userId));
+      }
+      if (typeof body.settings.contentPreservation === 'boolean') {
+        updates.push(setNewsEngineSetting('news.ai.content_preservation', body.settings.contentPreservation, auth.userId));
+      }
+      if (typeof body.settings.autoArchivePeriod === 'string') {
+        updates.push(setNewsEngineSetting('news.ops.auto_archive_period', body.settings.autoArchivePeriod.trim(), auth.userId));
+      }
+      if (typeof body.settings.emailAlerts === 'boolean') {
+        updates.push(setNewsEngineSetting('news.notifications.email_alerts', body.settings.emailAlerts, auth.userId));
+      }
+      if (typeof body.settings.weeklyDigest === 'boolean') {
+        updates.push(setNewsEngineSetting('news.notifications.weekly_digest', body.settings.weeklyDigest, auth.userId));
       }
     }
 

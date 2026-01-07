@@ -4836,8 +4836,160 @@ After that create a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks
 - The Outcome should be followed by This : 
   DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\Template_Comprehensive_UI UX.md
 
-  -----------------------------------------------------------------------------------
 
+  ------------------------------------------------------------------------------------------
+
+  I think you we need to update our initial plan then. Becuase I need the Blog feature has the similar kind of AI and Automation functionality that we have in the News Engine feature. So I want you to update the initial plan accordingly in the DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md file . After that will confirm you to prepare the 6 phase SOT folder files accordingly based on the updated initial plan. Read the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOC\FEATURES\NEWS ENGINE\SOT for better understanding of the AI and Automation functionality that I want in the Blog feature as well. 
+
+  ------------------------------------------------------------------------------------------
+
+  As the files were alreayd generated , All you need is to update all the files as per the update initial plan. here is the main file of this feature DOC\FEATURES\BLOG . check out all the documentation and update everything accordingly. but one thing to mention is that, As I ahve built partial UI UX for blog in the DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX by using 11 prompts from the DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-plan-admin-v1-2026-01-10.md file , you need to make sure that the UI UX is aligned with the updated initial plan. So you need to audit back the built prototype vs the updated initial plan and update the prototype accordingly if needed. After that update the frontend plan in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder accordingly.
+
+  -----------------------------------------------------------------------------------------------
+
+  - Here is the updated prototype after implimented 28 prompts D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOC\FEATURES\BLOG\GoogleAIStudio UI UX\solarmatch-blog (2) from the DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-plan-admin-v1-2026-01-10.md file . 
+
+  - Now I want you to analyze the prototype vs the updated initail plan 
+  * DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md 
+  * DOC\FEATURES\BLOG\SOT 
+  - Deeply audit back the prototype vs the updated initial plan and the SOT 
+  file and identify what is missing or not accurate as per the updated plan & SOT. After that prepare another frontend enhancement plan in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder if you found anything missing or not accurate as per your analysis. If everything is fine then just give me a green signal to move forward. 
+  - Make sure to update all the relevant files accordingly to reflect these changes, check for the instructions on the top of the DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md file for that. 
+
+  -------------------------------------------------------------------------------------
+
+  I am wonderd that you have given green signal. because there are a lot of missing modals and triggers. First you need to enure the Audit instruction covered everything DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md . 
+
+  ### My visual testing found these issues :
+
+  1. Content Manger > Categories > + Add Category button does not open any modal.
+  2. Content Manger > Tags > + Add Tag button does not open any modal.
+  3. Content Manger > Blog Posts > Bulk Actions > There is no bulk selection option to select multiple posts and also no options to bulk delete.
+  4. Media Library > New Folder button does not open any modal.
+  5. Media Library > grid view and list view toggle is not working.
+  6. Comments > Bulk Actions > There is no bulk selection option to select multiple comments and also no options to bulk delete or approve/reject.
+  7. Engine Hub> Setting page is empty and there is no settings UI UX were planned for this feature. 
+  8. Engine Hub > There are lot of buttons that does not open any modal or no triggers or actions. just remained static. 
+
+  You need to perfrom the Audit again but before that You need to update the Audit prompt DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md  to cover all the e2e pin point issues. do not need to mention exact issues in the audit instructions. but make the instruction vast enough so that it will cover all the e2e issues. After that perform the audit again and prepare the frontend enhancement plan accordingly in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder.
+
+  ----------------------------------------------------------------------------------
+
+  I want you to rechek the audit instructions again. I have changed my prompts a bit . Now I do not want the AI deeply focus on editing all the SOT files in this enhancement phase. All I need is the audit should be based on my new prompt , where I am more focused on enancing frontend . fist focus on finding issues and unfnished, no endpoints, no triggeres etc e2e UI UX in the prototype . 2nd ly compare vs SOT to find any missing gaps. but do not focus on updating the SOT files in this phase. here is my new prompt : 
+
+  ***step 1 : Audit**
+ - Here is the updated prototype after implementing all the UI UX building prompts : 
+  DOC\FEATURES\BLOG\GoogleAIStudio UI UX
+  
+  - Deeply audit the prototype as per audit Instructions :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+
+- After that Prepare the audit report in the :
+  DOC\FEATURES\BLOG\Audit Report folder 
+
+***step 2 : Analyze & Enhance Instructions***  
+   - After the Audit Findings, Come up with the Enhancement plan if needed. plan the for all the missing gaps and inaccuraies that you have found during the audit. Also make sure to add more prompts by keeping everything existing as it is. The goal is the final prototype should have the e2e flows , triggners, functionslities as per the updated enhancement plans & SOT 100%.
+   - After that add more frontend enhancement steps in the following : 
+   DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system -plan-blog-2026-01-05.md .
+   Keep the existing prompts as it is and just add the new ones after the existing ones so that we can keep track of all the changes. 
+ 
+   ***Strickt Rules***
+  - Here is the audit Instruction you have to follow :
+   DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+  
+  - All of your new prompts should be addede in the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md 
+  after the existing prompts. so that we can keep track of all the changes.
+
+  - End of my prompt
+
+  ***Instructions*** 
+  Now I want you to update the audit instruction file accordingly based on my new prompt instructions mentioned above. 
+
+
+  -------------------------------------------------------------------------------------------
+
+  **The Scenario :***
+  - In the phase 1 we have built the SOT as per the initial plan.
+  - In the phase 2 we have prepared the frontend UI UX prompts based on the SOT.
+  - In the phase 3 we have built the prototype based on the frontend UI UX prompts and performed audits and enhancements and updated the prompts accordingly. Also updated the frontened on the go based on the audit findings. And did not update any SOT files in this phase. becuase we had to focus more on the frontend enahcnements with multiple versions of the prototype.
+  
+  ***Phase 4 : Audt the current state and update the SOT only*** 
+  - Need you to prepare an universal audit instruction file for this phase only, make sure it is resuable for any frontend feature audit in future as well. keep it generic   . 
+  prepare the file in this :  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder.
+      - The audit should be based on the updated initial plan and the SOT only. this is the final audit and sync phase to update and aling all the SOT fiels as per the updated initial plan and the final prototype.
+
+
+      -----------------------------------------------------------------------------
+
+***understand the scenario : ***
+
+ ### I have been using this prompt after builder each version of the prototype :
+  ***Phase 3 : Frontend Enhancement ***
+***step 1 : Audit**
+ - Here is the updated prototype after implementing all the UI UX building prompts : 
+  DOC\FEATURES\BLOG\GoogleAIStudio UI UX
+  
+  - Deeply audit the prototype as per audit Instructions :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+
+- After that Prepare the audit report in the :
+  DOC\FEATURES\BLOG\Audit Report folder 
+
+***step 2 : Analyze & Enhance Instructions***  
+   - After the Audit Findings, Come up with the Enhancement plan if needed. plan the for all the missing gaps and inaccuraies that you have found during the audit. Also make sure to add more prompts by keeping everything existing as it is. The goal is the final prototype should have the e2e flows , triggners, functionslities as per the updated enhancement plans & SOT 100%.
+   - After that add more frontend enhancement steps in the following : 
+   DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system -plan-blog-2026-01-05.md .
+   Keep the existing prompts as it is and just add the new ones after the existing ones so that we can keep track of all the changes. 
+
+***My Observations :***
+1. Content Manger > Blog Posts > Bulk Actions > There is no bulk selection option to select multiple posts and also no options to bulk delete.
+2. Comments > Bulk Actions > There is no bulk selection option to select multiple comments and also no options to bulk delete or approve/reject.
+3. Engine Hub> Setting page is empty and there is no settings UI UX were planned for this feature. You should have the setting UI UX plan in oder to make this feature functional.
+4. Engine hub > Drafts & Reviews > the edit button is not triggering any modal for edit. 
+
+### there are a lot of issues to identify.
+
+   ***Strickt Rules***
+  - Here is the audit Instruction you have to follow :
+   DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+  
+  - All of your new prompts should be addede in the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md 
+  after the existing prompts. so that we can keep track of all the changes.
+      
+      
+      
+ ### But the issues I am facing :
+  - The UI UX is still has poor functionalaties e.g in the previous version 2 had no bulk actions, after I mentioned this issue > now I have bulk actions in version 3 , but there is no page were created where the deleted files move there as a soft deletion > so that I can restore or permanently delete from there. 
+
+- this means your enhacement plan is also not e2e and logically done. You are just coming up with few prompts and updating the prototype on the go. but not thinking from end to end. 
+- I have mentioned one issue with the bulk editing , but there are a lot of pages and tables that also should have bulk action functionality. 
+
+### remember My Goal is to build the Frontend e2e as per SOT but also Enhance logically e2e and build it Backend friendly. So that I will not face with any undeone/unfinished/static only UI issues while doing the backend development. This is crucial. 
+
+***Instructions*** you need to comeup with the best solutions. and also check back the audit instructions DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype Audit & Enhancement_Prompt.md . if you think , updating this will solve our issues then udate it. or let me know what should I do to solve this kind of issues 
+
+-------------------------------------------------------------------------------------------
+
+
+focusing on the AI Automation only , I want you to come up with the best ADMIN functionality for the News Engine Feature. Brainstorm and prepare the best possible e2e AI Automation functionality for the News Engine feature. I need more internal control where the Admin can control the AI and Automation functionality deeply. e.g controlling while AI model to use like , for Deep research GPT5.2, for Drafting GPTo3 mini etc. ALso need the ability to use multiple API keys for different AI models. Also need the ability to set the operational rules for AI usage e2e. 
+
+RSS , Scrapper based research etc works and can be controlled from the Admin side e2e. the AI should be able to generate AI image for the blog posts. 
+
+***Things to keep in mind***
+We already had a plan DOC\FEATURES\BLOG\SOT\FEATURE-SOT.md and also built UI protptype DOC\FEATURES\BLOG\GoogleAIStudio UI UX . But now I want you to focus more on the AI and Automation part only. So your new plan should be more focused on the AI and Automation part only. 
+
+  ***Instructions*** 
+  - First audit back the existing SOT vs the prototype vs the initial plan DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md  to identify any missing gaps or illogical UI UX in the AI and Automation part only. THe goal is to identify what is missing or illogical in the AI and Automation part only and enhance the existing SOT accordingly. the existing plans already had the basic AI and Automation functionality but now I want you to enhance it deeply.
+
+ After that prepare the enhancement plan in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared. 
+
+  ***Strickt Rules***
+
+  ----------------------------------------------------------------------------------------
+
+  
   Now I can see the API is working but the AI generated content is not generated the whole content properly . check the screenshot . in all the 5 new articles there is a common body content , which is may be hard coded (Silicon-based photonics is undergoing a massive transformation as hyperscale data centers reach the limits of electrical copper interconnects. By integrating laser arrays directly onto CMOS wafers, throughput can scale to 800G and beyond without the thermal bottleneck traditional systems face.
 
 "We are seeing a convergence of optical physics and high-volume semiconductor manufacturing," says Lead Researcher Dr. Elena Vance. This development is expected to slash latency for large-scale AI training clusters by as much as 35% within the next 24 months.)
@@ -4865,3 +5017,46 @@ After that create a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
 
  - prepare a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md and start implimenting accordingly
+
+ -------------------------------------------------------------------------------------------
+Focusing on the News Engine Feature, Follow this instructions strictly and perfrom the audit : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md 
+
+ - and after that prepare the report in the : DOC\FEATURES\NEWS ENGINE\Audit Reports 
+
+ --------------------------------------------
+
+focusing on the AI Automation only , I want you to come up with the best ADMIN functionality for the News Engine Feature. Brainstorm and prepare the best possible e2e AI Automation functionality for the News Engine feature. I need more internal control where the Admin can control the AI and Automation functionality deeply. e.g controlling while AI model to use like , for Deep research GPT5.2, for Drafting GPTo3 mini etc. ALso need the ability to use multiple API keys for different AI models. Also need the ability to set the operational rules for AI usage e2e. 
+
+- RSS , Scrapper based research etc works and can be controlled from the Admin side e2e. the AI should be able to generate AI image for the News posts. 
+- I want more control on RSS sources and need more functionality how the AI will generate the content based on the RSS sources. 
+- The web search control is not clear to me, I want you to come up with the best possible web search research functionality for the News Engine feature. e.g when the AI will do web search , when will do rss , which post will based on rss/web search etc. 
+- I need a live tracking system where I can see the AI is working or not, when last worked, what is in the Queue , how many posts are generated, What is upcoming , how the overall settings are working e2e. 
+- In the Automation > think from a admin user perspective and come up with the best possible Automation functionality e2e. 
+
+***Things to keep in mind***
+We already had a plan DOC\FEATURES\NEWS ENGINE\SOT and also built the frontend and backend DOC\FEATURES\NEWS ENGINE\BACKEND PLAN e2e as per SOT and the feature is almost functional. But now I want you to focus more on the AI and Automation part only. So your new plan should be more focused on the AI and Automation part only. 
+***My personal overview to conside*** 
+- The overall UX for the admin is not good, and it is like more complex to do the settings and automation, rss, auto scheduling etc. - Need you to comeup with more enhancement Idea and manage everything more easily. 
+
+***My pain points*** 
+- I am confused about how this Automation logic> Publish windows will work , becuase it has optio to set a time range but not any specific time and days or more details to control the automation deeply like I can set the time days easily.
+- Automation logic > Operational Rules section is confusing, I do not understand what it is doing actually. what is the use of it. 
+- It would be nice if I have tooltips to undertand the functionality.
+- Source > Web & trend Research is also confusing , I do not undertad how it will work and where it is connected . 
+- The overall admin functionality is like showing of a lot of things but no such clear idea and functionality how it will work e2e.
+- Master control > run automation Now button is confusing because it show always in the same state UI when clicked on it. And also not sure how this pipeline sub-system works. 
+
+- The overall openion is : we have build a lot of things but not sure we still need more things to build or not and also not sure which is for what and even it is really working or not. Now there are a lot of options here and there to control the AI automation but I have no idea how it will work e2e.
+- The AI generated post is generating but I am not sure how the AI is doing the research, from where it is doing the research, how it is using RSS, web search, trends etc. No clear picture. 
+- The public page article writing is not good as well,. The UI doesnot show any bullet points, sub-heading etc , just showing plain body texts. which is not reader friendly. 
+- 
+  ***Instructions*** 
+  Focusing on the News Engine Feature, Follow this instructions strictly and perfrom the audit : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md 
+
+ - and after that prepare the report in the : DOC\FEATURES\NEWS ENGINE\Audit Reports 
+ - In the end separately give me a new plan for enhancemnent that solves my painpoints and also come up with the best possible AI and Automation functionality for the News Engine feature from an Admin user perspective. prepare the plan in theDOC\FEATURES\NEWS ENGINE\Plan folder.
+
+
+ ---------------------------------------------------------------------------------------
+
+ the prototype is only the UI , and we are not it that stage anymore. we have done migrations , Backend impimentations. and now about to do the enhancing and expanding. if you comapre vs v6 it is completely wrong. I think you need to clarify this file the SOT in this file means the Implimentation done in our site wich is under src, prisma etc folders and not V6.  It is better to create another audit prompt file to make sure do the e2e audit as per DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md but the purpose is different , it is not to compare anything. it is about to show the accurate clear picture of the feature's frontend and backend, file structures etc. because this will be analyzed while implimenting the enhancement. create a separate audit prommpt in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT

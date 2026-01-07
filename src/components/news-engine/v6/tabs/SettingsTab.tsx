@@ -15,15 +15,16 @@ type Props = {
 };
 
 export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props) {
-  const [tone, setTone] = React.useState('Journalistic');
-  const [model, setModel] = React.useState('OpenAI gpt-4o-mini');
-  const [dedupSensitivity, setDedupSensitivity] = React.useState(85);
-  const [hallucinationCheck, setHallucinationCheck] = React.useState(true);
-  const [contentPreservation, setContentPreservation] = React.useState(true);
-  const [autoArchive, setAutoArchive] = React.useState('48 Hours');
-  const [emailAlerts, setEmailAlerts] = React.useState(true);
-  const [weeklyDigest, setWeeklyDigest] = React.useState(false);
   const [apiKey, setApiKey] = React.useState('ne_live_••••••••••••');
+
+  const writingTone = state.settings.writingTone ?? 'Journalistic';
+  const modelLabel = state.settings.modelLabel ?? 'OpenAI o3-mini';
+  const dedupSensitivity = state.settings.dedupSensitivity ?? 85;
+  const hallucinationMonitoring = state.settings.hallucinationMonitoring ?? true;
+  const contentPreservation = state.settings.contentPreservation ?? true;
+  const autoArchivePeriod = state.settings.autoArchivePeriod ?? '48 Hours';
+  const emailAlerts = state.settings.emailAlerts ?? true;
+  const weeklyDigest = state.settings.weeklyDigest ?? false;
 
   const SettingSection = ({
     title,
@@ -87,14 +88,6 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
   );
 
   const resetDefaults = () => {
-    setTone('Journalistic');
-    setModel('OpenAI gpt-4o-mini');
-    setDedupSensitivity(85);
-    setHallucinationCheck(true);
-    setContentPreservation(true);
-    setAutoArchive('48 Hours');
-    setEmailAlerts(true);
-    setWeeklyDigest(false);
     setApiKey('ne_live_••••••••••••');
 
     setState({
@@ -103,6 +96,15 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
         regionLocale: 'AU',
         dailyLimit: 6,
         deduplicationEnabled: true,
+
+        writingTone: 'Journalistic',
+        modelLabel: 'OpenAI o3-mini',
+        dedupSensitivity: 85,
+        hallucinationMonitoring: true,
+        contentPreservation: true,
+        autoArchivePeriod: '48 Hours',
+        emailAlerts: true,
+        weeklyDigest: false,
       },
     });
     settingsSaved.trigger();
@@ -112,6 +114,15 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
         regionLocale: 'AU',
         dailyLimit: 6,
         deduplicationEnabled: true,
+
+        writingTone: 'Journalistic',
+        modelLabel: 'OpenAI o3-mini',
+        dedupSensitivity: 85,
+        hallucinationMonitoring: true,
+        contentPreservation: true,
+        autoArchivePeriod: '48 Hours',
+        emailAlerts: true,
+        weeklyDigest: false,
       },
     });
   };
@@ -146,9 +157,15 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
       >
         <SettingRow label="Writing Tone" description="The default personality for generated drafts.">
           <select
-            value={tone}
+            value={writingTone}
             onChange={(e) => {
-              setTone(e.target.value);
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  writingTone: e.target.value,
+                },
+              });
               settingsSaved.trigger();
             }}
             className="w-full md:w-64 px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
@@ -163,13 +180,20 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
 
         <SettingRow label="Default Research Model" description="Higher models provide better accuracy but more latency.">
           <select
-            value={model}
+            value={modelLabel}
             onChange={(e) => {
-              setModel(e.target.value);
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  modelLabel: e.target.value,
+                },
+              });
               settingsSaved.trigger();
             }}
             className="w-full md:w-64 px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
           >
+            <option>OpenAI o3-mini</option>
             <option>OpenAI gpt-4o-mini</option>
             <option>OpenAI gpt-4o</option>
           </select>
@@ -179,7 +203,18 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
           label="Hallucination Monitoring"
           description="Active cross-checking of generated facts against verified sources."
         >
-          <Toggle active={hallucinationCheck} onChange={() => setHallucinationCheck((v) => !v)} />
+          <Toggle
+            active={hallucinationMonitoring}
+            onChange={() =>
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  hallucinationMonitoring: !hallucinationMonitoring,
+                },
+              })
+            }
+          />
         </SettingRow>
       </SettingSection>
 
@@ -220,7 +255,13 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
               max={100}
               value={dedupSensitivity}
               onChange={(e) => {
-                setDedupSensitivity(parseInt(e.target.value, 10));
+                setState({
+                  ...state,
+                  settings: {
+                    ...state.settings,
+                    dedupSensitivity: parseInt(e.target.value, 10),
+                  },
+                });
                 settingsSaved.trigger();
               }}
               className="w-48 h-1.5 bg-surface rounded-lg appearance-none cursor-pointer"
@@ -242,14 +283,31 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
         </SettingRow>
 
         <SettingRow label="Content Preservation" description="Retain original source quotes and direct citations.">
-          <Toggle active={contentPreservation} onChange={() => setContentPreservation((v) => !v)} />
+          <Toggle
+            active={contentPreservation}
+            onChange={() =>
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  contentPreservation: !contentPreservation,
+                },
+              })
+            }
+          />
         </SettingRow>
 
         <SettingRow label="Auto-Archive Period" description="How long unreviewed drafts remain in the queue.">
           <select
-            value={autoArchive}
+            value={autoArchivePeriod}
             onChange={(e) => {
-              setAutoArchive(e.target.value);
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  autoArchivePeriod: e.target.value,
+                },
+              });
               settingsSaved.trigger();
             }}
             className="w-full md:w-64 px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
@@ -268,10 +326,32 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
         icon={<Bell size={20} />}
       >
         <SettingRow label="Email Alerts" description="Receive high-priority system alerts and pipeline errors.">
-          <Toggle active={emailAlerts} onChange={() => setEmailAlerts((v) => !v)} />
+          <Toggle
+            active={emailAlerts}
+            onChange={() =>
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  emailAlerts: !emailAlerts,
+                },
+              })
+            }
+          />
         </SettingRow>
         <SettingRow label="Weekly Digest" description="Summary of news volume and relevance scores.">
-          <Toggle active={weeklyDigest} onChange={() => setWeeklyDigest((v) => !v)} />
+          <Toggle
+            active={weeklyDigest}
+            onChange={() =>
+              setState({
+                ...state,
+                settings: {
+                  ...state.settings,
+                  weeklyDigest: !weeklyDigest,
+                },
+              })
+            }
+          />
         </SettingRow>
       </SettingSection>
 

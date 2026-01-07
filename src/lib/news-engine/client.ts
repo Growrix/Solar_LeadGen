@@ -190,16 +190,22 @@ export async function fetchAdminState(): Promise<NewsEngineState> {
 export async function adminCreateItem(input: {
   title: string;
   summary?: string;
+  contentHtml?: string;
   category?: string;
   tags?: string[];
   status?: string;
   aiModel?: string;
   relevanceScore?: number;
   sourceType?: NewsItem['sourceType'];
+
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImageUrl?: string | null;
 }): Promise<NewsItem> {
   const body: Record<string, unknown> = {
     title: input.title,
     summary: input.summary ?? '',
+    contentHtml: input.contentHtml ?? '',
     category: input.category ?? '',
     tags: input.tags ?? [],
   };
@@ -209,12 +215,36 @@ export async function adminCreateItem(input: {
   const sourceType = mapSourceTypeToApi(input.sourceType);
   if (sourceType) body.sourceType = sourceType;
 
+   if (input.seoTitle !== undefined) body.seoTitle = input.seoTitle;
+   if (input.seoDescription !== undefined) body.seoDescription = input.seoDescription;
+   if (input.ogImageUrl !== undefined) body.ogImageUrl = input.ogImageUrl;
+
   const data = await apiFetch<{ item: any }>(`/api/admin/news-engine/items`, {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
   return mapAdminItemToUi(data.item);
+}
+
+export type TestPreviewGenerationResult = {
+  title: string;
+  summary: string;
+  contentHtml: string;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  citations?: string[];
+};
+
+export async function adminRunTestPreviewGeneration(input: {
+  topic?: string;
+  url?: string;
+}): Promise<{ result: TestPreviewGenerationResult; modelUsed: string; durationMs: number }>
+{
+  return await apiFetch(`/api/admin/news-engine/research/test`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 }
 
 export async function adminUpdateItem(

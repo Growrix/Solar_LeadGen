@@ -594,3 +594,173 @@ Just say:
 👉 **“Proceed to Phase 2”**
 or
 👉 **“Add/remove some stories first”**
+
+
+---
+
+# ✅ 2026-01-05 UPDATE — BLOG AI + AUTOMATION PARITY (News Engine-style)
+
+## Why this update
+The earlier brainstorm includes “AI-assisted writing” and “automation via n8n”, but it does **not** define the same kind of **AI + Automation operational UI/UX** that exists in the NEWS ENGINE SOT (pipeline visibility, review queues, sources manager, automation controls, audit trail, pause/resume, etc.).
+
+This section updates the **Blog feature** plan so it can support both:
+- **Manual mode** (admin writes/edits)
+- **AI-assisted mode** (admin triggers generation)
+- **Automation mode** (system runs generation/research/scheduling with minimal admin oversight)
+
+Important: this is still **USER STORIES + UX/behavior planning only** (no DB/API details).
+
+---
+
+## A) Blog feature — Core principle
+Admin does minimal work:
+- Approve / Reject / Schedule / Publish
+- Pause automation if needed
+- Manage sources and rules (occasionally)
+
+Everything else is AI + automation.
+
+---
+
+## B) Blog “Engine Hub” (Admin Control Center) — User Stories
+
+### 1) Admin hub surfaces (News Engine-style)
+As an admin, I want a single Blog Hub where I can:
+- See pipeline health and what’s generated today
+- Review drafts in a queue
+- Configure automation rules and publishing windows
+- Manage research sources (RSS feeds)
+- View audit logs (what AI did, what admins did)
+- Pause/resume automation and trigger an emergency stop
+
+### 2) Operational modes (manual ↔ automation)
+As an admin, I can set the Blog Engine operational mode:
+- Manual: nothing auto-generates; I create posts myself
+- Assisted: AI generates on-demand when I click buttons (outline/article/SEO/etc.)
+- Automatic: AI runs on schedules/rules and produces drafts for review, and can auto-schedule/auto-publish based on my settings
+
+### 3) Review-first workflow (minimal admin effort)
+As an admin, I can review an AI-generated draft and choose:
+- Publish now
+- Schedule
+- Request rewrite (regenerate parts)
+- Reject (with reason)
+- Save edits and keep as draft
+
+### 4) Blog taxonomy management
+As an admin, I can manage categories and tags (create/edit/delete), and AI can propose tags/categories.
+
+---
+
+## C) Blog content lifecycle states (UI/UX contract)
+
+The system must represent clear mutually-exclusive states for operational visibility (mirrors the News Engine pattern):
+- Draft
+- Needs Review
+- Draft Ready
+- Scheduled
+- Published
+- Archived
+- Rejected
+- Error
+
+Notes:
+- Rejected items are not “lost”; they remain visible for later regeneration/fix/reschedule.
+- Scheduled requires a publish date/time and should be visible in a schedule view.
+
+---
+
+## D) AI + Automation capabilities for BLOG (system-level user stories)
+
+### 1) Sources & research (RSS-driven)
+As the system, I can maintain a list of RSS sources used for blog research:
+- Popular solar blogs (topic discovery)
+- Government / utility sites (policy/incentives updates that should influence blog content)
+- Manufacturer announcements (product updates)
+
+As an admin, I can add/edit/enable/disable sources and see basic freshness indicators (last checked, items found).
+
+### 2) Topic pipeline (idea → outline → article)
+As the system, I can:
+- Suggest blog topics (from RSS + trends)
+- Generate an outline for a chosen topic
+- Generate a full long-form article from the outline
+
+### 3) SEO package generation
+As the system, I can generate:
+- Meta title + meta description
+- OG title/description/image suggestions
+- Schema.org markup suggestion
+- Internal link suggestions (to existing site content)
+- CTA suggestions (lead-gen aligned)
+
+### 4) Rewrite tools (targeted regeneration)
+As an admin, I can ask AI to regenerate:
+- Introduction / conclusion
+- Headline variants
+- Section rewrites for clarity/brand tone
+- TL;DR summary
+- Social captions
+
+### 5) Quality & safety checks (automation)
+As the system, I can run automated checks before allowing publish/schedule:
+- Missing required fields (title/slug/excerpt/content/cover)
+- Duplicate/similarity warning
+- Readability warning
+- Tone/brand alignment warning
+- “Needs Review” gating if confidence is low or checks fail
+
+### 6) Scheduling + publishing automation
+As an admin, I can configure:
+- Auto-draft (generate drafts on a schedule)
+- Auto-schedule (schedule drafts into allowed publishing windows)
+- Auto-publish (publish scheduled posts automatically)
+
+As the system, I can:
+- Publish at the exact scheduled time (via automation runner such as n8n)
+- Notify admins on publish/fail
+- Pause all automation instantly if the admin triggers pause/emergency stop
+
+---
+
+## E) Observability: audit logs + prompt details
+
+### 1) Audit log
+As an admin, I can see an audit trail of:
+- AI generations (what was generated, when, and which mode)
+- Admin actions (approve/reject/publish/schedule/edit)
+- Automation actions (auto-scheduled, auto-published)
+- Errors (failures, retries)
+
+### 2) Prompt transparency
+As an admin, I can open “Prompt Details” for an AI-generated item to see:
+- The prompt intent (outline/article/SEO/rewrite)
+- The source inputs used (RSS links, extracted notes)
+- Any constraints applied (tone, length, SEO keywords)
+
+---
+
+## F) n8n integration (behavior-level requirements)
+
+As the system, automation can be executed by n8n workflows:
+- Cron-based generation (daily/weekly topic runs)
+- Scheduled publishing (publish at time)
+- Social distribution triggers (optional)
+- Admin notification triggers (success/fail)
+
+Admin UX requirement:
+- Admin should not need to manually run workflows; only configure rules and approve/reject.
+
+---
+
+## G) What this changes for the next SOT phase
+
+When we create the BLOG 6-phase SOT later, it must include (at minimum) the News Engine-style “hub” modules:
+- Admin Blog Hub (tabs/sections)
+- Sources manager
+- Automation Logic controls
+- Master Control (pause/resume/emergency)
+- Audit logs + prompt details
+- Review queue with publish/schedule/reject/rewrite actions
+
+This ensures the Blog feature is not “manual-only CMS”, but an AI + automation-driven pipeline with clear operational UX.

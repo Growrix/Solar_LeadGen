@@ -534,32 +534,30 @@ export default function AdminNewsEngineHub() {
       <ManualDraftModalV6
         isOpen={manualDraftOpen}
         onClose={() => setManualDraftOpen(false)}
-        onGenerate={(data) => {
+        onGenerate={async (data) => {
           ensureState(state);
           const nextTitle = data.title?.trim()
             ? data.title.trim()
             : `Draft: ${data.category} - ${new Date().toLocaleDateString()}`;
 
-          void (async () => {
-            try {
-              // Use AI-powered manual draft generation
-              const created = await adminGenerateManualDraft({
-                title: nextTitle,
-                prompt: data.prompt,
-                category: data.category,
-                tags: data.tags,
-                outline: data.outline,
-              });
+          try {
+            const created = await adminGenerateManualDraft({
+              title: nextTitle,
+              prompt: data.prompt,
+              category: data.category,
+              tags: data.tags,
+              outline: data.outline,
+            });
 
-              await reloadState();
-              setManualDraftOpen(false);
-              setActiveTab('Drafts & Reviews');
-              openReviewForItem(created.id);
-            } catch (error) {
-              console.error('Failed to generate AI draft:', error);
-              await reloadState();
-            }
-          })();
+            await reloadState();
+            setManualDraftOpen(false);
+            setActiveTab('Drafts & Reviews');
+            openReviewForItem(created.id);
+          } catch (error) {
+            console.error('Failed to generate AI draft:', error);
+            await reloadState();
+            throw error;
+          }
         }}
       />
 
@@ -817,18 +815,22 @@ export default function AdminNewsEngineHub() {
         <TestPreviewModal
           item={selectedItem}
           onClose={() => setTestPreviewOpen(false)}
-          onSaveToDrafts={() => {
+          onSaveToDrafts={(result) => {
             void (async () => {
               try {
                 const created = await adminCreateItem({
-                  title: `Draft: ${selectedItem.title}`,
-                  summary: selectedItem.summary,
+                  title: result.title?.trim() ? result.title : `Draft: ${selectedItem.title}`,
+                  summary: result.summary,
+                  contentHtml: result.contentHtml,
                   category: selectedItem.category,
                   tags: selectedItem.tags,
                   status: 'DRAFT',
                   aiModel: selectedItem.aiModel,
                   relevanceScore: selectedItem.relevanceScore,
                   sourceType: selectedItem.sourceType,
+
+                  seoTitle: result.seoTitle ?? null,
+                  seoDescription: result.seoDescription ?? null,
                 });
 
                 await reloadState();
