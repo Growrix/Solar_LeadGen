@@ -71,6 +71,7 @@ import {
   adminUpdateItem,
   adminUpdateSettings,
   adminUpsertSource,
+  adminGenerateManualDraft,
   fetchAdminState,
 } from '@/lib/news-engine/client';
 
@@ -541,22 +542,21 @@ export default function AdminNewsEngineHub() {
 
           void (async () => {
             try {
-              const created = await adminCreateItem({
+              // Use AI-powered manual draft generation
+              const created = await adminGenerateManualDraft({
                 title: nextTitle,
-                summary: data.prompt,
+                prompt: data.prompt,
                 category: data.category,
                 tags: data.tags,
-                status: 'DRAFT',
-                aiModel: 'gpt-5.2',
-                relevanceScore: 0,
-                sourceType: 'Manual Entry',
+                outline: data.outline,
               });
 
               await reloadState();
               setManualDraftOpen(false);
               setActiveTab('Drafts & Reviews');
               openReviewForItem(created.id);
-            } catch {
+            } catch (error) {
+              console.error('Failed to generate AI draft:', error);
               await reloadState();
             }
           })();
@@ -677,6 +677,7 @@ export default function AdminNewsEngineHub() {
         isOpen={reviewOpen}
         onClose={() => setReviewOpen(false)}
         item={selectedItem}
+        auditLogs={state?.auditLogs ?? []}
         onApprove={() => {
           setReviewOpen(false);
           setScheduleOpen(true);

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { slugify } from './slug';
 import { writeNewsAuditLog } from './audit';
 
-async function findAvailableSlug(base: string, excludeItemId?: string): Promise<string | null> {
+export async function findAvailableSlug(base: string, excludeItemId?: string): Promise<string | null> {
   const normalizedBase = base.trim();
   if (!normalizedBase) return null;
 

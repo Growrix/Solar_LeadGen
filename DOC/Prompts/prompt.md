@@ -4835,3 +4835,33 @@ After that create a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks
   DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\AI Prompting Guideline.md Instructions. 
 - The Outcome should be followed by This : 
   DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\Template_Comprehensive_UI UX.md
+
+  -----------------------------------------------------------------------------------
+
+  Now I can see the API is working but the AI generated content is not generated the whole content properly . check the screenshot . in all the 5 new articles there is a common body content , which is may be hard coded (Silicon-based photonics is undergoing a massive transformation as hyperscale data centers reach the limits of electrical copper interconnects. By integrating laser arrays directly onto CMOS wafers, throughput can scale to 800G and beyond without the thermal bottleneck traditional systems face.
+
+"We are seeing a convergence of optical physics and high-volume semiconductor manufacturing," says Lead Researcher Dr. Elena Vance. This development is expected to slash latency for large-scale AI training clusters by as much as 35% within the next 24 months.)
+
+- So it did not generated the content properly. you need to find the gaps and fix it accordingly. 
+- Also the SEO area was not generated properly as well. check the screenshot for better understanding.
+- also the research summary doesnt look like it has the real data. 
+
+- overall you need to check this entire review modal and all of its functionality. 
+
+---------------------------------------------------------------------------------------
+
+
+- Now I found that the Admin content and the public content has mismatch. The contents are completely different except the title. check the screenshots for better understanding. 
+- The "Request AI rewrite modal" does not work and there in no impact of the rewrite request on the content. check the screenshot for better understanding.
+- This is insane , I need you to audit back the entire AI generated content flow vs the final UI UX flow that we have now. Identify all the gaps and fix them accordingly.
+- Testing and finding issues became endless here. You must test all the AI automation functionality and test accordingly. 
+- Becuase I am also getting confued which one is working which is not, which modal is not even conneced or not, even the settings are also working or not. this is very critical part to identify as a human.
+- I suggest you to fix this mentioned issue first 
+- and then read back all the SOT vs the current state of the News Engine Feature and audit e2e all the AI automation functionality deeply. and identify the gaps and also let me know if any frontend or backend needs more updates to do. 
+- finally after done everything , do the tests and ensure everything is working perfectly. 
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ - prepare a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md and start implimenting accordingly

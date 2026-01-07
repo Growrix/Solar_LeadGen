@@ -56,6 +56,7 @@ function mapAdminItemToUi(item: any): NewsItem {
     id: String(item.id),
     title: String(item.title ?? ''),
     summary: String(item.summary ?? ''),
+    contentHtml: typeof item.contentHtml === 'string' ? item.contentHtml : undefined,
     status: item.status,
     category: String(item.category ?? ''),
     relevanceScore: typeof item.relevanceScore === 'number' ? item.relevanceScore : 0,
@@ -66,6 +67,13 @@ function mapAdminItemToUi(item: any): NewsItem {
     scheduledFor: normalizeIso(item.scheduledFor),
     slug: typeof item.slug === 'string' ? item.slug : undefined,
     tags: Array.isArray(item.tags) ? item.tags.filter((t: any) => typeof t === 'string') : [],
+
+    seoTitle: item.seoTitle ?? null,
+    seoDescription: item.seoDescription ?? null,
+    ogImageUrl: item.ogImageUrl ?? null,
+    rejectedAt: normalizeIso(item.rejectedAt),
+    rejectionReason: item.rejectionReason ?? null,
+    deletedAt: normalizeIso(item.deletedAt),
   };
 }
 
@@ -89,6 +97,10 @@ function mapAuditLogToUi(log: any): AuditLogEntry {
     origin: log.actorId ? 'admin' : 'system',
     status: action.includes('error') ? 'ERROR' : 'INFO',
     promptUsed: typeof log.promptUsed === 'string' && log.promptUsed.trim() ? log.promptUsed : undefined,
+
+    itemId: typeof log.itemId === 'string' ? log.itemId : null,
+    sourceId: typeof log.sourceId === 'string' ? log.sourceId : null,
+    metadata: log.metadata ?? undefined,
   };
 }
 
@@ -408,4 +420,22 @@ export async function fetchAdminSourceEntries(sourceId: string, limit = 50): Pro
     error: typeof e.error === 'string' ? e.error : null,
     itemId: e.itemId ? String(e.itemId) : null,
   }));
+}
+
+export async function adminGenerateManualDraft(input: {
+  title: string;
+  prompt: string;
+  category?: string;
+  tags?: string[];
+  outline?: string;
+}): Promise<NewsItem> {
+  const data = await apiFetch<{ item: any }>(
+    `/api/admin/news-engine/items/generate-manual`,
+    {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }
+  );
+
+  return mapAdminItemToUi(data.item);
 }

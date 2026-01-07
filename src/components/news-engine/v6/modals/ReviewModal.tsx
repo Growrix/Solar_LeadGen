@@ -19,7 +19,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import type { NewsItem } from '@/lib/ui-stubs/news-engine';
+import type { AuditLogEntry, NewsItem } from '@/lib/ui-stubs/news-engine';
 import { getStatusBadgeClasses } from '../shared';
 
 type ReviewTabV6 = 'research' | 'article' | 'seo' | 'history';
@@ -28,6 +28,7 @@ export function ReviewModalV6({
   isOpen,
   onClose,
   item,
+  auditLogs,
   onApprove,
   onPublish,
   onRewrite,
@@ -40,6 +41,7 @@ export function ReviewModalV6({
   isOpen: boolean;
   onClose: () => void;
   item: NewsItem | null;
+  auditLogs?: AuditLogEntry[];
   onApprove?: () => void;
   onPublish?: () => void;
   onRewrite?: () => void;
@@ -61,6 +63,62 @@ export function ReviewModalV6({
   }, [isOpen]);
 
   if (!isOpen || !item) return null;
+
+  const logsForItem = (auditLogs ?? [])
+    .filter((l) => l.itemId === item.id)
+    .slice()
+    .sort((a, b) => {
+      const at = Date.parse(a.timestamp);
+      const bt = Date.parse(b.timestamp);
+      return (Number.isFinite(bt) ? bt : 0) - (Number.isFinite(at) ? at : 0);
+    });
+
+  const promptUsed = logsForItem.find((l) => typeof l.promptUsed === 'string' && l.promptUsed.trim())?.promptUsed ?? '';
+
+  function extractUrls(text: string): string[] {
+    if (!text) return [];
+    const matches = text.match(/https?:\/\/[^\s)\]]+/g) ?? [];
+    const unique = new Set<string>();
+    for (const m of matches) {
+      const cleaned = m.replace(/[\.,;:]+$/, '');
+      if (cleaned) unique.add(cleaned);
+    }
+    return Array.from(unique);
+  }
+
+  const sourceUrls = extractUrls(promptUsed);
+
+  function htmlToPlainText(html: string): string {
+    const raw = html.trim();
+    if (!raw) return '';
+    try {
+      const doc = new DOMParser().parseFromString(raw, 'text/html');
+      return (doc.body?.textContent ?? '').trim();
+    } catch {
+      return raw;
+    }
+  }
+
+  const articleText =
+    typeof item.contentHtml === 'string' && item.contentHtml.trim()
+      ? htmlToPlainText(item.contentHtml)
+      : (item.summary ?? '').trim();
+
+  const wordCount = articleText ? articleText.split(/\s+/).filter(Boolean).length : 0;
+  const readMins = Math.max(1, Math.round(wordCount / 200));
+
+  function formatRelative(tsIso: string): string {
+    const ms = Date.parse(tsIso);
+    if (!Number.isFinite(ms)) return '';
+    const diffMs = Date.now() - ms;
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  }
 
   const isPublished = item.status === 'PUBLISHED';
   const isRejected = item.status === 'REJECTED';
@@ -93,26 +151,22 @@ export function ReviewModalV6({
       ? 'bg-success text-success-foreground border border-success/20'
       : 'bg-warning text-warning-foreground border border-warning/20';
 
-  const verifiedSources = [
-    { name: 'Nature Electronics', ref: 'REF-6A1C2F' },
-    { name: 'Reuters Tech', ref: 'REF-8B3D11' },
-    { name: 'IEEE Spectrum', ref: 'REF-29F0AD' },
-    { name: 'SemiEngineering', ref: 'REF-1C9E44' },
-  ];
+  const historyEvents = logsForItem.slice(0, 12).map((log) => {
+    const icon = log.action.includes('publish')
+      ? <Globe size={16} />
+      : log.action.includes('schedule')
+        ? <Clock size={16} />
+        : log.action.includes('ai')
+          ? <Zap size={16} />
+          : <History size={16} />;
 
-  const extractionFacts = [
-    'Identified core breakthrough in Silicon-Photonics integration.',
-    'Verified energy efficiency claims against historical data.',
-    'Detected related patent filing from Global Innovation Hub.',
-    'Fact-checked Dr. Elena Vance’s professional affiliation.',
-  ];
-
-  const historyEvents = [
-    { time: '12m ago', action: 'Draft Finalized', user: item.aiModel, icon: <CheckCircle2 size={16} /> },
-    { time: '14m ago', action: 'Fact Verification Success', user: 'System Agent', icon: <ShieldCheck size={16} /> },
-    { time: '18m ago', action: 'Research Extraction Complete', user: 'System Agent', icon: <BookOpen size={16} /> },
-    { time: '22m ago', action: 'Source Ingestion', user: 'RSS Feed', icon: <RefreshCcw size={16} /> },
-  ];
+    return {
+      time: formatRelative(log.timestamp) || log.timestamp,
+      action: log.action,
+      user: log.origin,
+      icon,
+    };
+  });
 
   return (
     <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
@@ -186,16 +240,16 @@ export function ReviewModalV6({
                       <label className="text-body-small text-muted-foreground uppercase tracking-widest">Article Body</label>
                       <textarea
                         className="w-full h-[500px] text-body text-foreground leading-relaxed bg-transparent border-none p-0 focus:ring-0 resize-none"
-                        defaultValue={`${item.summary}\n\nSilicon-based photonics is undergoing a massive transformation as hyperscale data centers reach the limits of electrical copper interconnects. By integrating laser arrays directly onto CMOS wafers, throughput can scale to 800G and beyond without the thermal bottleneck traditional systems face.\n\n\"We are seeing a convergence of optical physics and high-volume semiconductor manufacturing,\" says Lead Researcher Dr. Elena Vance. This development is expected to slash latency for large-scale AI training clusters by as much as 35% within the next 24 months.`}
+                        defaultValue={articleText || item.summary || ''}
                       />
                     </div>
 
                     <div className="flex items-center gap-6 pt-8 border-t border-border">
                       <div className="flex items-center gap-2 text-body-small text-muted-foreground">
-                        <Clock size={14} /> 4 min read
+                        <Clock size={14} /> {readMins} min read
                       </div>
                       <div className="flex items-center gap-2 text-body-small text-muted-foreground">
-                        <FileText size={14} /> 542 words
+                        <FileText size={14} /> {wordCount} words
                       </div>
                       <div className="ml-auto text-body-small text-brand-accent bg-surface px-3 py-1 rounded-full">
                         Curated by {item.aiModel}
@@ -213,40 +267,61 @@ export function ReviewModalV6({
                         <Target size={20} className="text-brand-accent" />
                         Verified Sources
                       </h3>
-                      <span className="text-body-small text-muted-foreground uppercase tracking-widest">Cross-verified (4/4)</span>
+                      <span className="text-body-small text-muted-foreground uppercase tracking-widest">
+                        {sourceUrls.length ? `Sources (${sourceUrls.length})` : 'No sources recorded'}
+                      </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {verifiedSources.map((source) => (
-                        <div
-                          key={source.ref}
-                          className="p-5 rounded-2xl border border-border bg-background hover:border-accent/40 group flex items-center justify-between shadow-neu-outset"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted-foreground group-hover:text-brand-accent group-hover:bg-surface-hover transition-colors">
-                              <ExternalLink size={18} />
+                      {sourceUrls.length ? (
+                        sourceUrls.slice(0, 6).map((url) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-5 rounded-2xl border border-border bg-background hover:border-accent/40 group flex items-center justify-between shadow-neu-outset"
+                          >
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center text-muted-foreground group-hover:text-brand-accent group-hover:bg-surface-hover transition-colors shrink-0">
+                                <ExternalLink size={18} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-body text-foreground truncate">{url}</p>
+                                <p className="text-body-small text-muted-foreground mt-0.5 truncate">From generation prompt</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-body text-foreground">{source.name}</p>
-                              <p className="text-body-small text-muted-foreground mt-0.5">Reference_ID: {source.ref}</p>
-                            </div>
-                          </div>
-                          <CheckCircle2 size={20} className="text-success" />
+                            <CheckCircle2 size={20} className="text-success shrink-0" />
+                          </a>
+                        ))
+                      ) : (
+                        <div className="p-6 rounded-2xl border border-border bg-background shadow-neu-outset">
+                          <p className="text-body text-muted-foreground">
+                            No research citations are attached to this item yet.
+                          </p>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </section>
 
                   <section className="bg-background p-8 rounded-[32px] border border-border shadow-neu-outset space-y-6">
                     <h3 className="text-heading-3 text-foreground">Research Extraction Log</h3>
                     <div className="space-y-4">
-                      {extractionFacts.map((fact, idx) => (
-                        <div key={fact} className="flex items-start gap-4 p-4 rounded-xl bg-surface border border-border">
-                          <div className="w-6 h-6 rounded-full bg-accent text-background flex items-center justify-center text-body-small shrink-0 mt-0.5">
-                            {idx + 1}
+                      {[
+                        item.sourceType ? `Source type: ${item.sourceType}` : null,
+                        item.category ? `Category: ${item.category}` : null,
+                        item.tags?.length ? `Tags: ${item.tags.join(', ')}` : null,
+                        item.aiModel ? `Model: ${item.aiModel}` : null,
+                        logsForItem.length ? `Audit events: ${logsForItem.length}` : null,
+                      ]
+                        .filter(Boolean)
+                        .map((fact, idx) => (
+                          <div key={String(fact)} className="flex items-start gap-4 p-4 rounded-xl bg-surface border border-border">
+                            <div className="w-6 h-6 rounded-full bg-accent text-background flex items-center justify-center text-body-small shrink-0 mt-0.5">
+                              {idx + 1}
+                            </div>
+                            <p className="text-body text-foreground leading-relaxed">{String(fact)}</p>
                           </div>
-                          <p className="text-body text-foreground leading-relaxed">{fact}</p>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </section>
                 </div>
@@ -263,13 +338,15 @@ export function ReviewModalV6({
                       <div className="space-y-4">
                         <div className="space-y-1.5">
                           <label className="text-body-small text-muted-foreground uppercase tracking-widest">Target Keyword</label>
-                          <div className="px-3 py-2 bg-surface border border-border rounded-xl text-body text-brand-accent">Silicon Photonics AI</div>
+                          <div className="px-3 py-2 bg-surface border border-border rounded-xl text-body text-brand-accent">
+                            {(item.tags && item.tags[0]) || item.category || '—'}
+                          </div>
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-body-small text-muted-foreground uppercase tracking-widest">Meta Description</label>
                           <textarea
                             className="w-full h-24 px-3 py-2 bg-surface border border-border rounded-xl text-body text-foreground focus:ring-0 resize-none"
-                            defaultValue="Explore how new silicon-based laser arrays are achieving 400Gbps transmission speeds, potentially slashing cloud latency and energy consumption by 40%."
+                            defaultValue={(item.seoDescription ?? item.summary ?? '').trim()}
                           />
                         </div>
                       </div>
@@ -282,14 +359,14 @@ export function ReviewModalV6({
                       </div>
                       <div className="space-y-4">
                         {[
-                          { label: 'Fact Consistency', status: 'Passed' },
-                          { label: 'Plagiarism Scan', status: 'Passed (0%)' },
-                          { label: 'Tone: Journalistic', status: 'Verified' },
-                          { label: 'Hallucination Check', status: 'Passed' },
+                          { label: 'Fact Consistency', status: 'Not evaluated' },
+                          { label: 'Plagiarism Scan', status: 'Not evaluated' },
+                          { label: 'Tone', status: 'Not evaluated' },
+                          { label: 'Hallucination Check', status: 'Not evaluated' },
                         ].map((c) => (
                           <div key={c.label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                             <span className="text-body text-muted-foreground">{c.label}</span>
-                            <div className="flex items-center gap-1.5 text-success text-body-small uppercase tracking-widest">
+                            <div className="flex items-center gap-1.5 text-muted-foreground text-body-small uppercase tracking-widest">
                               <CheckSquare size={12} />
                               {c.status}
                             </div>
@@ -304,7 +381,7 @@ export function ReviewModalV6({
               {activeTab === 'history' ? (
                 <div className="bg-background p-8 rounded-[32px] border border-border shadow-neu-outset animate-in fade-in duration-500">
                   <div className="space-y-8">
-                    {historyEvents.map((log, idx) => (
+                    {historyEvents.length ? historyEvents.map((log, idx) => (
                       <div key={`${log.action}-${log.time}`} className="flex gap-6 relative group">
                         {idx !== historyEvents.length - 1 ? (
                           <div className="absolute left-6 top-10 w-px h-12 bg-border group-hover:bg-accent/30 transition-colors" />
@@ -320,7 +397,9 @@ export function ReviewModalV6({
                           <p className="text-body-small text-muted-foreground mt-1 uppercase tracking-widest">Triggered by: {log.user}</p>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="text-body text-muted-foreground">No audit history recorded for this item yet.</p>
+                    )}
                   </div>
                 </div>
               ) : null}

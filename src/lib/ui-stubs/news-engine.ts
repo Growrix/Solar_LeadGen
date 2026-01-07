@@ -25,6 +25,7 @@ export interface NewsItem {
   id: string;
   title: string;
   summary: string;
+  contentHtml?: string;
   status: NewsItemStatus;
   category: string;
   relevanceScore: number;
@@ -35,6 +36,14 @@ export interface NewsItem {
   scheduledFor?: string;
   slug?: string;
   tags: string[];
+
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  ogImageUrl?: string | null;
+
+  rejectedAt?: string;
+  rejectionReason?: string | null;
+  deletedAt?: string;
 }
 
 export interface NewsSource {
@@ -65,6 +74,10 @@ export interface AuditLogEntry {
   origin: string;
   status: AuditLogStatus;
   promptUsed?: string;
+
+  itemId?: string | null;
+  sourceId?: string | null;
+  metadata?: unknown;
 }
 
 function escapeCsvCell(value: unknown): string {

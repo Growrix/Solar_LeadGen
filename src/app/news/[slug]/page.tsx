@@ -367,19 +367,12 @@ export default function PublicNewsDetailPage({ params }: { params: { slug: strin
               <p className="text-body-large text-muted-foreground italic border-l-4 border-primary pl-6 mb-12 leading-relaxed">
                 {item.summary}
               </p>
-              <p>
-                As AI governance frameworks mature globally, this development marks a critical shift in how enterprises approach the deployment of large-scale foundation models. The landmark legislation sets tiered risk categories for foundation models and strict transparency mandates, ensuring that innovation does not come at the cost of public safety or privacy.
-              </p>
-              <p>
-                Industry leaders have reacted with a mix of caution and optimism. While some argue that strict regulation could stifle early-stage startups, others believe that a clear legal framework is exactly what institutional investors need to commit capital to the sector at scale.
-              </p>
-              <h3 className="text-heading-3 text-foreground">The Path Forward</h3>
-              <p>
-                The next twelve months will be pivotal as the specific technical standards for compliance are drafted. Organizations will need to audit their data pipelines and model training logs to meet the high-water mark of transparency required by these new rules.
-              </p>
-              <p>
-                This analysis confirms that we are entering an era of &quot;Accountable AI,&quot; where the black-box nature of previous systems is no longer acceptable in high-stakes public environments.
-              </p>
+              {/* Render real AI-generated HTML content from DB */}
+              {item.contentHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: item.contentHtml }} />
+              ) : (
+                <p className="text-muted-foreground">No content available for this article.</p>
+              )}
             </div>
           </div>
           {/* Tags */}

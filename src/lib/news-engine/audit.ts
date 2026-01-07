@@ -12,6 +12,7 @@ export type NewsEngineAuditAction =
   | 'news_item_purged'
   | 'news_item_regenerated'
   | 'news_item_rewrite_requested'
+  | 'news_item_rewritten'
   | 'news_source_created'
   | 'news_source_updated'
   | 'news_source_deleted'
