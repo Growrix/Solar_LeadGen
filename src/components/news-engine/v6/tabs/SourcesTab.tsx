@@ -17,12 +17,15 @@ import {
   Sliders,
 } from 'lucide-react';
 import type { NewsEngineState } from '@/lib/ui-stubs/news-engine';
+import { adminSyncSource } from '@/lib/news-engine/client';
 import type { useSavedIndicator } from '../shared';
 import { formatRelativeTime } from '../shared';
 
 type SavedIndicator = ReturnType<typeof useSavedIndicator>;
 
 type ResearchId = 'web' | 'social' | 'journals';
+
+type ResearchSyncKind = 'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND';
 
 type Props = {
   state: NewsEngineState;
@@ -80,6 +83,28 @@ export function SourcesTabV6({
   setSourcesBlacklist,
 }: Props) {
   const [query, setQuery] = React.useState('');
+
+  const [rssSync, setRssSync] = React.useState<{
+    syncingSourceId: string | null;
+    lastErrorById: Record<string, string | null>;
+    lastImportedById: Record<string, number | null>;
+    lastSyncedAtById: Record<string, string | null>;
+  }>(() => ({
+    syncingSourceId: null,
+    lastErrorById: {},
+    lastImportedById: {},
+    lastSyncedAtById: {},
+  }));
+
+  const [researchSync] = React.useState<{
+    lastSyncedAtByKind: Record<ResearchSyncKind, string | null>;
+    lastErrorByKind: Record<ResearchSyncKind, string | null>;
+    lastImportedByKind: Record<ResearchSyncKind, number | null>;
+  }>(() => ({
+    lastSyncedAtByKind: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null },
+    lastErrorByKind: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null },
+    lastImportedByKind: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null },
+  }));
 
   const filteredSources = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -177,10 +202,19 @@ export function SourcesTabV6({
                             {src.name}
                           </button>
                           <span className="text-body-small text-muted-foreground truncate max-w-[220px]">{src.url}</span>
+                          {rssSync.lastErrorById[src.id] ? (
+                            <span className="text-body-small text-destructive mt-1 truncate max-w-[220px]">
+                              Last error: {rssSync.lastErrorById[src.id]}
+                            </span>
+                          ) : null}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-body text-muted-foreground">
-                        {src.lastSync ? formatRelativeTime(src.lastSync) : '—'}
+                        {rssSync.lastSyncedAtById[src.id]
+                          ? formatRelativeTime(rssSync.lastSyncedAtById[src.id] as string)
+                          : src.lastSync
+                            ? formatRelativeTime(src.lastSync)
+                            : '—'}
                       </td>
                       <td className="px-6 py-4 text-body text-foreground">{src.articleCount ?? '—'}</td>
                       <td className="px-6 py-4">
@@ -219,17 +253,62 @@ export function SourcesTabV6({
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          type="button"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            setEditingSourceId(src.id);
-                            setSourceModalOpen(true);
-                          }}
-                          aria-label="More"
-                        >
-                          <MoreVertical size={18} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (rssSync.syncingSourceId) return;
+                              setRssSync((prev) => ({
+                                ...prev,
+                                syncingSourceId: src.id,
+                                lastErrorById: { ...prev.lastErrorById, [src.id]: null },
+                              }));
+                              try {
+                                const res = await adminSyncSource(src.id);
+                                const nowIso = new Date().toISOString();
+                                setRssSync((prev) => ({
+                                  ...prev,
+                                  syncingSourceId: null,
+                                  lastImportedById: { ...prev.lastImportedById, [src.id]: res.imported },
+                                  lastSyncedAtById: { ...prev.lastSyncedAtById, [src.id]: nowIso },
+                                }));
+                                setState((prev) => {
+                                  if (!prev) return prev;
+                                  return {
+                                    ...prev,
+                                    sources: prev.sources.map((s) => (s.id === src.id ? { ...s, lastSync: nowIso } : s)),
+                                  };
+                                });
+                              } catch (e) {
+                                const message = e instanceof Error ? e.message : 'Failed to sync source';
+                                setRssSync((prev) => ({
+                                  ...prev,
+                                  syncingSourceId: null,
+                                  lastErrorById: { ...prev.lastErrorById, [src.id]: message },
+                                }));
+                              }
+                            }}
+                            disabled={rssSync.syncingSourceId === src.id}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset transition-colors disabled:opacity-50"
+                            aria-label={`Sync now: ${src.name}`}
+                            title={rssSync.syncingSourceId === src.id ? 'Syncing...' : 'Sync now'}
+                          >
+                            {rssSync.syncingSourceId === src.id ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                            Sync now
+                          </button>
+
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-foreground p-2"
+                            onClick={() => {
+                              setEditingSourceId(src.id);
+                              setSourceModalOpen(true);
+                            }}
+                            aria-label="Edit source"
+                          >
+                            <MoreVertical size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -238,6 +317,60 @@ export function SourcesTabV6({
             </div>
 
             {state.sources.length === 0 ? <div className="p-12 text-center text-muted-foreground">No sources added yet.</div> : null}
+          </section>
+
+          <section className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden">
+            <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface flex-wrap gap-4">
+              <h3 className="text-heading-3 text-foreground flex items-center gap-2">
+                <RefreshCw size={18} className="text-brand-accent" />
+                Recent Research Sync
+              </h3>
+              <span className="text-body-small text-muted-foreground">Visibility surface (UI only)</span>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {([
+                { kind: 'WEB' as const, label: 'WEB' },
+                { kind: 'SOCIAL' as const, label: 'SOCIAL' },
+                { kind: 'JOURNAL' as const, label: 'JOURNAL' },
+                { kind: 'TREND' as const, label: 'TREND' },
+              ] as const).map((row) => {
+                const lastSync = researchSync.lastSyncedAtByKind[row.kind];
+                const lastErr = researchSync.lastErrorByKind[row.kind];
+                const imported = researchSync.lastImportedByKind[row.kind];
+                return (
+                  <div key={row.kind} className="p-4 bg-surface border border-border rounded-xl flex items-center justify-between gap-4 flex-wrap">
+                    <div className="min-w-[220px]">
+                      <p className="text-body text-foreground">{row.label}</p>
+                      <p className="text-body-small text-muted-foreground">
+                        Last sync: {lastSync ? formatRelativeTime(lastSync) : '—'}
+                      </p>
+                      <p className="text-body-small text-muted-foreground">Imported: {typeof imported === 'number' ? imported : '—'}</p>
+                      {lastErr ? <p className="text-body-small text-destructive mt-1">Last error: {lastErr}</p> : null}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-muted-foreground shadow-neu-outset opacity-60 cursor-not-allowed"
+                        title="Backend hook required: trigger research sync per kind"
+                      >
+                        <RefreshCw size={14} /> Sync Research Now
+                      </button>
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-muted-foreground shadow-neu-outset opacity-60 cursor-not-allowed"
+                        title="Backend hook required: fetch entries list per kind"
+                      >
+                        <ExternalLink size={14} /> View Entries
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           <section className="bg-background rounded-2xl border border-border shadow-neu-outset p-6">

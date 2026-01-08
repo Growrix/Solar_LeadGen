@@ -45,25 +45,55 @@ export function AutomationLogicTabV6({
   const [config, setConfig] = React.useState(() => ({
     minScore: 85,
     strategy: 'Chronological' as 'Chronological' | 'Priority-Based' | 'Batch Burst',
-    windows: ['09:00 - 11:00', '14:00 - 17:00'],
   }));
 
-  const [slotDraft, setSlotDraft] = React.useState<{
-    date: string;
-    startTime: string;
-    endTime: string;
-    open: boolean;
-  }>(() => {
+  type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+  type TimeRange = { id: string; start: string; end: string };
+  type PublishWindowsV2 = {
+    timezone: string;
+    days: Record<DayKey, { enabled: boolean; ranges: TimeRange[] }>;
+    jitterMinutes?: number;
+    blackoutDates?: string[];
+  };
+
+  const dayDefs: Array<{ key: DayKey; label: string; jsDay: number }> = [
+    { key: 'mon', label: 'Mon', jsDay: 1 },
+    { key: 'tue', label: 'Tue', jsDay: 2 },
+    { key: 'wed', label: 'Wed', jsDay: 3 },
+    { key: 'thu', label: 'Thu', jsDay: 4 },
+    { key: 'fri', label: 'Fri', jsDay: 5 },
+    { key: 'sat', label: 'Sat', jsDay: 6 },
+    { key: 'sun', label: 'Sun', jsDay: 0 },
+  ];
+
+  const makeId = React.useCallback(() => {
+    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }, []);
+
+  const [publishWindowsV2, setPublishWindowsV2] = React.useState<PublishWindowsV2>(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return {
+      timezone: tz || 'UTC',
+      days: {
+        mon: { enabled: true, ranges: [{ id: 'seed_mon', start: '09:00', end: '11:00' }] },
+        tue: { enabled: false, ranges: [] },
+        wed: { enabled: false, ranges: [] },
+        thu: { enabled: false, ranges: [] },
+        fri: { enabled: false, ranges: [] },
+        sat: { enabled: false, ranges: [] },
+        sun: { enabled: false, ranges: [] },
+      },
+      jitterMinutes: 0,
+      blackoutDates: [],
+    };
+  });
+
+  const [blackoutDraft, setBlackoutDraft] = React.useState<string>(() => {
     const now = new Date();
     const yyyy = String(now.getFullYear());
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const dd = String(now.getDate()).padStart(2, '0');
-    return {
-      date: `${yyyy}-${mm}-${dd}`,
-      startTime: '09:00',
-      endTime: '11:00',
-      open: false,
-    };
+    return `${yyyy}-${mm}-${dd}`;
   });
 
   const [operationalRules, setOperationalRules] = React.useState(
@@ -71,30 +101,73 @@ export function AutomationLogicTabV6({
       [
         {
           id: 1,
-          type: 'Limit',
-          label: 'Max Stories Per Day',
-          value: '15 Stories',
-          desc: 'Prevents overwhelming the feed',
-          isActive: true,
+          scope: 'schedule',
+          conditions: [{ id: 'seed_1', kind: 'category', value: 'general' }],
+          action: 'priority',
+          actionValue: 'normal',
+          severity: 'warn',
+          enabled: true,
         },
         {
           id: 2,
-          type: 'Filter',
-          label: 'Global Blacklist',
-          value: 'Active',
-          desc: 'Keywords and phrases to never use',
-          isActive: true,
+          scope: 'draft',
+          conditions: [{ id: 'seed_2', kind: 'keywords_blacklist', value: 'comma,separated,keywords' }],
+          action: 'block',
+          severity: 'block',
+          enabled: true,
         },
         {
           id: 3,
-          type: 'Constraint',
-          label: 'Draft Expiry',
-          value: '48 Hours',
-          desc: 'Auto-delete unreviewed old news',
-          isActive: false,
+          scope: 'gate',
+          conditions: [{ id: 'seed_3', kind: 'min_sources', value: '2' }],
+          action: 'require_review',
+          severity: 'warn',
+          enabled: false,
         },
       ] as OperationalRule[]
   );
+
+  const summarizeRuleConditions = React.useCallback((rule: OperationalRule) => {
+    if (!rule.conditions || rule.conditions.length === 0) return 'No conditions (applies globally)';
+
+    return rule.conditions
+      .map((c) => {
+        switch (c.kind) {
+          case 'category':
+            return `category: ${c.value}`;
+          case 'keywords_blacklist':
+            return `keywords_blacklist: ${c.value}`;
+          case 'min_sources':
+            return `min_sources: ${c.value}`;
+          case 'duplicate_similarity_gt':
+            return `duplicate_similarity_gt: ${c.value}%`;
+          default:
+            return `${c.kind}: ${c.value}`;
+        }
+      })
+      .join(' • ');
+  }, []);
+
+  const summarizeRuleAction = React.useCallback((rule: OperationalRule) => {
+    const base = `${rule.action}`;
+    const extra = rule.actionValue?.trim() ? ` (${rule.actionValue.trim()})` : '';
+    return `${base}${extra} • ${rule.severity}`;
+  }, []);
+
+  const explainRule = React.useCallback((rule: OperationalRule) => {
+    const readableScope: Record<OperationalRule['scope'], string> = {
+      select: 'selection',
+      research: 'research',
+      draft: 'drafting',
+      gate: 'gatekeeping',
+      schedule: 'scheduling',
+      publish: 'publishing',
+    };
+
+    const cond = summarizeRuleConditions(rule);
+    const action = summarizeRuleAction(rule);
+    return `When ${cond}, apply ${action} during ${readableScope[rule.scope]}.`;
+  }, [summarizeRuleAction, summarizeRuleConditions]);
 
   const triggerSaved = React.useCallback(() => {
     automationSaved.trigger();
@@ -115,11 +188,11 @@ export function AutomationLogicTabV6({
       config: {
         minScore: config.minScore,
         strategy: config.strategy,
-        windows: config.windows,
+        publishWindowsV2,
         operationalRules,
       },
     });
-  }, [automationSaved, config.minScore, config.strategy, config.windows, onSave, operationalRules, state.automation]);
+  }, [automationSaved, config.minScore, config.strategy, onSave, operationalRules, publishWindowsV2, state.automation]);
 
   const deleteRule = React.useCallback(
     (id: number) => {
@@ -129,30 +202,70 @@ export function AutomationLogicTabV6({
     [triggerSaved]
   );
 
-  const deleteWindow = React.useCallback(
-    (index: number) => {
-      setConfig((prev) => {
-        const nextWindows = [...prev.windows];
-        nextWindows.splice(index, 1);
-        return { ...prev, windows: nextWindows };
-      });
-      triggerSaved();
-    },
-    [triggerSaved]
-  );
+  const hasInvalidRange = React.useMemo(() => {
+    for (const day of dayDefs) {
+      const dayCfg = publishWindowsV2.days[day.key];
+      if (!dayCfg.enabled) continue;
+      for (const range of dayCfg.ranges) {
+        if (!range.start || !range.end) return true;
+        if (range.end <= range.start) return true;
+      }
+    }
+    return false;
+  }, [dayDefs, publishWindowsV2.days]);
 
-  const addWindowSlot = React.useCallback(() => {
-    const date = slotDraft.date.trim();
-    const startTime = slotDraft.startTime.trim();
-    const endTime = slotDraft.endTime.trim();
-    if (!date || !startTime || !endTime) return;
-    if (endTime <= startTime) return;
+  const hasAnyRanges = React.useMemo(() => {
+    for (const day of dayDefs) {
+      const dayCfg = publishWindowsV2.days[day.key];
+      if (dayCfg.enabled && dayCfg.ranges.length > 0) return true;
+    }
+    return false;
+  }, [dayDefs, publishWindowsV2.days]);
 
-    const label = `${date} • ${startTime} - ${endTime}`;
-    setConfig((prev) => ({ ...prev, windows: [...prev.windows, label] }));
-    triggerSaved();
-    setSlotDraft((prev) => ({ ...prev, open: false }));
-  }, [slotDraft.date, slotDraft.startTime, slotDraft.endTime, triggerSaved]);
+  const previewSlots = React.useMemo(() => {
+    const now = new Date();
+    const blackout = new Set(publishWindowsV2.blackoutDates ?? []);
+
+    const slots: Array<{ startsAt: Date; label: string }> = [];
+    const scanDays = 35;
+
+    for (let i = 0; i < scanDays; i += 1) {
+      const dayDate = new Date(now);
+      dayDate.setHours(0, 0, 0, 0);
+      dayDate.setDate(dayDate.getDate() + i);
+
+      const yyyy = String(dayDate.getFullYear());
+      const mm = String(dayDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(dayDate.getDate()).padStart(2, '0');
+      const ymd = `${yyyy}-${mm}-${dd}`;
+      if (blackout.has(ymd)) continue;
+
+      const jsDay = dayDate.getDay();
+      const def = dayDefs.find((d) => d.jsDay === jsDay);
+      if (!def) continue;
+      const dayCfg = publishWindowsV2.days[def.key];
+      if (!dayCfg.enabled) continue;
+
+      for (const range of dayCfg.ranges) {
+        if (!range.start || !range.end) continue;
+        if (range.end <= range.start) continue;
+
+        const [sh, sm] = range.start.split(':').map((v) => parseInt(v, 10));
+        const [eh, em] = range.end.split(':').map((v) => parseInt(v, 10));
+        if (Number.isNaN(sh) || Number.isNaN(sm) || Number.isNaN(eh) || Number.isNaN(em)) continue;
+
+        const startsAt = new Date(dayDate);
+        startsAt.setHours(sh, sm, 0, 0);
+        if (startsAt <= now) continue;
+
+        const label = `${ymd} (${def.label}) ${range.start}–${range.end}`;
+        slots.push({ startsAt, label });
+      }
+    }
+
+    slots.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+    return slots.slice(0, 10);
+  }, [dayDefs, publishWindowsV2.blackoutDates, publishWindowsV2.days]);
 
   const Toggle = ({ active, onChange, disabled }: { active: boolean; onChange: () => void; disabled?: boolean }) => (
     <button
@@ -387,31 +500,33 @@ export function AutomationLogicTabV6({
                 <div
                   key={rule.id}
                   className={`p-4 flex items-center justify-between gap-4 flex-wrap hover:bg-surface-hover transition-colors ${
-                    !rule.isActive ? 'opacity-60' : ''
+                    !rule.enabled ? 'opacity-60' : ''
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-neu-outset ${
-                        rule.isActive ? 'bg-accent/10 text-brand-accent border-accent/20' : 'bg-surface text-muted-foreground border-border'
+                        rule.enabled
+                          ? 'bg-accent/10 text-brand-accent border-accent/20'
+                          : 'bg-surface text-muted-foreground border-border'
                       }`}
                     >
                       <Settings2 size={18} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-body-small uppercase tracking-widest text-muted-foreground">{rule.type}</span>
-                        <h5 className="text-body text-foreground">{rule.label}</h5>
+                        <span className="text-body-small uppercase tracking-widest text-muted-foreground">{rule.scope}</span>
+                        <h5 className="text-body text-foreground">{summarizeRuleAction(rule)}</h5>
                       </div>
-                      <p className="text-body-small text-muted-foreground mt-0.5">{rule.desc}</p>
+                      <p className="text-body-small text-muted-foreground mt-0.5">{summarizeRuleConditions(rule)}</p>
+                      <p className="text-body-small text-muted-foreground mt-1">What this does: {explainRule(rule)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
-                    <span className="text-body text-foreground">{rule.value}</span>
                     <Toggle
-                      active={rule.isActive}
+                      active={rule.enabled}
                       onChange={() => {
-                        setOperationalRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, isActive: !r.isActive } : r)));
+                        setOperationalRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
                         triggerSaved();
                       }}
                     />
@@ -435,110 +550,286 @@ export function AutomationLogicTabV6({
             <div className="space-y-2">
               <h3 className="text-heading-3 text-foreground flex items-center gap-2">
                 <Clock size={18} className="text-brand-accent" />
-                Publish Windows
+                Publish Windows v2
               </h3>
-              <p className="text-body-small text-muted-foreground">Allowed time slots for automated scheduling.</p>
+              <p className="text-body-small text-muted-foreground">
+                Define allowed publish time ranges per weekday. Preview updates immediately.
+              </p>
             </div>
 
-            <div className="space-y-3">
-              {config.windows.map((window, i) => (
-                <div key={window} className="flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-body flex justify-between items-center">
-                    {window}
-                    <Clock size={14} className="text-muted-foreground" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => deleteWindow(i)}
-                    className="p-2 text-muted-foreground hover:text-destructive transition-colors"
-                    aria-label="Delete window"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+            <div className="space-y-5">
+              <div className="space-y-1">
+                <label className="text-body-small uppercase tracking-widest text-muted-foreground">Timezone (required)</label>
+                <input
+                  type="text"
+                  value={publishWindowsV2.timezone}
+                  onChange={(e) => {
+                    setPublishWindowsV2((prev) => ({ ...prev, timezone: e.target.value }));
+                    triggerSaved();
+                  }}
+                  placeholder="America/New_York"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
+                />
+                <p className="text-body-small text-muted-foreground">
+                  Stored as a label for the scheduler. Preview is computed in your browser time.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-body-small uppercase tracking-widest text-muted-foreground">Days of week</label>
+                  <span className="text-body-small text-muted-foreground">Select days then add ranges</span>
                 </div>
-              ))}
 
-              {slotDraft.open ? (
-                <div className="p-4 bg-surface border border-border rounded-xl shadow-neu-inset space-y-3">
-                  <div className="grid grid-cols-1 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-body-small uppercase tracking-widest text-muted-foreground">Date</label>
-                      <input
-                        type="date"
-                        value={slotDraft.date}
-                        onChange={(e) => setSlotDraft((prev) => ({ ...prev, date: e.target.value }))}
-                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
-                      />
-                    </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {dayDefs.map((d) => {
+                    const enabled = publishWindowsV2.days[d.key].enabled;
+                    return (
+                      <button
+                        key={d.key}
+                        type="button"
+                        onClick={() => {
+                          setPublishWindowsV2((prev) => {
+                            const next = { ...prev, days: { ...prev.days, [d.key]: { ...prev.days[d.key] } } };
+                            const nextEnabled = !next.days[d.key].enabled;
+                            next.days[d.key].enabled = nextEnabled;
+                            if (nextEnabled && next.days[d.key].ranges.length === 0) {
+                              next.days[d.key].ranges = [{ id: makeId(), start: '09:00', end: '11:00' }];
+                            }
+                            return next;
+                          });
+                          triggerSaved();
+                        }}
+                        className={`px-2 py-2 rounded-lg border text-body-small transition-all ${
+                          enabled
+                            ? 'bg-accent/10 border-accent/20 text-brand-accent shadow-neu-outset'
+                            : 'bg-background border-border text-muted-foreground hover:bg-surface'
+                        }`}
+                        aria-pressed={enabled}
+                      >
+                        {d.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-body-small uppercase tracking-widest text-muted-foreground">Start</label>
-                        <input
-                          type="time"
-                          value={slotDraft.startTime}
-                          onChange={(e) => setSlotDraft((prev) => ({ ...prev, startTime: e.target.value }))}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
-                        />
+              <div className="space-y-4">
+                {dayDefs
+                  .filter((d) => publishWindowsV2.days[d.key].enabled)
+                  .map((d) => {
+                    const ranges = publishWindowsV2.days[d.key].ranges;
+                    return (
+                      <div key={d.key} className="p-4 bg-surface border border-border rounded-xl shadow-neu-inset space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <h4 className="text-body text-foreground">{d.label}</h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPublishWindowsV2((prev) => {
+                                const dayCfg = prev.days[d.key];
+                                const nextRanges = [...dayCfg.ranges, { id: makeId(), start: '09:00', end: '11:00' }];
+                                return {
+                                  ...prev,
+                                  days: { ...prev.days, [d.key]: { ...dayCfg, ranges: nextRanges } },
+                                };
+                              });
+                              triggerSaved();
+                            }}
+                            className="text-body-small text-brand-accent flex items-center gap-1 hover:underline"
+                          >
+                            <Plus size={14} /> Add range
+                          </button>
+                        </div>
+
+                        {ranges.length === 0 ? (
+                          <p className="text-body-small text-muted-foreground">No ranges yet.</p>
+                        ) : null}
+
+                        <div className="space-y-2">
+                          {ranges.map((r) => {
+                            const invalid = !!r.start && !!r.end && r.end <= r.start;
+                            return (
+                              <div key={r.id} className="space-y-2">
+                                <div className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                                  <input
+                                    type="time"
+                                    value={r.start}
+                                    onChange={(e) => {
+                                      setPublishWindowsV2((prev) => {
+                                        const dayCfg = prev.days[d.key];
+                                        return {
+                                          ...prev,
+                                          days: {
+                                            ...prev.days,
+                                            [d.key]: {
+                                              ...dayCfg,
+                                              ranges: dayCfg.ranges.map((x) => (x.id === r.id ? { ...x, start: e.target.value } : x)),
+                                            },
+                                          },
+                                        };
+                                      });
+                                      triggerSaved();
+                                    }}
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
+                                    aria-label={`${d.label} range start`}
+                                  />
+                                  <input
+                                    type="time"
+                                    value={r.end}
+                                    onChange={(e) => {
+                                      setPublishWindowsV2((prev) => {
+                                        const dayCfg = prev.days[d.key];
+                                        return {
+                                          ...prev,
+                                          days: {
+                                            ...prev.days,
+                                            [d.key]: {
+                                              ...dayCfg,
+                                              ranges: dayCfg.ranges.map((x) => (x.id === r.id ? { ...x, end: e.target.value } : x)),
+                                            },
+                                          },
+                                        };
+                                      });
+                                      triggerSaved();
+                                    }}
+                                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
+                                    aria-label={`${d.label} range end`}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPublishWindowsV2((prev) => {
+                                        const dayCfg = prev.days[d.key];
+                                        return {
+                                          ...prev,
+                                          days: {
+                                            ...prev.days,
+                                            [d.key]: { ...dayCfg, ranges: dayCfg.ranges.filter((x) => x.id !== r.id) },
+                                          },
+                                        };
+                                      });
+                                      triggerSaved();
+                                    }}
+                                    className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+                                    aria-label="Remove time range"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                                {invalid ? <p className="text-body-small text-destructive">End time must be after start time.</p> : null}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
+                    );
+                  })}
 
-                      <div className="space-y-1">
-                        <label className="text-body-small uppercase tracking-widest text-muted-foreground">End</label>
-                        <input
-                          type="time"
-                          value={slotDraft.endTime}
-                          onChange={(e) => setSlotDraft((prev) => ({ ...prev, endTime: e.target.value }))}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
-                        />
-                      </div>
-                    </div>
+                {dayDefs.every((d) => !publishWindowsV2.days[d.key].enabled) ? (
+                  <p className="text-body-small text-muted-foreground">Select at least one day to configure ranges.</p>
+                ) : null}
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                  <label className="text-body-small uppercase tracking-widest text-muted-foreground">Optional jitter (minutes)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={180}
+                    value={publishWindowsV2.jitterMinutes ?? 0}
+                    onChange={(e) => {
+                      const value = Math.max(0, parseInt(e.target.value || '0', 10));
+                      setPublishWindowsV2((prev) => ({ ...prev, jitterMinutes: value }));
+                      triggerSaved();
+                    }}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-body-small uppercase tracking-widest text-muted-foreground">Optional blackout dates</label>
+                    <span className="text-body-small text-muted-foreground">(YYYY-MM-DD)</span>
                   </div>
 
-                  {slotDraft.endTime <= slotDraft.startTime ? (
-                    <p className="text-body-small text-destructive">End time must be after start time.</p>
-                  ) : null}
-
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={blackoutDraft}
+                      onChange={(e) => setBlackoutDraft(e.target.value)}
+                      className="flex-1 px-4 py-3 bg-background border border-border rounded-xl text-body focus:outline-none focus:ring-2 focus:ring-accent/20"
+                    />
                     <button
                       type="button"
-                      onClick={() => setSlotDraft((prev) => ({ ...prev, open: false }))}
-                      className="flex-1 px-4 py-3 text-body-small text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
+                      onClick={() => {
+                        const value = blackoutDraft.trim();
+                        if (!value) return;
+                        setPublishWindowsV2((prev) => {
+                          const existing = new Set(prev.blackoutDates ?? []);
+                          existing.add(value);
+                          return { ...prev, blackoutDates: Array.from(existing).sort() };
+                        });
+                        triggerSaved();
+                      }}
+                      className="px-4 py-3 rounded-xl text-body-small uppercase tracking-widest shadow-neu-outset bg-accent text-accent-foreground hover:opacity-95"
                     >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={addWindowSlot}
-                      disabled={
-                        !slotDraft.date ||
-                        !slotDraft.startTime ||
-                        !slotDraft.endTime ||
-                        slotDraft.endTime <= slotDraft.startTime
-                      }
-                      className={`flex-1 px-4 py-3 rounded-xl text-body-small uppercase tracking-widest shadow-neu-outset transition-colors ${
-                        !slotDraft.date ||
-                        !slotDraft.startTime ||
-                        !slotDraft.endTime ||
-                        slotDraft.endTime <= slotDraft.startTime
-                          ? 'bg-border text-muted-foreground shadow-none cursor-not-allowed'
-                          : 'bg-accent text-accent-foreground hover:opacity-95'
-                      }`}
-                    >
-                      Add Slot
+                      Add
                     </button>
                   </div>
-                </div>
-              ) : null}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setSlotDraft((prev) => ({ ...prev, open: !prev.open }));
-                }}
-                className="w-full py-2 border border-dashed border-border rounded-lg text-body-small text-muted-foreground hover:bg-surface transition-colors flex items-center justify-center gap-2"
-              >
-                <Plus size={14} /> {slotDraft.open ? 'Close Picker' : 'Add Slot'}
-              </button>
+                  {(publishWindowsV2.blackoutDates ?? []).length > 0 ? (
+                    <div className="space-y-2">
+                      {(publishWindowsV2.blackoutDates ?? []).map((d) => (
+                        <div key={d} className="flex items-center justify-between gap-3 px-3 py-2 bg-surface border border-border rounded-lg">
+                          <span className="text-body text-foreground">{d}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPublishWindowsV2((prev) => ({
+                                ...prev,
+                                blackoutDates: (prev.blackoutDates ?? []).filter((x) => x !== d),
+                              }));
+                              triggerSaved();
+                            }}
+                            className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                            aria-label="Remove blackout date"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-body-small text-muted-foreground">No blackout dates.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-body text-foreground">Next 10 slots</h4>
+                  <span className="text-body-small text-muted-foreground">{publishWindowsV2.timezone || 'Timezone required'}</span>
+                </div>
+
+                {!hasAnyRanges ? (
+                  <p className="text-body-small text-muted-foreground">No ranges configured yet.</p>
+                ) : hasInvalidRange ? (
+                  <p className="text-body-small text-destructive">Fix invalid ranges to view an accurate preview.</p>
+                ) : previewSlots.length === 0 ? (
+                  <p className="text-body-small text-muted-foreground">No upcoming slots found in the next few weeks.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {previewSlots.map((s) => (
+                      <div key={s.label} className="px-3 py-2 bg-surface border border-border rounded-lg text-body flex items-center justify-between">
+                        <span className="text-foreground">{s.label}</span>
+                        <Clock size={14} className="text-muted-foreground" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="pt-6 border-t border-border space-y-4">
@@ -561,7 +852,12 @@ export function AutomationLogicTabV6({
             <button
               type="button"
               onClick={saveConfiguration}
-              disabled={automationSaved.status === 'saving'}
+              disabled={
+                automationSaved.status === 'saving' ||
+                !publishWindowsV2.timezone.trim() ||
+                !hasAnyRanges ||
+                hasInvalidRange
+              }
               className="w-full flex items-center justify-center gap-2 py-3 bg-foreground text-background rounded-xl text-body shadow-neu-outset hover:bg-foreground/90 transition-colors active:scale-[0.98] disabled:opacity-50"
             >
               {automationSaved.status === 'saving' ? <Loader2 size={18} className="animate-spin" /> : null}

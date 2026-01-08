@@ -106,6 +106,7 @@ import { ReviewModalV6 } from './v6/modals/ReviewModal';
 import { RewriteModal } from './v6/modals/RewriteModal';
 import { ScheduleModal } from './v6/modals/ScheduleModal';
 import { TestPreviewModal } from './v6/modals/TestPreviewModal';
+import { RunDetailsModal, type AutomationRunModeV6, type AutomationRunUiV6 } from './v6/modals/RunDetailsModal';
 
 const TABS: NewsEngineTab[] = [
   'Dashboard',
@@ -160,6 +161,10 @@ export default function AdminNewsEngineHub() {
 
   const [masterControlRefreshNonce, setMasterControlRefreshNonce] = React.useState(0);
 
+  const [pendingRunMode, setPendingRunMode] = React.useState<AutomationRunModeV6>('dry');
+  const [automationRun, setAutomationRun] = React.useState<AutomationRunUiV6 | null>(null);
+  const [runDetailsOpen, setRunDetailsOpen] = React.useState(false);
+
   const reloadState = React.useCallback(async () => {
     try {
       const loaded = await fetchAdminState();
@@ -174,6 +179,33 @@ export default function AdminNewsEngineHub() {
     setMasterControlRefreshNonce(Date.now());
     void reloadState();
   }, [reloadState]);
+
+  const queueSnapshot = React.useMemo(() => {
+    if (!state) return null;
+
+    const draftsNeedingReview = state.items.filter((it) => it.status === 'NEEDS_REVIEW').length;
+    const errors = state.items.filter((it) => it.status === 'ERROR').length;
+
+    const now = Date.now();
+    const dueSoonMs = 24 * 60 * 60 * 1000;
+    const scheduledDueSoon = state.items.filter((it) => {
+      if (it.status !== 'SCHEDULED') return false;
+      const at = it.scheduledFor ? Date.parse(it.scheduledFor) : NaN;
+      if (!Number.isFinite(at)) return false;
+      return at >= now && at <= now + dueSoonMs;
+    }).length;
+
+    return {
+      rssNewEntries: null as number | null,
+      researchNewEntries: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null } as Record<
+        'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND',
+        number | null
+      >,
+      draftsNeedingReview,
+      scheduledDueSoon,
+      errors,
+    };
+  }, [state]);
 
   const sourcesSaved = useSavedIndicator();
   const automationSaved = useSavedIndicator();
@@ -585,9 +617,15 @@ export default function AdminNewsEngineHub() {
       {activeTab === 'Master Control' ? (
         <MasterControlTabV6
           pipelineStatus={state.pipelineStatus}
+          items={state.items}
+          automationRun={automationRun}
+          queueSnapshot={queueSnapshot}
+          onOpenRunDetails={() => setRunDetailsOpen(true)}
+          onNavigateToTab={(tab) => setActiveTab(tab)}
           refreshNonce={masterControlRefreshNonce}
           onRefreshHealth={onRefreshHealth}
-          openRunAutomationNowConfirmation={() => {
+          openRunAutomationNowConfirmation={(mode) => {
+            setPendingRunMode(mode);
             setConfirmationKind({ type: 'RUN_AUTOMATION_NOW' });
             setConfirmationOpen(true);
           }}
@@ -907,7 +945,22 @@ export default function AdminNewsEngineHub() {
             ensureState(state);
             try {
               if (confirmationKind.type === 'RUN_AUTOMATION_NOW') {
-                await adminRunAutomationNow();
+                const startedAt = new Date().toISOString();
+                setAutomationRun({ status: 'running', mode: pendingRunMode, startedAt });
+
+                const res = await adminRunAutomationNow();
+
+                const payload = (res as any)?.payload;
+                const runId = payload && typeof payload === 'object' && typeof (payload as any).runId === 'string' ? String((payload as any).runId) : undefined;
+
+                setAutomationRun({
+                  status: 'success',
+                  mode: pendingRunMode,
+                  startedAt,
+                  finishedAt: new Date().toISOString(),
+                  runId,
+                  payload,
+                });
                 setConfirmationOpen(false);
                 setConfirmationKind(null);
                 await reloadState();
@@ -940,10 +993,28 @@ export default function AdminNewsEngineHub() {
               setConfirmationKind(null);
               await reloadState();
             } catch (error) {
+              if (confirmationKind.type === 'RUN_AUTOMATION_NOW') {
+                setAutomationRun((prev) => ({
+                  status: 'failure',
+                  mode: prev?.mode ?? pendingRunMode,
+                  startedAt: prev?.startedAt ?? new Date().toISOString(),
+                  finishedAt: new Date().toISOString(),
+                  runId: prev?.runId,
+                  payload: prev?.payload,
+                  error: error instanceof Error ? error.message : 'Failed to run automation',
+                }));
+              }
               await reloadState();
               throw error;
             }
           }}
+        />
+      ) : null}
+
+      {runDetailsOpen && automationRun ? (
+        <RunDetailsModal
+          run={automationRun}
+          onClose={() => setRunDetailsOpen(false)}
         />
       ) : null}
 

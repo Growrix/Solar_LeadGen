@@ -5,6 +5,7 @@ import {
   Activity,
   AlertTriangle,
   CheckCircle2,
+  ChevronRight,
   Lock,
   PauseCircle,
   PlayCircle,
@@ -12,7 +13,9 @@ import {
   ShieldAlert,
   Terminal,
 } from 'lucide-react';
-import type { PipelineStatus } from '@/lib/ui-stubs/news-engine';
+import type { NewsEngineTab, NewsItem, PipelineStatus } from '@/lib/ui-stubs/news-engine';
+import { formatDateTime } from '../shared';
+import type { AutomationRunModeV6, AutomationRunUiV6 } from '../modals/RunDetailsModal';
 
 type FeatureStatus = 'healthy' | 'warning' | 'degraded' | 'stopped';
 
@@ -47,16 +50,35 @@ function getSystemLabel(pipelineStatus: PipelineStatus) {
 
 type Props = {
   pipelineStatus: PipelineStatus;
+  items: NewsItem[];
+
+  automationRun: AutomationRunUiV6 | null;
+  queueSnapshot: {
+    rssNewEntries: number | null;
+    researchNewEntries: Record<'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND', number | null>;
+    draftsNeedingReview: number;
+    scheduledDueSoon: number;
+    errors: number;
+  } | null;
+
+  onOpenRunDetails: () => void;
+  onNavigateToTab?: (tab: NewsEngineTab) => void;
+
   openPauseConfirmation: () => void;
   openResumeConfirmation: () => void;
   openEmergencyStopConfirmation: () => void;
-  openRunAutomationNowConfirmation: () => void;
+  openRunAutomationNowConfirmation: (mode: AutomationRunModeV6) => void;
   refreshNonce: number;
   onRefreshHealth: () => void;
 };
 
 export function MasterControlTabV6({
   pipelineStatus,
+  items,
+  automationRun,
+  queueSnapshot,
+  onOpenRunDetails,
+  onNavigateToTab,
   openPauseConfirmation,
   openResumeConfirmation,
   openEmergencyStopConfirmation,
@@ -66,6 +88,7 @@ export function MasterControlTabV6({
 }: Props) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [features, setFeatures] = React.useState<PipelineFeature[]>([]);
+  const [runMode, setRunMode] = React.useState<AutomationRunModeV6>('dry');
 
   React.useEffect(() => {
     setIsLoading(true);
@@ -130,6 +153,10 @@ export function MasterControlTabV6({
 
   const system = getSystemLabel(pipelineStatus);
 
+  const isRunBlocked = pipelineStatus === 'PAUSED' || pipelineStatus === 'EMERGENCY_STOP';
+  const blockedReason = pipelineStatus === 'PAUSED' ? 'Pipeline is paused.' : pipelineStatus === 'EMERGENCY_STOP' ? 'Emergency stop is active.' : '';
+  const isRunBusy = automationRun?.status === 'running';
+
   if (isLoading) {
     return (
       <div className="w-full space-y-6 animate-pulse">
@@ -184,14 +211,37 @@ export function MasterControlTabV6({
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
+            <div className="flex items-center gap-2 bg-background/10 border border-background/20 rounded-xl p-1 shadow-neu-inset">
+              <button
+                type="button"
+                onClick={() => setRunMode('dry')}
+                className={`px-3 py-2 rounded-lg text-body-small uppercase tracking-widest transition-colors ${
+                  runMode === 'dry' ? 'bg-background text-foreground shadow-neu-outset' : 'text-background/80 hover:text-background'
+                }`}
+                aria-pressed={runMode === 'dry'}
+              >
+                Dry Run
+              </button>
+              <button
+                type="button"
+                onClick={() => setRunMode('live')}
+                className={`px-3 py-2 rounded-lg text-body-small uppercase tracking-widest transition-colors ${
+                  runMode === 'live' ? 'bg-background text-foreground shadow-neu-outset' : 'text-background/80 hover:text-background'
+                }`}
+                aria-pressed={runMode === 'live'}
+              >
+                Live Run
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={openRunAutomationNowConfirmation}
-              disabled={pipelineStatus !== 'NOMINAL'}
+              onClick={() => openRunAutomationNowConfirmation(runMode)}
+              disabled={pipelineStatus !== 'NOMINAL' || isRunBusy}
               className="flex items-center gap-2 px-6 py-3 bg-accent text-accent-foreground rounded-xl text-body hover:opacity-95 transition-colors active:scale-[0.98] shadow-neu-outset disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw size={20} className="text-accent-foreground" />
-              Run Automation Now
+              <RefreshCw size={20} className={`text-accent-foreground ${isRunBusy ? 'animate-spin' : ''}`} />
+              {isRunBusy ? 'Running…' : 'Run Automation Now'}
             </button>
 
             <button
@@ -224,8 +274,140 @@ export function MasterControlTabV6({
               Emergency Stop
             </button>
           </div>
+
+          {isRunBlocked ? (
+            <div className="mt-4 text-center lg:text-left">
+              <p className={`text-body-small uppercase tracking-widest ${pipelineStatus === 'PAUSED' ? 'text-warning' : 'text-destructive'}`}>
+                Blocked: {blockedReason}
+              </p>
+            </div>
+          ) : null}
         </div>
       </section>
+
+      {queueSnapshot ? (
+        <section className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden">
+          <div className="px-6 py-4 border-b border-border bg-surface flex items-center justify-between gap-4">
+            <h3 className="text-heading-3 text-foreground flex items-center gap-2">
+              <Terminal size={18} className="text-brand-accent" />
+              Queue Snapshot
+            </h3>
+            <p className="text-body-small text-muted-foreground">Operational backlog overview.</p>
+          </div>
+
+          <div className="divide-y divide-border">
+            {[
+              {
+                label: 'RSS NEW entries',
+                value: queueSnapshot.rssNewEntries,
+                onClick: () => onNavigateToTab?.('Sources'),
+              },
+              {
+                label: 'Research NEW entries (WEB)',
+                value: queueSnapshot.researchNewEntries.WEB,
+                onClick: () => onNavigateToTab?.('Sources'),
+              },
+              {
+                label: 'Research NEW entries (SOCIAL)',
+                value: queueSnapshot.researchNewEntries.SOCIAL,
+                onClick: () => onNavigateToTab?.('Sources'),
+              },
+              {
+                label: 'Research NEW entries (JOURNAL)',
+                value: queueSnapshot.researchNewEntries.JOURNAL,
+                onClick: () => onNavigateToTab?.('Sources'),
+              },
+              {
+                label: 'Research NEW entries (TREND)',
+                value: queueSnapshot.researchNewEntries.TREND,
+                onClick: () => onNavigateToTab?.('Sources'),
+              },
+              {
+                label: 'Drafts needing review',
+                value: queueSnapshot.draftsNeedingReview,
+                onClick: () => onNavigateToTab?.('Drafts & Reviews'),
+              },
+              {
+                label: 'Scheduled due soon',
+                value: queueSnapshot.scheduledDueSoon,
+                onClick: () => onNavigateToTab?.('Dashboard'),
+              },
+              {
+                label: 'Errors',
+                value: queueSnapshot.errors,
+                onClick: () => onNavigateToTab?.('Audit Logs'),
+              },
+            ].map((row) => (
+              <button
+                key={row.label}
+                type="button"
+                onClick={row.onClick}
+                className="w-full px-6 py-4 flex items-center justify-between gap-4 bg-background hover:bg-surface-hover transition-colors text-left"
+              >
+                <div>
+                  <p className="text-body text-foreground">{row.label}</p>
+                  {row.value === null ? <p className="text-body-small text-muted-foreground">Not available</p> : null}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-body text-muted-foreground">{row.value === null ? '—' : row.value}</span>
+                  <ChevronRight size={16} className="text-muted-foreground" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {automationRun && automationRun.status !== 'idle' ? (
+        <section className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden">
+          <div className="px-6 py-4 border-b border-border bg-surface flex items-center justify-between gap-4">
+            <h3 className="text-heading-3 text-foreground flex items-center gap-2">
+              <RefreshCw size={18} className="text-brand-accent" />
+              Run Summary
+            </h3>
+            <span
+              className={`text-body-small uppercase tracking-widest px-2 py-0.5 rounded border ${
+                automationRun.status === 'success'
+                  ? 'bg-success/10 text-success border-success/20'
+                  : automationRun.status === 'failure'
+                    ? 'bg-destructive/10 text-destructive border-destructive/30'
+                    : 'bg-accent/10 text-brand-accent border-accent/20'
+              }`}
+            >
+              {automationRun.status}
+            </span>
+          </div>
+
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">Run ID</p>
+              <p className="text-body text-foreground">{automationRun.runId ?? '—'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">Started</p>
+              <p className="text-body text-foreground">{formatDateTime(automationRun.startedAt)}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">Finished</p>
+              <p className="text-body text-foreground">{automationRun.finishedAt ? formatDateTime(automationRun.finishedAt) : '—'}</p>
+            </div>
+
+            <div className="md:col-span-2 lg:col-span-3 flex items-center justify-between gap-4 flex-wrap pt-2 border-t border-border">
+              <p className="text-body-small text-muted-foreground">
+                Mode: <span className="text-foreground">{automationRun.mode === 'dry' ? 'Dry Run' : 'Live Run'}</span>
+              </p>
+              <button
+                type="button"
+                onClick={onOpenRunDetails}
+                className="flex items-center gap-2 px-4 py-2 bg-surface text-foreground rounded-xl shadow-neu-outset hover:bg-surface-hover transition-colors"
+              >
+                View run details
+                <ChevronRight size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 space-y-6">

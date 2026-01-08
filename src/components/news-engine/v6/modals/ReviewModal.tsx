@@ -55,6 +55,15 @@ export function ReviewModalV6({
   const [isSaving, setIsSaving] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  const [requireImageApproval, setRequireImageApproval] = React.useState(true);
+  const [ogImageOverride, setOgImageOverride] = React.useState('');
+
+  React.useEffect(() => {
+    if (!isOpen || !item) return;
+    setRequireImageApproval(true);
+    setOgImageOverride(item.ogImageUrl ?? '');
+  }, [isOpen, item]);
+
   React.useEffect(() => {
     if (!isOpen) return;
     setIsLoading(true);
@@ -87,6 +96,26 @@ export function ReviewModalV6({
   }
 
   const sourceUrls = extractUrls(promptUsed);
+
+  const researchUsedLabel = (() => {
+    const hasRss = item.sourceType === 'RSS Feed';
+    const hasWeb = sourceUrls.length > 0;
+    if (hasRss && hasWeb) return 'RSS + Web';
+    if (hasRss && !hasWeb) return 'RSS only';
+    if (!hasRss && hasWeb) return 'Web only';
+    return 'Trend';
+  })();
+
+  const modelProfilesByStage: Array<{ stage: string; label: string }> = [
+    { stage: 'research_deep', label: '—' },
+    { stage: 'research_fast', label: '—' },
+    { stage: 'draft_longform', label: item.aiModel || '—' },
+    { stage: 'rewrite', label: '—' },
+    { stage: 'seo', label: '—' },
+    { stage: 'dedup_semantic', label: '—' },
+    { stage: 'image_prompt', label: '—' },
+    { stage: 'image_generate', label: '—' },
+  ];
 
   function htmlToPlainText(html: string): string {
     const raw = html.trim();
@@ -261,6 +290,70 @@ export function ReviewModalV6({
 
               {activeTab === 'research' ? (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <section className="bg-background p-8 rounded-[32px] border border-border shadow-neu-outset space-y-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <h3 className="text-heading-3 text-foreground">Provenance</h3>
+                      <span className="text-body-small text-muted-foreground uppercase tracking-widest">
+                        Research used: {researchUsedLabel}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <p className="text-body-small text-muted-foreground uppercase tracking-widest">URLs used</p>
+                        <div className="space-y-2">
+                          <div className="p-3 rounded-xl bg-surface border border-border">
+                            <p className="text-body-small text-muted-foreground">RSS entry URLs</p>
+                            <p className="text-body text-foreground">—</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-surface border border-border">
+                            <p className="text-body-small text-muted-foreground">Research URLs</p>
+                            {sourceUrls.length ? (
+                              <div className="mt-2 space-y-1">
+                                {sourceUrls.slice(0, 8).map((u) => (
+                                  <a
+                                    key={u}
+                                    href={u}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block text-body-small text-brand-accent hover:underline truncate"
+                                  >
+                                    {u}
+                                  </a>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-body text-foreground">—</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-body-small text-muted-foreground uppercase tracking-widest">Model profile (label only)</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {modelProfilesByStage.map((row) => (
+                            <div
+                              key={row.stage}
+                              className="flex items-center justify-between gap-4 px-4 py-2 rounded-xl bg-surface border border-border"
+                            >
+                              <span className="text-body text-foreground">{row.stage}</span>
+                              <span className="text-body-small text-muted-foreground">{row.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-surface rounded-xl border border-border p-4">
+                      <p className="text-body-small text-muted-foreground">Backend hooks required (list only):</p>
+                      <ul className="mt-2 space-y-1">
+                        <li className="text-body-small text-muted-foreground">- Fetch provenance fields for an item</li>
+                        <li className="text-body-small text-muted-foreground">- Fetch per-stage model profile labels</li>
+                      </ul>
+                    </div>
+                  </section>
+
                   <section className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-heading-3 text-foreground flex items-center gap-2">
@@ -372,6 +465,85 @@ export function ReviewModalV6({
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-background p-6 rounded-2xl border border-border shadow-neu-outset space-y-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <p className="text-body-small text-muted-foreground uppercase tracking-widest">Image controls</p>
+                        <p className="text-body text-foreground">OG Image</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled
+                        className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body-small text-muted-foreground cursor-not-allowed"
+                      >
+                        <Zap size={16} />
+                        Generate AI image
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <p className="text-body-small text-muted-foreground uppercase tracking-widest">Current preview</p>
+                        <div className="w-full aspect-[16/9] rounded-2xl border border-border bg-surface overflow-hidden flex items-center justify-center">
+                          {(ogImageOverride || item.ogImageUrl) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={ogImageOverride || item.ogImageUrl || ''}
+                              alt="OG preview"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <p className="text-body text-muted-foreground">No OG image set</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="space-y-0.5">
+                            <p className="text-body text-foreground">Require approval before publish</p>
+                            <p className="text-body-small text-muted-foreground">UI-only toggle; publishing enforcement is backend-owned.</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setRequireImageApproval((v) => !v)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none border border-border ${
+                              requireImageApproval ? 'bg-accent' : 'bg-surface'
+                            }`}
+                            aria-label="Toggle image approval requirement"
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                                requireImageApproval ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-body-small text-muted-foreground uppercase tracking-widest">Override image URL</label>
+                          <input
+                            value={ogImageOverride}
+                            onChange={(e) => setOgImageOverride(e.target.value)}
+                            placeholder="https://..."
+                            className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+                          />
+                          <p className="text-body-small text-muted-foreground">
+                            Backend hooks required to persist `ogImageUrl` + approval flag.
+                          </p>
+                        </div>
+
+                        <div className="bg-surface rounded-xl border border-border p-4">
+                          <p className="text-body-small text-muted-foreground">Backend hooks required (list only):</p>
+                          <ul className="mt-2 space-y-1">
+                            <li className="text-body-small text-muted-foreground">- Trigger image generation</li>
+                            <li className="text-body-small text-muted-foreground">- Persist ogImageUrl + approval flag</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </div>

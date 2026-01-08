@@ -15,7 +15,109 @@ type Props = {
 };
 
 export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props) {
-  const [apiKey, setApiKey] = React.useState('ne_live_••••••••••••');
+  type KeyPool = 'Research' | 'Drafting' | 'Images';
+  type KeyProvider = 'OpenAI' | 'Other';
+
+  type KeyVaultEntry = {
+    id: string;
+    provider: KeyProvider;
+    label: string;
+    pool: KeyPool;
+    enabled: boolean;
+    maskedKey: string;
+    lastSuccess?: string;
+    lastError?: string;
+    lastUsed?: string;
+  };
+
+  function maskKey(rawKey: string): string {
+    const trimmed = rawKey.trim();
+    if (!trimmed) return '••••';
+    const last4 = trimmed.length >= 4 ? trimmed.slice(-4) : trimmed;
+    return `••••${last4}`;
+  }
+
+  function uid(prefix: string): string {
+    return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+  }
+
+  const [keyVault, setKeyVault] = React.useState<KeyVaultEntry[]>(() => [
+    {
+      id: uid('key'),
+      provider: 'OpenAI',
+      label: 'Primary (masked)',
+      pool: 'Research',
+      enabled: true,
+      maskedKey: '••••1234',
+      lastSuccess: '—',
+      lastError: '—',
+      lastUsed: '—',
+    },
+  ]);
+
+  const [isAddKeyOpen, setIsAddKeyOpen] = React.useState(false);
+  const [editingKeyId, setEditingKeyId] = React.useState<string | null>(null);
+  const [keyForm, setKeyForm] = React.useState<{
+    provider: KeyProvider;
+    label: string;
+    pool: KeyPool;
+    enabled: boolean;
+    rawKey: string;
+  }>({
+    provider: 'OpenAI',
+    label: '',
+    pool: 'Research',
+    enabled: true,
+    rawKey: '',
+  });
+
+  const MODEL_PROFILE_OPTIONS = React.useMemo(
+    () => [
+      'OpenAI o3-mini',
+      'OpenAI gpt-4o-mini',
+      'OpenAI gpt-4o',
+      'gpt-5.2',
+    ],
+    []
+  );
+
+  type AiRouterTaskType =
+    | 'research_deep'
+    | 'research_fast'
+    | 'draft_longform'
+    | 'rewrite'
+    | 'seo'
+    | 'dedup_semantic'
+    | 'image_prompt'
+    | 'image_generate';
+
+  const AI_ROUTER_TASK_TYPES = React.useMemo<AiRouterTaskType[]>(
+    () => [
+      'research_deep',
+      'research_fast',
+      'draft_longform',
+      'rewrite',
+      'seo',
+      'dedup_semantic',
+      'image_prompt',
+      'image_generate',
+    ],
+    []
+  );
+
+  const [aiRouterDefaults, setAiRouterDefaults] = React.useState<Record<AiRouterTaskType, string>>(() => {
+    const fallback = state.settings.modelLabel ?? 'OpenAI o3-mini';
+    return {
+      research_deep: fallback,
+      research_fast: fallback,
+      draft_longform: fallback,
+      rewrite: fallback,
+      seo: fallback,
+      dedup_semantic: fallback,
+      image_prompt: fallback,
+      image_generate: fallback,
+    };
+  });
 
   const writingTone = state.settings.writingTone ?? 'Journalistic';
   const modelLabel = state.settings.modelLabel ?? 'OpenAI o3-mini';
@@ -88,8 +190,6 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
   );
 
   const resetDefaults = () => {
-    setApiKey('ne_live_••••••••••••');
-
     setState({
       ...state,
       settings: {
@@ -134,6 +234,157 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500 pb-32 relative">
+      {isAddKeyOpen ? (
+        <div className="fixed inset-0 z-[1700] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            onClick={() => {
+              setIsAddKeyOpen(false);
+              setEditingKeyId(null);
+              setKeyForm({ provider: 'OpenAI', label: '', pool: 'Research', enabled: true, rawKey: '' });
+            }}
+          />
+          <div className="relative w-full max-w-xl bg-background rounded-[28px] border border-border shadow-neu-outset overflow-hidden">
+            <div className="p-6 border-b border-border">
+              <h3 className="text-heading-3 text-foreground">{editingKeyId ? 'Update Key' : 'Add Key'}</h3>
+              <p className="text-body text-muted-foreground">
+                Raw keys are entered only on create/update and are never shown again.
+              </p>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="space-y-2">
+                <label className="text-body-small text-muted-foreground uppercase tracking-widest">Provider</label>
+                <select
+                  value={keyForm.provider}
+                  onChange={(e) => setKeyForm((p) => ({ ...p, provider: e.target.value as KeyProvider }))}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+                >
+                  <option value="OpenAI">OpenAI</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-body-small text-muted-foreground uppercase tracking-widest">Label</label>
+                <input
+                  value={keyForm.label}
+                  onChange={(e) => setKeyForm((p) => ({ ...p, label: e.target.value }))}
+                  placeholder="e.g. Research key 1"
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-body-small text-muted-foreground uppercase tracking-widest">Pool</label>
+                <select
+                  value={keyForm.pool}
+                  onChange={(e) => setKeyForm((p) => ({ ...p, pool: e.target.value as KeyPool }))}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+                >
+                  <option value="Research">Research</option>
+                  <option value="Drafting">Drafting</option>
+                  <option value="Images">Images</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-body-small text-muted-foreground uppercase tracking-widest">Raw Key</label>
+                <input
+                  type="password"
+                  value={keyForm.rawKey}
+                  onChange={(e) => setKeyForm((p) => ({ ...p, rawKey: e.target.value }))}
+                  placeholder={editingKeyId ? 'Enter a new key to rotate (optional)' : 'Enter key (write-only)'}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+                />
+                <p className="text-body-small text-muted-foreground">This value is not stored in UI state after saving.</p>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <p className="text-body text-foreground">Enabled</p>
+                  <p className="text-body-small text-muted-foreground">If disabled, this key will not be used for requests.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setKeyForm((p) => ({ ...p, enabled: !p.enabled }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none border border-border ${
+                    keyForm.enabled ? 'bg-accent' : 'bg-surface'
+                  }`}
+                  aria-label="Toggle key enabled"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                      keyForm.enabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-border flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddKeyOpen(false);
+                  setEditingKeyId(null);
+                  setKeyForm({ provider: 'OpenAI', label: '', pool: 'Research', enabled: true, rawKey: '' });
+                }}
+                className="px-4 py-2 text-body text-muted-foreground hover:bg-surface rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextLabel = keyForm.label.trim() ? keyForm.label.trim() : 'Untitled key';
+                  const nextMasked = keyForm.rawKey.trim() ? maskKey(keyForm.rawKey) : undefined;
+
+                  setKeyVault((prev) => {
+                    if (!editingKeyId) {
+                      return [
+                        ...prev,
+                        {
+                          id: uid('key'),
+                          provider: keyForm.provider,
+                          label: nextLabel,
+                          pool: keyForm.pool,
+                          enabled: keyForm.enabled,
+                          maskedKey: nextMasked ?? '••••',
+                          lastSuccess: '—',
+                          lastError: '—',
+                          lastUsed: '—',
+                        },
+                      ];
+                    }
+                    return prev.map((k) =>
+                      k.id === editingKeyId
+                        ? {
+                            ...k,
+                            provider: keyForm.provider,
+                            label: nextLabel,
+                            pool: keyForm.pool,
+                            enabled: keyForm.enabled,
+                            ...(nextMasked ? { maskedKey: nextMasked } : null),
+                          }
+                        : k
+                    );
+                  });
+
+                  settingsSaved.trigger();
+
+                  setIsAddKeyOpen(false);
+                  setEditingKeyId(null);
+                  setKeyForm({ provider: 'OpenAI', label: '', pool: 'Research', enabled: true, rawKey: '' });
+                }}
+                className="flex items-center gap-2 px-6 py-2.5 bg-foreground text-background rounded-xl text-body shadow-neu-outset hover:bg-foreground/90 transition-colors active:scale-[0.98]"
+              >
+                <Save size={16} />
+                Save Key
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {settingsSaved.status !== 'idle' ? (
         <div className="fixed bottom-24 right-8 z-[1600] flex items-center gap-3 px-4 py-3 bg-foreground text-background rounded-2xl shadow-neu-outset animate-in slide-in-from-bottom-4 duration-300">
           {settingsSaved.status === 'saving' ? (
@@ -149,6 +400,51 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
           )}
         </div>
       ) : null}
+
+      <SettingSection
+        title="AI Router"
+        description="Choose default model profiles per task across the pipeline."
+        icon={<Brain size={20} />}
+      >
+        <div className="space-y-1">
+          <p className="text-body text-foreground">Default routing</p>
+          <p className="text-body-small text-muted-foreground">Operational rules may override defaults</p>
+        </div>
+
+        <div className="space-y-3">
+          {AI_ROUTER_TASK_TYPES.map((taskType) => (
+            <div key={taskType} className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <p className="text-body text-foreground">{taskType}</p>
+                <p className="text-body-small text-muted-foreground">Default model profile</p>
+              </div>
+              <select
+                value={aiRouterDefaults[taskType]}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setAiRouterDefaults((prev) => ({ ...prev, [taskType]: next }));
+                  settingsSaved.trigger();
+                }}
+                className="w-full md:w-64 px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+              >
+                {MODEL_PROFILE_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-surface rounded-xl border border-border p-4">
+          <p className="text-body-small text-muted-foreground">Backend hooks required (list only):</p>
+          <ul className="mt-2 space-y-1">
+            <li className="text-body-small text-muted-foreground">- Fetch model profiles</li>
+            <li className="text-body-small text-muted-foreground">- Persist task → model mappings</li>
+          </ul>
+        </div>
+      </SettingSection>
 
       <SettingSection
         title="AI Personalization"
@@ -356,25 +652,117 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
       </SettingSection>
 
       <SettingSection
-        title="Security & API"
-        description="Manage engine access and integration points."
+        title="Key Vault"
+        description="Manage provider keys, pools, and health indicators (masked only)."
         icon={<Shield size={20} />}
       >
-        <SettingRow label="Engine API Key" description="Used for external automation and integration with the NewsEngine API.">
-          <div className="flex items-center gap-2">
-            <code className="bg-surface px-2 py-1 rounded text-body-small text-muted-foreground">{apiKey}</code>
-            <button
-              type="button"
-              onClick={() => {
-                setApiKey('ne_live_••••••••••••');
-                settingsSaved.trigger();
-              }}
-              className="text-body-small text-brand-accent hover:bg-surface px-2 py-1 rounded transition-colors"
-            >
-              Regenerate
-            </button>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <p className="text-body text-foreground">Keys</p>
+            <p className="text-body-small text-muted-foreground">Raw keys are write-only and never displayed.</p>
           </div>
-        </SettingRow>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingKeyId(null);
+              setKeyForm({ provider: 'OpenAI', label: '', pool: 'Research', enabled: true, rawKey: '' });
+              setIsAddKeyOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body shadow-neu-outset hover:bg-surface-hover transition-colors"
+          >
+            <Save size={16} />
+            Add Key
+          </button>
+        </div>
+
+        <div className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3 px-6 py-3 bg-surface border-b border-border">
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest">Provider</div>
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest">Label</div>
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest">Pool</div>
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest">Enabled</div>
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest">Health</div>
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest text-right">Actions</div>
+          </div>
+          <div className="divide-y divide-border">
+            {keyVault.map((k) => (
+              <div key={k.id} className="grid grid-cols-1 md:grid-cols-6 gap-3 px-6 py-4 bg-background">
+                <div className="text-body text-foreground">{k.provider}</div>
+                <div className="space-y-1">
+                  <div className="text-body text-foreground">{k.label}</div>
+                  <div className="text-body-small text-muted-foreground">{k.maskedKey}</div>
+                </div>
+                <div>
+                  <select
+                    value={k.pool}
+                    onChange={(e) => {
+                      const nextPool = e.target.value as KeyPool;
+                      setKeyVault((prev) => prev.map((it) => (it.id === k.id ? { ...it, pool: nextPool } : it)));
+                      settingsSaved.trigger();
+                    }}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
+                  >
+                    <option value="Research">Research</option>
+                    <option value="Drafting">Drafting</option>
+                    <option value="Images">Images</option>
+                  </select>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setKeyVault((prev) => prev.map((it) => (it.id === k.id ? { ...it, enabled: !it.enabled } : it)));
+                      settingsSaved.trigger();
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none border border-border ${
+                      k.enabled ? 'bg-accent' : 'bg-surface'
+                    }`}
+                    aria-label="Toggle key enabled"
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                        k.enabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-body-small text-muted-foreground">Last success: {k.lastSuccess ?? '—'}</div>
+                  <div className="text-body-small text-muted-foreground">Last error: {k.lastError ?? '—'}</div>
+                  <div className="text-body-small text-muted-foreground">Last used: {k.lastUsed ?? '—'}</div>
+                </div>
+                <div className="flex items-start justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingKeyId(k.id);
+                      setKeyForm({
+                        provider: k.provider,
+                        label: k.label,
+                        pool: k.pool,
+                        enabled: k.enabled,
+                        rawKey: '',
+                      });
+                      setIsAddKeyOpen(true);
+                    }}
+                    className="px-3 py-2 text-body-small text-brand-accent hover:bg-surface rounded-lg transition-colors"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-surface rounded-xl border border-border p-4">
+          <p className="text-body-small text-muted-foreground">Backend hooks required (list only):</p>
+          <ul className="mt-2 space-y-1">
+            <li className="text-body-small text-muted-foreground">- Create/update key (write-only raw key)</li>
+            <li className="text-body-small text-muted-foreground">- List keys (masked)</li>
+            <li className="text-body-small text-muted-foreground">- Enable/disable</li>
+          </ul>
+        </div>
       </SettingSection>
 
       <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur border-t border-border px-8 py-4 flex items-center justify-end gap-3 z-40">

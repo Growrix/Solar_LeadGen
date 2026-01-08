@@ -43,3 +43,18 @@
   ***Instrcutions*** 
   - perform as per mentioned above but make sure everyting alined with the updated SOT files in : DOC\FEATURES\NEWS ENGINE\SOT folder.
 ------------------------------------------------------------------------------------------------
+
+***phase 4 : Backend Developemnt***
+
+ - here is the excatly current state audit report : 
+
+ - we have implimented the frontend based on this enhancement plan : 
+   DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\AI-AUTOMATION-ADMIN-ENHANCEMENT-FRONTEND-PROMPTS-2026-01-07.md
+
+- prepare the backend plan by following the prompt in : 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND\Backend_Planning_Prompt_Template_E2E_Audit_First.md
+
+***Instructions***
+As we have enhance and expanded the frontend based on the new enhancement plan, now prepare the backend plan by following the above mentioned prompt. Make sure the backend plan is aligned with the updated frontend and never messup with existing builds. we need to do it safely. 
+
+------------------------------------------------------------------------------------------------
