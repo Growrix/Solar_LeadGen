@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:e2e": "next dev --port 3001",
+    "dev:e2e": "cross-env NEXTAUTH_URL=http://localhost:3001 next dev --port 3001",
     "prebuild": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
     "build": "next build",
     "start": "next start",
@@ -14,7 +14,10 @@
     "build-storybook": "storybook build",
     "chromatic": "chromatic --exit-zero-on-changes",
     "prepare": "husky",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "gate:typecheck": "npx tsc --noEmit",
+    "gate:build": "npm run build",
+    "test:e2e:news-engine-phase13": "playwright test tests/e2e/news-engine-phase13-router-vault-provenance.spec.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.910.0",
@@ -58,6 +61,8 @@
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.9.12",
+    "cross-env": "^7.0.3",
     "eslint": "^8.53.0",
     "eslint-config-next": "14.2.33",
     "eslint-plugin-storybook": "^9.1.15",

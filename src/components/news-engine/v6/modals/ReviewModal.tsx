@@ -20,6 +20,12 @@ import {
   Zap,
 } from 'lucide-react';
 import type { AuditLogEntry, NewsItem } from '@/lib/ui-stubs/news-engine';
+import {
+  adminFetchItemImageControls,
+  adminFetchItemProvenance,
+  adminUpdateItemImageControls,
+  type AdminItemProvenance,
+} from '@/lib/news-engine/client';
 import { getStatusBadgeClasses } from '../shared';
 
 type ReviewTabV6 = 'research' | 'article' | 'seo' | 'history';
@@ -49,27 +55,64 @@ export function ReviewModalV6({
   onDelete?: () => void;
   onRegenerate?: () => void;
   onRestore?: () => void;
-  onSave?: () => void;
+  onSave?: () => Promise<void> | void;
 }) {
   const [activeTab, setActiveTab] = React.useState<ReviewTabV6>('article');
   const [isSaving, setIsSaving] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const [provenance, setProvenance] = React.useState<AdminItemProvenance | null>(null);
 
   const [requireImageApproval, setRequireImageApproval] = React.useState(true);
   const [ogImageOverride, setOgImageOverride] = React.useState('');
 
   React.useEffect(() => {
     if (!isOpen || !item) return;
+    setProvenance(null);
     setRequireImageApproval(true);
     setOgImageOverride(item.ogImageUrl ?? '');
   }, [isOpen, item]);
 
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !item) return;
+    let cancelled = false;
     setIsLoading(true);
-    const timer = window.setTimeout(() => setIsLoading(false), 600);
-    return () => window.clearTimeout(timer);
-  }, [isOpen]);
+
+    void (async () => {
+      try {
+        const [prov, img] = await Promise.all([
+          adminFetchItemProvenance(item.id),
+          adminFetchItemImageControls(item.id),
+        ]);
+        if (cancelled) return;
+        setProvenance(prov);
+        setRequireImageApproval(Boolean(img.ogImageApprovalRequired));
+        setOgImageOverride(img.ogImageUrl ?? '');
+      } catch (err) {
+        if (cancelled) return;
+        console.error(err);
+      } finally {
+        if (cancelled) return;
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, item]);
+
+  const modelProfileLabelByTask = React.useMemo(() => {
+    const map: Record<string, string> = {};
+    const stages = provenance?.stages ?? [];
+    for (const s of stages) {
+      const task = s.taskType || '';
+      if (!task) continue;
+      const label = s.modelProfileLabel ?? s.model ?? '';
+      if (label) map[task] = label;
+    }
+    return map;
+  }, [provenance]);
 
   if (!isOpen || !item) return null;
 
@@ -96,6 +139,9 @@ export function ReviewModalV6({
   }
 
   const sourceUrls = extractUrls(promptUsed);
+
+  const rssEntryUrls = provenance?.rssEntryUrls?.length ? provenance.rssEntryUrls : [];
+  const researchUrls = provenance?.researchUrls?.length ? provenance.researchUrls : sourceUrls;
 
   const researchUsedLabel = (() => {
     const hasRss = item.sourceType === 'RSS Feed';
@@ -304,13 +350,29 @@ export function ReviewModalV6({
                         <div className="space-y-2">
                           <div className="p-3 rounded-xl bg-surface border border-border">
                             <p className="text-body-small text-muted-foreground">RSS entry URLs</p>
-                            <p className="text-body text-foreground">—</p>
+                            {rssEntryUrls.length ? (
+                              <div className="mt-2 space-y-1">
+                                {rssEntryUrls.slice(0, 8).map((u) => (
+                                  <a
+                                    key={u}
+                                    href={u}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block text-body-small text-brand-accent hover:underline truncate"
+                                  >
+                                    {u}
+                                  </a>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-body text-foreground">—</p>
+                            )}
                           </div>
                           <div className="p-3 rounded-xl bg-surface border border-border">
                             <p className="text-body-small text-muted-foreground">Research URLs</p>
-                            {sourceUrls.length ? (
+                            {researchUrls.length ? (
                               <div className="mt-2 space-y-1">
-                                {sourceUrls.slice(0, 8).map((u) => (
+                                {researchUrls.slice(0, 8).map((u) => (
                                   <a
                                     key={u}
                                     href={u}
@@ -338,19 +400,11 @@ export function ReviewModalV6({
                               className="flex items-center justify-between gap-4 px-4 py-2 rounded-xl bg-surface border border-border"
                             >
                               <span className="text-body text-foreground">{row.stage}</span>
-                              <span className="text-body-small text-muted-foreground">{row.label}</span>
+                              <span className="text-body-small text-muted-foreground">{modelProfileLabelByTask[row.stage] ?? row.label}</span>
                             </div>
                           ))}
                         </div>
                       </div>
-                    </div>
-
-                    <div className="bg-surface rounded-xl border border-border p-4">
-                      <p className="text-body-small text-muted-foreground">Backend hooks required (list only):</p>
-                      <ul className="mt-2 space-y-1">
-                        <li className="text-body-small text-muted-foreground">- Fetch provenance fields for an item</li>
-                        <li className="text-body-small text-muted-foreground">- Fetch per-stage model profile labels</li>
-                      </ul>
                     </div>
                   </section>
 
@@ -361,12 +415,12 @@ export function ReviewModalV6({
                         Verified Sources
                       </h3>
                       <span className="text-body-small text-muted-foreground uppercase tracking-widest">
-                        {sourceUrls.length ? `Sources (${sourceUrls.length})` : 'No sources recorded'}
+                        {researchUrls.length ? `Sources (${researchUrls.length})` : 'No sources recorded'}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {sourceUrls.length ? (
-                        sourceUrls.slice(0, 6).map((url) => (
+                      {researchUrls.length ? (
+                        researchUrls.slice(0, 6).map((url) => (
                           <a
                             key={url}
                             href={url}
@@ -532,17 +586,6 @@ export function ReviewModalV6({
                             placeholder="https://..."
                             className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
                           />
-                          <p className="text-body-small text-muted-foreground">
-                            Backend hooks required to persist `ogImageUrl` + approval flag.
-                          </p>
-                        </div>
-
-                        <div className="bg-surface rounded-xl border border-border p-4">
-                          <p className="text-body-small text-muted-foreground">Backend hooks required (list only):</p>
-                          <ul className="mt-2 space-y-1">
-                            <li className="text-body-small text-muted-foreground">- Trigger image generation</li>
-                            <li className="text-body-small text-muted-foreground">- Persist ogImageUrl + approval flag</li>
-                          </ul>
                         </div>
                       </div>
                     </div>
@@ -633,9 +676,22 @@ export function ReviewModalV6({
             <button
               type="button"
               onClick={() => {
-                setIsSaving(true);
-                onSave?.();
-                window.setTimeout(() => setIsSaving(false), 1000);
+                void (async () => {
+                  if (!item) return;
+                  setIsSaving(true);
+                  try {
+                    await adminUpdateItemImageControls(item.id, {
+                      ogImageUrl: ogImageOverride.trim() ? ogImageOverride.trim() : null,
+                      ogImageApprovalRequired: requireImageApproval,
+                    });
+                    await onSave?.();
+                  } catch (err) {
+                    const msg = err instanceof Error ? err.message : 'Failed to save';
+                    window.alert(msg);
+                  } finally {
+                    setIsSaving(false);
+                  }
+                })();
               }}
               disabled={isSaving}
               className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground border border-border rounded-2xl hover:bg-surface shadow-neu-outset active:scale-95 disabled:opacity-50 uppercase tracking-widest"

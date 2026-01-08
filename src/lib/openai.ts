@@ -2,6 +2,7 @@ type OpenAiCallOptions = {
   system: string;
   prompt: string;
   modelOverride?: string;
+  apiKeyOverride?: string;
   temperature?: number;
 };
 
@@ -57,7 +58,7 @@ function extractChatCompletionsOutputText(data: unknown): string | null {
 
 export async function callOpenAiText(options: OpenAiCallOptions): Promise<{ text: string; modelUsed: string }>
 {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = options.apiKeyOverride?.trim() || process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error('AI not configured: missing OPENAI_API_KEY');
   }

@@ -109,7 +109,8 @@ export async function PUT(
     const auth = await requireAdmin();
 
     const { id } = await context.params;
-    const body = await request.json();
+    const parsed = await request.json().catch(() => null);
+    const body = (parsed && typeof parsed === 'object' ? parsed : {}) as Record<string, unknown>;
 
     const title = normalizeString(body.title).trim();
     const summary = normalizeString(body.summary);
@@ -162,7 +163,12 @@ export async function PUT(
     if (tags !== undefined) data.tags = tags;
 
     if (Object.keys(data).length === 0) {
-      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+      // Treat empty/invalid bodies as a no-op to avoid throwing (e.g. UI "touch" requests).
+      const current = await prisma.newsItem.findUnique({ where: { id } });
+      if (!current) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+      return NextResponse.json({ item: current, noOp: true });
     }
 
     const updated = await prisma.newsItem.update({

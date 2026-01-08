@@ -5060,3 +5060,124 @@ We already had a plan DOC\FEATURES\NEWS ENGINE\SOT and also built the frontend a
  ---------------------------------------------------------------------------------------
 
  the prototype is only the UI , and we are not it that stage anymore. we have done migrations , Backend impimentations. and now about to do the enhancing and expanding. if you comapre vs v6 it is completely wrong. I think you need to clarify this file the SOT in this file means the Implimentation done in our site wich is under src, prisma etc folders and not V6.  It is better to create another audit prompt file to make sure do the e2e audit as per DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md but the purpose is different , it is not to compare anything. it is about to show the accurate clear picture of the feature's frontend and backend, file structures etc. because this will be analyzed while implimenting the enhancement. create a separate audit prommpt in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT
+
+ -------------------------------------------------------------------------------------------
+
+ ***Task 1***
+ - I want you to read this DOC\GUIDELINES & SOT\README.md and also the entire DOC\GUIDELINES & SOT and identify if the readme.md file needs any update if you missed any documentation that was not included in the readme. 
+***Task 2***
+ - I want you to read these files : 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND
+***Task 3***
+  - I have built them on demand as per needed to work more effectively. 
+  In order to get idea how I used them here is the folder and files to check :
+  DOC\PROMPTS\WORKFLOW
+
+***Things to keep in Mind***
+- Some files are are used more frequently e.g the audit prompts. so you need to check how I used them in the workflow folder. 
+- The readme.md file should be more comprehensive and include all the necessary documentation guidelines and SOT instructions in one place so that any AI can follow the readme.md file and work accordingly without any confusion.
+- The AI should be able to understand which files to read immidiately based on my prompts. In this case you can give me some workflow based hint words in the readme.md file so that AI can understand which files to read immidiately based on my prompts. I will mention those hint words in my prompts to make the AI understand which files to read immidiately. e.g if I mention " Audit Feature" in my prompt then the AI should understand to read the specific feature audit prompts files immidiately. becuase there are multiple audit prompt files in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder. If I mention " Backend Planning" in my prompt then the AI should understand to read the specific backend planning prompt files immidiately. becuase there are multiple backend planning prompt files in the DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND folder. If I mention " Audit Vs SOT" in my prompt then the AI should understand to read the specific audit vs SOT prompt files immidiately. becuase there are multiple audit vs SOT prompt files in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder.
+
+***Instructions***
+- As there are a lot of documentation guidelines and SOT readme files in the DOC folder that creates confusions sometimes, I want you to prepare a unified documentation guideline and SOT readme file that includes all the necessary documentation guidelines and SOT instructions in one place.
+- Also let me know if you found any missing documentations, or found redundant documentations in the existing readme files. 
+
+***Goal***
+- My goal is to have a unified documentation guideline and SOT readme file that includes all the necessary documentation guidelines and SOT instructions in one place. 
+
+ - Enhancing the Workflow more effectively by using the existing prompt templates more smartly and effectively. 
+
+ ***Strickt Rules***
+ - In order to perform the tasks you need to read through all the files and foldes mentioned above carefully before doing anything. 
+ 
+ - Keep in mind that, the DOC\PROMPTS\WORKFLOW folder contains all the workflow based prompts that I used on demand to work more effectively. You can get idea from it, but do not copy anything from there directly. I do not want you to overwhelm me with too much information. I want you to keep it simple and straight to the point.
+  - The final outcome should be a single readme.md file that includes all the necessary documentation guidelines and SOT instructions in one place and with all the "hint words" for better understanding. 
+  - Finally give me a report and summary on overall tasks you done. 
+
+
+  ----------------------------------------------------------------------------------------------
+
+***The secnarion is :***
+
+- I do research with AI and build the frontend UI UX based on the research. and after that do the backend planning based on the final UI UX flow that build. 
+
+- All the process I do with the AI . from the planning to the final implimentation everything is done by AI. 
+
+- So, most of the time I never have the exactly clear idea what exactly I will get in the end after the backend is done. which function is connected to which part, how the overall functionality is working e2e etc. I built with the strickt goal, also enhance/update the plan on the go while building UI UX bacnkend and again I do more enhancement as per I feel as needed. But in the end I do not have idea how the overall function will work, how do I do the setting and test it . 
+
+- After building a feature , I am always confused about what is working and what is not and just staying the UI as static , even the backend applied but maybe not working.  
+
+
+
+***What I need***
+- I Need the clear Instructions for testing and also need a feature user guideline so that I will know how to operate the feature e2e without confusion. 
+- also need tooltips as well. 
+- it is better to have in english and bengali translation both.
+- I need to understand which function is connected to which part, how the overall functionality is working e2e etc.
+- Also need a final checklist where I can verify everything is working perfectly before marking the feature as done.
+- I need a final feature documentation that includes all the above things in one place for better understanding which will be created by doing the feature audit e2e . 
+
+
+***Instructions***
+I want you to come up with the best solution to solve my painpoints. discuss more with me if needed. or suggest a process e.g Audit , create final documents with the cheklist,user guide etc 
+
+---------------------------------------------------------------- 
+
+- which audit promot can be resued for the E2E Feature Audit (Post-Implementation) as you mentioned. Can we reuse anything from the existing ? check for that in the DOC\GUIDELINES & SOT\README.md . or let me know If we need to create any new audit prompt for that post-implimentation e2e feature audit.
+
+- IF we need to create the audit prompt, then create it in the : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder.
+
+- Create the output template in the DOC\PROMPTS\PROMPTS & TEMPLATES\POST FEATURE . so that the AI will follow the template to prepare the expected outcome accordingly that you mentioned.
+
+- Finally update the DOC\GUIDELINES & SOT\README.md file accordingly so that any AI can follow the readme.md file and work accordingly without any confusion.
+
+
+---------------------------------------------------------------------
+
+
+- understand my workflow : DOC\PROMPTS\WORKFLOW , and suggest me how can I improve my workflow better. I am still figuring out and still developing my workflow. so I need your suggestion to improve it better.
+
+- you can separately build your recommended workflow . the goal is to build the whole saas feature by feature from the planning to the final testing and make it production ready. the whole process includes Research, Planning, implimentation , Enhancement, Finalize ,Test Post feature etc e2e. 
+
+- my preference always : Research once > Planning > Creating SOT > Build the Frondent first > Enhance if needed > then Plan the Backend based on the final fronted > Backend Implimentation > test and post feature checklist. 
+
+- I recommend you to read this DOC\GUIDELINES & SOT\README.md to get better understanding of my overall documentation guidelines and SOT process. 
+
+
+--------------------------------------------------------------------
+
+I want you to reconsider/update/add more phases to the recommended workflow based on this scenario :
+
+- your recommended 7 phases are good for , If the AI builds evertyhing perfectly without doing mistakes and does missing implementations. But in real world scenario, AI will always do mistakes, miss implementations, overlook things etc. So in order to solve these kind of issues we need to have more phases for better control and quality assurance. Or maybe we can keep the existing 7 phases but add more sub-phases in each phase for better control and quality assurance. 
+- This is where I struggle most of the time doing audit and re-check evertying vs the plan vs builts.
+- Also testing functionality becomes complicated where I have no idea the feature is actually working e2e or have missing things. 
+- It is not possible always for me to follow 7 phases sequally. becuase most of the time I need to go back and forth between the phases to fix issues, miss implementations etc. And also sometimes I need to do more enhancement on the go while building the frontend and backend. So I need more control and quality assurance in each phase to avoid going back and forth too much. this is the biggest painpoint I have right now. So, I need a wayout and a better solution to solve this issue.
+
+***Instructions*** 
+for audit templates you can checkback all by reading the DOC\GUIDELINES & SOT\README.md . 
+before even update the DOC\PROMPTS\WORKFLOW\RECOMMENDED-WORKFLOW-E2E.md discuss with me with your suggestions and recommendations
+
+--------------------------------------------------------------------------
+
+There are more scenario : 
+
+- After building the prototype or te full feature , when I do the enhancement phase , I always find new things to add or change. After doing the changes the SOT becomes backdated as well as the initial plan. I need a solution in this matter. how do I manage it on the go. Updating the SOT all time is also a pain in the ass. maybe we can make a compelte different phase that to align the current state with the SOT , No matter what we have updated. The AI must detect throgh Audit, read the enhancement pland and documentations and the main track record of all thing is the tasks.md and update all the SOT files accordingly. you think about it and let me know your recommendation.
+
+- The enhancement phase is always painful , because I need to play a loop while enhancing again and again. In that case I need a better solution to manage the enhancement phase more effectively. e.g I use this DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md file to manage the enhancement by just adding more propmts on the go. but still it is painful because I need to do the audit again and again and and get more prompts and build furhter. Even sometimes I do not even ask for enhancement prompts, I directly do the prompting in the Google AI studio itself. So I need a better solution to manage the enhancement phase more effectively.
+
+- Also there is a migration phase , where I do the frontend migration mostly google AI studio vite project files into next.js which is my system and migrate evertyhing as per my layout, themaing etc adaption system. usually this migration I do after finalizing the prototype. The migration is needed when I build the frontend separately with another AI builder. We do not need migration if we build the UI witin our project. this is a conditional phase but now most of the time I do it. 
+
+***Instructions***
+You neeed to create some additional Phases based on different events, which is not as per flow . But you decide either to create separte phases or if you have any recommendation. discuss with me first. 
+
+- read the DOC\GUIDELINES & SOT\README.md file first for better understanding of my overall documentation guidelines and SOT process. So that you can organize the phases with better documentation referrences. 
+
+-----------------------------------------------------------------------
+
+  **Instructions:**
+> "You are in Phase 6 (Test & Fix) for the feature in `DOC\FEATURES\NEWS ENGINE`.  Run project gates and E2E manual testing. Use the audit driver at `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`. Output audit reports to `DOC\FEATURES\NEWS ENGINE\Audit Reports`. Update `DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md` with all testing, audit, and bugfix tasks as Phase 6. **Always update `tasks.md` for every action, change, or sub-phase.**"
+
+**Sub-Phases:**
+- Functional Verification: E2E test all flows, sign-off before release.
+- Audit & Correction Loop: Audit feature, log/fix gaps, repeat until green.

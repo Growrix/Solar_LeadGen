@@ -1,3 +1,16 @@
+
+
+- hint word "Backend Planning"
+- Lets do the Backend Planning for the News Engine feature. Based on the final UI/UX flow and all current documentation, prepare a detailed, end-to-end backend plan for the News Engine feature. The plan must be created in: DOC\FEATURES\NEWS ENGINE\BACKEND PLAN
+
+- Also create a new phase in the : DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md
+
+***Strickt Rules***
+Before starting, read and follow these guidelines strictly: DOC\GUIDELINES & SOT\README.md
+
+
+
+
 BACKEND PLANNING PROMPT (REUSABLE)
 
 I want you to prepare a detailed, end-to-end backend plan for the News Engine feature based on the final UI/UX flow and all current documentation. The plan must be created in:

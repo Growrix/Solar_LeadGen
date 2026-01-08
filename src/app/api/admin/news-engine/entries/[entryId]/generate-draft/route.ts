@@ -4,6 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog } from '@/lib/news-engine';
 import { callOpenAiJson } from '@/lib/openai';
+import {
+  resolveNewsAiCallConfig,
+  reportNewsAiKeyError,
+  reportNewsAiKeySuccess,
+  type ResolvedNewsAiCallConfig,
+} from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +59,7 @@ const NEWS_ENGINE_SYSTEM_PROMPT =
 export async function POST(request: NextRequest, context: { params: Promise<{ entryId: string }> }) {
   const startedAt = new Date();
   let aiLogId: string | null = null;
+  let resolvedApiKeyId: string | null = null;
 
   try {
     const auth = await requireAdmin();
@@ -100,12 +107,33 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
       startedAt: startedAt.toISOString(),
     };
 
+    const baseConfig = await resolveNewsAiCallConfig(prisma, {
+      taskType: 'draft_longform',
+      pool: 'DRAFTING',
+      fallbackProvider: 'openai',
+      fallbackModel: modelOverride || process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    });
+
+    const aiConfig: ResolvedNewsAiCallConfig = modelOverride
+      ? {
+          ...baseConfig,
+          model: modelOverride,
+          modelProfileId: null,
+          modelProfileLabel: null,
+        }
+      : baseConfig;
+
+    resolvedApiKeyId = aiConfig.apiKeyId;
+
     const aiLog = await prisma.newsAiRequestLog.create({
       data: {
         actorId: auth.userId,
         action: 'generate_draft_from_rss_entry',
-        provider: 'openai',
-        model: modelOverride || process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        provider: aiConfig.provider,
+        model: aiConfig.model,
+        taskType: 'draft_longform',
+        modelProfileId: aiConfig.modelProfileId,
+        apiKeyId: aiConfig.apiKeyId,
         input: inputForLog,
         success: false,
       },
@@ -133,12 +161,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
       .filter(Boolean)
       .join('\n');
 
+    const aiStartMs = Date.now();
     const { raw, modelUsed } = await callOpenAiJson({
       system: NEWS_ENGINE_SYSTEM_PROMPT,
       prompt,
-      modelOverride: modelOverride || undefined,
+      modelOverride: aiConfig.model,
+      apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
       temperature: 0.4,
     });
+    const durationMs = Math.max(0, Date.now() - aiStartMs);
     const parsed = tryParseJsonObject(raw);
 
     const draft = {
@@ -185,11 +216,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
       where: { id: aiLogId },
       data: {
         model: modelUsed,
+        durationMs,
         output: { draft, raw },
         success: true,
         itemId: createdItem.id,
       },
     });
+
+    await reportNewsAiKeySuccess(prisma, resolvedApiKeyId);
 
     await writeNewsAuditLog({
       action: 'news_ai_draft_generated',
@@ -207,6 +241,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
     return NextResponse.json({ item: fullItem });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to generate draft';
+
+    await reportNewsAiKeyError(prisma, resolvedApiKeyId, message);
 
     if (aiLogId) {
       await prisma.newsAiRequestLog

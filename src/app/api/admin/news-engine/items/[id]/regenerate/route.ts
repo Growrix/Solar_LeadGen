@@ -4,6 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog } from '@/lib/news-engine';
 import { callOpenAiJson } from '@/lib/openai';
+import {
+  resolveNewsAiCallConfig,
+  reportNewsAiKeyError,
+  reportNewsAiKeySuccess,
+  type ResolvedNewsAiCallConfig,
+} from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,6 +57,7 @@ const NEWS_ENGINE_REGEN_SYSTEM_PROMPT =
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startedAt = new Date();
   let aiLogId: string | null = null;
+  let resolvedApiKeyId: string | null = null;
 
   try {
     const auth = await requireAdmin();
@@ -60,6 +67,24 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     const note = normalizeString(body?.note).trim();
     const modelOverride = normalizeString(body?.model).trim();
+
+    const baseConfig = await resolveNewsAiCallConfig(prisma, {
+      taskType: 'draft_longform',
+      pool: 'DRAFTING',
+      fallbackProvider: 'openai',
+      fallbackModel: modelOverride || process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    });
+
+    const aiConfig: ResolvedNewsAiCallConfig = modelOverride
+      ? {
+          ...baseConfig,
+          model: modelOverride,
+          modelProfileId: null,
+          modelProfileLabel: null,
+        }
+      : baseConfig;
+
+    resolvedApiKeyId = aiConfig.apiKeyId;
 
     const item = await prisma.newsItem.findUnique({
       where: { id },
@@ -96,8 +121,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       data: {
         actorId: auth.userId,
         action: 'regenerate',
-        provider: 'openai',
-        model: modelOverride || process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        provider: aiConfig.provider,
+        model: aiConfig.model,
+        taskType: 'draft_longform',
+        modelProfileId: aiConfig.modelProfileId,
+        apiKeyId: aiConfig.apiKeyId,
         input: inputForLog,
         success: false,
         itemId: id,
@@ -126,12 +154,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       .filter(Boolean)
       .join('\n');
 
+    const aiStartMs = Date.now();
     const { raw, modelUsed } = await callOpenAiJson({
       system: NEWS_ENGINE_REGEN_SYSTEM_PROMPT,
       prompt,
-      modelOverride: modelOverride || undefined,
+      modelOverride: aiConfig.model,
+      apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
       temperature: 0.4,
     });
+    const durationMs = Math.max(0, Date.now() - aiStartMs);
     const parsed = tryParseJsonObject(raw);
 
     const next = {
@@ -166,10 +197,13 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       where: { id: aiLogId },
       data: {
         model: modelUsed,
+        durationMs,
         output: { draft: next, raw },
         success: true,
       },
     });
+
+    await reportNewsAiKeySuccess(prisma, resolvedApiKeyId);
 
     await writeNewsAuditLog({
       action: 'news_item_regenerated',
@@ -182,6 +216,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     return NextResponse.json({ item: updated });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to regenerate news item';
+
+    await reportNewsAiKeyError(prisma, resolvedApiKeyId, message);
 
     if (aiLogId) {
       await prisma.newsAiRequestLog

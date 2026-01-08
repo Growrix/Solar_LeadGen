@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog } from '@/lib/news-engine';
 import { callOpenAiJson } from '@/lib/openai';
+import { resolveNewsAiCallConfig, reportNewsAiKeyError, reportNewsAiKeySuccess } from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,7 @@ export async function POST(
 ) {
   const startedAt = new Date();
   let aiLogId: string | null = null;
+  let resolvedApiKeyId: string | null = null;
 
   try {
     const auth = await requireAdmin();
@@ -88,12 +90,24 @@ export async function POST(
       startedAt: startedAt.toISOString(),
     };
 
+    const aiConfig = await resolveNewsAiCallConfig(prisma, {
+      taskType: 'rewrite',
+      pool: 'DRAFTING',
+      fallbackProvider: 'openai',
+      fallbackModel: process.env.OPENAI_MODEL || 'o3-mini',
+    });
+
+    resolvedApiKeyId = aiConfig.apiKeyId;
+
     const aiLog = await prisma.newsAiRequestLog.create({
       data: {
         actorId: auth.userId,
         action: 'rewrite_request',
-        provider: 'openai',
-        model: process.env.OPENAI_MODEL || 'o3-mini',
+        provider: aiConfig.provider,
+        model: aiConfig.model,
+        taskType: 'rewrite',
+        modelProfileId: aiConfig.modelProfileId,
+        apiKeyId: aiConfig.apiKeyId,
         input: inputForLog,
         success: false,
         itemId: id,
@@ -128,11 +142,15 @@ export async function POST(
       .join('\n');
 
     // Call OpenAI
+    const aiStartMs = Date.now();
     const { raw, modelUsed } = await callOpenAiJson({
       system: NEWS_ENGINE_REWRITE_SYSTEM_PROMPT,
       prompt,
+      modelOverride: aiConfig.model,
+      apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
       temperature: 0.5,
     });
+    const durationMs = Math.max(0, Date.now() - aiStartMs);
 
     const parsed = tryParseJsonObject(raw);
 
@@ -169,10 +187,13 @@ export async function POST(
       where: { id: aiLogId },
       data: {
         model: modelUsed,
+        durationMs,
         output: { draft: next, raw },
         success: true,
       },
     });
+
+    await reportNewsAiKeySuccess(prisma, resolvedApiKeyId);
 
     // Write audit log
     await writeNewsAuditLog({
@@ -186,6 +207,8 @@ export async function POST(
     return NextResponse.json({ item: updated, rewriteApplied: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to rewrite news item';
+
+    await reportNewsAiKeyError(prisma, resolvedApiKeyId, message);
 
     // Log failure if AI log was created
     if (aiLogId) {

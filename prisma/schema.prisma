@@ -108,6 +108,7 @@ model User {
   blogAiRequestLogs         BlogAiRequestLog[]
   newsAiRequestLogs         NewsAiRequestLog[]     @relation("news_ai_actor")
   newsItemsCreated         NewsItem[]               @relation("news_item_created_by")
+  newsItemsOgImageApproved  NewsItem[]              @relation("news_item_og_image_approved_by")
   newsAuditLogs            NewsAuditLog[]           @relation("news_audit_actor")
   verificationTokens       EmailVerificationToken[]
   installerPreferences     InstallerPreferences?
@@ -295,6 +296,78 @@ enum NewsItemSourceType {
   MANUAL_ENTRY
 }
 
+enum NewsAiTaskType {
+  research_deep
+  research_fast
+  draft_longform
+  rewrite
+  seo
+  dedup_semantic
+  image_prompt
+  image_generate
+}
+
+enum NewsApiKeyPool {
+  RESEARCH
+  DRAFTING
+  IMAGES
+}
+
+model NewsModelProfile {
+  id               String   @id @default(cuid())
+  displayName      String
+  provider         String
+  modelId          String
+  useCaseTags      String[]
+  costTier         String   @default("")
+  jsonModeRequired Boolean  @default(false)
+  maxTokens        Int?
+  enabled          Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  routerDefaults   NewsModelRouterDefault[]
+  aiRequestLogs    NewsAiRequestLog[]
+
+  @@index([enabled])
+  @@index([createdAt])
+  @@map("news_model_profiles")
+}
+
+model NewsModelRouterDefault {
+  taskType       NewsAiTaskType @unique
+  modelProfileId String
+  modelProfile   NewsModelProfile @relation(fields: [modelProfileId], references: [id], onDelete: Restrict)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("news_model_router_defaults")
+}
+
+model NewsApiKey {
+  id            String        @id @default(cuid())
+  provider      String
+  label         String
+  pools         NewsApiKeyPool[]
+  enabled       Boolean       @default(true)
+  encryptedKey  String
+
+  lastUsedAt    DateTime?
+  lastSuccessAt DateTime?
+  lastErrorAt   DateTime?
+  lastError     String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  aiRequestLogs NewsAiRequestLog[]
+
+  @@index([enabled])
+  @@index([provider])
+  @@index([createdAt])
+  @@map("news_api_keys")
+}
+
 model NewsSource {
   id           String     @id @default(cuid())
   name         String
@@ -400,6 +473,11 @@ model NewsItem {
   seoDescription  String?
   ogImageUrl      String?
 
+  ogImageApprovalRequired Boolean   @default(true)
+  ogImageApprovedAt       DateTime?
+  ogImageApprovedById     String?
+  ogImageApprovedBy       User?     @relation("news_item_og_image_approved_by", fields: [ogImageApprovedById], references: [id], onDelete: SetNull)
+
   auditLogs       NewsAuditLog[]
   sourceEntries   NewsSourceEntry[]
   researchEntries NewsResearchEntry[]
@@ -425,6 +503,12 @@ model NewsAiRequestLog {
 
   provider  String
   model     String
+  taskType  NewsAiTaskType?
+  modelProfileId String?
+  modelProfile   NewsModelProfile? @relation(fields: [modelProfileId], references: [id], onDelete: SetNull)
+  apiKeyId       String?
+  apiKey         NewsApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  durationMs     Int?
   input     Json
   output    Json?
   success   Boolean  @default(false)
@@ -435,6 +519,9 @@ model NewsAiRequestLog {
   @@index([createdAt])
   @@index([actorId])
   @@index([itemId])
+  @@index([taskType])
+  @@index([modelProfileId])
+  @@index([apiKeyId])
   @@map("news_ai_request_logs")
 }
 

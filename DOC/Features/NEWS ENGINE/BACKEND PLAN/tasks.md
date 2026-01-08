@@ -5,7 +5,7 @@ description: "Tasks for News Engine backend implementation"
 # Tasks: News Engine
 
 **Input**: Design documents from `DOC/FEATURES/NEWS ENGINE/` and `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/`
-**Prerequisites**: `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md`, `DOC/FEATURES/NEWS ENGINE/SOT/FEATURE-SOT.md`, `DOC/FEATURES/NEWS ENGINE/UX-FINE-TUNING-PLAN-2026-01-03.md`
+**Prerequisites**: `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md`, `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/BACKEND-PLAN-NEWS-ENGINE-2026-01-08.md`, `DOC/FEATURES/NEWS ENGINE/SOT/FEATURE-SOT.md`, `DOC/FEATURES/NEWS ENGINE/UX-FINE-TUNING-PLAN-2026-01-03.md`
 
 **Tests**: OPTIONAL - only include if explicitly requested in the feature spec (not requested for this feature).
 
@@ -440,3 +440,146 @@ description: "Tasks for News Engine backend implementation"
 - [x] T107 Run `npm run build`
 - [ ] T108 Manual QA: Test & Preview generates real output; Save to Drafts creates item with generated content
 - [ ] T109 Manual QA: Settings values persist across reload
+
+---
+
+## Phase 13: AI Router + Key Vault + Provenance/Image Controls (2026-01-08)
+
+**Purpose**: Close the remaining admin-control gaps introduced by the V6 Settings/Review UI: per-task model routing, encrypted multi-key management, per-item provenance, and persistent image control state.
+
+**Primary reference**: `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/BACKEND-PLAN-NEWS-ENGINE-2026-01-08.md`
+
+### Data model + migrations (additive, safe)
+
+- [ ] T110 Add Prisma models/enums for AI Router + Key Vault + image controls
+  - `prisma/schema.prisma`
+  - add `NewsAiTaskType` enum (task list must match UI)
+  - add `NewsModelProfile` model
+  - add `NewsModelRouterDefault` model (unique by taskType)
+  - add `NewsApiKey` model + `NewsApiKeyPool` enum
+  - extend `NewsAiRequestLog` with `taskType`, `modelProfileId`, `apiKeyId`, `durationMs` (nullable)
+  - extend `NewsItem` with `ogImageApprovalRequired`, `ogImageApprovedAt`, `ogImageApprovedById` (nullable)
+
+- [ ] T111 Create migration under `prisma/migrations/` for the new tables/fields
+- [ ] T112 Run `npx prisma validate`
+
+### Backend services (shared helpers)
+
+- [ ] T113 Implement app-level encryption helper for Key Vault (AES-256-GCM)
+  - new helper location (suggested): `src/lib/news-engine/key-vault-crypto.ts`
+  - master key sourced from env var (name per plan; must not be logged)
+
+- [ ] T114 Implement Key Vault selection policy (pool → enabled keys → least-recently-used)
+  - suggested: `src/lib/news-engine/key-vault.ts`
+  - update usage timestamps + lastSuccess/lastError fields
+
+- [ ] T115 Implement Model Router resolution helper (taskType → model profile)
+  - suggested: `src/lib/news-engine/ai-router.ts`
+  - fallback behavior: if missing config, use current global settings/env behavior
+
+### Admin APIs (new endpoints)
+
+- [ ] T116 Add Model Profiles endpoints
+  - `GET/POST src/app/api/admin/news-engine/model-profiles/route.ts`
+  - `PUT/DELETE src/app/api/admin/news-engine/model-profiles/[id]/route.ts`
+  - require admin auth; write audit logs
+
+- [ ] T117 Add AI Router defaults endpoints
+  - `GET/PUT src/app/api/admin/news-engine/ai-router/defaults/route.ts`
+  - require admin auth; write audit logs
+
+- [ ] T118 Add Key Vault endpoints
+  - `GET/POST src/app/api/admin/news-engine/key-vault/route.ts`
+  - `PUT src/app/api/admin/news-engine/key-vault/[id]/route.ts`
+  - list returns masked keys only; create/update accepts `rawKey` but never returns it
+  - require admin auth; write audit logs
+
+- [ ] T119 Add item provenance + image controls endpoints
+  - `GET src/app/api/admin/news-engine/items/[id]/provenance/route.ts`
+  - `PUT src/app/api/admin/news-engine/items/[id]/image-controls/route.ts`
+  - provenance derives URLs from `NewsSourceEntry` + `NewsResearchEntry` and per-stage labels from `NewsAiRequestLog`
+
+### Wire existing AI call sites to Router + Vault (incremental, safe)
+
+- [ ] T120 Update existing AI endpoints to use router+vault and write richer provenance
+  - `src/app/api/admin/news-engine/items/generate-manual/route.ts`
+  - `src/app/api/admin/news-engine/items/[id]/rewrite-request/route.ts`
+  - `src/app/api/admin/news-engine/items/[id]/regenerate/route.ts`
+  - `src/app/api/admin/news-engine/entries/[entryId]/generate-draft/route.ts`
+  - `src/app/api/admin/news-engine/research/generate-draft/route.ts`
+  - `src/app/api/admin/news-engine/research/test/route.ts`
+  - `src/app/api/internal/news-engine/automation/run/route.ts`
+  - ensure each AI call logs `taskType` + chosen `modelProfileId` + `apiKeyId` when available
+
+### Admin UI wiring (V6)
+
+- [ ] T121 Wire SettingsTab AI Router + Key Vault to new endpoints
+  - `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+  - load model profiles, defaults, and masked vault list on mount
+  - save router defaults and key create/update via API
+
+- [ ] T122 Wire ReviewModal provenance + image controls to new endpoints
+  - `src/components/news-engine/v6/modals/ReviewModal.tsx`
+  - load provenance on open
+  - persist `ogImageUrl` + approval-required toggle via API
+
+### Verification
+
+- [x] T123 Run `npx tsc --noEmit`
+- [x] T124 Run `npm run build`
+- [ ] T125 Manual QA: router defaults + key vault persist; provenance renders; image controls persist
+
+---
+
+## Phase 7 (Workflow): Post-Feature (Operate + Verify)
+
+**Purpose**: Remove the “what is working vs static” confusion by producing an operator-ready guide, explicit wiring map, and final verification record.
+
+**Outputs (required)**: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/`
+- `NEWS-ENGINE-POST-IMPLEMENTATION-AUDIT-2026-01-08.md`
+- `NEWS-ENGINE-POST-FEATURE-DOCS-2026-01-08.md`
+
+### Final Audit (E2E audit and verification)
+
+- [x] T126 Run comprehensive post-implementation audit prompt:
+  - input template: `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
+  - output report: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/NEWS-ENGINE-POST-IMPLEMENTATION-AUDIT-2026-01-08.md`
+
+- [x] T127 Verification runbook (Phase 13)
+  - run: `npm run test:e2e:news-engine-phase13`
+  - record result (passed/skipped/failed) in the audit report
+  - confirm Key Vault behavior with and without master key env
+
+### Post-Feature Docs (Operate + Verify)
+
+- [x] T128 Create Feature User Guide + Tooltips + Function Map + Final Checklist
+  - input template: `DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md`
+  - output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/NEWS-ENGINE-POST-FEATURE-DOCS-2026-01-08.md`
+
+### Audit & Correction Loop (repeat until green)
+
+- [x] T129 Audit the post-feature docs against the implementation (UI/API/DB)
+  - log concrete mismatches (what UI says vs what API actually does)
+  - fix docs to match reality (do not invent flows)
+
+- [x] T130 If gaps are found that cause “static vs working” confusion, log them as explicit follow-up tasks
+  - examples: missing Model Profiles UI CRUD, missing Key Vault env guidance, missing error states
+
+### Final Sign-off
+
+- [ ] T131 Sign-off: docs complete, verification green, feature is operable
+  - sign-off by:
+  - date:
+
+### Follow-up Tasks (Production Clarity)
+
+- [x] T132 Add Model Profiles CRUD in Settings (create/enable/disable)
+  - UI: `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+  - API already exists: `/api/admin/news-engine/model-profiles`
+
+- [x] T133 Add Settings banner when Key Vault master key is missing/invalid
+  - UI: `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+  - Behavior: do not allow Add/Edit Key submit without master key; show deterministic message
+
+- [x] T134 Make model profile seeding resilient when profiles exist but all are disabled
+  - helper: `src/lib/news-engine/ai-router.ts` (`ensureDefaultModelProfiles`)

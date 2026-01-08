@@ -780,7 +780,7 @@ export default function AdminNewsEngineHub() {
         }}
         onSave={() => {
           if (!selectedItem) return;
-          void (async () => {
+          return (async () => {
             try {
               await adminUpdateItem(selectedItem.id, { status: 'DRAFT_READY' });
             } finally {

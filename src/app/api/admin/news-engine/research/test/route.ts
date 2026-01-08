@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/authorization';
+import { prisma } from '@/lib/prisma';
 import { callOpenAiJson } from '@/lib/openai';
+import { resolveNewsAiCallConfig } from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,9 +78,18 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .join('\n');
 
+    const aiConfig = await resolveNewsAiCallConfig(prisma, {
+      taskType: 'research_fast',
+      pool: 'RESEARCH',
+      fallbackProvider: 'openai',
+      fallbackModel: process.env.OPENAI_MODEL || 'o3-mini',
+    });
+
     const { raw, modelUsed } = await callOpenAiJson({
       system: TEST_PREVIEW_SYSTEM_PROMPT,
       prompt,
+      modelOverride: aiConfig.model,
+      apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
       temperature: 0.4,
     });
 

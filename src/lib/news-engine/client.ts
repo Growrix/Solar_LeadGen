@@ -469,3 +469,192 @@ export async function adminGenerateManualDraft(input: {
 
   return mapAdminItemToUi(data.item);
 }
+
+export type AdminNewsModelProfile = {
+  id: string;
+  displayName: string;
+  provider: string;
+  modelId: string;
+  useCaseTags: string[];
+  costTier: string;
+  jsonModeRequired: boolean;
+  maxTokens: number | null;
+  enabled: boolean;
+  createdAt: string;
+};
+
+export async function adminListModelProfiles(): Promise<AdminNewsModelProfile[]> {
+  const data = await apiFetch<{ profiles: AdminNewsModelProfile[] }>(`/api/admin/news-engine/model-profiles`);
+  return data.profiles ?? [];
+}
+
+export async function adminCreateModelProfile(input: {
+  displayName: string;
+  provider: string;
+  modelId: string;
+  enabled?: boolean;
+}): Promise<AdminNewsModelProfile> {
+  const data = await apiFetch<{ profile: AdminNewsModelProfile }>(`/api/admin/news-engine/model-profiles`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return data.profile;
+}
+
+export async function adminUpdateModelProfile(
+  id: string,
+  input: Partial<{
+    displayName: string;
+    provider: string;
+    modelId: string;
+    enabled: boolean;
+  }>
+): Promise<AdminNewsModelProfile> {
+  const data = await apiFetch<{ profile: AdminNewsModelProfile }>(
+    `/api/admin/news-engine/model-profiles/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }
+  );
+  return data.profile;
+}
+
+export async function adminDisableModelProfile(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/model-profiles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export type AdminAiRouterDefaults = Record<
+  | 'research_deep'
+  | 'research_fast'
+  | 'draft_longform'
+  | 'rewrite'
+  | 'seo'
+  | 'dedup_semantic'
+  | 'image_prompt'
+  | 'image_generate',
+  string | null
+>;
+
+export async function adminGetAiRouterDefaults(): Promise<AdminAiRouterDefaults> {
+  const data = await apiFetch<{ defaults: Record<string, string | null> }>(`/api/admin/news-engine/ai-router/defaults`);
+  return (data.defaults ?? {}) as AdminAiRouterDefaults;
+}
+
+export async function adminUpdateAiRouterDefaults(input: { defaults: Partial<AdminAiRouterDefaults> }): Promise<AdminAiRouterDefaults> {
+  const data = await apiFetch<{ defaults: Record<string, string | null> }>(`/api/admin/news-engine/ai-router/defaults`, {
+    method: 'PUT',
+    body: JSON.stringify({ defaults: input.defaults }),
+  });
+  return (data.defaults ?? {}) as AdminAiRouterDefaults;
+}
+
+export type AdminKeyVaultEntry = {
+  id: string;
+  provider: 'OpenAI' | 'Other' | string;
+  label: string;
+  pool: 'Research' | 'Drafting' | 'Images' | string;
+  enabled: boolean;
+  maskedKey: string;
+  lastUsedAt: string | null;
+  lastSuccessAt: string | null;
+  lastErrorAt: string | null;
+  lastError: string | null;
+};
+
+export type AdminKeyVaultState = {
+  masterKeyConfigured: boolean;
+  keys: AdminKeyVaultEntry[];
+};
+
+export async function adminGetKeyVaultState(): Promise<AdminKeyVaultState> {
+  const data = await apiFetch<{ masterKeyConfigured?: boolean; keys: AdminKeyVaultEntry[] }>(
+    `/api/admin/news-engine/key-vault`
+  );
+  return {
+    masterKeyConfigured: Boolean(data.masterKeyConfigured),
+    keys: data.keys ?? [],
+  };
+}
+
+export async function adminListKeyVaultKeys(): Promise<AdminKeyVaultEntry[]> {
+  const data = await adminGetKeyVaultState();
+  return data.keys;
+}
+
+export async function adminCreateKeyVaultKey(input: {
+  provider: string;
+  label: string;
+  pool: string;
+  enabled: boolean;
+  rawKey: string;
+}): Promise<AdminKeyVaultEntry> {
+  const data = await apiFetch<{ key: AdminKeyVaultEntry }>(`/api/admin/news-engine/key-vault`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return data.key;
+}
+
+export async function adminUpdateKeyVaultKey(
+  id: string,
+  input: Partial<{ provider: string; label: string; pool: string; enabled: boolean; rawKey: string }>
+): Promise<AdminKeyVaultEntry> {
+  const data = await apiFetch<{ key: AdminKeyVaultEntry }>(`/api/admin/news-engine/key-vault/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }
+  );
+  return data.key;
+}
+
+export async function adminDeleteKeyVaultKey(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/key-vault/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
+export type AdminItemProvenance = {
+  itemId: string;
+  sourceType: string;
+  rssEntryUrls: string[];
+  researchUrls: string[];
+  stages: Array<{
+    action: string;
+    taskType: string | null;
+    provider: string | null;
+    model: string | null;
+    modelProfileLabel: string | null;
+    apiKeyLabel: string | null;
+    createdAt: string;
+  }>;
+};
+
+export async function adminFetchItemProvenance(itemId: string): Promise<AdminItemProvenance> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/provenance`);
+}
+
+export type AdminItemImageControls = {
+  itemId: string;
+  ogImageUrl: string | null;
+  ogImageApprovalRequired: boolean;
+  ogImageApprovedAt: string | null;
+  ogImageApprovedById: string | null;
+};
+
+export async function adminFetchItemImageControls(itemId: string): Promise<AdminItemImageControls> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/image-controls`);
+}
+
+export async function adminUpdateItemImageControls(
+  itemId: string,
+  input: Partial<Pick<AdminItemImageControls, 'ogImageUrl' | 'ogImageApprovalRequired'>>
+): Promise<AdminItemImageControls> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/image-controls`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  });
+}

@@ -6,6 +6,7 @@ import { getNewsEnginePipelineStatus } from '@/lib/news-engine/settings';
 import { writeNewsAuditLog } from '@/lib/news-engine/audit';
 import { slugify } from '@/lib/news-engine/slug';
 import { callOpenAiJson } from '@/lib/openai';
+import { resolveNewsAiCallConfig, reportNewsAiKeyError, reportNewsAiKeySuccess } from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -414,13 +415,26 @@ export async function POST(request: NextRequest) {
       }
 
       let aiLogId: string | null = null;
+      let resolvedApiKeyId: string | null = null;
 
       try {
+        const aiConfig = await resolveNewsAiCallConfig(prisma, {
+          taskType: 'draft_longform',
+          pool: 'DRAFTING',
+          fallbackProvider: 'openai',
+          fallbackModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        });
+
+        resolvedApiKeyId = aiConfig.apiKeyId;
+
         const aiLog = await prisma.newsAiRequestLog.create({
           data: {
             action: 'draft_from_rss_entry',
-            provider: 'openai',
-            model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+            provider: aiConfig.provider,
+            model: aiConfig.model,
+            taskType: 'draft_longform',
+            modelProfileId: aiConfig.modelProfileId,
+            apiKeyId: aiConfig.apiKeyId,
             input: {
               entryId: entry.id,
               title: entry.title,
@@ -453,7 +467,14 @@ export async function POST(request: NextRequest) {
         const system =
           'You are an assistant that drafts NEWS ENGINE posts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl.';
 
-        const { raw, modelUsed } = await callOpenAiJson({ system, prompt });
+        const aiStartMs = Date.now();
+        const { raw, modelUsed } = await callOpenAiJson({
+          system,
+          prompt,
+          modelOverride: aiConfig.model,
+          apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
+        });
+        const durationMs = Math.max(0, Date.now() - aiStartMs);
         const parsed = tryParseJsonObject(raw);
 
         const title = pickString(parsed, 'title', entry.title) || entry.title;
@@ -526,11 +547,14 @@ export async function POST(request: NextRequest) {
           where: { id: aiLogId },
           data: {
             model: modelUsed,
+            durationMs,
             output: { draft: { title, summary, contentHtml, category, tags, seoTitle, seoDescription, ogImageUrl }, raw },
             success: true,
             itemId: createdItem.id,
           },
         });
+
+        await reportNewsAiKeySuccess(prisma, resolvedApiKeyId);
 
         await writeNewsAuditLog({
           action: 'news_ai_draft_generated',
@@ -548,6 +572,8 @@ export async function POST(request: NextRequest) {
         draftResults.push({ entryId: entry.id, ok: true, itemId: createdItem.id, status });
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Draft generation failed';
+
+        await reportNewsAiKeyError(prisma, resolvedApiKeyId, message);
 
         if (aiLogId) {
           await prisma.newsAiRequestLog
