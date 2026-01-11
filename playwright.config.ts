@@ -1,4 +1,36 @@
 import { defineConfig } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+
+function loadSimpleDotEnvFilesIntoProcessEnv(filenames: string[]) {
+  for (const filename of filenames) {
+    const filePath = path.join(process.cwd(), filename);
+    if (!fs.existsSync(filePath)) continue;
+
+    const raw = fs.readFileSync(filePath, 'utf8');
+    for (const lineRaw of raw.split(/\r?\n/)) {
+      const line = lineRaw.trim();
+      if (!line || line.startsWith('#')) continue;
+
+      const eqIndex = line.indexOf('=');
+      if (eqIndex <= 0) continue;
+
+      const key = line.slice(0, eqIndex).trim();
+      if (!key) continue;
+      if (process.env[key] !== undefined) continue;
+
+      let value = line.slice(eqIndex + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+
+      process.env[key] = value;
+    }
+  }
+}
+
+// Ensure Playwright runner sees `.env` (Next.js loads it for the web server, but Playwright does not).
+loadSimpleDotEnvFilesIntoProcessEnv(['.env', '.env.local']);
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -13,6 +45,8 @@ export default defineConfig({
       NEXTAUTH_URL: process.env.E2E_BASE_URL || 'http://localhost:3001',
       NEXTAUTH_URL_INTERNAL: process.env.E2E_BASE_URL || 'http://localhost:3001',
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'e2e-nextauth-secret-not-for-production',
+      NEWS_ENGINE_KEY_VAULT_MASTER_KEY: process.env.NEWS_ENGINE_KEY_VAULT_MASTER_KEY,
+      NEWS_KEY_VAULT_MASTER_KEY: process.env.NEWS_KEY_VAULT_MASTER_KEY,
     },
   },
   use: {

@@ -96,18 +96,19 @@ test.describe('News Engine Phase 13', () => {
 
     await page.goto('/admin/news-engine');
     await page.getByRole('button', { name: 'Settings' }).click();
-    await page.getByText('Key Vault').waitFor();
+    await page.getByRole('heading', { name: 'Key Vault' }).waitFor();
 
     const add = page.getByRole('button', { name: 'Add Key' });
     await add.click();
 
-    await page.getByText('Add Key').waitFor();
+    await page.getByRole('heading', { name: 'Add Key' }).waitFor();
 
     await page.locator('select').first().selectOption('OpenAI');
     await page.fill('input[placeholder^="e.g."]', 'E2E Drafting Key');
 
     // Pool select is the next select in the modal.
-    await page.locator('select').nth(1).selectOption('Drafting');
+    // Use Images to avoid polluting the Drafting pool (which is used by automation scripts).
+    await page.locator('select').nth(1).selectOption('Images');
 
     // Raw Key is write-only; use a dummy string (encryption happens server-side).
     await page.fill('input[type="password"]', `sk-e2e-${Date.now()}-dummy`);

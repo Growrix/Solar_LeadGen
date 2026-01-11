@@ -18,6 +18,7 @@
 import { PrismaClient } from '@prisma/client';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { encryptWithNewsMasterKey } from '../src/lib/news-engine/key-vault';
 
 const prisma = new PrismaClient();
 
@@ -56,11 +57,17 @@ async function ensureSetting(key: string, value: string): Promise<void> {
 async function main() {
   loadDotEnvFallback();
 
+  const openAiApiKey = (process.env.OPENAI_API_KEY || '').trim();
+
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001').replace(/\/$/, '');
   const cronSecret = (process.env.NEWS_ENGINE_CRON_SECRET || '').trim();
 
   if (!cronSecret) {
     throw new Error('Missing NEWS_ENGINE_CRON_SECRET in .env (required to call internal automation runner).');
+  }
+
+  if (!openAiApiKey) {
+    throw new Error('Missing OPENAI_API_KEY in .env (required to seed a Drafting key for the automation runner).');
   }
 
   console.log('🧪 News Engine RSS HTTP Test');
@@ -72,6 +79,38 @@ async function main() {
   await ensureSetting('news.automation.auto_publish', 'false');
   await ensureSetting('news.settings.daily_limit', '10');
   await ensureSetting('news.settings.deduplication_enabled', 'true');
+
+  // Ensure the internal runner has at least one valid Drafting key.
+  // Playwright E2E uses dummy keys, which should not be used by the runner.
+  await prisma.newsApiKey.updateMany({
+    where: {
+      pools: { has: 'DRAFTING' },
+      label: { startsWith: 'E2E Drafting Key' },
+    },
+    data: { enabled: false },
+  });
+
+  const existingDraftingKey = await prisma.newsApiKey.findFirst({
+    where: {
+      enabled: true,
+      provider: 'openai',
+      pools: { has: 'DRAFTING' },
+    },
+    select: { id: true },
+  });
+
+  if (!existingDraftingKey) {
+    await prisma.newsApiKey.create({
+      data: {
+        provider: 'openai',
+        label: `E2E Script Drafting Key (${new Date().toISOString().slice(0, 10)})`,
+        pools: ['DRAFTING'],
+        enabled: true,
+        encryptedKey: encryptWithNewsMasterKey(openAiApiKey),
+      },
+      select: { id: true },
+    });
+  }
 
   // Seed a disabled source so the runner will NOT attempt external RSS fetch.
   const sourceId = `e2e-http-source-${Date.now().toString(36)}`;

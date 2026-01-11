@@ -5181,3 +5181,25 @@ You neeed to create some additional Phases based on different events, which is n
 **Sub-Phases:**
 - Functional Verification: E2E test all flows, sign-off before release.
 - Audit & Correction Loop: Audit feature, log/fix gaps, repeat until green.
+
+
+--------------------------------------------------------------------------------------
+
+let me clarify few things. First, When we crete the SOT it should not be focued on migration or prototype. our feature master plan should focus on the main plan in this stage. We need to have the strong SOT for sure. most imortant fouced SOT file is DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md , and then DOC\FEATURES\NEWS ENGINE\SOT\Frontend-Plan.md as this will lead the build phase. Now here comes the 2nd part , We will need e2e frontend building prompts based on the Frontend-plan.md file. And that prompts should have each and every single detailed and well instructioned prompt to build the frontend perfectly as per the plan. After that , I might use those prompts to build frontend within my Vs code using co-pilot or build the prototype with any other AI web builder such as  google ai studio, Claude Code etc. You need to understand here because here the workflow diverges. If I build the frontend within my system using co-pilot then there is no migration phase needed. but if I build the frontend with any other AI web builder such as  google ai studio, Claude Code etc then I will need a migration phase to migrate the built prototype into my system. So you need to understand this workflow diverge and prepare the SOT accordingly.
+
+- So in the SOT phase we will focus on the main plan only. and then in the Frontend planning phase we will prepare the detailed frontend building prompts based on the main plan SOT file. and then in the build phase we will build the frontend either within our system or with any other AI web builder. if we build with any other AI web builder then we will need a migration phase after finalizing the prototype to migrate into our system.
+
+- Now in the workflow , you need to update the recommended workflow by checking the  DOC\GUIDELINES & SOT\README.md accordingly based on this understanding. discuss with me if needed before updating the file.
+
+- I want a phase by phase workflow where the AI do not need to get confused with a lot of contexts at once. so each phase should have its own clear context and instructions. 
+
+- I want you to read my workflow DOC\PROMPTS\WORKFLOW to understand clearly how I work and what kind of prompts I use on demand to work more effectively. 
+
+- We also need to use the AI tokens effectively. so the workflow should be optimized accordingly to use the tokens effectively. e.g If you think we can build the frontend plan and also the Frontend prompts in the same phase to save tokens then we can do that. but if you think it will create confusion then we can keep them separate. so you need to decide accordingly. And discuss with me furhter recommendations. Becuase we also need to cut/ reduce some unnecessary phases if possible to save tokens.
+
+***Instructions***
+I want you to read all the necessary files carefully before doing anything. such as DOC\GUIDELINES & SOT\README.md , DOC\PROMPTS\WORKFLOW etc . After that discuss with me your recommendations and suggestions before updating the DOC\PROMPTS\WORKFLOW\RECOMMENDED-WORKFLOW-E2E.md file. 
+- prepare a audit report on my current workflow and how can I improve it better. mention your suggestions and recommendations in the report. locate all the file names and paths properly in the report for better understanding.
+ 
+***Strictly Rules***
+- Read all the files deeply , not just the file names and assume what is for what. Becuase we might need to update some templates, instructions, audit files etc. Because each and every file is the part of the workflow. So you need to understand each and every file deeply before doing anything. the Goal is to build the workflow effectively that can control any AI efficiently. 
