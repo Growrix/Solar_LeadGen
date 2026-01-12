@@ -41,12 +41,18 @@ export async function publishDueScheduledNewsItems(input?: { limit?: number }): 
       title: true,
       slug: true,
       scheduledFor: true,
+      ogImageUrl: true,
+      ogImageApprovalRequired: true,
+      ogImageApprovedAt: true,
     },
   });
 
   let publishedCount = 0;
 
   for (const item of due) {
+    if (item.ogImageApprovalRequired && !item.ogImageApprovedAt) {
+      continue;
+    }
     try {
       const base = item.slug?.trim() || slugify(item.title);
       const slug = await findAvailableSlug(base, item.id);

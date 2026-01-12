@@ -38,6 +38,8 @@ export type NewsEngineAuditAction =
   | 'news_key_vault_key_updated'
   | 'news_key_vault_key_deleted'
   | 'news_item_image_controls_updated'
+  | 'news_item_og_image_generated'
+  | 'news_item_og_image_approved'
   | 'news_pipeline_paused'
   | 'news_pipeline_resumed'
   | 'news_pipeline_emergency_stop';

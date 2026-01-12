@@ -55,11 +55,31 @@ export async function POST(
 
     const existing = await prisma.newsItem.findUnique({
       where: { id },
-      select: { id: true, title: true, slug: true, deletedAt: true },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        deletedAt: true,
+        ogImageUrl: true,
+        ogImageApprovalRequired: true,
+        ogImageApprovedAt: true,
+      },
     });
 
     if (!existing || existing.deletedAt) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    if (existing.ogImageApprovalRequired && !existing.ogImageApprovedAt) {
+      const hasUrl = typeof existing.ogImageUrl === 'string' && existing.ogImageUrl.trim();
+      return NextResponse.json(
+        {
+          error: hasUrl
+            ? 'OG image approval is required before publish. Approve the OG image in Review.'
+            : 'OG image approval is required before publish. Set an OG image and approve it in Review.',
+        },
+        { status: 409 }
+      );
     }
 
     const base = existing.slug?.trim() || slugify(existing.title);

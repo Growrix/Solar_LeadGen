@@ -51,6 +51,7 @@ function getSystemLabel(pipelineStatus: PipelineStatus) {
 type Props = {
   pipelineStatus: PipelineStatus;
   items: NewsItem[];
+  automation: { autoDraft: boolean; autoSchedule: boolean; autoPublish: boolean };
 
   automationRun: AutomationRunUiV6 | null;
   queueSnapshot: {
@@ -75,6 +76,7 @@ type Props = {
 export function MasterControlTabV6({
   pipelineStatus,
   items,
+  automation,
   automationRun,
   queueSnapshot,
   onOpenRunDetails,
@@ -117,25 +119,25 @@ export function MasterControlTabV6({
           id: 'draft',
           name: 'Drafting Engine',
           description: 'Generative AI creating structured news articles.',
-          isActive: nominal,
-          status: nominal ? 'warning' : 'stopped',
-          lastActivity: '12m ago',
+          isActive: nominal && automation.autoDraft,
+          status: nominal ? (automation.autoDraft ? 'healthy' : 'stopped') : 'stopped',
+          lastActivity: '—',
         },
         {
           id: 'scheduler',
           name: 'Auto-Scheduler',
           description: 'Algorithmic placement of stories in publish windows.',
-          isActive: false,
-          status: 'stopped',
-          lastActivity: '2d ago',
+          isActive: nominal && automation.autoSchedule,
+          status: nominal ? (automation.autoSchedule ? 'healthy' : 'stopped') : 'stopped',
+          lastActivity: '—',
         },
         {
           id: 'social',
           name: 'Social Distribution',
           description: 'Automated posting to LinkedIn, X, and internal channels.',
-          isActive: !emergency,
-          status: nominal ? 'healthy' : 'stopped',
-          lastActivity: '1h ago',
+          isActive: !emergency && automation.autoPublish,
+          status: nominal ? (automation.autoPublish ? 'healthy' : 'stopped') : 'stopped',
+          lastActivity: '—',
         },
         {
           id: 'dedupe',
@@ -147,9 +149,9 @@ export function MasterControlTabV6({
         },
       ]);
       setIsLoading(false);
-    }, 800);
+    }, 400);
     return () => clearTimeout(timer);
-  }, [pipelineStatus, refreshNonce]);
+  }, [automation.autoDraft, automation.autoPublish, automation.autoSchedule, pipelineStatus, refreshNonce]);
 
   const system = getSystemLabel(pipelineStatus);
 
@@ -416,6 +418,7 @@ export function MasterControlTabV6({
               <Terminal size={20} className="text-brand-accent" />
               Pipeline Sub-Systems
             </h3>
+            <span className="text-body-small text-muted-foreground">Visibility surface (read-only)</span>
             <button
               type="button"
               onClick={() => {
@@ -444,13 +447,12 @@ export function MasterControlTabV6({
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setFeatures((prev) => prev.map((f) => (f.id === feature.id ? { ...f, isActive: !f.isActive } : f)));
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none border border-border ${
+                    disabled
+                    title="This is a status panel (not a control). Use Automation Logic / Sources to configure."
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none border border-border opacity-60 cursor-not-allowed ${
                       feature.isActive ? 'bg-accent' : 'bg-surface'
                     }`}
-                    aria-label={`Toggle ${feature.name}`}
+                    aria-label={`${feature.name} status`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${

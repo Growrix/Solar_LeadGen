@@ -618,6 +618,7 @@ export default function AdminNewsEngineHub() {
         <MasterControlTabV6
           pipelineStatus={state.pipelineStatus}
           items={state.items}
+          automation={state.automation}
           automationRun={automationRun}
           queueSnapshot={queueSnapshot}
           onOpenRunDetails={() => setRunDetailsOpen(true)}
@@ -794,10 +795,14 @@ export default function AdminNewsEngineHub() {
         <ScheduleModal
           item={selectedItem}
           onClose={() => setScheduleOpen(false)}
-          onSchedule={(iso) => {
+          onSchedule={(input) => {
             void (async () => {
               try {
-                await adminSchedule(selectedItem.id, iso);
+                await adminSchedule(selectedItem.id, input.scheduledForIso, {
+                  schedulePriority: input.schedulePriority,
+                  scheduleExpiresAt: input.scheduleExpiresAt,
+                  scheduleIsFeatured: input.scheduleIsFeatured,
+                });
               } finally {
                 await reloadState();
                 setScheduleOpen(false);
@@ -948,7 +953,7 @@ export default function AdminNewsEngineHub() {
                 const startedAt = new Date().toISOString();
                 setAutomationRun({ status: 'running', mode: pendingRunMode, startedAt });
 
-                const res = await adminRunAutomationNow();
+                const res = await adminRunAutomationNow(pendingRunMode);
 
                 const payload = (res as any)?.payload;
                 const runId = payload && typeof payload === 'object' && typeof (payload as any).runId === 'string' ? String((payload as any).runId) : undefined;

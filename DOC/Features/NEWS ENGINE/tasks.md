@@ -177,6 +177,13 @@ description: "Tasks for News Engine backend implementation"
 - [ ] T055 [US4] Scheduling modal: prefill saved `scheduledFor` and block past dates/times
   - `src/components/news-engine/v6/modals/ScheduleModal.tsx`
 
+### Schedule extras wiring (audit follow-up)
+
+- [x] T055b [US4] Schedule modal extras MUST persist E2E (NO removal)
+  - DB: `prisma/schema.prisma` adds `NewsItem.schedulePriority`, `scheduleExpiresAt`, `scheduleIsFeatured` (+ migration)
+  - API: `src/app/api/admin/news-engine/items/[id]/schedule/route.ts` persists/validates fields
+  - UI: `src/components/news-engine/v6/modals/ScheduleModal.tsx` prefill + submit to backend via `src/components/news-engine/AdminNewsEngineHub.tsx`
+
 - [ ] T056 [US4] Share modal: add more channels (WhatsApp, Email) and wire buttons to real share links
   - `src/app/news/[slug]/page.tsx`
 
@@ -238,6 +245,11 @@ description: "Tasks for News Engine backend implementation"
 
 - [x] T074 [US3] Add source entries viewer endpoint `GET src/app/api/admin/news-engine/sources/[id]/entries/route.ts`
   - cursor pagination + `status` filter
+
+- [x] T074b [US3] Wire Research Sync E2E (NO removal)
+  - trigger endpoint: `POST src/app/api/admin/news-engine/research/sync-now/route.ts`
+  - list endpoint: `GET src/app/api/admin/news-engine/research/entries/route.ts`
+  - UI wiring: `src/components/news-engine/v6/tabs/SourcesTab.tsx` enables **Sync Research Now** + **View Entries** with modal
 
 - [x] T075 [US3] Add research ingestion endpoint(s)
   - `POST src/app/api/admin/news-engine/research/sync/route.ts` (kinds: WEB/SOCIAL/JOURNAL/TREND)
@@ -603,23 +615,27 @@ description: "Tasks for News Engine backend implementation"
   - Test: `tests/e2e/news-engine-phase13-router-vault-provenance.spec.ts`
   - Behavior: use unique key label per run to avoid collisions
 
-- [ ] T137 Decide fate of Schedule modal extra controls (priority/expiry/featured)
-  - UI: `src/components/news-engine/v6/modals/ScheduleModal.tsx`
-  - Option A: wire to DB + API + public behavior
-  - Option B: remove controls so operators are not misled
+- [x] T137 Decide fate of Schedule modal extra controls (priority/expiry/featured)
+  - Wired E2E (NO removal):
+    - DB: `prisma/schema.prisma` adds `NewsItem.schedulePriority`, `scheduleExpiresAt`, `scheduleIsFeatured` (+ migration)
+    - API: `src/app/api/admin/news-engine/items/[id]/schedule/route.ts` persists/validates fields
+    - UI: `src/components/news-engine/v6/modals/ScheduleModal.tsx` prefill + submit via `src/components/news-engine/AdminNewsEngineHub.tsx`
 
-- [ ] T138 Implement Research Sync per kind (WEB/SOCIAL/JOURNAL/TREND) and wire UI buttons
-  - UI: `src/components/news-engine/v6/tabs/SourcesTab.tsx` ("Recent Research Sync")
-  - Add endpoints: `src/app/api/admin/news-engine/research/*`
-  - Add list view: "View Entries" should load real entries
+- [x] T138 Implement Research Sync per kind (WEB/SOCIAL/JOURNAL/TREND) and wire UI buttons
+  - Wired E2E (NO removal):
+    - trigger endpoint: `src/app/api/admin/news-engine/research/sync-now/route.ts`
+    - list endpoint: `src/app/api/admin/news-engine/research/entries/route.ts`
+    - UI wiring: `src/components/news-engine/v6/tabs/SourcesTab.tsx` enables **Sync Research Now** + **View Entries**
 
-- [ ] T139 Decide fate of "Generate AI image" button
-  - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
-  - Option A: implement generation + persistence + approvals
-  - Option B: remove/feature-flag until implemented
+- [x] T139 Decide fate of "Generate AI image" button
+  - Wired E2E (NO removal):
+    - API generate: `src/app/api/admin/news-engine/items/[id]/og-image/generate/route.ts`
+    - Client: `src/lib/news-engine/client.ts` (`adminGenerateItemOgImage`)
+    - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx` calls generate and updates preview
 
-- [ ] T140 Enforce `ogImageApprovalRequired` on publish paths (if intended by SOT)
-  - UI persists setting via: Review modal “Save as Draft”
-  - Ensure enforcement exists in:
-    - `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts`
-    - any auto-publish path(s)
+- [x] T140 Enforce `ogImageApprovalRequired` on publish paths (if intended by SOT)
+  - Approval action (NO removal): `POST src/app/api/admin/news-engine/items/[id]/og-image/approve/route.ts`
+  - Enforcement (NO removal):
+    - manual publish: `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts`
+    - scheduled publish: `src/lib/news-engine/publish-due.ts`
+    - internal automation auto-publish: `src/app/api/internal/news-engine/automation/run/route.ts` (downgrades to NEEDS_REVIEW when approval missing)

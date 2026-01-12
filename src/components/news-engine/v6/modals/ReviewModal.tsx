@@ -21,8 +21,10 @@ import {
 } from 'lucide-react';
 import type { AuditLogEntry, NewsItem } from '@/lib/ui-stubs/news-engine';
 import {
+  adminApproveItemOgImage,
   adminFetchItemImageControls,
   adminFetchItemProvenance,
+  adminGenerateItemOgImage,
   adminUpdateItemImageControls,
   type AdminItemProvenance,
 } from '@/lib/news-engine/client';
@@ -65,12 +67,16 @@ export function ReviewModalV6({
 
   const [requireImageApproval, setRequireImageApproval] = React.useState(true);
   const [ogImageOverride, setOgImageOverride] = React.useState('');
+  const [ogImageApprovedAt, setOgImageApprovedAt] = React.useState<string | null>(null);
+  const [isGeneratingOgImage, setIsGeneratingOgImage] = React.useState(false);
+  const [isApprovingOgImage, setIsApprovingOgImage] = React.useState(false);
 
   React.useEffect(() => {
     if (!isOpen || !item) return;
     setProvenance(null);
     setRequireImageApproval(true);
     setOgImageOverride(item.ogImageUrl ?? '');
+    setOgImageApprovedAt(null);
   }, [isOpen, item]);
 
   React.useEffect(() => {
@@ -88,6 +94,7 @@ export function ReviewModalV6({
         setProvenance(prov);
         setRequireImageApproval(Boolean(img.ogImageApprovalRequired));
         setOgImageOverride(img.ogImageUrl ?? '');
+        setOgImageApprovedAt(img.ogImageApprovedAt ?? null);
       } catch (err) {
         if (cancelled) return;
         console.error(err);
@@ -531,11 +538,26 @@ export function ReviewModalV6({
                       </div>
                       <button
                         type="button"
-                        disabled
-                        className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body-small text-muted-foreground cursor-not-allowed"
+                        disabled={isGeneratingOgImage}
+                        className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body-small text-foreground hover:bg-surface-hover shadow-neu-outset disabled:opacity-50"
+                        onClick={() => {
+                          void (async () => {
+                            setIsGeneratingOgImage(true);
+                            try {
+                              const res = await adminGenerateItemOgImage(item.id);
+                              setOgImageOverride(res.ogImageUrl ?? '');
+                              setOgImageApprovedAt(res.ogImageApprovedAt ?? null);
+                            } catch (err) {
+                              const msg = err instanceof Error ? err.message : 'Failed to generate OG image';
+                              window.alert(msg);
+                            } finally {
+                              setIsGeneratingOgImage(false);
+                            }
+                          })();
+                        }}
                       >
                         <Zap size={16} />
-                        Generate AI image
+                        {isGeneratingOgImage ? 'Generating…' : 'Generate AI image'}
                       </button>
                     </div>
 
@@ -557,6 +579,42 @@ export function ReviewModalV6({
                       </div>
 
                       <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="space-y-0.5">
+                            <p className="text-body text-foreground">Approval status</p>
+                            <p className="text-body-small text-muted-foreground">
+                              {ogImageApprovedAt ? `Approved ${new Date(ogImageApprovedAt).toLocaleString()}` : 'Not approved yet'}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={isApprovingOgImage || !(ogImageOverride || item.ogImageUrl)}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset disabled:opacity-50"
+                            onClick={() => {
+                              void (async () => {
+                                setIsApprovingOgImage(true);
+                                try {
+                                  const urlToSave = ogImageOverride.trim() ? ogImageOverride.trim() : null;
+                                  await adminUpdateItemImageControls(item.id, {
+                                    ogImageUrl: urlToSave,
+                                    ogImageApprovalRequired: requireImageApproval,
+                                  });
+                                  const res = await adminApproveItemOgImage(item.id);
+                                  setOgImageApprovedAt(res.ogImageApprovedAt ?? null);
+                                } catch (err) {
+                                  const msg = err instanceof Error ? err.message : 'Failed to approve OG image';
+                                  window.alert(msg);
+                                } finally {
+                                  setIsApprovingOgImage(false);
+                                }
+                              })();
+                            }}
+                          >
+                            <CheckSquare size={14} />
+                            {isApprovingOgImage ? 'Approving…' : 'Approve OG Image'}
+                          </button>
+                        </div>
+
                         <div className="flex items-center justify-between gap-4">
                           <div className="space-y-0.5">
                             <p className="text-body text-foreground">Require approval before publish</p>

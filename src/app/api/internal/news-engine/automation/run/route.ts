@@ -9,6 +9,31 @@ import { callOpenAiJson } from '@/lib/openai';
 import { resolveNewsAiCallConfig, reportNewsAiKeyError, reportNewsAiKeySuccess } from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+const RSS_FETCH_TIMEOUT_MS = 20_000;
+
+function truncateForLog(value: string, max = 600): string {
+  if (!value) return '';
+  return value.length <= max ? value : `${value.slice(0, max)}…`;
+}
+
+function looksLikeHtml(contentType: string | null, body: string): boolean {
+  const ct = (contentType ?? '').toLowerCase();
+  if (ct.includes('text/html') || ct.includes('application/xhtml')) return true;
+  const head = body.slice(0, 300).trim().toLowerCase();
+  return head.startsWith('<!doctype html') || head.startsWith('<html') || head.includes('<head>');
+}
+
+async function fetchTextWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 const CRON_SECRET_HEADER = 'x-news-engine-cron-secret';
 
@@ -19,6 +44,23 @@ const KEY_AUTO_DRAFT = 'news.automation.auto_draft';
 const KEY_AUTO_SCHEDULE = 'news.automation.auto_schedule';
 const KEY_AUTO_PUBLISH = 'news.automation.auto_publish';
 const KEY_AUTOMATION_CONFIG_JSON = 'news.automation.config_json';
+const KEY_SOURCES_CONFIG_JSON = 'news.sources.config_json';
+
+type SourcesConfig = {
+  researchWeights: { web: number; social: number; journals: number };
+  researchEnabled: { web: boolean; social: boolean; journals: boolean };
+  rules: { deduplication: boolean; verifyPayload: boolean };
+  minSources: number;
+  countries: string[];
+  blacklist: string;
+};
+
+type AutomationRunMode = 'dry' | 'live';
+
+function parseRunMode(raw: string | null | undefined): AutomationRunMode {
+  const v = (raw ?? '').trim().toLowerCase();
+  return v === 'dry' ? 'dry' : 'live';
+}
 
 function parseBool(raw: string | null | undefined, fallback: boolean): boolean {
   if (raw === null || raw === undefined) return fallback;
@@ -96,6 +138,108 @@ async function findAvailableSlug(base: string, excludeItemId?: string): Promise<
 type AutomationConfig = {
   windows?: string[];
 };
+
+function safeParseSourcesConfig(raw: string | null | undefined): SourcesConfig {
+  const fallback: SourcesConfig = {
+    researchWeights: { web: 70, social: 30, journals: 50 },
+    researchEnabled: { web: true, social: true, journals: true },
+    rules: { deduplication: true, verifyPayload: false },
+    minSources: 3,
+    countries: ['USA', 'UK', 'Japan', 'Germany'],
+    blacklist: '',
+  };
+
+  if (!raw) return fallback;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return fallback;
+  const obj = parsed as Record<string, unknown>;
+
+  const next: SourcesConfig = {
+    researchWeights: { ...fallback.researchWeights },
+    researchEnabled: { ...fallback.researchEnabled },
+    rules: { ...fallback.rules },
+    minSources: fallback.minSources,
+    countries: [...fallback.countries],
+    blacklist: fallback.blacklist,
+  };
+
+  const weights = obj.researchWeights;
+  if (weights && typeof weights === 'object' && !Array.isArray(weights)) {
+    const w = weights as Record<string, unknown>;
+    for (const key of ['web', 'social', 'journals'] as const) {
+      const v = w[key];
+      if (typeof v === 'number' && Number.isFinite(v)) {
+        next.researchWeights[key] = Math.max(0, Math.min(100, Math.floor(v)));
+      }
+    }
+  }
+
+  const enabled = obj.researchEnabled;
+  if (enabled && typeof enabled === 'object' && !Array.isArray(enabled)) {
+    const e = enabled as Record<string, unknown>;
+    for (const key of ['web', 'social', 'journals'] as const) {
+      const v = e[key];
+      if (typeof v === 'boolean') next.researchEnabled[key] = v;
+    }
+  }
+
+  const rules = obj.rules;
+  if (rules && typeof rules === 'object' && !Array.isArray(rules)) {
+    const r = rules as Record<string, unknown>;
+    if (typeof r.deduplication === 'boolean') next.rules.deduplication = r.deduplication;
+    if (typeof r.verifyPayload === 'boolean') next.rules.verifyPayload = r.verifyPayload;
+  }
+
+  if (typeof obj.minSources === 'number' && Number.isFinite(obj.minSources)) {
+    next.minSources = Math.max(0, Math.floor(obj.minSources));
+  }
+
+  if (Array.isArray(obj.countries)) {
+    const cleaned = obj.countries
+      .filter((v) => typeof v === 'string')
+      .map((v) => v.trim())
+      .filter(Boolean)
+      .slice(0, 30);
+    if (cleaned.length) next.countries = cleaned;
+  }
+
+  if (typeof obj.blacklist === 'string') next.blacklist = obj.blacklist;
+
+  return next;
+}
+
+function extractHostname(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function parseBlacklistHosts(raw: string): string[] {
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const withoutScheme = line.replace(/^https?:\/\//i, '');
+      const host = withoutScheme.split(/[\/\s?#]/)[0] ?? '';
+      return host.trim().toLowerCase();
+    })
+    .filter(Boolean);
+}
+
+function isHostBlacklisted(hostname: string, blacklistHosts: string[]): boolean {
+  if (!hostname) return false;
+  return blacklistHosts.some((blocked) => hostname === blocked || hostname.endsWith(`.${blocked}`));
+
+}
 
 function safeParseAutomationConfig(raw: string | null | undefined): AutomationConfig {
   if (!raw) return {};
@@ -190,6 +334,9 @@ function pickStringArray(obj: Record<string, unknown> | null, key: string): stri
 export async function POST(request: NextRequest) {
   const startedAt = new Date();
 
+  const runMode = parseRunMode(request.nextUrl.searchParams.get('mode'));
+  const isDryRun = runMode === 'dry';
+
   const auth = requireCronSecret(request);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -206,6 +353,8 @@ export async function POST(request: NextRequest) {
         status: 'SUCCESS',
         meta: {
           pipelineStatus,
+          runMode,
+          dryRun: isDryRun,
           startedAt: startedAt.toISOString(),
         },
       },
@@ -258,6 +407,7 @@ export async function POST(request: NextRequest) {
             KEY_AUTO_SCHEDULE,
             KEY_AUTO_PUBLISH,
             KEY_AUTOMATION_CONFIG_JSON,
+            KEY_SOURCES_CONFIG_JSON,
           ],
         },
       },
@@ -267,7 +417,9 @@ export async function POST(request: NextRequest) {
     const settingMap = new Map<string, string>(settings.map((row) => [row.key, row.value] as const));
 
     const dailyLimit = Math.min(Math.max(parseNumber(settingMap.get(KEY_DAILY_LIMIT), 6), 0), 50);
-    const deduplicationEnabled = parseBool(settingMap.get(KEY_DEDUP_ENABLED), true);
+    const sourcesConfig = safeParseSourcesConfig(settingMap.get(KEY_SOURCES_CONFIG_JSON));
+    const blacklistHosts = parseBlacklistHosts(sourcesConfig.blacklist);
+    const deduplicationEnabled = sourcesConfig.rules.deduplication;
 
     const autoDraft = parseBool(settingMap.get(KEY_AUTO_DRAFT), true);
     const autoSchedule = parseBool(settingMap.get(KEY_AUTO_SCHEDULE), false);
@@ -275,27 +427,137 @@ export async function POST(request: NextRequest) {
 
     const automationConfig = safeParseAutomationConfig(settingMap.get(KEY_AUTOMATION_CONFIG_JSON));
 
-    const sources = await prisma.newsSource.findMany({
+    const allEnabledSources = await prisma.newsSource.findMany({
       where: { enabled: true },
       select: { id: true, url: true, name: true, etag: true, lastModified: true },
       orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     });
 
+    const sources = allEnabledSources.filter((src) => {
+      if (!blacklistHosts.length) return true;
+      const host = extractHostname(src.url);
+      return !isHostBlacklisted(host, blacklistHosts);
+    });
+
+    if (sources.length < sourcesConfig.minSources) {
+      const finishedAt = new Date();
+      const reason = `Enabled RSS sources (${sources.length}) is below minSources (${sourcesConfig.minSources}).`;
+      await prisma.newsJobLog.update({
+        where: { id: jobLogId },
+        data: {
+          status: 'FAILURE',
+          finishedAt,
+          error: reason,
+          meta: {
+            pipelineStatus,
+            runMode,
+            dryRun: isDryRun,
+            startedAt: startedAt.toISOString(),
+            finishedAt: finishedAt.toISOString(),
+            settings: {
+              dailyLimit,
+              deduplicationEnabled,
+              autoDraft,
+              autoSchedule,
+              autoPublish,
+            },
+            sourcesConfig: {
+              minSources: sourcesConfig.minSources,
+              countries: sourcesConfig.countries,
+              blacklistCount: blacklistHosts.length,
+              filteredSources: {
+                enabledTotal: allEnabledSources.length,
+                allowed: sources.length,
+              },
+            },
+          },
+        },
+      });
+
+      await writeNewsAuditLog({
+        action: 'news_automation_run_completed',
+        metadata: { jobLogId, ok: false, error: reason, pipelineStatus },
+      });
+
+      return NextResponse.json(
+        {
+          runId: jobLogId,
+          results: {
+            pipelineStatus,
+            runMode,
+            dryRun: isDryRun,
+            enabledSourceCount: sources.length,
+            error: reason,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
     const rssParser = new Parser();
 
-    const rssResults: Array<{ sourceId: string; status: string; imported: number; itemsSeen?: number; error?: string }> = [];
+    const rssResults: Array<{
+      sourceId: string;
+      status: string;
+      imported: number;
+      itemsSeen?: number;
+      error?: string;
+      ignoredVerifyPayload?: number;
+    }> = [];
+
+    let ignoredVerifyPayloadTotal = 0;
+
+    if (isDryRun) {
+      rssResults.push({ sourceId: 'ALL', status: 'skipped_dry_run', imported: 0 });
+    }
 
     for (const source of sources) {
+      if (isDryRun) {
+        continue;
+      }
       try {
         const headers: Record<string, string> = {
-          'User-Agent': 'SolarMatchNewsEngine/1.0 (+https://solarmatch.example)',
+          'User-Agent': 'Mozilla/5.0 (compatible; SolarMatchNewsEngine/1.0)',
           Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
         };
 
         if (source.etag) headers['If-None-Match'] = source.etag;
         if (source.lastModified) headers['If-Modified-Since'] = source.lastModified;
 
-        const response = await fetch(source.url, { method: 'GET', headers });
+        let response: Response;
+        try {
+          response = await fetchTextWithTimeout(
+            source.url,
+            {
+              method: 'GET',
+              headers,
+              cache: 'no-store',
+              redirect: 'follow',
+            },
+            RSS_FETCH_TIMEOUT_MS
+          );
+        } catch (error) {
+          const fetchedAt = new Date();
+          const message =
+            error instanceof Error && (error.name === 'AbortError' || error.message.toLowerCase().includes('aborted'))
+              ? `Fetch timed out after ${Math.round(RSS_FETCH_TIMEOUT_MS / 1000)}s`
+              : `Fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+          await prisma.newsSource.update({
+            where: { id: source.id },
+            data: {
+              lastFetchedAt: fetchedAt,
+              lastSync: fetchedAt,
+              lastError: message,
+              errorCount: { increment: 1 },
+            },
+          });
+
+          rssResults.push({ sourceId: source.id, status: 'error', imported: 0, error: message });
+          continue;
+        }
+
         const fetchedAt = new Date();
 
         if (response.status === 304) {
@@ -310,14 +572,14 @@ export async function POST(request: NextRequest) {
 
         if (!response.ok) {
           const bodyText = await response.text().catch(() => '');
-          const message = `Fetch failed (${response.status})`;
+          const message = `Fetch failed (${response.status} ${response.statusText || ''})`.trim();
 
           await prisma.newsSource.update({
             where: { id: source.id },
             data: {
               lastFetchedAt: fetchedAt,
               lastSync: fetchedAt,
-              lastError: bodyText ? `${message}: ${bodyText.slice(0, 600)}` : message,
+              lastError: bodyText ? `${message}: ${truncateForLog(bodyText)}` : message,
               errorCount: { increment: 1 },
             },
           });
@@ -329,8 +591,43 @@ export async function POST(request: NextRequest) {
         const etag = response.headers.get('etag');
         const lastModified = response.headers.get('last-modified');
 
+        const contentType = response.headers.get('content-type');
         const xml = await response.text();
-        const feed = await rssParser.parseString(xml);
+
+        if (looksLikeHtml(contentType, xml)) {
+          const message = 'This URL did not return an RSS/Atom feed (got HTML).';
+          await prisma.newsSource.update({
+            where: { id: source.id },
+            data: {
+              lastFetchedAt: fetchedAt,
+              lastSync: fetchedAt,
+              lastError: `${message} Content-Type=${contentType ?? 'unknown'}. Body: ${truncateForLog(xml)}`,
+              errorCount: { increment: 1 },
+            },
+          });
+          rssResults.push({ sourceId: source.id, status: 'error', imported: 0, error: message });
+          continue;
+        }
+
+        let feed: any;
+        try {
+          feed = await rssParser.parseString(xml);
+        } catch (error) {
+          const parseMessage = error instanceof Error ? error.message : 'Unknown parse error';
+          const message = `Feed parse failed: ${parseMessage}`;
+
+          await prisma.newsSource.update({
+            where: { id: source.id },
+            data: {
+              lastFetchedAt: fetchedAt,
+              lastSync: fetchedAt,
+              lastError: `${message}. Content-Type=${contentType ?? 'unknown'}. Body: ${truncateForLog(xml)}`,
+              errorCount: { increment: 1 },
+            },
+          });
+          rssResults.push({ sourceId: source.id, status: 'error', imported: 0, error: message });
+          continue;
+        }
         const now = new Date();
 
         const items = Array.isArray(feed.items) ? feed.items : [];
@@ -341,7 +638,25 @@ export async function POST(request: NextRequest) {
             if (!url) return null;
 
             const title = typeof it.title === 'string' ? it.title.trim() : '';
+            const summary = typeof it.contentSnippet === 'string' ? it.contentSnippet.trim() : '';
+            const contentLength = summary.length;
             const publishedAt = parseDate(it.isoDate) ?? parseDate(it.pubDate);
+
+            // Verify Payload: stricter checks
+            if (sourcesConfig.rules.verifyPayload) {
+              if (!title || !summary || contentLength < 40) {
+                return {
+                  sourceId: source.id,
+                  externalId: typeof it.guid === 'string' ? it.guid : null,
+                  url,
+                  title: title || url,
+                  publishedAt,
+                  fetchedAt: now,
+                  status: 'IGNORED' as const,
+                  rawJson: safeJsonItem(it),
+                };
+              }
+            }
 
             return {
               sourceId: source.id,
@@ -361,13 +676,24 @@ export async function POST(request: NextRequest) {
           title: string;
           publishedAt: Date | null;
           fetchedAt: Date;
-          status: 'NEW';
+          status: 'NEW' | 'IGNORED';
           rawJson: Prisma.InputJsonValue;
         }>;
 
-        const created = entryData.length
-          ? await prisma.newsSourceEntry.createMany({ data: entryData, skipDuplicates: true })
+
+        // Separate valid and ignored entries
+        const validEntries = entryData.filter((e) => e.status === 'NEW');
+        const ignoredEntries = entryData.filter((e) => e.status === 'IGNORED');
+
+        const created = validEntries.length
+          ? await prisma.newsSourceEntry.createMany({ data: validEntries, skipDuplicates: true })
           : { count: 0 };
+
+        const ignoredCreated = ignoredEntries.length
+          ? await prisma.newsSourceEntry.createMany({ data: ignoredEntries, skipDuplicates: true })
+          : { count: 0 };
+
+        ignoredVerifyPayloadTotal += ignoredCreated.count;
 
         await prisma.newsSource.update({
           where: { id: source.id },
@@ -382,12 +708,19 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        rssResults.push({ sourceId: source.id, status: 'ok', imported: created.count, itemsSeen: items.length });
+        rssResults.push({
+          sourceId: source.id,
+          status: 'ok',
+          imported: created.count,
+          itemsSeen: items.length,
+          ignoredVerifyPayload: ignoredCreated.count,
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : 'RSS sync failed';
         rssResults.push({ sourceId: source.id, status: 'error', imported: 0, error: message });
       }
     }
+
 
     const selectableEntries = await prisma.newsSourceEntry.findMany({
       where: {
@@ -409,6 +742,26 @@ export async function POST(request: NextRequest) {
     const draftResults: Array<{ entryId: string; ok: boolean; itemId?: string; status?: string; error?: string }> = [];
 
     for (const entry of selectableEntries) {
+      if (isDryRun) {
+        if (!autoDraft) {
+          draftResults.push({ entryId: entry.id, ok: true, status: 'dry_run_skipped_autoDraft_disabled' });
+          continue;
+        }
+
+        const wouldAutoPublish = pipelineStatus === 'NOMINAL' && autoPublish;
+        const wouldAutoSchedule = !wouldAutoPublish && autoSchedule;
+        draftResults.push({
+          entryId: entry.id,
+          ok: true,
+          status: wouldAutoPublish
+            ? 'dry_run_would_publish'
+            : wouldAutoSchedule
+              ? 'dry_run_would_schedule'
+              : 'dry_run_would_create_needs_review',
+        });
+        continue;
+      }
+
       if (!autoDraft) {
         draftResults.push({ entryId: entry.id, ok: true, status: 'skipped_autoDraft_disabled' });
         continue;
@@ -454,6 +807,7 @@ export async function POST(request: NextRequest) {
           `- Title: ${entry.title}`,
           `- URL: ${entry.url}`,
           entry.publishedAt ? `- PublishedAt: ${entry.publishedAt.toISOString()}` : null,
+          sourcesConfig.countries.length ? `- Geographic focus: ${sourcesConfig.countries.join(', ')}` : null,
           '',
           'Constraints:',
           '- Be accurate and avoid unverifiable claims.',
@@ -519,10 +873,37 @@ export async function POST(request: NextRequest) {
             seoDescription,
             ogImageUrl,
           },
-          select: { id: true, title: true, slug: true },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            status: true,
+            ogImageUrl: true,
+            ogImageApprovalRequired: true,
+            ogImageApprovedAt: true,
+          },
         });
 
-        if (shouldAutoPublish) {
+        let publishBlockedByOgApproval = false;
+
+        if (
+          (createdItem.status === 'PUBLISHED' || createdItem.status === 'SCHEDULED') &&
+          createdItem.ogImageApprovalRequired &&
+          !createdItem.ogImageApprovedAt
+        ) {
+          publishBlockedByOgApproval = true;
+          await prisma.newsItem.update({
+            where: { id: createdItem.id },
+            data: {
+              status: 'NEEDS_REVIEW',
+              publishedAt: null,
+              scheduledFor: null,
+            },
+            select: { id: true },
+          });
+        }
+
+        if (shouldAutoPublish && !publishBlockedByOgApproval) {
           const base = createdItem.slug?.trim() || slugify(createdItem.title);
           const slug = await findAvailableSlug(base, createdItem.id);
           if (slug) {
@@ -564,12 +945,18 @@ export async function POST(request: NextRequest) {
             entryId: entry.id,
             autoPublish: shouldAutoPublish,
             autoSchedule,
+            publishBlockedByOgApproval,
             scheduledFor: scheduledFor ? scheduledFor.toISOString() : null,
           },
           promptUsed: prompt,
         });
 
-        draftResults.push({ entryId: entry.id, ok: true, itemId: createdItem.id, status });
+        draftResults.push({
+          entryId: entry.id,
+          ok: true,
+          itemId: createdItem.id,
+          status: publishBlockedByOgApproval ? 'NEEDS_REVIEW' : status,
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Draft generation failed';
 
@@ -609,6 +996,8 @@ export async function POST(request: NextRequest) {
         finishedAt,
         meta: {
           pipelineStatus,
+          runMode,
+          dryRun: isDryRun,
           startedAt: startedAt.toISOString(),
           finishedAt: finishedAt.toISOString(),
           settings: {
@@ -617,6 +1006,19 @@ export async function POST(request: NextRequest) {
             autoDraft,
             autoSchedule,
             autoPublish,
+          },
+          sourcesConfig: {
+            minSources: sourcesConfig.minSources,
+            countries: sourcesConfig.countries,
+            blacklistCount: blacklistHosts.length,
+            filteredSources: {
+              enabledTotal: allEnabledSources.length,
+              allowed: sources.length,
+            },
+          },
+          verifyPayload: {
+            enabled: sourcesConfig.rules.verifyPayload,
+            ignoredCount: ignoredVerifyPayloadTotal,
           },
           rssResults,
           draftResults,
@@ -637,6 +1039,18 @@ export async function POST(request: NextRequest) {
       runId: jobLogId,
       results: {
         pipelineStatus,
+        runMode,
+        dryRun: isDryRun,
+        enabledSourceCount: sources.length,
+        sourcesConfig: {
+          minSources: sourcesConfig.minSources,
+          countries: sourcesConfig.countries,
+          blacklistCount: blacklistHosts.length,
+        },
+        verifyPayload: {
+          enabled: sourcesConfig.rules.verifyPayload,
+          ignoredCount: ignoredVerifyPayloadTotal,
+        },
         rssResults,
         selectedEntryCount: selectableEntries.length,
         draftResults,

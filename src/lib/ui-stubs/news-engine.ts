@@ -34,6 +34,9 @@ export interface NewsItem {
   sourceType?: 'RSS Feed' | 'AI Agent' | 'Manual Entry';
   publishedAt?: string;
   scheduledFor?: string;
+  schedulePriority?: 'Low' | 'Normal' | 'High' | 'Urgent' | string;
+  scheduleExpiresAt?: string | null;
+  scheduleIsFeatured?: boolean;
   slug?: string;
   tags: string[];
 

@@ -8,6 +8,7 @@
  * Apply:   npx tsx scripts/news-engine-cleanup-test-data.ts --apply
  */
 
+import type { Prisma } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -38,14 +39,14 @@ async function main() {
   console.log(`- Lookback: last ${lookbackDays} days (cutoff: ${toIsoShort(cutoff)})`);
 
   // 1) Disable E2E keys (do NOT hard-delete to avoid accidental loss of a real key).
-  const keyWhere = {
+  const keyWhere: Prisma.NewsApiKeyWhereInput = {
     createdAt: { gte: cutoff },
     OR: [
       { label: { startsWith: 'E2E' } },
       { label: { contains: 'E2E ' } },
       { label: { contains: 'E2E_' } },
     ],
-  } as const;
+  };
 
   const keys = await prisma.newsApiKey.findMany({
     where: keyWhere,

@@ -43,4 +43,7 @@ See each folder’s README for details. All migration planning and execution doc
 
 ## Notes
 - This workflow does **not** require `SOT/tasks.md`.
-- For News Engine implementation/migration, track execution in `MIGRATION/tasks.md`.
+- Track all feature work (including migration) in the single root tasks file: `DOC/FEATURES/NEWS ENGINE/tasks.md`.
+
+
+

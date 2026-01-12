@@ -17,9 +17,9 @@ import {
   Sliders,
 } from 'lucide-react';
 import type { NewsEngineState } from '@/lib/ui-stubs/news-engine';
-import { adminSyncSource } from '@/lib/news-engine/client';
+import { adminSyncResearchNow, adminSyncSource, fetchAdminResearchEntries, type AdminResearchEntry } from '@/lib/news-engine/client';
 import type { useSavedIndicator } from '../shared';
-import { formatRelativeTime } from '../shared';
+import { formatRelativeTime, ModalShell } from '../shared';
 
 type SavedIndicator = ReturnType<typeof useSavedIndicator>;
 
@@ -96,15 +96,42 @@ export function SourcesTabV6({
     lastSyncedAtById: {},
   }));
 
-  const [researchSync] = React.useState<{
+  const [researchSync, setResearchSync] = React.useState<{
     lastSyncedAtByKind: Record<ResearchSyncKind, string | null>;
     lastErrorByKind: Record<ResearchSyncKind, string | null>;
     lastImportedByKind: Record<ResearchSyncKind, number | null>;
+    syncingKind: ResearchSyncKind | null;
   }>(() => ({
     lastSyncedAtByKind: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null },
     lastErrorByKind: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null },
     lastImportedByKind: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null },
+    syncingKind: null,
   }));
+
+  const [researchEntriesModal, setResearchEntriesModal] = React.useState<{
+    open: boolean;
+    kind: ResearchSyncKind | null;
+    loading: boolean;
+    error: string | null;
+    entries: AdminResearchEntry[];
+  }>({
+    open: false,
+    kind: null,
+    loading: false,
+    error: null,
+    entries: [],
+  });
+
+  const loadResearchEntries = React.useCallback(async (kind: ResearchSyncKind) => {
+    setResearchEntriesModal((prev) => ({ ...prev, open: true, kind, loading: true, error: null, entries: [] }));
+    try {
+      const entries = await fetchAdminResearchEntries(kind, 75);
+      setResearchEntriesModal((prev) => ({ ...prev, open: true, kind, loading: false, error: null, entries }));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to fetch research entries';
+      setResearchEntriesModal((prev) => ({ ...prev, open: true, kind, loading: false, error: message, entries: [] }));
+    }
+  }, []);
 
   const filteredSources = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -338,6 +365,7 @@ export function SourcesTabV6({
                 const lastSync = researchSync.lastSyncedAtByKind[row.kind];
                 const lastErr = researchSync.lastErrorByKind[row.kind];
                 const imported = researchSync.lastImportedByKind[row.kind];
+                const syncing = researchSync.syncingKind === row.kind;
                 return (
                   <div key={row.kind} className="p-4 bg-surface border border-border rounded-xl flex items-center justify-between gap-4 flex-wrap">
                     <div className="min-w-[220px]">
@@ -352,17 +380,51 @@ export function SourcesTabV6({
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        disabled
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-muted-foreground shadow-neu-outset opacity-60 cursor-not-allowed"
-                        title="Backend hook required: trigger research sync per kind"
+                        disabled={syncing}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset transition-colors disabled:opacity-50"
+                        title={syncing ? 'Syncing…' : 'Sync Research Now'}
+                        onClick={() => {
+                          if (researchSync.syncingKind) return;
+                          void (async () => {
+                            setResearchSync((prev) => ({
+                              ...prev,
+                              syncingKind: row.kind,
+                              lastErrorByKind: { ...prev.lastErrorByKind, [row.kind]: null },
+                            }));
+                            try {
+                              const res = await adminSyncResearchNow(row.kind);
+                              const nowIso = new Date().toISOString();
+                              setResearchSync((prev) => ({
+                                ...prev,
+                                syncingKind: null,
+                                lastImportedByKind: { ...prev.lastImportedByKind, [row.kind]: res.imported },
+                                lastSyncedAtByKind: { ...prev.lastSyncedAtByKind, [row.kind]: nowIso },
+                                lastErrorByKind: {
+                                  ...prev.lastErrorByKind,
+                                  [row.kind]: res.errors?.length ? `${res.errors.length} feed(s) failed (see audit log)` : null,
+                                },
+                              }));
+                            } catch (e) {
+                              const message = e instanceof Error ? e.message : 'Failed to sync research';
+                              setResearchSync((prev) => ({
+                                ...prev,
+                                syncingKind: null,
+                                lastErrorByKind: { ...prev.lastErrorByKind, [row.kind]: message },
+                              }));
+                            }
+                          })();
+                        }}
                       >
-                        <RefreshCw size={14} /> Sync Research Now
+                        {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                        Sync Research Now
                       </button>
                       <button
                         type="button"
-                        disabled
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-muted-foreground shadow-neu-outset opacity-60 cursor-not-allowed"
-                        title="Backend hook required: fetch entries list per kind"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset transition-colors"
+                        title="View latest research entries"
+                        onClick={() => {
+                          void loadResearchEntries(row.kind);
+                        }}
                       >
                         <ExternalLink size={14} /> View Entries
                       </button>
@@ -372,6 +434,62 @@ export function SourcesTabV6({
               })}
             </div>
           </section>
+
+          {researchEntriesModal.open && researchEntriesModal.kind ? (
+            <ModalShell
+              title={`Research Entries: ${researchEntriesModal.kind}`}
+              description="Latest ingested research entries (most recent first)."
+              onClose={() => setResearchEntriesModal((prev) => ({ ...prev, open: false }))}
+            >
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <div className="text-body-small text-muted-foreground">
+                  {researchEntriesModal.loading ? 'Loading…' : `${researchEntriesModal.entries.length} item(s)`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!researchEntriesModal.kind) return;
+                    void loadResearchEntries(researchEntriesModal.kind);
+                  }}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset transition-colors"
+                >
+                  <RefreshCw size={14} /> Refresh
+                </button>
+              </div>
+
+              {researchEntriesModal.error ? (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-body-small text-destructive">
+                  {researchEntriesModal.error}
+                </div>
+              ) : null}
+
+              <div className="space-y-3">
+                {researchEntriesModal.entries.map((e) => (
+                  <a
+                    key={e.id}
+                    href={e.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block p-4 bg-background rounded-xl border border-border shadow-neu-outset hover:bg-surface transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-body text-foreground truncate">{e.title || e.url}</p>
+                        <p className="text-body-small text-muted-foreground truncate">{e.url}</p>
+                      </div>
+                      <div className="text-body-small text-muted-foreground whitespace-nowrap">
+                        {formatRelativeTime(e.fetchedAt)}
+                      </div>
+                    </div>
+                  </a>
+                ))}
+
+                {!researchEntriesModal.loading && researchEntriesModal.entries.length === 0 ? (
+                  <div className="text-body text-muted-foreground">No entries found for this kind yet.</div>
+                ) : null}
+              </div>
+            </ModalShell>
+          ) : null}
 
           <section className="bg-background rounded-2xl border border-border shadow-neu-outset p-6">
             <div className="mb-6">

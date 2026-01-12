@@ -59,8 +59,9 @@ Your job is to:
 - **Known Stub That Must Be Eliminated for True E2E:**
   - `src/lib/ui-stubs/news-engine.ts` (localStorage-based; must not be the source of truth in the final E2E state)
 - **Tasks/Checklist:**
-  - `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/tasks.md` (backend tasks)
-  - `DOC/FEATURES/NEWS ENGINE/MIGRATION/tasks.md` (frontend migration tasks, if applicable)
+  - `DOC/FEATURES/NEWS ENGINE/tasks.md` (single feature task SOT; includes migration/backend/test phases)
+
+Legacy note: if older folders contain additional `tasks.md` files (e.g., `BACKEND PLAN/tasks.md`), treat them as deprecated and migrate their contents into the single root `DOC/FEATURES/NEWS ENGINE/tasks.md`.
 
 > Update these references if your feature uses different folders or filenames.
 

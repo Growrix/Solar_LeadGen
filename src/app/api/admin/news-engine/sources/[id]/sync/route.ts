@@ -6,6 +6,31 @@ import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog } from '@/lib/news-engine';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+const RSS_FETCH_TIMEOUT_MS = 20_000;
+
+function truncateForLog(value: string, max = 600): string {
+  if (!value) return '';
+  return value.length <= max ? value : `${value.slice(0, max)}…`;
+}
+
+function looksLikeHtml(contentType: string | null, body: string): boolean {
+  const ct = (contentType ?? '').toLowerCase();
+  if (ct.includes('text/html') || ct.includes('application/xhtml')) return true;
+  const head = body.slice(0, 300).trim().toLowerCase();
+  return head.startsWith('<!doctype html') || head.startsWith('<html') || head.includes('<head>');
+}
+
+async function fetchTextWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function parseDate(value: unknown): Date | null {
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
@@ -53,14 +78,52 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
     }
 
     const headers: Record<string, string> = {
-      'User-Agent': 'SolarMatchNewsEngine/1.0 (+https://solarmatch.example)',
+      'User-Agent': 'Mozilla/5.0 (compatible; SolarMatchNewsEngine/1.0)',
       Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+      'Accept-Language': 'en-US,en;q=0.9',
     };
 
     if (source.etag) headers['If-None-Match'] = source.etag;
     if (source.lastModified) headers['If-Modified-Since'] = source.lastModified;
 
-    const response = await fetch(source.url, { method: 'GET', headers });
+    let response: Response;
+    try {
+      response = await fetchTextWithTimeout(
+        source.url,
+        {
+          method: 'GET',
+          headers,
+          cache: 'no-store',
+          redirect: 'follow',
+        },
+        RSS_FETCH_TIMEOUT_MS
+      );
+    } catch (error) {
+      const fetchedAt = new Date();
+      const message =
+        error instanceof Error && (error.name === 'AbortError' || error.message.toLowerCase().includes('aborted'))
+          ? `Fetch timed out after ${Math.round(RSS_FETCH_TIMEOUT_MS / 1000)}s`
+          : `Fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+
+      await prisma.newsSource.update({
+        where: { id: source.id },
+        data: {
+          lastFetchedAt: fetchedAt,
+          lastSync: fetchedAt,
+          lastError: message,
+          errorCount: { increment: 1 },
+        },
+      });
+
+      await writeNewsAuditLog({
+        action: 'news_source_sync_failed',
+        actorId: auth.userId,
+        sourceId: source.id,
+        metadata: { status: 'fetch_exception', error: message },
+      });
+
+      return NextResponse.json({ error: message }, { status: 502 });
+    }
 
     const fetchedAt = new Date();
 
@@ -91,14 +154,14 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
 
     if (!response.ok) {
       const bodyText = await response.text().catch(() => '');
-      const message = `Fetch failed (${response.status})`;
+      const message = `Fetch failed (${response.status} ${response.statusText || ''})`.trim();
 
       await prisma.newsSource.update({
         where: { id: source.id },
         data: {
           lastFetchedAt: fetchedAt,
           lastSync: fetchedAt,
-          lastError: bodyText ? `${message}: ${bodyText.slice(0, 600)}` : message,
+          lastError: bodyText ? `${message}: ${truncateForLog(bodyText)}` : message,
           errorCount: { increment: 1 },
         },
       });
@@ -116,10 +179,59 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
     const etag = response.headers.get('etag');
     const lastModified = response.headers.get('last-modified');
 
+    const contentType = response.headers.get('content-type');
     const xml = await response.text();
 
-    const parser = new Parser();
-    const feed = await parser.parseString(xml);
+    if (looksLikeHtml(contentType, xml)) {
+      const message =
+        'This URL did not return an RSS/Atom feed (got HTML). Use the site\'s RSS/Atom feed URL (often ends with /rss, /feed, or .xml).';
+      await prisma.newsSource.update({
+        where: { id: source.id },
+        data: {
+          lastFetchedAt: fetchedAt,
+          lastSync: fetchedAt,
+          lastError: `${message} Content-Type=${contentType ?? 'unknown'}. Body: ${truncateForLog(xml)}`,
+          errorCount: { increment: 1 },
+        },
+      });
+
+      await writeNewsAuditLog({
+        action: 'news_source_sync_failed',
+        actorId: auth.userId,
+        sourceId: source.id,
+        metadata: { status: 'not_a_feed', contentType },
+      });
+
+      return NextResponse.json({ error: message }, { status: 422 });
+    }
+
+    let feed: any;
+    try {
+      const parser = new Parser();
+      feed = await parser.parseString(xml);
+    } catch (error) {
+      const parseMessage = error instanceof Error ? error.message : 'Unknown parse error';
+      const message = `Feed parse failed: ${parseMessage}`;
+
+      await prisma.newsSource.update({
+        where: { id: source.id },
+        data: {
+          lastFetchedAt: fetchedAt,
+          lastSync: fetchedAt,
+          lastError: `${message}. Content-Type=${contentType ?? 'unknown'}. Body: ${truncateForLog(xml)}`,
+          errorCount: { increment: 1 },
+        },
+      });
+
+      await writeNewsAuditLog({
+        action: 'news_source_sync_failed',
+        actorId: auth.userId,
+        sourceId: source.id,
+        metadata: { status: 'parse_failed', contentType, error: parseMessage },
+      });
+
+      return NextResponse.json({ error: message }, { status: 422 });
+    }
 
     const now = new Date();
 

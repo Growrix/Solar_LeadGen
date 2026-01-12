@@ -11,7 +11,12 @@ export function ScheduleModal({
 }: {
   item: NewsItem;
   onClose: () => void;
-  onSchedule: (iso: string) => void;
+  onSchedule: (input: {
+    scheduledForIso: string;
+    schedulePriority: 'Low' | 'Normal' | 'High' | 'Urgent';
+    scheduleExpiresAt: string | null;
+    scheduleIsFeatured: boolean;
+  }) => void;
 }) {
   const [publishDate, setPublishDate] = React.useState(() => new Date().toISOString().split('T')[0]);
   const [publishTime, setPublishTime] = React.useState('09:00');
@@ -43,6 +48,29 @@ export function ScheduleModal({
     setPublishDate(toLocalDateInput(dt));
     setPublishTime(toLocalTimeInput(dt));
   }, [item.id, item.scheduledFor, toLocalDateInput, toLocalTimeInput]);
+
+  React.useEffect(() => {
+    const p = item.schedulePriority;
+    if (p === 'Low' || p === 'Normal' || p === 'High' || p === 'Urgent') {
+      setPriority(p);
+    } else {
+      setPriority('Normal');
+    }
+
+    const expiresIso = item.scheduleExpiresAt;
+    if (expiresIso) {
+      const dt = new Date(expiresIso);
+      if (!Number.isNaN(dt.getTime())) {
+        setHasExpiry(true);
+        setExpiryDate(toLocalDateInput(dt));
+      }
+    } else {
+      setHasExpiry(false);
+      setExpiryDate('');
+    }
+
+    setIsFeatured(Boolean(item.scheduleIsFeatured));
+  }, [item.id, item.schedulePriority, item.scheduleExpiresAt, item.scheduleIsFeatured, toLocalDateInput]);
 
   const PriorityButton = ({ value }: { value: typeof priority }) => {
     const active = priority === value;
@@ -95,7 +123,21 @@ export function ScheduleModal({
     setIsSubmitting(true);
     window.setTimeout(() => {
       const iso = dt.toISOString();
-      onSchedule(iso);
+
+      let expiryIso: string | null = null;
+      if (hasExpiry) {
+        const exp = new Date(`${expiryDate}T23:59:59`);
+        if (!Number.isNaN(exp.getTime())) {
+          expiryIso = exp.toISOString();
+        }
+      }
+
+      onSchedule({
+        scheduledForIso: iso,
+        schedulePriority: priority,
+        scheduleExpiresAt: expiryIso,
+        scheduleIsFeatured: isFeatured,
+      });
       setIsSubmitting(false);
     }, 600);
   };

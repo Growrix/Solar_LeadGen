@@ -104,7 +104,8 @@ test.describe('News Engine Phase 13', () => {
     await page.getByRole('heading', { name: 'Add Key' }).waitFor();
 
     await page.locator('select').first().selectOption('OpenAI');
-    await page.fill('input[placeholder^="e.g."]', 'E2E Drafting Key');
+    const keyLabel = `E2E Drafting Key ${Date.now()}`;
+    await page.fill('input[placeholder^="e.g."]', keyLabel);
 
     // Pool select is the next select in the modal.
     // Use Images to avoid polluting the Drafting pool (which is used by automation scripts).
@@ -120,7 +121,7 @@ test.describe('News Engine Phase 13', () => {
     expect(resp.ok()).toBeTruthy();
 
     // Ensure the label is visible in the table.
-    await page.getByText('E2E Drafting Key').waitFor();
+    await page.getByText(keyLabel).first().waitFor();
   });
 
   test('Review modal persists image controls and loads provenance', async ({ page }) => {

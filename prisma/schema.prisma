@@ -463,6 +463,11 @@ model NewsItem {
   updatedAt       DateTime          @updatedAt
   publishedAt     DateTime?
   scheduledFor    DateTime?
+
+  schedulePriority String           @default("Normal")
+  scheduleExpiresAt DateTime?
+  scheduleIsFeatured Boolean        @default(false)
+
   rejectedAt      DateTime?
   rejectionReason String?
   slug            String?           @unique

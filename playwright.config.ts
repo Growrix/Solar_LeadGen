@@ -32,6 +32,15 @@ function loadSimpleDotEnvFilesIntoProcessEnv(filenames: string[]) {
 // Ensure Playwright runner sees `.env` (Next.js loads it for the web server, but Playwright does not).
 loadSimpleDotEnvFilesIntoProcessEnv(['.env', '.env.local']);
 
+// Some Playwright versions do not type-support `webServer.env`.
+// Ensure required env vars are present for the spawned web server.
+process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL || process.env.E2E_BASE_URL || 'http://localhost:3001';
+process.env.NEXTAUTH_URL_INTERNAL =
+  process.env.NEXTAUTH_URL_INTERNAL || process.env.E2E_BASE_URL || 'http://localhost:3001';
+process.env.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || 'e2e-nextauth-secret-not-for-production';
+process.env.NEWS_ENGINE_KEY_VAULT_MASTER_KEY = process.env.NEWS_ENGINE_KEY_VAULT_MASTER_KEY ?? '';
+process.env.NEWS_KEY_VAULT_MASTER_KEY = process.env.NEWS_KEY_VAULT_MASTER_KEY ?? '';
+
 export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 90_000,
@@ -41,13 +50,6 @@ export default defineConfig({
     url: process.env.E2E_BASE_URL || 'http://localhost:3001',
     reuseExistingServer: false,
     timeout: 120_000,
-    env: {
-      NEXTAUTH_URL: process.env.E2E_BASE_URL || 'http://localhost:3001',
-      NEXTAUTH_URL_INTERNAL: process.env.E2E_BASE_URL || 'http://localhost:3001',
-      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'e2e-nextauth-secret-not-for-production',
-      NEWS_ENGINE_KEY_VAULT_MASTER_KEY: process.env.NEWS_ENGINE_KEY_VAULT_MASTER_KEY,
-      NEWS_KEY_VAULT_MASTER_KEY: process.env.NEWS_KEY_VAULT_MASTER_KEY,
-    },
   },
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3001',

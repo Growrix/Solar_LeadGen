@@ -8,8 +8,10 @@
    - Create the Migration plan in the :
   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\MIGRATION.
 
-  - Based on the Migration plan that you have created , Prepare the tasks.md file in the Migration folder as well followed by the template : 
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\.specify\templates\tasks-template.md
+  - Based on the Migration plan that you have created, update the single root tasks file for the feature (do NOT create any additional tasks.md files):
+  `DOC/FEATURES/NEWS ENGINE/tasks.md`
+  - Use the canonical template rules at:
+  `DOC/.specify/templates/tasks-template.md`
 
   ***Instructions*** 
   I only need to migrate the news frontend pages and its realted modals. 
@@ -40,9 +42,10 @@ Create a detailed migration plan in:
 DOC/FEATURES/NEWS ENGINE/MIGRATION/
 Task Tracking
 
-Prepare tasks.md in the MIGRATION folder using:
-tasks-template.md
-Do NOT create a tasks.md in the SOT folder for prototype-driven frontend features.
+Update the single root tasks file:
+`DOC/FEATURES/NEWS ENGINE/tasks.md`
+
+Do NOT create `tasks.md` in SOT or MIGRATION folders.
 Verification & Documentation
 
 After migration, run all verification gates (typecheck, build, theme checks, etc.) as per the migration contract.
@@ -59,7 +62,7 @@ All verification steps must be documented and results stored in the MIGRATION fo
 Remove any instruction to create tasks.md in SOT for prototype-driven frontend features.
 Ensure all documentation and plans are traceable, auditable, and compliant with the latest workflow.
 4. SUCCESS CRITERIA
-Migration plan and tasks.md exist in the MIGRATION folder, not SOT.
+Migration plan exists in `DOC/FEATURES/NEWS ENGINE/MIGRATION/` and all tasks are tracked in `DOC/FEATURES/NEWS ENGINE/tasks.md`.
 All steps reference the prototype, workflow README, and migration playbook.
 SOT/README and index files are updated post-migration.
 Verification results are documented.

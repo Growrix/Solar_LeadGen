@@ -63,7 +63,7 @@ This workflow reuses your existing directories and prompt templates.
 
 **Sequence:**
 1. Prepare migration plan referencing playbooks in `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/PROTOTYPE-TO-NEXTJS-OPTION-A-PLAYBOOK.md` and workflow in `DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md`.
-2. Track migration tasks in `DOC/FEATURES/<FEATURE>/MIGRATION/tasks.md` (use canonical template).
+2. Track migration tasks as a Migration phase inside `DOC/FEATURES/<FEATURE>/tasks.md` (use canonical template).
 3. Perform migration, adapting UI to Next.js and project theming.
 4. Run verification gates and document results in MIGRATION folder.
 5. Update SOT/README to reflect migration status and lessons learned.
@@ -71,7 +71,7 @@ This workflow reuses your existing directories and prompt templates.
 **Always update `tasks.md` for every action, change, or sub-phase in this phase.**
 
 **Prompt:**
-> "You are in the Migration Phase for `<FEATURE>`. Prepare a migration plan referencing playbooks and workflow documentation. Track tasks in MIGRATION/tasks.md. Migrate the UI to Next.js and project theming. Run verification gates and document results. Update SOT/README to reflect migration status. Reference all migration documentation in `DOC/GUIDELINES & SOT/README.md`. **Always update `tasks.md` for every action, change, or sub-phase.**"
+> "You are in the Migration Phase for `<FEATURE>`. Prepare a migration plan referencing playbooks and workflow documentation. Track all migration work as a Migration phase inside `DOC/FEATURES/<FEATURE>/tasks.md`. Migrate the UI to Next.js and project theming. Run verification gates and document results. Update SOT/README to reflect migration status. Reference all migration documentation in `DOC/GUIDELINES & SOT/README.md`. **Always update `tasks.md` for every action, change, or sub-phase.**"
 
 **Sub-Phases:**
 - Planning: Prepare migration plan and tasks.
@@ -88,7 +88,7 @@ Each main phase below includes the following sub-phases for robust, iterative qu
 - **Quality Gate:** Checklist and audit before moving forward.
 - **Audit & Correction Loop:** Run audit prompt, log/fix issues, repeat as needed until green signal.
 - **Enhancement:** Allow for improvements/refactoring as needed.
-- **Backtrack/Reconciliation:** If issues are found later, log and fix them, update plan/SOT/tasks.md.
+- **Backtrack/Reconciliation:** If issues are found later, log and fix them, update the plan, SOT, and the single root `tasks.md`.
 - **Functional Verification:** E2E test and sign-off before release or next phase.
 
 These sub-phases are mandatory and must be reflected in `tasks.md` for every feature.
@@ -197,7 +197,7 @@ Output audit reports to:
 - Quality Gate: Review UI vs. plan and SOT.
 - Audit & Correction Loop: Audit UI, log/fix gaps, repeat until green.
 - Enhancement: Add improvements/refactor as needed.
-- Backtrack/Reconciliation: If issues found later, log/fix, update plan/SOT/tasks.md.
+- Backtrack/Reconciliation: If issues found later, log/fix, update plan/SOT and the single root `tasks.md`.
 
 ---
 
@@ -243,7 +243,7 @@ Implement backend to match the final UI flows + backend plan.
 - Quality Gate: Review backend implementation vs. plan and UI.
 - Audit & Correction Loop: Audit backend, log/fix gaps, repeat until green.
 - Enhancement: Add improvements/refactor as needed.
-- Backtrack/Reconciliation: If issues found later, log/fix, update plan/SOT/tasks.md.
+- Backtrack/Reconciliation: If issues found later, log/fix, update plan/SOT and the single root `tasks.md`.
 
 ---
 

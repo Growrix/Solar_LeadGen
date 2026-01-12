@@ -57,6 +57,8 @@ export async function PUT(request: NextRequest) {
 
     const tasks = Object.keys(incoming);
 
+    const warnings: string[] = [];
+
     await prisma.$transaction(async (tx) => {
       for (const key of tasks) {
         const taskType = normalizeString(key);
@@ -75,7 +77,11 @@ export async function PUT(request: NextRequest) {
         });
 
         if (!exists) {
-          throw new Error(`Invalid modelProfileId for ${taskType}`);
+          // Stale UI state or deleted/disabled profile. Do not fail the entire save.
+          // Clear the default for this task so the UI can recover gracefully.
+          warnings.push(`Cleared invalid modelProfileId for ${taskType}`);
+          await tx.newsModelRouterDefault.delete({ where: { taskType } }).catch(() => null);
+          continue;
         }
 
         await tx.newsModelRouterDefault.upsert({
@@ -92,7 +98,9 @@ export async function PUT(request: NextRequest) {
       metadata: { updated: tasks.length },
     });
 
-    return GET();
+    const resp = await GET();
+    const json = (await resp.json().catch(() => null)) as any;
+    return NextResponse.json({ ...(json ?? {}), warnings }, { status: 200 });
   } catch (error) {
     if (error instanceof Error && error.message.includes('Unauthorized')) {
       return NextResponse.json({ error: error.message }, { status: 401 });

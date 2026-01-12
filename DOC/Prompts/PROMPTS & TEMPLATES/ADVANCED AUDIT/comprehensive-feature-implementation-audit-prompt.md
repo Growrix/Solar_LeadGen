@@ -11,6 +11,7 @@ This prompt guides an AI agent to perform a deep, multi-surface audit of a newly
 - Read every implemented page and modal (React/Next.js/other).
 - Identify all UI controls, triggers, and visible states.
 - Validate that each control is wired to a deterministic outcome (no dead triggers).
+- Explicitly detect and list all static, unused, or non-functional UI/UX elements (e.g., buttons, modals, controls) that are present in the UI but have no backend/API/service integration or are not connected to any operational logic. These must be reported even if not referenced in the SOT.
 - Compare each page/modal against the SOT (contract, plan, requirements):
   - List missing pages, modals, or controls.
   - Flag any UI element that is present in SOT but not implemented.
@@ -48,8 +49,8 @@ This prompt guides an AI agent to perform a deep, multi-surface audit of a newly
 
 ### 6. Internal Wiring & Integration Audit
 - Trace the wiring between frontend controls, API calls, backend logic, and database operations.
-- Identify any broken, missing, or incomplete integrations.
-- Flag any control or endpoint that is not connected to its intended backend or database logic.
+- Identify any broken, missing, incomplete, or non-existent integrations.
+- Flag any control, UI element, or endpoint that is not connected to its intended backend or database logic, or is present in the UI but not functional ("static only").
 - Validate that all data flows are deterministic and traceable.
 
 ### 7. SOT Comparison & Gap Analysis
@@ -68,6 +69,7 @@ This prompt guides an AI agent to perform a deep, multi-surface audit of a newly
   - List all findings, gaps, and missing elements by scope.
   - Provide actionable recommendations for remediation.
   - Highlight critical blockers and SOT misalignments.
+  - **Include a dedicated section titled "Static/Unused/Non-Functional UI Elements" that lists every UI/UX element (button, modal, control, etc.) that is present in the UI but not connected to any backend, API, or operational logic. For each, specify the file/component, location, and recommended action (e.g., remove, wire up, clarify purpose).**
 - Output the report in markdown or structured format for review.
 
 ---
@@ -82,6 +84,7 @@ This prompt guides an AI agent to perform a deep, multi-surface audit of a newly
 
 ---
 
+
 ## Example Output Structure
 - Audit Scope: [Page & Modal Audit]
   - Findings: [...]
@@ -92,6 +95,8 @@ This prompt guides an AI agent to perform a deep, multi-surface audit of a newly
   - Gaps: [...]
   - Recommendations: [...]
 - ...
+- **Static/Unused/Non-Functional UI Elements:**
+  - [List of all static, unused, or non-functional UI/UX elements, with file/component, location, and recommended action.]
 - Summary Table: [Scope | Missing | Incomplete | Non-functional | SOT Deviations]
 
 ---

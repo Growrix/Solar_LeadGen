@@ -5203,3 +5203,33 @@ I want you to read all the necessary files carefully before doing anything. such
  
 ***Strictly Rules***
 - Read all the files deeply , not just the file names and assume what is for what. Becuase we might need to update some templates, instructions, audit files etc. Because each and every file is the part of the workflow. So you need to understand each and every file deeply before doing anything. the Goal is to build the workflow effectively that can control any AI efficiently. 
+
+---------------------------------------------------------------------------------
+
+why all the RSS is failing to fetch the news ? I have added multiple RSS sources but all are failing. check the screenshot for better understanding. 
+----------------------------------------------------------------------------------------------
+
+- There are issues in the master control , I have selected the Live Run and clicked on the "Run Automation Now" button but nothing is happening. check the screenshot for better understanding. 
+the screen shows that it is loading for endless times. Even in the DRY RUN I am confused how it is working or not. 
+
+- I have turned on the Auto-scheduler toggle but I do not see any options to save the settings, and I am not sure the Pipuline Sub-system is working or not.
+
+- also no idea, that the Research rules setion is working in the background or not. or is it just static UI only. 
+
+
+***Instructions:**
+- I want you to audit back the entire Automation functionality e2e and identify the gaps and fix them accordingly. Also run the scripts to test the entire feature all the functionalities are working at the same time. 
+- Please Identify any UI UX that are not functional and just stayed as static only.
+- I want all answers clearly thtI have mentioned above. 
+- I want you to fix these issues accordingly. 
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ ---------------------------------------------------------------------------------------
+
+ 2. the AI will be always responsible to update and maintain the task.md file. 
+
+ ------------------------------------------------------------------------------
+
+ 

@@ -19,6 +19,23 @@ function parseRequiredFutureDate(value: unknown): Date | null {
   return dt;
 }
 
+function parseNullableDate(value: unknown): Date | null {
+  const s = normalizeString(value).trim();
+  if (!s) return null;
+  const dt = new Date(s);
+  if (Number.isNaN(dt.getTime())) return null;
+  return dt;
+}
+
+type SchedulePriority = 'Low' | 'Normal' | 'High' | 'Urgent';
+
+function parsePriority(value: unknown): SchedulePriority | null {
+  if (typeof value !== 'string') return null;
+  const v = value.trim();
+  if (v === 'Low' || v === 'Normal' || v === 'High' || v === 'Urgent') return v;
+  return null;
+}
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -34,11 +51,22 @@ export async function POST(
       return NextResponse.json({ error: 'scheduledFor must be a future ISO datetime' }, { status: 400 });
     }
 
+    const schedulePriority = parsePriority(body.schedulePriority);
+    const scheduleExpiresAt = parseNullableDate(body.scheduleExpiresAt);
+    const scheduleIsFeatured = typeof body.scheduleIsFeatured === 'boolean' ? body.scheduleIsFeatured : null;
+
+    if (scheduleExpiresAt && scheduleExpiresAt.getTime() <= scheduledFor.getTime()) {
+      return NextResponse.json({ error: 'scheduleExpiresAt must be after scheduledFor' }, { status: 400 });
+    }
+
     const updated = await prisma.newsItem.update({
       where: { id },
       data: {
         status: 'SCHEDULED',
         scheduledFor,
+        ...(schedulePriority ? { schedulePriority } : {}),
+        ...(scheduleExpiresAt !== null ? { scheduleExpiresAt } : {}),
+        ...(scheduleIsFeatured !== null ? { scheduleIsFeatured } : {}),
         publishedAt: null,
         rejectedAt: null,
         rejectionReason: null,
@@ -47,6 +75,9 @@ export async function POST(
         id: true,
         status: true,
         scheduledFor: true,
+        schedulePriority: true,
+        scheduleExpiresAt: true,
+        scheduleIsFeatured: true,
         updatedAt: true,
       },
     });
@@ -55,7 +86,12 @@ export async function POST(
       action: 'news_item_scheduled',
       actorId: auth.userId,
       itemId: id,
-      metadata: { scheduledFor: updated.scheduledFor?.toISOString() },
+      metadata: {
+        scheduledFor: updated.scheduledFor?.toISOString(),
+        schedulePriority: updated.schedulePriority,
+        scheduleExpiresAt: updated.scheduleExpiresAt ? updated.scheduleExpiresAt.toISOString() : null,
+        scheduleIsFeatured: updated.scheduleIsFeatured,
+      },
     });
 
     return NextResponse.json({ item: updated });

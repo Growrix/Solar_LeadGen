@@ -11,16 +11,47 @@ function toErrorMessage(body: unknown, fallback: string): string {
 }
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-  });
+  const timeoutMs = (init as RequestInit & { timeoutMs?: number } | undefined)?.timeoutMs;
+
+  const controller = timeoutMs ? new AbortController() : null;
+  const timeout =
+    timeoutMs && controller
+      ? setTimeout(() => {
+          controller.abort();
+        }, timeoutMs)
+      : null;
+
+  let res: Response;
+  try {
+    res = await fetch(path, {
+      ...init,
+      signal: controller ? controller.signal : init?.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init?.headers ?? {}),
+      },
+    });
+  } catch (error) {
+    if (controller && (error instanceof Error || typeof error === 'object')) {
+      const name = error instanceof Error ? error.name : '';
+      if (name === 'AbortError') {
+        throw new Error(`Request timed out after ${Math.round((timeoutMs ?? 0) / 1000)}s`);
+      }
+    }
+    throw error instanceof Error ? error : new Error('Request failed');
+  } finally {
+    if (timeout !== null) clearTimeout(timeout);
+  }
 
   const text = await res.text();
-  const data = text ? (JSON.parse(text) as unknown) : null;
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text) as unknown;
+    } catch {
+      data = { error: text };
+    }
+  }
 
   if (!res.ok) {
     throw new Error(toErrorMessage(data, `Request failed (${res.status})`));
@@ -65,6 +96,9 @@ function mapAdminItemToUi(item: any): NewsItem {
     sourceType: mapSourceTypeToUi(item.sourceType),
     publishedAt: normalizeIso(item.publishedAt),
     scheduledFor: normalizeIso(item.scheduledFor),
+    schedulePriority: typeof item.schedulePriority === 'string' ? item.schedulePriority : undefined,
+    scheduleExpiresAt: normalizeIso(item.scheduleExpiresAt) ?? null,
+    scheduleIsFeatured: typeof item.scheduleIsFeatured === 'boolean' ? item.scheduleIsFeatured : undefined,
     slug: typeof item.slug === 'string' ? item.slug : undefined,
     tags: Array.isArray(item.tags) ? item.tags.filter((t: any) => typeof t === 'string') : [],
 
@@ -275,10 +309,23 @@ export async function adminPublishNow(id: string): Promise<void> {
   });
 }
 
-export async function adminSchedule(id: string, scheduledForIso: string): Promise<void> {
+export async function adminSchedule(
+  id: string,
+  scheduledForIso: string,
+  extras?: {
+    schedulePriority?: 'Low' | 'Normal' | 'High' | 'Urgent';
+    scheduleExpiresAt?: string | null;
+    scheduleIsFeatured?: boolean;
+  }
+): Promise<void> {
   await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/schedule`, {
     method: 'POST',
-    body: JSON.stringify({ scheduledFor: scheduledForIso }),
+    body: JSON.stringify({
+      scheduledFor: scheduledForIso,
+      ...(extras?.schedulePriority ? { schedulePriority: extras.schedulePriority } : {}),
+      ...(extras?.scheduleExpiresAt !== undefined ? { scheduleExpiresAt: extras.scheduleExpiresAt } : {}),
+      ...(typeof extras?.scheduleIsFeatured === 'boolean' ? { scheduleIsFeatured: extras.scheduleIsFeatured } : {}),
+    }),
   });
 }
 
@@ -387,10 +434,13 @@ export async function adminUpdateAutomation(input: {
   });
 }
 
-export async function adminRunAutomationNow(): Promise<{ ok: true; payload: unknown }> {
-  return apiFetch(`/api/admin/news-engine/automation/run-now`, {
+export async function adminRunAutomationNow(mode: 'dry' | 'live' = 'live'): Promise<{ ok: true; payload: unknown }> {
+  const qp = new URLSearchParams();
+  qp.set('mode', mode);
+  return apiFetch(`/api/admin/news-engine/automation/run-now?${qp.toString()}`, {
     method: 'POST',
-  });
+    timeoutMs: 120_000,
+  } as RequestInit & { timeoutMs: number });
 }
 
 export type AdminSourcesConfig = {
@@ -419,6 +469,60 @@ export async function adminSyncSource(sourceId: string): Promise<{ ok: true; sta
   return apiFetch(`/api/admin/news-engine/sources/${encodeURIComponent(sourceId)}/sync`, {
     method: 'POST',
   });
+}
+
+export type AdminResearchKind = 'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND';
+
+export async function adminSyncResearchNow(
+  kind: AdminResearchKind,
+  input?: { query?: string; limit?: number }
+): Promise<{
+  ok: true;
+  kind: AdminResearchKind;
+  imported: number;
+  received: number;
+  feeds: string[];
+  errors: Array<{ feedUrl: string; error: string }>;
+  finishedAt: string;
+}> {
+  return apiFetch(`/api/admin/news-engine/research/sync-now`, {
+    method: 'POST',
+    body: JSON.stringify({ kind, ...(input?.query ? { query: input.query } : {}), ...(input?.limit ? { limit: input.limit } : {}) }),
+    // RSS parsing + multiple feed fetches can take a bit.
+    timeoutMs: 60_000,
+  } as RequestInit & { timeoutMs: number });
+}
+
+export type AdminResearchEntry = {
+  id: string;
+  kind: AdminResearchKind;
+  query: string | null;
+  url: string;
+  title: string;
+  publishedAt: string | null;
+  fetchedAt: string;
+  status: string;
+  error: string | null;
+  itemId: string | null;
+};
+
+export async function fetchAdminResearchEntries(kind: AdminResearchKind, limit = 50): Promise<AdminResearchEntry[]> {
+  const data = await apiFetch<{ kind: AdminResearchKind; entries: any[] }>(
+    `/api/admin/news-engine/research/entries?kind=${encodeURIComponent(kind)}&limit=${encodeURIComponent(String(limit))}`
+  );
+
+  return (data.entries ?? []).map((e) => ({
+    id: String(e.id),
+    kind: kind,
+    query: typeof e.query === 'string' ? e.query : null,
+    url: String(e.url ?? ''),
+    title: String(e.title ?? ''),
+    publishedAt: normalizeIso(e.publishedAt) ?? null,
+    fetchedAt: normalizeIso(e.fetchedAt) ?? new Date().toISOString(),
+    status: String(e.status ?? ''),
+    error: typeof e.error === 'string' ? e.error : null,
+    itemId: e.itemId ? String(e.itemId) : null,
+  }));
 }
 
 export type AdminSourceEntry = {
@@ -656,5 +760,30 @@ export async function adminUpdateItemImageControls(
   return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/image-controls`, {
     method: 'PUT',
     body: JSON.stringify(input),
+  });
+}
+
+export async function adminGenerateItemOgImage(itemId: string, input?: { promptOverride?: string }): Promise<{
+  ok: true;
+  itemId: string;
+  ogImageUrl: string | null;
+  ogImageApprovedAt: string | null;
+  ogImageApprovedById: string | null;
+}> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/og-image/generate`, {
+    method: 'POST',
+    body: JSON.stringify({ ...(input?.promptOverride ? { promptOverride: input.promptOverride } : {}) }),
+    timeoutMs: 120_000,
+  } as RequestInit & { timeoutMs: number });
+}
+
+export async function adminApproveItemOgImage(itemId: string): Promise<{
+  ok: true;
+  itemId: string;
+  ogImageApprovedAt: string | null;
+  ogImageApprovedById: string | null;
+}> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/og-image/approve`, {
+    method: 'POST',
   });
 }

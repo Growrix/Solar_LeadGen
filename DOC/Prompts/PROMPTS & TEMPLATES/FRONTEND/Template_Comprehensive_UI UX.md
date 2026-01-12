@@ -352,7 +352,8 @@ Clearly marked. No mixing.
 
 
 # IMPORTANT: If you enhance, update, or change this plan (including additions or removals), you MUST also update all relevant SOT folder files to keep the documentation in sync. This includes:
-# - SOT files such as `Frontend-Plan.md`, `FEATURE-SOT.md`, `IMPLEMENTATION-PLAN.md`, `tasks.md` in the relevant feature SOT folder
+# - SOT files such as `Frontend-Plan.md`, `FEATURE-SOT.md`, `IMPLEMENTATION-PLAN.md` in the feature SOT folder
+# - The single feature tracker `DOC/FEATURES/<FEATURE>/tasks.md` (do NOT create tasks.md inside SOT/MIGRATION)
 # - Any other SOT or audit files impacted by the change
 #
 # Additionally, for every new or changed step, add or update the corresponding prompts in this file to reflect the updated plan.
