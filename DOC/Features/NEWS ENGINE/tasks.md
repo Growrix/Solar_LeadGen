@@ -898,3 +898,109 @@
 **Gates**: Prisma validate ✅ | TypeScript ✅ | Build ✅ (ESLint warnings only, non-blocking)
 
 **Next Steps**: Deploy to production + monitor post-release health checks per user guide Section 10.
+
+---
+
+## Phase 14: Expansion/Enhancement Cycle (V2) — Frontend + Backend
+
+**Purpose**: Plan and deliver a controlled expansion/enhancement on top of the current, audited feature state.
+
+**Inputs (provided by owner per run)**
+- Latest current-state audit report (E2E)
+- Latest post-feature documentation/user guide
+- Latest expansion/enhancement plan (V2)
+
+**Planning driver**
+- Use: `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/Expansion Instructions.md`
+
+---
+
+### Expansion Phase 1 — Unified Expansion Plan (Frontend + Backend)
+
+**Goal**: Produce a single, unified plan that merges frontend + backend expansion work into one document (plan only).
+
+- [ ] E1401 Read the provided current-state audit + post-feature docs + expansion plan (V2)
+- [ ] E1402 Create ONE unified expansion plan file in `DOC/FEATURES/NEWS ENGINE/Plan/`
+  - Must include:
+    - Frontend expansion plan (E2E flows, UI states, triggers)
+    - Backend expansion plan (endpoints, DB changes, automation execution strategy)
+    - Mapping table (UI action ↔ endpoint ↔ data model)
+    - Implementation checklist
+  - Must follow: `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/Expansion Instructions.md`
+- [ ] E1403 Phase 1 completion gate: `tasks.md` updated with the exact path to the newly created unified plan file
+
+---
+
+### Expansion Phase 2 — Frontend Expansion Prompt Pack
+
+**Goal**: Produce a sequence-locked prompt pack to build the frontend expansion with minimal surprises.
+
+- [ ] E1421 Create frontend expansion prompts in `DOC/FEATURES/NEWS ENGINE/Fontend UI UX Prompts/`
+  - Must follow:
+    - `DOC/PROMPTS/PROMPTS & TEMPLATES/FRONTEND/AI Prompting Guideline.md`
+    - `DOC/PROMPTS/PROMPTS & TEMPLATES/FRONTEND/Template_Comprehensive_UI UX.md`
+  - Prompt pack must:
+    - Be step-by-step (pages before modals, one intent per modal)
+    - Include default/loading/empty/error/disabled/success states
+    - Reference the unified expansion plan as the SOT for this cycle
+- [ ] E1422 Phase 2 completion gate: `tasks.md` updated with the exact path to the prompt pack file
+
+---
+
+### Expansion Phase 3 — Frontend Implementation + Audit Bridge
+
+**Goal**: Implement the expanded frontend, then audit it against the unified expansion plan.
+
+- [ ] E1431 Implement the frontend expansion strictly by following the prompt pack
+- [ ] E1432 Run a frontend-vs-plan implementation audit using:
+  - `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
+  - Output audit report to: `DOC/FEATURES/NEWS ENGINE/Audit Reports/`
+- [ ] E1433 Sub-phase (fix loop):
+  - If the audit finds gaps/missing wiring/dead UI: fix them and re-audit until green
+  - If green: proceed to Expansion Phase 4
+- [ ] E1434 Phase 3 completion gate: `tasks.md` updated with the exact path to the latest frontend expansion audit report
+
+---
+
+### Expansion Phase 4 — Backend Expansion Plan + Implementation + Inventory Audit
+
+**Goal**: Plan and implement backend changes aligned to the final expanded frontend and unified plan.
+
+- [ ] E1441 Create/update the backend expansion plan in `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/`
+  - Must use the Phase 3 audit report as “latest state reference”
+  - Must ensure all frontend actions have matching endpoints + DB support
+- [ ] E1442 Implement the backend expansion based on the updated backend plan
+- [ ] E1443 Run inventory/mapping audit after backend implementation using:
+  - `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/feature-implementation-inventory-mapping-audit-prompt.md`
+  - Compare inventory vs the unified expansion plan (Phase 1)
+  - Output audit report to: `DOC/FEATURES/NEWS ENGINE/Audit Reports/`
+- [ ] E1444 Sub-phase (fix loop):
+  - If gaps/missing implementations found: fix and re-audit until green
+  - If green: proceed to Expansion Phase 5
+- [ ] E1445 Phase 4 completion gate: `tasks.md` updated with the exact path to the latest backend inventory/mapping audit report
+
+---
+
+### Expansion Phase 5 — E2E Testing Script(s) + Fix Loop
+
+**Goal**: Execute repeatable E2E testing for the expanded feature and fix issues until green.
+
+- [ ] E1451 Create an E2E test script (or scripts) to validate the expanded feature end-to-end
+  - Location recommendation: `scripts/` (consistent with existing News Engine E2E scripts)
+- [ ] E1452 Run the E2E script(s) and log failures as tasks
+- [ ] E1453 Fix all issues found and re-run until green
+- [ ] E1454 Phase 5 completion gate: `tasks.md` updated with script path(s) and last green run timestamp
+
+---
+
+### Expansion Phase 6 — Post-Feature Audit + Post-Feature Documentation
+
+**Goal**: Produce final, operator-ready documentation and a final audit record for the expanded feature.
+
+- [ ] E1461 Run a full post-implementation feature audit using:
+  - `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
+  - Output audit report to: `DOC/FEATURES/NEWS ENGINE/Audit Reports/`
+- [ ] E1462 Prepare final docs (user guide, tooltips, functionality map, checklist) using:
+  - `DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md`
+  - Output docs to: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/`
+- [ ] E1463 Phase 6 completion gate: `tasks.md` updated with the exact path(s) to the final audit report and final post-feature docs

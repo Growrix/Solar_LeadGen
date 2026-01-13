@@ -1,10 +1,17 @@
 
-# Backend Planning Prompt Template (E2E Audit First, SOT-Aware)
+
+# Backend Planning Prompt Template (Reusable for Brand New Feature)
+
+**Usage Note:**
+This template is for planning the backend of any brand new feature in a production SaaS codebase. Replace all [FEATURE NAME] placeholders with your feature name. Follow all steps and rules for a clean, audit-driven, SOT-aware backend plan. Do not reference any specific feature unless filling in the template for your use case.
+
+
+---
 
 **How to use:**
-1. Copy this template and replace `[FEATURE NAME]` with your feature (e.g., News Engine).
+1. Copy this template and replace `[FEATURE NAME]` with your new feature name.
 2. Ask the AI to generate a backend planning prompt for your feature, referencing this template.
-3. Place the resulting prompt file in `DOC/FEATURES/[FEATURE NAME]/BACKEND PLAN/`.
+3. Place the resulting backend plan file in your feature's backend plan folder.
 
 ---
 

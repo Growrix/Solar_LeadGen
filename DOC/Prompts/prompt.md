@@ -5311,4 +5311,120 @@ The tasks.md is the only master track record of all the tasks. so you need to up
 - Here is the post Feature Documentations : 
   DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
 
-- 
+- Here is the expanded plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md 
+
+***Instructions***
+- As I can see, there is not much UI UX changes after implimenting the v2 plan. So I want you to compare this main Expanding plan v2 vs the latest audit report and post feature documentations carefully and identify if there are any gaps, missing implementations etc in the frontend part. If you find any gaps, missing implementations etc in the frontend part then you need to fix them accordingly by following the plan strictly.
+
+***Strickt Rules**
+you do not need to change any codes. just compare and let me know in the chat what have you found. just let me know the gaps , that did not actually built. 
+
+--------------------------------------------------------------
+
+Let me clarify : 
+
+***While expanding/enhancing***
+- I will have audit reports of the current state e2e , So you need to read the audit report carefully first to understand the current state of the feature. No need audit here if I already have the audit report of the current state:
+ - Here is the latest audit report of the News Engine Feature : 
+  DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-post-phase13-audit-2026-01-13.md
+- Here is the post Feature Documentations : 
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
+
+- Here is the expanded plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md 
+
+***What I need*** 
+- Here I need a Instruction file for AI to follow while planning the expansion based on the v2. This is the crucial part here. 
+- And in this outcome : I need the Frontend e2e plan with the AI prompts. These prompts can be used externally or internally within vs code. 
+
+***INstructions***
+I want you to read throgh the process and understand how I am using the audit files and plans. And also comeup with the best and effective workflow to achieve my goal without getting surprised. 
+
+- also let me know when to use which files in this folder DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND
+
+- go and read back files regarding this issue DOC\GUIDELINES & SOT\README.md and let me know if you have anything to mention. 
+
+---------------------------------------------------------------
+
+***Prepare Phases In the Tasks.md***
+- I want you to add phases in the DOC\FEATURES\NEWS ENGINE\tasks.md based on the below scenario :
+
+***Phase 1***
+
+- Here is the latest audit report of the News Engine Feature : 
+  DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-post-phase13-audit-2026-01-13.md
+- Here is the post Feature Documentations : 
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
+
+- Here is the expanded plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md 
+
+***Instructions***
+- You have to prepare a frontend + Backned plan for the expansion/enhancement by following the above mentioned files carefully :DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Expansion Instructions.md
+
+- Prepare the plan in this DOC\FEATURES\NEWS ENGINE\Plan Folder
+- And update the tasks.md Phase 1 ending with the file created in the Plan folder. So that the next phase can follow the plan accordingly without confusion.
+
+***Phase 2*** 
+- Create the frontend expansion/enhancement prompts in : 
+  DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts 
+  folder by following the :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\AI Prompting Guideline.md Instructions.
+- Update the tasks.md Phase 2 ending with the file created in the Fontend UI UX Prompts folder. So that the next phase can follow the plan accordingly without confusion.
+
+***Phase 3*** 
+- Start implimenting the Frontend expansion/enhancement by following the prompts created in the Fontend UI UX Prompts folder.
+- Update the tasks.md Phase 3 ending with the completion of the Frontend expansion/enhancement. So that the next phase can follow the plan accordingly without confusion.
+- After implimentation do a audit of the frontend Implimentation done vs the plan by following the prompt in : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md . prepare the audit report in : DOC\FEATURES\NEWS ENGINE\Audit Reports folder.
+- Update the tasks.md and add the audit report as a latest state reference in order to do the next phase 4.
+
+***Sub Phase in Phase 3***
+- condition 1 : if there are gaps, issues, missing implementations etc found in the audit report, then you need to fix them first based on the audit report and then move to the 4th phase.
+- condition 2 : if there are no gaps, issues, missing implementations etc found in the audit report, then you can move to the 4th phase directly by double checking the backend plan is accurate or not as per the final frontend build. If everything is good then move to the 4th phase directly.
+
+***Phase 4***
+- Start planning the Backend expansion/enhancement by following the updated frontend build and the plan created in the Phase 1. 
+- And create the backend expansion/enhancement plan in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN folder based on the updated frontend build and the plan created in the Phase 1.
+- The phase 3 audit report as the latest state reference In order to start implimenting the backend. But always checkback before implimentation of the backend. 
+- THe goal here is to stay aligned with the Expansion plan and the Frontend implimentations e2e. So, that the backend implimentations will not have any issues. 
+- After Implimentation you must Audit the implimentation followed by : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\feature-implementation-inventory-mapping-audit-prompt.md and compare vs the frontend backend plan created in the Phase 1. prepare the audit report in : DOC\FEATURES\NEWS ENGINE\Audit Reports folder.
+- Update the tasks.md and add the audit report as a latest state reference in order to do the next phase 5.
+
+***Sub Phase in Phase 4***
+- condition 1 : if there are gaps, issues, missing implementations etc found in the audit report, then you need to fix them first based on the audit report and then move to the 5th phase.
+- condition 2 : if there are no gaps, issues, missing implementations etc found in the audit report, then you can move to the 5th phase directly by double checking everything is aligned e2e. If everything is good then move to the 5th phase directly.
+
+***Phase 5*** 
+- create the script in order to do the e2e testing of the entire expanded/enhanced feature and run the tests. 
+- fix any issues found during the testing.
+- Move to the next phase when all the tests are passed with green signal. 
+
+***Phase 6***
+**Post-Feature Test & Documentation Prompt**
+
+After E2E implementation and audit, follow these steps:
+
+1. Use the audit prompt at:
+	DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md
+	to perform a full post-implementation feature audit.
+
+2. Prepare the final user guide, tooltips, functionality map, and checklist using the template at:
+	DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md
+
+	**Documentation completeness requirement (mandatory):**
+	- Document the feature **section-by-section** for every main tab/section in the UI.
+	- For each tab/section, explain **what it does**, **why it exists**, **who uses it**, and **how it impacts the system end-to-end**.
+	- Cover the template’s key concepts (e.g., routing/automation, configuration profiles, secret/key handling, review/provenance), plus:
+	  - Typical E2E flows (input → processing → output/publish equivalent)
+	  - How to know the system is working end-to-end
+	  - Common errors/blockers and exact resolution steps
+	  - Limitations/edge cases and what to verify after each release
+
+3. Prepare the documentation in:
+	DOC\FEATURES\NEWS ENGINE\POST FEATURE
+   
+This ensures the feature is fully tested, documented, and ready for production.
+
+***Strickt Rules***
+
+The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. 
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
