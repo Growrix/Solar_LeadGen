@@ -221,6 +221,109 @@ export async function fetchAdminState(): Promise<NewsEngineState> {
   };
 }
 
+export type AdminAutomationConfigResponse = {
+  automation: { autoDraft: boolean; autoSchedule: boolean; autoPublish: boolean };
+  config: unknown;
+};
+
+export async function fetchAdminAutomationConfig(): Promise<AdminAutomationConfigResponse> {
+  return apiFetch(`/api/admin/news-engine/automation/config`);
+}
+
+export type AdminQueueSnapshotResponse = {
+  rssNewEntries: number;
+  researchNewEntries: Record<'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND', number>;
+  draftsNeedingReview: number;
+  scheduledDueSoon: number;
+  errors: number;
+  computedAt: string;
+  dueSoonWindowHours: number;
+};
+
+export async function fetchAdminQueueSnapshot(): Promise<AdminQueueSnapshotResponse> {
+  return apiFetch(`/api/admin/news-engine/ops/queue-snapshot`);
+}
+
+export type AdminOpsJobHealth = {
+  type: string;
+  lastSuccessAt: string | null;
+  lastFailureAt: string | null;
+  lastFailureError: string | null;
+};
+
+export type AdminOpsHealthResponse = {
+  computedAt: string;
+  jobs: Record<string, AdminOpsJobHealth>;
+};
+
+export async function fetchAdminOpsHealth(): Promise<AdminOpsHealthResponse> {
+  return apiFetch(`/api/admin/news-engine/ops/health`);
+}
+
+export type AdminUnifiedResearchSourceType = 'rss' | 'research';
+export type AdminUnifiedResearchKind = 'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND';
+export type AdminUnifiedResearchStatus = 'NEW' | 'PROCESSED' | 'IGNORED' | 'ERROR';
+
+export type AdminUnifiedResearchEntry = {
+  id: string;
+  sourceType: AdminUnifiedResearchSourceType;
+  kind: AdminUnifiedResearchKind | null;
+  status: AdminUnifiedResearchStatus;
+  url: string;
+  title: string;
+  publishedAt: string | null;
+  fetchedAt: string;
+  sourceId: string | null;
+  sourceName: string | null;
+  query: string | null;
+  itemId: string | null;
+  error: string | null;
+};
+
+export type AdminUnifiedResearchEntriesResponse = {
+  computedAt: string;
+  items: AdminUnifiedResearchEntry[];
+  nextCursor: string | null;
+};
+
+export async function fetchAdminUnifiedResearchEntries(input?: {
+  sourceType?: AdminUnifiedResearchSourceType;
+  kind?: AdminUnifiedResearchKind;
+  status?: AdminUnifiedResearchStatus;
+  from?: string;
+  to?: string;
+  limit?: number;
+  cursor?: string;
+}): Promise<AdminUnifiedResearchEntriesResponse> {
+  const qp = new URLSearchParams();
+  if (input?.sourceType) qp.set('sourceType', input.sourceType);
+  if (input?.kind) qp.set('kind', input.kind);
+  if (input?.status) qp.set('status', input.status);
+  if (input?.from) qp.set('from', input.from);
+  if (input?.to) qp.set('to', input.to);
+  if (typeof input?.limit === 'number' && Number.isFinite(input.limit)) qp.set('limit', String(input.limit));
+  if (input?.cursor) qp.set('cursor', input.cursor);
+
+  const qs = qp.toString();
+  return apiFetch(`/api/admin/news-engine/research/unified/entries${qs ? `?${qs}` : ''}`);
+}
+
+export type AdminNewsKpisResponse = {
+  asOf: string;
+  kpis: {
+    totalStoriesLast30: number;
+    avgRelevanceLast30: number | null;
+    reviewQueueCount: number;
+    pipelineStatus: PipelineStatus;
+    automations: { autoDraft: boolean; autoSchedule: boolean; autoPublish: boolean };
+  };
+  notes?: string[];
+};
+
+export async function fetchAdminNewsKpis(): Promise<AdminNewsKpisResponse> {
+  return apiFetch(`/api/admin/news-engine/analytics/kpis`);
+}
+
 export async function adminCreateItem(input: {
   title: string;
   summary?: string;
@@ -435,19 +538,19 @@ export async function adminUpdateAutomation(input: {
 }
 
 export type AdminAutomationRunSummary = {
-  ok?: boolean;
-  pipelineStatus?: string;
-  runMode?: string;
-  dryRun?: boolean;
-  skipped?: boolean;
+  ok?: boolean | null;
+  pipelineStatus?: string | null;
+  runMode?: string | null;
+  dryRun?: boolean | null;
+  skipped?: boolean | null;
   skippedReason?: string | null;
-  enabledSourceCount?: number;
-  rssImportedCount?: number;
-  selectedEntryCount?: number;
-  draftCreatedCount?: number;
-  ignoredByRulesCount?: number;
-  forcedNeedsReviewCount?: number;
-  priorityOverridesCount?: number;
+  enabledSourceCount?: number | null;
+  rssImportedCount?: number | null;
+  selectedEntryCount?: number | null;
+  draftCreatedCount?: number | null;
+  ignoredByRulesCount?: number | null;
+  forcedNeedsReviewCount?: number | null;
+  priorityOverridesCount?: number | null;
   lastError?: string | null;
 };
 

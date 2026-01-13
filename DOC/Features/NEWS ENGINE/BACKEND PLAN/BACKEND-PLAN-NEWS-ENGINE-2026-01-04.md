@@ -61,6 +61,15 @@ Goal: reliable deploy/run behavior.
 - Add health checks and alerting surfaces for runner failures and ingestion failures.
 - Ensure Key Vault master key and cron secret requirements are validated in a deployment-safe way.
 
+## Backend surfaces implied by the expanded frontend (Phase 13 prompt pack)
+
+The Phase 13 frontend expansion (Steps 1–8) intentionally added UI placeholders for observability and unified research listing. Phase 3 backend work should provide real admin endpoints for these surfaces:
+
+- **Queue Snapshot (Master Control)**: counts for RSS new entries, research new entries by kind, drafts needing review, scheduled due soon, and error totals.
+- **System Health surfaces (Master Control)**: last successful automation run, last error, and last updated timestamps for runner + ingestion.
+- **Unified Research Center**: unified listing/search over RSS entries + research entries with filters (sourceType, kind, status, date range).
+- **Dashboard KPIs**: aggregated KPIs so the dashboard can stop being explicitly labeled placeholder.
+
 ---
 
 # 2026-01-12 Expansion Audit & Planning Addendum (Current-State Grounding)

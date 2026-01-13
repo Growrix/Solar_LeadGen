@@ -14,15 +14,15 @@ export type AutomationRunUiV6 = {
   runId?: string;
   error?: string;
   summary?: {
-    enabledSourceCount?: number;
-    rssImportedCount?: number;
-    selectedEntryCount?: number;
-    draftCreatedCount?: number;
-    ignoredByRulesCount?: number;
-    forcedNeedsReviewCount?: number;
-    priorityOverridesCount?: number;
+    enabledSourceCount?: number | null;
+    rssImportedCount?: number | null;
+    selectedEntryCount?: number | null;
+    draftCreatedCount?: number | null;
+    ignoredByRulesCount?: number | null;
+    forcedNeedsReviewCount?: number | null;
+    priorityOverridesCount?: number | null;
     lastError?: string | null;
-    skipped?: boolean;
+    skipped?: boolean | null;
     skippedReason?: string | null;
   };
   payload?: unknown;

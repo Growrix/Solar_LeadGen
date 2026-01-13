@@ -45,16 +45,12 @@ export function DraftsReviewsTabV6({
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex -space-x-2">
-            {['U1', 'U2', 'U3'].map((label) => (
-              <div
-                key={label}
-                className="w-8 h-8 rounded-full border-2 border-background bg-surface flex items-center justify-center text-body-small text-muted-foreground"
-              >
-                {label}
-              </div>
-            ))}
-          </div>
+          <span
+            className="text-body-small uppercase tracking-widest text-muted-foreground bg-surface px-3 py-1 rounded-full border border-border shadow-neu-inset"
+            aria-label="Actor identity is not available"
+          >
+            Actor: —
+          </span>
           <button
             type="button"
             onClick={openManualDraft}

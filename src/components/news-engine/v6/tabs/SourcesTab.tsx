@@ -17,7 +17,14 @@ import {
   Sliders,
 } from 'lucide-react';
 import type { NewsEngineState } from '@/lib/ui-stubs/news-engine';
-import { adminSyncResearchNow, adminSyncSource, fetchAdminResearchEntries, type AdminResearchEntry } from '@/lib/news-engine/client';
+import {
+  adminSyncResearchNow,
+  adminSyncSource,
+  fetchAdminResearchEntries,
+  fetchAdminUnifiedResearchEntries,
+  type AdminResearchEntry,
+  type AdminUnifiedResearchEntry,
+} from '@/lib/news-engine/client';
 import type { useSavedIndicator } from '../shared';
 import { formatRelativeTime, ModalShell } from '../shared';
 
@@ -83,6 +90,84 @@ export function SourcesTabV6({
   setSourcesBlacklist,
 }: Props) {
   const [query, setQuery] = React.useState('');
+
+  const [showUnifiedResearch, setShowUnifiedResearch] = React.useState(false);
+  const [unifiedFilters, setUnifiedFilters] = React.useState<{
+    sourceType: 'ALL' | 'RSS' | 'RESEARCH';
+    kind: 'ALL' | ResearchSyncKind;
+    status: 'ALL' | 'NEW' | 'PROCESSED' | 'ERROR';
+    from: string;
+    to: string;
+  }>(() => ({
+    sourceType: 'ALL',
+    kind: 'ALL',
+    status: 'ALL',
+    from: '',
+    to: '',
+  }));
+
+  const [unifiedListing, setUnifiedListing] = React.useState<{
+    loading: boolean;
+    error: string | null;
+    items: AdminUnifiedResearchEntry[];
+    nextCursor: string | null;
+    computedAt: string | null;
+  }>(() => ({
+    loading: false,
+    error: null,
+    items: [],
+    nextCursor: null,
+    computedAt: null,
+  }));
+
+  const loadUnifiedEntries = React.useCallback(
+    async (mode: 'reset' | 'more' = 'reset') => {
+      setUnifiedListing((prev) => ({
+        ...prev,
+        loading: true,
+        error: null,
+        ...(mode === 'reset' ? { items: [], nextCursor: null } : null),
+      }));
+
+      try {
+        const res = await fetchAdminUnifiedResearchEntries({
+          sourceType:
+            unifiedFilters.sourceType === 'RSS'
+              ? 'rss'
+              : unifiedFilters.sourceType === 'RESEARCH'
+                ? 'research'
+                : undefined,
+          kind: unifiedFilters.kind === 'ALL' ? undefined : unifiedFilters.kind,
+          status: unifiedFilters.status === 'ALL' ? undefined : unifiedFilters.status,
+          from: unifiedFilters.from || undefined,
+          to: unifiedFilters.to || undefined,
+          limit: 40,
+          cursor: mode === 'more' ? unifiedListing.nextCursor ?? undefined : undefined,
+        });
+
+        setUnifiedListing((prev) => ({
+          ...prev,
+          loading: false,
+          computedAt: res.computedAt,
+          nextCursor: res.nextCursor,
+          items: mode === 'more' ? [...prev.items, ...res.items] : res.items,
+        }));
+      } catch (error) {
+        setUnifiedListing((prev) => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : 'Failed to load unified entries',
+        }));
+      }
+    },
+    [unifiedFilters.from, unifiedFilters.kind, unifiedFilters.sourceType, unifiedFilters.status, unifiedFilters.to, unifiedListing.nextCursor]
+  );
+
+  React.useEffect(() => {
+    if (!showUnifiedResearch) return;
+    void loadUnifiedEntries('reset');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showUnifiedResearch, unifiedFilters]);
 
   const [rssSync, setRssSync] = React.useState<{
     syncingSourceId: string | null;
@@ -169,21 +254,188 @@ export function SourcesTabV6({
             Configure where the AI pulls its data from and how it researches topics.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setEditingSourceId(null);
-            setSourceModalOpen(true);
-          }}
-          className="flex items-center gap-2 bg-accent text-background px-4 py-2 rounded-lg hover:bg-accent-hover shadow-neu-outset transition-colors"
-        >
-          <Plus size={20} />
-          Add Source
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setShowUnifiedResearch((v) => !v)}
+            className="flex items-center gap-2 bg-surface text-foreground px-4 py-2 rounded-lg hover:bg-surface-hover shadow-neu-outset transition-colors border border-border"
+            aria-expanded={showUnifiedResearch}
+            aria-controls="unified-research-center"
+          >
+            <Globe size={18} className="text-brand-accent" />
+            Unified Research Center
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setEditingSourceId(null);
+              setSourceModalOpen(true);
+            }}
+            className="flex items-center gap-2 bg-accent text-background px-4 py-2 rounded-lg hover:bg-accent-hover shadow-neu-outset transition-colors"
+          >
+            <Plus size={20} />
+            Add Source
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
+          {showUnifiedResearch ? (
+            <section
+              id="unified-research-center"
+              className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface flex-wrap gap-4">
+                <h3 className="text-heading-3 text-foreground flex items-center gap-2">
+                  <Globe size={18} className="text-brand-accent" />
+                  Unified Research Center
+                </h3>
+                <span className="text-body-small text-muted-foreground">
+                  {unifiedListing.loading
+                    ? 'Loading…'
+                    : unifiedListing.computedAt
+                      ? `Updated ${formatRelativeTime(unifiedListing.computedAt)}`
+                      : '—'}
+                </span>
+              </div>
+
+              <div className="p-6 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <label className="space-y-1">
+                    <span className="text-body-small text-muted-foreground uppercase tracking-widest">Source type</span>
+                    <select
+                      className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body text-foreground shadow-neu-inset"
+                      value={unifiedFilters.sourceType}
+                      onChange={(e) => setUnifiedFilters((p) => ({ ...p, sourceType: e.target.value as any }))}
+                    >
+                      <option value="ALL">All</option>
+                      <option value="RSS">RSS</option>
+                      <option value="RESEARCH">Research</option>
+                    </select>
+                  </label>
+
+                  <label className="space-y-1">
+                    <span className="text-body-small text-muted-foreground uppercase tracking-widest">Kind</span>
+                    <select
+                      className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body text-foreground shadow-neu-inset"
+                      value={unifiedFilters.kind}
+                      onChange={(e) => setUnifiedFilters((p) => ({ ...p, kind: e.target.value as any }))}
+                    >
+                      <option value="ALL">All</option>
+                      <option value="WEB">WEB</option>
+                      <option value="SOCIAL">SOCIAL</option>
+                      <option value="JOURNAL">JOURNAL</option>
+                      <option value="TREND">TREND</option>
+                    </select>
+                  </label>
+
+                  <label className="space-y-1">
+                    <span className="text-body-small text-muted-foreground uppercase tracking-widest">Status</span>
+                    <select
+                      className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body text-foreground shadow-neu-inset"
+                      value={unifiedFilters.status}
+                      onChange={(e) => setUnifiedFilters((p) => ({ ...p, status: e.target.value as any }))}
+                    >
+                      <option value="ALL">All</option>
+                      <option value="NEW">New</option>
+                      <option value="PROCESSED">Processed</option>
+                      <option value="ERROR">Error</option>
+                    </select>
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="space-y-1">
+                      <span className="text-body-small text-muted-foreground uppercase tracking-widest">From</span>
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body text-foreground shadow-neu-inset"
+                        value={unifiedFilters.from}
+                        onChange={(e) => setUnifiedFilters((p) => ({ ...p, from: e.target.value }))}
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-body-small text-muted-foreground uppercase tracking-widest">To</span>
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body text-foreground shadow-neu-inset"
+                        value={unifiedFilters.to}
+                        onChange={(e) => setUnifiedFilters((p) => ({ ...p, to: e.target.value }))}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface p-4 shadow-neu-inset space-y-3">
+                  {unifiedListing.error ? (
+                    <p className="text-body-small text-muted-foreground">Unified listing error: {unifiedListing.error}</p>
+                  ) : null}
+
+                  {unifiedListing.items.length === 0 && !unifiedListing.loading && !unifiedListing.error ? (
+                    <p className="text-body-small text-muted-foreground">No entries match the current filters.</p>
+                  ) : null}
+
+                  {unifiedListing.items.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="text-body-small text-muted-foreground uppercase tracking-widest">
+                            <th className="py-2 pr-4">Type</th>
+                            <th className="py-2 pr-4">Kind</th>
+                            <th className="py-2 pr-4">Status</th>
+                            <th className="py-2 pr-4">Title</th>
+                            <th className="py-2 pr-4">Fetched</th>
+                          </tr>
+                        </thead>
+                        <tbody className="text-body">
+                          {unifiedListing.items.map((row) => (
+                            <tr key={`${row.sourceType}:${row.id}`} className="border-t border-border">
+                              <td className="py-2 pr-4 text-foreground">{row.sourceType === 'rss' ? 'RSS' : 'Research'}</td>
+                              <td className="py-2 pr-4 text-muted-foreground">{row.kind ?? '—'}</td>
+                              <td className="py-2 pr-4 text-muted-foreground">{row.status}</td>
+                              <td className="py-2 pr-4">
+                                <a
+                                  href={row.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-foreground hover:text-brand-accent underline underline-offset-2"
+                                  title={row.url}
+                                >
+                                  {row.title || row.url}
+                                </a>
+                                {row.sourceName ? (
+                                  <div className="text-body-small text-muted-foreground mt-1">{row.sourceName}</div>
+                                ) : null}
+                              </td>
+                              <td className="py-2 pr-4 text-muted-foreground">{formatRelativeTime(row.fetchedAt)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-body-small text-muted-foreground">
+                      Showing {unifiedListing.items.length} {unifiedListing.items.length === 1 ? 'entry' : 'entries'}
+                    </span>
+                    {unifiedListing.nextCursor ? (
+                      <button
+                        type="button"
+                        onClick={() => void loadUnifiedEntries('more')}
+                        disabled={unifiedListing.loading}
+                        className="px-4 py-2 rounded-lg bg-background border border-border text-foreground hover:bg-surface-hover shadow-neu-outset"
+                      >
+                        Load more
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
           <section className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface flex-wrap gap-4">
               <h3 className="text-heading-3 text-foreground flex items-center gap-2">

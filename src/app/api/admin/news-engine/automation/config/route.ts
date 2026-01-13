@@ -42,6 +42,137 @@ function normalizeAutomationConfig(raw: unknown): { normalized: unknown; warning
   const obj = raw as Record<string, unknown>;
   const normalized: Record<string, unknown> = { ...obj };
 
+  const dayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+  type DayKey = (typeof dayKeys)[number];
+  type TimeRange = { id?: string; start: string; end: string };
+  type PublishWindowsV2 = {
+    timezone: string;
+    days: Record<DayKey, { enabled: boolean; ranges: TimeRange[] }>;
+    jitterMinutes?: number;
+    blackoutDates?: string[];
+  };
+
+  const normalizePublishWindowsV2 = (value: unknown): { v: PublishWindowsV2 | null; warnings: string[] } => {
+    const localWarnings: string[] = [];
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return { v: null, warnings: localWarnings };
+    const pw = value as Record<string, unknown>;
+
+    const timezone = typeof pw.timezone === 'string' && pw.timezone.trim() ? pw.timezone.trim() : 'UTC';
+    const jitterMinutesRaw = pw.jitterMinutes;
+    const jitterMinutes =
+      typeof jitterMinutesRaw === 'number' && Number.isFinite(jitterMinutesRaw)
+        ? Math.max(0, Math.min(240, Math.round(jitterMinutesRaw)))
+        : 0;
+
+    const blackoutDatesRaw = Array.isArray(pw.blackoutDates) ? pw.blackoutDates : [];
+    const blackoutDates = blackoutDatesRaw
+      .filter((d) => typeof d === 'string')
+      .map((d) => d.trim())
+      .filter(Boolean)
+      .slice(0, 400);
+
+    const daysRaw = pw.days;
+    if (!daysRaw || typeof daysRaw !== 'object' || Array.isArray(daysRaw)) {
+      localWarnings.push('config.publishWindowsV2.days must be an object (removed publishWindowsV2)');
+      return { v: null, warnings: localWarnings };
+    }
+
+    const days: PublishWindowsV2['days'] = {
+      mon: { enabled: false, ranges: [] },
+      tue: { enabled: false, ranges: [] },
+      wed: { enabled: false, ranges: [] },
+      thu: { enabled: false, ranges: [] },
+      fri: { enabled: false, ranges: [] },
+      sat: { enabled: false, ranges: [] },
+      sun: { enabled: false, ranges: [] },
+    };
+
+    for (const k of dayKeys) {
+      const rawDay = (daysRaw as any)[k];
+      if (!rawDay || typeof rawDay !== 'object' || Array.isArray(rawDay)) continue;
+      const enabled = typeof (rawDay as any).enabled === 'boolean' ? Boolean((rawDay as any).enabled) : false;
+      const rangesRaw = Array.isArray((rawDay as any).ranges) ? (rawDay as any).ranges : [];
+      const ranges = rangesRaw
+        .filter((r: any) => r && typeof r === 'object')
+        .map((r: any) => ({
+          id: typeof r.id === 'string' && r.id.trim() ? r.id.trim() : undefined,
+          start: typeof r.start === 'string' ? r.start.trim() : '',
+          end: typeof r.end === 'string' ? r.end.trim() : '',
+        }))
+        .filter((r: any) => !!r.start && !!r.end)
+        .slice(0, 60);
+
+      days[k] = { enabled, ranges };
+    }
+
+    return {
+      v: {
+        timezone,
+        days,
+        jitterMinutes,
+        blackoutDates,
+      },
+      warnings: localWarnings,
+    };
+  };
+
+  const deriveWindowsFromPublishWindowsV2 = (pw: PublishWindowsV2): string[] => {
+    // Best-effort derivation for backward compatibility.
+    // Note: timezone is preserved but not applied during derivation.
+    const blackout = new Set((pw.blackoutDates ?? []).map((d) => d.trim()).filter(Boolean));
+    const dayDefs: Array<{ key: DayKey; jsDay: number }> = [
+      { key: 'mon', jsDay: 1 },
+      { key: 'tue', jsDay: 2 },
+      { key: 'wed', jsDay: 3 },
+      { key: 'thu', jsDay: 4 },
+      { key: 'fri', jsDay: 5 },
+      { key: 'sat', jsDay: 6 },
+      { key: 'sun', jsDay: 0 },
+    ];
+
+    const now = new Date();
+    const windows: Array<{ startsAt: Date; window: string }> = [];
+    const scanDays = 35;
+
+    for (let i = 0; i < scanDays; i += 1) {
+      const dayDate = new Date(now);
+      dayDate.setHours(0, 0, 0, 0);
+      dayDate.setDate(dayDate.getDate() + i);
+
+      const yyyy = String(dayDate.getFullYear());
+      const mm = String(dayDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(dayDate.getDate()).padStart(2, '0');
+      const ymd = `${yyyy}-${mm}-${dd}`;
+      if (blackout.has(ymd)) continue;
+
+      const jsDay = dayDate.getDay();
+      const def = dayDefs.find((d) => d.jsDay === jsDay);
+      if (!def) continue;
+      const dayCfg = pw.days[def.key];
+      if (!dayCfg.enabled) continue;
+
+      for (const range of dayCfg.ranges) {
+        if (!range.start || !range.end) continue;
+        if (range.end <= range.start) continue;
+
+        const [sh, sm] = range.start.split(':').map((v) => parseInt(v, 10));
+        if (Number.isNaN(sh) || Number.isNaN(sm)) continue;
+
+        const startsAt = new Date(dayDate);
+        startsAt.setHours(sh, sm, 0, 0);
+        if (startsAt <= now) continue;
+
+        windows.push({
+          startsAt,
+          window: `${ymd} • ${range.start} - ${range.end}`,
+        });
+      }
+    }
+
+    windows.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+    return windows.map((w) => w.window).slice(0, 500);
+  };
+
   if ('windows' in obj) {
     const windowsRaw = obj.windows;
     if (!Array.isArray(windowsRaw)) {
@@ -53,6 +184,29 @@ function normalizeAutomationConfig(raw: unknown): { normalized: unknown; warning
         .map((v) => v.trim())
         .filter(Boolean)
         .slice(0, 500);
+    }
+  }
+
+  if ('publishWindowsV2' in obj) {
+    const { v, warnings: pwWarnings } = normalizePublishWindowsV2(obj.publishWindowsV2);
+    warnings.push(...pwWarnings);
+
+    if (v) {
+      normalized.publishWindowsV2 = v;
+
+      const existingWindows = Array.isArray(normalized.windows)
+        ? (normalized.windows as any[]).filter((w) => typeof w === 'string')
+        : [];
+
+      if (existingWindows.length === 0) {
+        const derived = deriveWindowsFromPublishWindowsV2(v);
+        normalized.windows = derived;
+        if (derived.length > 0) {
+          warnings.push('config.windows was derived from publishWindowsV2 for compatibility (timezone not applied)');
+        }
+      }
+    } else {
+      delete normalized.publishWindowsV2;
     }
   }
 

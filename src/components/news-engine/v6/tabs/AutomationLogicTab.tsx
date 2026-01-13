@@ -18,6 +18,7 @@ import {
   adminCreateAutomationRule,
   adminDeleteAutomationRule,
   adminUpdateAutomationRule,
+  fetchAdminAutomationConfig,
   fetchAdminAutomationRules,
   type AdminAutomationRule,
 } from '@/lib/news-engine/client';
@@ -53,6 +54,9 @@ export function AutomationLogicTabV6({
     minScore: 85,
     strategy: 'Chronological' as 'Chronological' | 'Priority-Based' | 'Batch Burst',
   }));
+
+  const [configHydrating, setConfigHydrating] = React.useState(false);
+  const [configHydrationError, setConfigHydrationError] = React.useState<string | null>(null);
 
   type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
   type TimeRange = { id: string; start: string; end: string };
@@ -94,6 +98,11 @@ export function AutomationLogicTabV6({
       blackoutDates: [],
     };
   });
+
+  const [savedSnapshot, setSavedSnapshot] = React.useState<{
+    config: { minScore: number; strategy: 'Chronological' | 'Priority-Based' | 'Batch Burst' };
+    publishWindowsV2: PublishWindowsV2;
+  } | null>(null);
 
   const [blackoutDraft, setBlackoutDraft] = React.useState<string>(() => {
     const now = new Date();
@@ -223,6 +232,97 @@ export function AutomationLogicTabV6({
   const triggerSaved = React.useCallback(() => {
     automationSaved.trigger();
   }, [automationSaved]);
+
+  const isDirty = React.useMemo(() => {
+    if (!savedSnapshot) return false;
+    const a = JSON.stringify({ config, publishWindowsV2 });
+    const b = JSON.stringify(savedSnapshot);
+    return a !== b;
+  }, [config, publishWindowsV2, savedSnapshot]);
+
+  const resetToSaved = React.useCallback(() => {
+    if (!savedSnapshot) return;
+    setConfig(savedSnapshot.config);
+    setPublishWindowsV2(savedSnapshot.publishWindowsV2);
+  }, [savedSnapshot]);
+
+  const hydrateFromPersisted = React.useCallback(async () => {
+    setConfigHydrating(true);
+    setConfigHydrationError(null);
+
+    try {
+      const res = await fetchAdminAutomationConfig();
+      const raw = res.config;
+
+      const nextConfig = { ...config };
+      let nextPublishWindowsV2 = publishWindowsV2;
+
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        const obj = raw as Record<string, unknown>;
+
+        if (typeof obj.minScore === 'number' && Number.isFinite(obj.minScore)) {
+          nextConfig.minScore = Math.max(0, Math.min(100, Math.round(obj.minScore)));
+        }
+
+        if (typeof obj.strategy === 'string') {
+          const trimmed = obj.strategy.trim();
+          if (trimmed === 'Chronological' || trimmed === 'Priority-Based' || trimmed === 'Batch Burst') {
+            nextConfig.strategy = trimmed;
+          }
+        }
+
+        if (obj.publishWindowsV2 && typeof obj.publishWindowsV2 === 'object' && !Array.isArray(obj.publishWindowsV2)) {
+          const pw = obj.publishWindowsV2 as Record<string, unknown>;
+          const timezone = typeof pw.timezone === 'string' ? pw.timezone : nextPublishWindowsV2.timezone;
+          const jitterMinutes = typeof pw.jitterMinutes === 'number' ? pw.jitterMinutes : nextPublishWindowsV2.jitterMinutes;
+          const blackoutDates = Array.isArray(pw.blackoutDates)
+            ? pw.blackoutDates.filter((d) => typeof d === 'string').slice(0, 200)
+            : nextPublishWindowsV2.blackoutDates;
+
+          const daysRaw = pw.days;
+          const nextDays = { ...nextPublishWindowsV2.days };
+          if (daysRaw && typeof daysRaw === 'object' && !Array.isArray(daysRaw)) {
+            for (const key of Object.keys(nextDays) as DayKey[]) {
+              const rawDay = (daysRaw as any)[key];
+              if (!rawDay || typeof rawDay !== 'object' || Array.isArray(rawDay)) continue;
+              const enabled = typeof (rawDay as any).enabled === 'boolean' ? (rawDay as any).enabled : nextDays[key].enabled;
+              const rangesRaw = Array.isArray((rawDay as any).ranges) ? (rawDay as any).ranges : nextDays[key].ranges;
+              const ranges: TimeRange[] = (rangesRaw as any[])
+                .filter((r) => r && typeof r === 'object')
+                .map((r) => ({
+                  id: typeof (r as any).id === 'string' ? (r as any).id : makeId(),
+                  start: typeof (r as any).start === 'string' ? (r as any).start : '',
+                  end: typeof (r as any).end === 'string' ? (r as any).end : '',
+                }));
+
+              nextDays[key] = { enabled, ranges };
+            }
+          }
+
+          nextPublishWindowsV2 = {
+            timezone,
+            days: nextDays,
+            jitterMinutes,
+            blackoutDates,
+          };
+        }
+      }
+
+      setConfig(nextConfig);
+      setPublishWindowsV2(nextPublishWindowsV2);
+      setSavedSnapshot({ config: nextConfig, publishWindowsV2: nextPublishWindowsV2 });
+    } catch (error) {
+      setConfigHydrationError(error instanceof Error ? error.message : 'Failed to load saved automation config');
+      setSavedSnapshot({ config, publishWindowsV2 });
+    } finally {
+      setConfigHydrating(false);
+    }
+  }, [config, makeId, publishWindowsV2]);
+
+  React.useEffect(() => {
+    void hydrateFromPersisted();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runnerWindows = React.useMemo(() => {
     const now = new Date();
@@ -996,16 +1096,35 @@ export function AutomationLogicTabV6({
               onClick={saveConfiguration}
               disabled={
                 automationSaved.status === 'saving' ||
+                configHydrating ||
                 !publishWindowsV2.timezone.trim() ||
                 !hasAnyRanges ||
                 hasInvalidRange
               }
               className="w-full flex items-center justify-center gap-2 py-3 bg-foreground text-background rounded-xl text-body shadow-neu-outset hover:bg-foreground/90 transition-colors active:scale-[0.98] disabled:opacity-50"
             >
-              {automationSaved.status === 'saving' ? <Loader2 size={18} className="animate-spin" /> : null}
+              {automationSaved.status === 'saving' || configHydrating ? <Loader2 size={18} className="animate-spin" /> : null}
               {automationSaved.status === 'saved' ? <CheckCircle2 size={18} className="text-success" /> : null}
-              {automationSaved.status === 'saved' ? 'Logic Persisted' : 'Save Configuration'}
+              {automationSaved.status === 'saved' ? 'Logic Persisted' : configHydrating ? 'Loading saved config…' : 'Save Configuration'}
             </button>
+
+            <div className="pt-3 flex items-center justify-between gap-3 text-body-small text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center gap-2 ${isDirty ? 'text-warning' : ''}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${isDirty ? 'bg-warning' : 'bg-muted-foreground'}`} />
+                  {isDirty ? 'Unsaved changes' : 'Saved values loaded'}
+                </span>
+                {configHydrationError ? <span className="text-destructive">({configHydrationError})</span> : null}
+              </div>
+              <button
+                type="button"
+                onClick={resetToSaved}
+                disabled={!savedSnapshot || !isDirty || automationSaved.status === 'saving' || configHydrating}
+                className="px-3 py-1.5 rounded-lg bg-surface border border-border shadow-neu-outset hover:bg-surface-hover transition-colors disabled:opacity-50"
+              >
+                Reset to Saved
+              </button>
+            </div>
           </section>
 
           <section className="p-5 bg-foreground rounded-xl text-background space-y-3 shadow-neu-outset relative overflow-hidden">

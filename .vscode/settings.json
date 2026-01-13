@@ -27,7 +27,6 @@
         "backup/": true,
         "prisma/migrations/": true,
         "public/fonts/": true,
-        ".specify/": true,
         ".husky/": true,
         "tests/e2e/.auth/": true,
         "prisma_migrate_*.txt": true,

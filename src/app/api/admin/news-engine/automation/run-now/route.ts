@@ -21,6 +21,53 @@ function pickSummary(payload: unknown): unknown {
 	return summary && typeof summary === 'object' ? summary : null;
 }
 
+type NormalizedRunSummary = {
+	ok: boolean | null;
+	pipelineStatus: string | null;
+	runMode: string | null;
+	dryRun: boolean | null;
+	skipped: boolean | null;
+	skippedReason: string | null;
+	enabledSourceCount: number | null;
+	rssImportedCount: number | null;
+	selectedEntryCount: number | null;
+	draftCreatedCount: number | null;
+	ignoredByRulesCount: number | null;
+	forcedNeedsReviewCount: number | null;
+	priorityOverridesCount: number | null;
+	lastError: string | null;
+};
+
+function normalizeRunSummary(value: unknown): NormalizedRunSummary | null {
+	if (!value || typeof value !== 'object') return null;
+	const s: any = value;
+
+	const pickBool = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null);
+	const pickNum = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+	const pickStr = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
+	const pickNullableStr = (v: unknown): string | null => {
+		if (v === null) return null;
+		return pickStr(v);
+	};
+
+	return {
+		ok: pickBool(s.ok),
+		pipelineStatus: pickStr(s.pipelineStatus),
+		runMode: pickStr(s.runMode),
+		dryRun: pickBool(s.dryRun),
+		skipped: pickBool(s.skipped),
+		skippedReason: pickNullableStr(s.skippedReason),
+		enabledSourceCount: pickNum(s.enabledSourceCount),
+		rssImportedCount: pickNum(s.rssImportedCount),
+		selectedEntryCount: pickNum(s.selectedEntryCount),
+		draftCreatedCount: pickNum(s.draftCreatedCount),
+		ignoredByRulesCount: pickNum(s.ignoredByRulesCount),
+		forcedNeedsReviewCount: pickNum(s.forcedNeedsReviewCount),
+		priorityOverridesCount: pickNum(s.priorityOverridesCount),
+		lastError: pickNullableStr(s.lastError),
+	};
+}
+
 function pickRunId(payload: unknown): string | null {
 	if (!payload || typeof payload !== 'object') return null;
 	const runId = (payload as any).runId;
@@ -120,7 +167,7 @@ export async function POST(request: Request) {
 		);
 	}
 
-	const summary = pickSummary(payload);
+	const summary = normalizeRunSummary(pickSummary(payload));
 	const runId = pickRunId(payload);
 	const timing = pickTiming(payload);
 

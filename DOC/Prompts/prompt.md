@@ -5303,3 +5303,12 @@ And the 3rd phase is to build the backend as per the updated backend expansion p
 The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. 
 
 ***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+---------------------------------------------------------------------------------------------
+
+- Here is the latest audit report of the News Engine Feature : 
+  DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-post-phase13-audit-2026-01-13.md
+- Here is the post Feature Documentations : 
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
+
+- 

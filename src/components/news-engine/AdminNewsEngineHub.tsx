@@ -6,33 +6,9 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  Calendar,
-  CheckCircle2,
-  CheckSquare,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Copy,
-  ExternalLink,
-  FileText,
-  Filter,
-  Globe,
-  Hash,
-  History,
-  Layers,
-  Loader2,
-  MoreVertical,
-  Plus,
   Pause,
   Play,
   RefreshCcw,
-  RefreshCw,
-  Rss,
-  Save,
-  Search,
-  ShieldAlert,
-  ShieldCheck,
-  Sliders,
   Sparkles,
   Target,
   Type,
@@ -67,11 +43,13 @@ import {
   adminToggleSourceEnabled,
   adminUpdateSourcesConfig,
   fetchAdminSourcesConfig,
+  fetchAdminQueueSnapshot,
   adminUpdateAutomation,
   adminUpdateItem,
   adminUpdateSettings,
   adminUpsertSource,
   adminGenerateManualDraft,
+  fetchAdminOpsHealth,
   fetchAdminState,
 } from '@/lib/news-engine/client';
 
@@ -125,6 +103,34 @@ export default function AdminNewsEngineHub() {
   const [state, setState] = React.useState<NewsEngineState | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
+  const [queueSnapshot, setQueueSnapshot] = React.useState<{
+    rssNewEntries: number;
+    researchNewEntries: Record<'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND', number>;
+    draftsNeedingReview: number;
+    scheduledDueSoon: number;
+    errors: number;
+    computedAt: string;
+    dueSoonWindowHours: number;
+  } | null>(null);
+  const [queueSnapshotError, setQueueSnapshotError] = React.useState<string | null>(null);
+
+  const [opsHealth, setOpsHealth] = React.useState<
+    | {
+        computedAt: string;
+        jobs: Record<
+          string,
+          {
+            type: string;
+            lastSuccessAt: string | null;
+            lastFailureAt: string | null;
+            lastFailureError: string | null;
+          }
+        >;
+      }
+    | null
+  >(null);
+  const [opsHealthError, setOpsHealthError] = React.useState<string | null>(null);
+
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(null);
 
   const [reviewOpen, setReviewOpen] = React.useState(false);
@@ -167,11 +173,22 @@ export default function AdminNewsEngineHub() {
 
   const reloadState = React.useCallback(async () => {
     try {
-      const loaded = await fetchAdminState();
+      const [loaded, snapshot, health] = await Promise.all([
+        fetchAdminState(),
+        fetchAdminQueueSnapshot(),
+        fetchAdminOpsHealth(),
+      ]);
       setState(loaded);
+      setQueueSnapshot(snapshot);
+      setOpsHealth(health);
+      setQueueSnapshotError(null);
+      setOpsHealthError(null);
       setLoadError(null);
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'Failed to load News Engine');
+      const message = error instanceof Error ? error.message : 'Failed to load News Engine';
+      setLoadError(message);
+      setQueueSnapshotError(message);
+      setOpsHealthError(message);
     }
   }, []);
 
@@ -180,7 +197,8 @@ export default function AdminNewsEngineHub() {
     void reloadState();
   }, [reloadState]);
 
-  const queueSnapshot = React.useMemo(() => {
+  const masterControlQueueSnapshot = React.useMemo(() => {
+    if (queueSnapshot) return queueSnapshot;
     if (!state) return null;
 
     const draftsNeedingReview = state.items.filter((it) => it.status === 'NEEDS_REVIEW').length;
@@ -196,16 +214,15 @@ export default function AdminNewsEngineHub() {
     }).length;
 
     return {
-      rssNewEntries: null as number | null,
-      researchNewEntries: { WEB: null, SOCIAL: null, JOURNAL: null, TREND: null } as Record<
-        'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND',
-        number | null
-      >,
+      rssNewEntries: 0,
+      researchNewEntries: { WEB: 0, SOCIAL: 0, JOURNAL: 0, TREND: 0 },
       draftsNeedingReview,
       scheduledDueSoon,
       errors,
+      computedAt: new Date().toISOString(),
+      dueSoonWindowHours: 24,
     };
-  }, [state]);
+  }, [queueSnapshot, state]);
 
   const sourcesSaved = useSavedIndicator();
   const automationSaved = useSavedIndicator();
@@ -620,7 +637,10 @@ export default function AdminNewsEngineHub() {
           items={state.items}
           automation={state.automation}
           automationRun={automationRun}
-          queueSnapshot={queueSnapshot}
+          queueSnapshot={masterControlQueueSnapshot}
+          queueSnapshotError={queueSnapshotError}
+          opsHealth={opsHealth}
+          opsHealthError={opsHealthError}
           onOpenRunDetails={() => setRunDetailsOpen(true)}
           onNavigateToTab={(tab) => setActiveTab(tab)}
           refreshNonce={masterControlRefreshNonce}
@@ -957,6 +977,13 @@ export default function AdminNewsEngineHub() {
 
                 const payload = res.payload;
                 const runId = res.runId ?? undefined;
+                const summary =
+                  res.summary
+                    ? {
+                        ...res.summary,
+                        skipped: res.summary.skipped ?? undefined,
+                      }
+                    : undefined;
 
                 setAutomationRun({
                   status: 'success',
@@ -964,7 +991,7 @@ export default function AdminNewsEngineHub() {
                   startedAt: res.startedAt ?? startedAt,
                   finishedAt: res.finishedAt ?? new Date().toISOString(),
                   runId,
-                  summary: res.summary ?? undefined,
+                  summary,
                   payload,
                 });
                 setConfirmationOpen(false);
