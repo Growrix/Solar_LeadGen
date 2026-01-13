@@ -12,7 +12,7 @@
 ***Phase 2 : SOT alignment with Current Enhancement Plan***
 
 - Here is the existing SOT : 
-  DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-FEATURE-AUDIT-2026-01-13.md
 
 - Here is the current state of this feature after the initial implementation as per SOT: 
   DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-inventory-mapping-audit-2026-01-07.md
@@ -58,3 +58,5 @@
 As we have enhance and expanded the frontend based on the new enhancement plan, now prepare the backend plan by following the above mentioned prompt. Make sure the backend plan is aligned with the updated frontend and never messup with existing builds. we need to do it safely. 
 
 ------------------------------------------------------------------------------------------------
+
+

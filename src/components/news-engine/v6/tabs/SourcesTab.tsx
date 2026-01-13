@@ -352,7 +352,7 @@ export function SourcesTabV6({
                 <RefreshCw size={18} className="text-brand-accent" />
                 Recent Research Sync
               </h3>
-              <span className="text-body-small text-muted-foreground">Visibility surface (UI only)</span>
+              <span className="text-body-small text-muted-foreground">API-backed</span>
             </div>
 
             <div className="p-6 space-y-4">

@@ -955,15 +955,16 @@ export default function AdminNewsEngineHub() {
 
                 const res = await adminRunAutomationNow(pendingRunMode);
 
-                const payload = (res as any)?.payload;
-                const runId = payload && typeof payload === 'object' && typeof (payload as any).runId === 'string' ? String((payload as any).runId) : undefined;
+                const payload = res.payload;
+                const runId = res.runId ?? undefined;
 
                 setAutomationRun({
                   status: 'success',
                   mode: pendingRunMode,
-                  startedAt,
-                  finishedAt: new Date().toISOString(),
+                  startedAt: res.startedAt ?? startedAt,
+                  finishedAt: res.finishedAt ?? new Date().toISOString(),
                   runId,
+                  summary: res.summary ?? undefined,
                   payload,
                 });
                 setConfirmationOpen(false);

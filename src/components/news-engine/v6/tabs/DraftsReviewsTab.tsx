@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, Filter, MoreVertical, Plus, Search, Zap } from 'lucide-react';
+import { Clock, Plus, Search, Zap } from 'lucide-react';
 import type { NewsItem } from '@/lib/ui-stubs/news-engine';
 import { formatRelativeTime } from '../shared';
 
@@ -42,13 +42,6 @@ export function DraftsReviewsTabV6({
               className="w-full pl-9 pr-4 py-1.5 text-body bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground placeholder:text-muted-foreground shadow-neu-inset"
             />
           </div>
-          <button
-            type="button"
-            className="flex items-center gap-2 px-3 py-1.5 text-body text-muted-foreground bg-background border border-border rounded-lg hover:bg-surface"
-          >
-            <Filter size={14} />
-            View Options
-          </button>
         </div>
 
         <div className="flex items-center gap-6">
@@ -114,9 +107,6 @@ export function DraftsReviewsTabV6({
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-body-small uppercase tracking-wider text-muted-foreground bg-surface px-1.5 py-0.5 rounded">
                             {draft.category}
-                          </span>
-                          <span className="text-muted-foreground group-hover:text-foreground" aria-label="More options">
-                            <MoreVertical size={14} />
                           </span>
                         </div>
 

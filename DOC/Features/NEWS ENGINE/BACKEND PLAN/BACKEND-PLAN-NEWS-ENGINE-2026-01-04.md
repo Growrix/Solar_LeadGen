@@ -6,6 +6,131 @@
 
 ---
 
+# 2026-01-13 Expansion Audit & Planning Addendum (Post-Feature Grounding)
+
+This plan contains older, preserved content from the period when News Engine was UI-stubbed. As of the current implementation, News Engine is DB/API-backed and includes an internal automation runner, research ingestion, AI drafting/rewriting/regeneration, OG image generation + approval gating, Key Vault, and model routing.
+
+**Primary current-state audit inputs**
+- `DOC/FEATURES/NEWS ENGINE/POST FEATURE/NEWS-ENGINE-FEATURE-AUDIT-2026-01-13.md`
+- `DOC/FEATURES/NEWS ENGINE/POST FEATURE/NEWS-ENGINE-POST-FEATURE-DOCS-2026-01-13.md`
+
+**Expansion blueprint**
+- `DOC/FEATURES/NEWS ENGINE/Plan/Expanding plan V2.md`
+
+## What Is Already Implemented (Do Not Rebuild)
+- DB-backed public news endpoints and admin APIs for core item lifecycle.
+- Internal automation runner endpoint guarded by `NEWS_ENGINE_CRON_SECRET`.
+- RSS + research sync (multiple kinds) with persisted entries.
+- AI generation flows (manual, from RSS, from research bundle) + rewrite + rejected regeneration.
+- OG image generation + publish gating.
+- Model router defaults + Model Profiles + Key Vault primitives (as implemented in current codebase).
+
+## Expansion Priorities (Aligned to Expanding plan V2)
+
+### 1) Image sourcing & reliability (high)
+Goal: ensure every published item has a resilient OG image strategy.
+- Add image source provenance and broken-link detection/remediation workflow.
+- Prefer: (a) sourced image URLs with validation, (b) fallback to AI-generated, (c) final fallback to news URL/share card.
+- Add scheduled/runner-time revalidation of `ogImageUrl` and auto-repair when broken.
+
+### 2) Unified Research Center (high)
+Goal: centralize research ingestion, dedup, and distribution across pipelines.
+- Canonicalize research job model (manual + keyword-list scheduled jobs).
+- Introduce unified listing/search over RSS entries + research entries with common metadata.
+- Provide exportable provenance bundles for drafting and auditability.
+
+### 3) Advanced AI content generation (high)
+Goal: enforce admin-defined rules and quality controls.
+- Implement deterministic rule enforcement at drafting time (and optionally publish time): block/downgrade to review/require citations.
+- Add fact/originality scoring hooks (initially stubbed as structured fields + audit entries).
+
+### 4) Automation & scheduling (high)
+Goal: align runner scheduling with UI semantics and support expanded schedule features.
+- Treat a single canonical schedule schema as the runner input and ensure UI persists exactly that schema.
+- Expand schedule semantics (priority/expiry/featured/recurring/batch) in a runner-safe, backward-compatible way.
+- Plan for n8n integration as an optional orchestration layer (runner remains the canonical core executor).
+
+### 5) Analytics & auditability (medium)
+Goal: operational visibility without guessing.
+- Expand automation run summaries and job logs to include counts, timings, and last error surfaces.
+- Add aggregation endpoints for dashboards (pipeline KPIs, research coverage, content throughput).
+
+### 6) Operational hardening (high)
+Goal: reliable deploy/run behavior.
+- Harden validation for automation config JSON and return explicit warnings/errors.
+- Add health checks and alerting surfaces for runner failures and ingestion failures.
+- Ensure Key Vault master key and cron secret requirements are validated in a deployment-safe way.
+
+---
+
+# 2026-01-12 Expansion Audit & Planning Addendum (Current-State Grounding)
+
+This backend plan was originally drafted when the News Engine was still largely “UI-only”. As of the latest implementation audit, the News Engine now includes real DB-backed APIs, internal automation runner logic, research ingestion, and OG image generation.
+
+**Primary audit input**
+- `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-phase1-comprehensive-feature-implementation-audit-2026-01-12.md`
+
+**Expansion blueprint**
+- `DOC/FEATURES/NEWS ENGINE/Plan/Expanding plan V2.md`
+
+## What Is Already Implemented (Do Not Rebuild)
+- Public read endpoints publish due scheduled items opportunistically then return published content.
+- Admin item lifecycle endpoints exist (list, schedule, publish-now, etc.).
+- Automation config endpoint persists `news.automation.*` flags and `news.automation.config_json`.
+- Internal automation runner exists (`/api/internal/news-engine/automation/run`) and schedules from `config.windows?: string[]`.
+- Research sync endpoints exist and persist `NewsResearchEntry`.
+
+## Gaps / Expansion Priorities (from Audit)
+
+### 1) Canonical scheduling schema mismatch (critical)
+- UI exposes “Publish Windows v2” semantics.
+- Runner currently schedules only from `config.windows?: string[]`.
+
+**Required decision:** pick one canonical schema and align:
+- UI save format
+- stored `news.automation.config_json`
+- runner schedule selection
+
+### 2) Automation rules are CRUD’d but not enforced (critical)
+- DB model + endpoints exist for `NewsAutomationRule`.
+- Runner does not evaluate those rules.
+
+**Required decision:**
+- Either implement runner enforcement of `NewsAutomationRule`, OR
+- disable/gate rule CRUD surfaces until enforcement exists.
+
+### 3) Config validation gap (high)
+- `news.automation.config_json` accepts arbitrary JSON with no schema validation.
+
+**Action:** validate known keys/types and surface warnings to the admin UI to avoid silent misconfiguration.
+
+### 4) Observability/run summary (medium)
+- “Run Automation Now” should return deterministic counts/timing/errors and write to logs.
+
+## Expansion Plan — Backend Workstream (Implementation-Ready)
+
+1) **Scheduling alignment**
+- Ensure the saved automation config contains runner-compatible schedule windows.
+- If “Publish Windows v2” remains the UI SOT, persist/derive a runner-consumable `windows` list.
+
+2) **Rules engine enforcement**
+- Add a rules evaluation phase in the internal runner consuming enabled `NewsAutomationRule` rows.
+- Define enforcement actions clearly (block, warn, downgrade to review, adjust priority, etc.).
+
+3) **Config schema validation**
+- Validate and normalize `news.automation.config_json` on write.
+- Return warnings (non-fatal) for unknown/unsupported keys.
+
+4) **Operational hardening**
+- Improve error clarity for RSS/research failures and automation runner failures.
+- Add system health surfaces (last successful run, last error) exposed to admin.
+
+---
+
+The remaining content below is preserved for historical reference; the addendum above should be treated as the authoritative “current-state” expansion delta.
+
+---
+
 # PART 1 — E2E CURRENT-STATE AUDIT
 
 ---
@@ -38,18 +163,17 @@ Admin Hub Tabs (all implemented as UI-only):
 
 ## B) Current API Inventory
 
+> ⚠️ Historical note: The section below is preserved from the early UI-stubbed phase and is no longer accurate.
+> The authoritative current state is described in the 2026-01-13 addendum at the top of this document.
+
 ### News Engine APIs
 
 | Endpoint | Status | Notes |
 |----------|--------|-------|
-| `GET /api/news-engine/*` | ❌ DOES NOT EXIST | No backend API routes exist |
-| `POST /api/news-engine/*` | ❌ DOES NOT EXIST | No backend API routes exist |
+| `GET /api/news-engine/*` | 🧾 HISTORICAL | The current codebase uses `/api/news/**` and `/api/admin/news-engine/**` patterns |
+| `POST /api/news-engine/*` | 🧾 HISTORICAL | The current codebase uses `/api/news/**` and `/api/admin/news-engine/**` patterns |
 
-**Finding:** The News Engine feature currently has **ZERO backend API endpoints**. All data is:
-- Stored in browser `localStorage` via `src/lib/ui-stubs/news-engine.ts`
-- Using the key `solarmatch.newsEngine.v1`
-
-This is a **UI-only stub implementation** with mock/seed data.
+**Finding (historical):** this was true during early prototyping. It is no longer true in the current implementation.
 
 ---
 

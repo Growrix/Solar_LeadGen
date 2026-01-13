@@ -434,13 +434,112 @@ export async function adminUpdateAutomation(input: {
   });
 }
 
-export async function adminRunAutomationNow(mode: 'dry' | 'live' = 'live'): Promise<{ ok: true; payload: unknown }> {
+export type AdminAutomationRunSummary = {
+  ok?: boolean;
+  pipelineStatus?: string;
+  runMode?: string;
+  dryRun?: boolean;
+  skipped?: boolean;
+  skippedReason?: string | null;
+  enabledSourceCount?: number;
+  rssImportedCount?: number;
+  selectedEntryCount?: number;
+  draftCreatedCount?: number;
+  ignoredByRulesCount?: number;
+  forcedNeedsReviewCount?: number;
+  priorityOverridesCount?: number;
+  lastError?: string | null;
+};
+
+export type AdminRunAutomationNowResponse = {
+  ok: true;
+  mode: 'dry' | 'live';
+  runId: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  summary: AdminAutomationRunSummary | null;
+  payload: unknown;
+};
+
+export async function adminRunAutomationNow(mode: 'dry' | 'live' = 'live'): Promise<AdminRunAutomationNowResponse> {
   const qp = new URLSearchParams();
   qp.set('mode', mode);
   return apiFetch(`/api/admin/news-engine/automation/run-now?${qp.toString()}`, {
     method: 'POST',
     timeoutMs: 120_000,
   } as RequestInit & { timeoutMs: number });
+}
+
+export type AdminAutomationRule = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  config: unknown;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchAdminAutomationRules(input?: { enabled?: boolean }): Promise<AdminAutomationRule[]> {
+  const qp = new URLSearchParams();
+  if (input?.enabled === true) qp.set('enabled', '1');
+  if (input?.enabled === false) qp.set('enabled', '0');
+
+  const data = await apiFetch<{ rules: any[] }>(`/api/admin/news-engine/automation/rules?${qp.toString()}`);
+  return (data.rules ?? []).map((r) => ({
+    id: String(r.id),
+    name: String(r.name ?? ''),
+    enabled: Boolean(r.enabled),
+    config: (r as any).config ?? null,
+    createdAt: normalizeIso((r as any).createdAt) ?? new Date().toISOString(),
+    updatedAt: normalizeIso((r as any).updatedAt) ?? new Date().toISOString(),
+  }));
+}
+
+export async function adminCreateAutomationRule(input: {
+  name: string;
+  enabled: boolean;
+  config: unknown;
+}): Promise<AdminAutomationRule> {
+  const data = await apiFetch<{ rule: any }>(`/api/admin/news-engine/automation/rules`, {
+    method: 'POST',
+    body: JSON.stringify({ name: input.name, enabled: input.enabled, config: input.config }),
+  });
+
+  const r = data.rule;
+  return {
+    id: String(r.id),
+    name: String(r.name ?? ''),
+    enabled: Boolean(r.enabled),
+    config: (r as any).config ?? null,
+    createdAt: normalizeIso((r as any).createdAt) ?? new Date().toISOString(),
+    updatedAt: normalizeIso((r as any).updatedAt) ?? new Date().toISOString(),
+  };
+}
+
+export async function adminUpdateAutomationRule(
+  id: string,
+  input: { name?: string; enabled?: boolean; config?: unknown | null }
+): Promise<AdminAutomationRule> {
+  const data = await apiFetch<{ rule: any }>(`/api/admin/news-engine/automation/rules/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(input),
+  });
+
+  const r = data.rule;
+  return {
+    id: String(r.id),
+    name: String(r.name ?? ''),
+    enabled: Boolean(r.enabled),
+    config: (r as any).config ?? null,
+    createdAt: normalizeIso((r as any).createdAt) ?? new Date().toISOString(),
+    updatedAt: normalizeIso((r as any).updatedAt) ?? new Date().toISOString(),
+  };
+}
+
+export async function adminDeleteAutomationRule(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/automation/rules/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
 }
 
 export type AdminSourcesConfig = {

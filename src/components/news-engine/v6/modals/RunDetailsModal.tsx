@@ -13,6 +13,18 @@ export type AutomationRunUiV6 = {
   finishedAt?: string;
   runId?: string;
   error?: string;
+  summary?: {
+    enabledSourceCount?: number;
+    rssImportedCount?: number;
+    selectedEntryCount?: number;
+    draftCreatedCount?: number;
+    ignoredByRulesCount?: number;
+    forcedNeedsReviewCount?: number;
+    priorityOverridesCount?: number;
+    lastError?: string | null;
+    skipped?: boolean;
+    skippedReason?: string | null;
+  };
   payload?: unknown;
 };
 

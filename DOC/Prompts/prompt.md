@@ -5232,4 +5232,74 @@ the screen shows that it is loading for endless times. Even in the DRY RUN I am 
 
  ------------------------------------------------------------------------------
 
- 
+ Here is the latest Audit report : DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-phase1-comprehensive-feature-implementation-audit-2026-01-12.md
+
+ - We have done the DOC\FEATURES\NEWS ENGINE\tasks.md . check this phase  ### Follow-up Tasks (Audit 2026-01-12) , which was done based on the previous audit report. 
+
+ - Why we still have issues and gaps as per the latest audit report ? check the report and tasks.md carefully and let me know why we still have issues and gaps as per the latest audit report.
+
+ ---------------------------------------------------------------------------------------
+
+ ### Expansion Audit & Planning Phase
+**Purpose:**
+Expand an existing feature by grounding all work in the real, current state of the system. The AI must read the referenced site audit report, identify gaps, enhancements, and what is already present, and plan the expansion using the latest expansion plan DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md. No new files may be created—update only existing, relevant files.
+
+**Sequence:**
+1. Read and analyze the referenced site audit report: DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-phase1-comprehensive-feature-implementation-audit-2026-01-12.md.
+2. Identify:
+   - Gaps (missing features or broken flows)
+   - What is already implemented and working
+   - Areas that need minor enhancement
+3. Plan the expansion using DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md as the blueprint.
+4. Output:
+   - Frontend expansion plan and prompts → update DDOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-enhancement-plan-prototype-alignment-V5.md
+   - Backend expansion plan → update DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md
+   - Update/create a new phase in DOC\FEATURES\NEWS ENGINE\tasks.md to lock the tasks for this expansion.
+5. Begin implementation as per the locked tasks.
+
+**Instructions**
+> "You are in the Expansion Audit & Planning Phase for `NEWS ENGINE`. Read the referenced site audit report, identify gaps, enhancements, and what is already present. Plan the expansion using the latest expansion plan. Update only existing, relevant files for frontend and backend plans, and update tasks.md with a new phase for this expansion. Then proceed to implementation. Do not create any new files unless explicitly instructed."
+
+------------------------------------------------------------------------------------------
+
+- here is my feature expansion plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md
+- Here is the 
+
+-------------------------------------------------------------------------------------
+
+***Phase 2 : Feature Expansion ***
+
+- Here is the current Audit report and feature state : 
+   DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-FEATURE-AUDIT-2026-01-13.md
+   & DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-POST-FEATURE-DOCS-2026-01-13.md
+
+
+- Here is the current Enhancement plan : 
+  DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md
+
+***instruction*** As we are expanding and enhancing the feature now, I want you to deeply understand the current state audit report VS the feature expansion plan. prepare the updated Frontend and Backend expansion plan only as per the final analysis. The Goal is to update the Frontend and Backend expansion plan files to reflect the current state of the feature and also the new enhancement plan. So that we can safely follow the updated Frontend and Backend expansion plan while implimenting the enhancement.
+
+- prepare the frontend enhancement prompts in : 
+  DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts 
+  folder by following the :
+  DOC\PROMPTS\AI PROMPTING\AI Prompting Guideline.md Instructions.
+
+-----------------------------------------------------------------------------------
+
+I want you to add a phase in the tasks.md file DOC\FEATURES\NEWS ENGINE\tasks.md . there will be 3 phase. 
+
+
+***phase 1*** is to build the expanded frontend followed by the prompts given in the DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-expansion-uiux-prompts-2026-01-13.md . 
+
+***phase 2*** This is a validation bridge between phase 1 and 3 , After builing the expanded frontend, I want you to do a comprehensive feature implementation audit by following the prompt in : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md . The goal is to identify any gaps, issues, missing implementations etc in the expanded frontend build. prepare the audit report in : DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-frontend-expansion-audit-2026-01-14.md . After that move to the 3rd phase on condition. 
+- condition 1 : if there are gaps, issues, missing implementations etc found in the audit report, then you need to fix them first based on the audit report and then move to the 3rd phase.
+- condition 2 : if there are no gaps, issues, missing implementations etc found in the audit report, then you can move to the 3rd phase directly by double checking the backend plan is accurate or not as per the final frontend build. If everything is good then move to the 3rd phase directly.
+
+***phase 3***
+And the 3rd phase is to build the backend as per the updated backend expansion plan in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md file. 
+
+***Strickt Rules***
+
+The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. 
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md

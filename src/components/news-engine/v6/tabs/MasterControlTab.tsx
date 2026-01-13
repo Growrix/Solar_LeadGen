@@ -394,6 +394,24 @@ export function MasterControlTabV6({
               <p className="text-body text-foreground">{automationRun.finishedAt ? formatDateTime(automationRun.finishedAt) : '—'}</p>
             </div>
 
+            <div className="space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">RSS Imported</p>
+              <p className="text-body text-foreground">{automationRun.summary?.rssImportedCount ?? '—'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">Selected</p>
+              <p className="text-body text-foreground">{automationRun.summary?.selectedEntryCount ?? '—'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">Drafts Created</p>
+              <p className="text-body text-foreground">{automationRun.summary?.draftCreatedCount ?? '—'}</p>
+            </div>
+
+            <div className="md:col-span-2 lg:col-span-3 space-y-1">
+              <p className="text-body-small text-muted-foreground uppercase tracking-widest">Last Error</p>
+              <p className="text-body text-foreground">{automationRun.error ?? automationRun.summary?.lastError ?? '—'}</p>
+            </div>
+
             <div className="md:col-span-2 lg:col-span-3 flex items-center justify-between gap-4 flex-wrap pt-2 border-t border-border">
               <p className="text-body-small text-muted-foreground">
                 Mode: <span className="text-foreground">{automationRun.mode === 'dry' ? 'Dry Run' : 'Live Run'}</span>

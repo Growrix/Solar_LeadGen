@@ -1,5 +1,7 @@
+[...existing code...]
 ---
-description: "Tasks for News Engine backend implementation"
+
+
 ---
 
 # Tasks: News Engine
@@ -639,3 +641,190 @@ description: "Tasks for News Engine backend implementation"
     - manual publish: `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts`
     - scheduled publish: `src/lib/news-engine/publish-due.ts`
     - internal automation auto-publish: `src/app/api/internal/news-engine/automation/run/route.ts` (downgrades to NEEDS_REVIEW when approval missing)
+
+---
+
+## Phase 11: Expansion Audit & Planning (2026-01-12)
+
+**Purpose**: Expand the existing News Engine feature by grounding work in current implementation reality.
+
+**Inputs**:
+- Audit: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-phase1-comprehensive-feature-implementation-audit-2026-01-12.md`
+- Post-feature audit: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/NEWS-ENGINE-FEATURE-AUDIT-2026-01-13.md`
+- Expansion blueprint: `DOC/FEATURES/NEWS ENGINE/Plan/Expanding plan V2.md`
+
+### Why issues/gaps still exist even after “Follow-up Tasks (Audit 2026-01-12)”
+- The follow-up tasks focused on specific wiring decisions (research sync, schedule extras, OG image). The audit’s **critical** mismatches (Publish Windows v2 schema, Operational Rules enforcement) were not part of that follow-up scope.
+- Some “working vs static” confusion is caused by UI labeling/placeholder controls, not just missing endpoints.
+- The expansion blueprint (V2) introduces new reliability/observability expectations (health checks, analytics, unified research center) that were not in the earlier follow-up list.
+
+### Locked Expansion Tasks (do these in order)
+
+#### A) Trust + UX Clarity (remove misleading UI)
+- [x] E201 Remove/rename misleading “UI only” label for research sync
+  - UI: `src/components/news-engine/v6/tabs/SourcesTab.tsx`
+  - Acceptance: label matches reality (API-backed)
+
+- [x] E202 Dashboard placeholders: either wire real stats or label as placeholder
+  - UI: `src/components/news-engine/v6/tabs/DashboardTab.tsx`
+  - Acceptance: no hardcoded KPIs presented as real metrics
+
+- [x] E203 Dead-end controls: “View Options” and ellipsis menus must be wired or removed
+  - UI:
+    - `src/components/news-engine/v6/tabs/DraftsReviewsTab.tsx`
+    - `src/components/news-engine/v6/tabs/DashboardTab.tsx`
+  - Acceptance: every visible control has a deterministic outcome
+
+#### B) Scheduling Canonicalization (Publish Windows v2)
+- [x] E210 Canonical schedule schema decision
+  - Decision: keep the v2 UI, but treat `config.windows: string[]` as canonical runner input (persisted by the UI + consumed by runner)
+
+- [x] E211 If keeping v2 UI: persist runner-compatible `windows: string[]`
+  - UI: `src/components/news-engine/v6/tabs/AutomationLogicTab.tsx`
+  - Runner consumer: `src/app/api/internal/news-engine/automation/run/route.ts` (`config.windows`)
+  - Acceptance: automation scheduling uses the same saved data the UI edits
+
+#### C) Operational Rules (end-to-end enforcement)
+- [x] E220 Wire Operational Rules UI to DB-backed rules endpoints
+  - API: `src/app/api/admin/news-engine/automation/rules/**`
+  - UI: `src/components/news-engine/v6/tabs/AutomationLogicTab.tsx`
+  - Acceptance: rules persist across refresh and represent real DB state
+
+- [x] E221 Enforce `NewsAutomationRule` in internal runner
+  - Runner: `src/app/api/internal/news-engine/automation/run/route.ts`
+  - Acceptance: enabled rules deterministically affect selection/drafting/gating/scheduling/publishing outcomes
+
+#### D) Config validation + observability
+- [x] E230 Add schema validation/normalization for `news.automation.config_json`
+  - API: `src/app/api/admin/news-engine/automation/config/route.ts`
+  - Acceptance: invalid shapes don’t silently store; warnings returned or normalized
+
+- [x] E231 Ensure “Run Automation Now” returns an explicit run summary
+  - API: `src/app/api/internal/news-engine/automation/run/route.ts`
+  - Admin trigger: `src/app/api/admin/news-engine/automation/run-now/route.ts`
+  - UI consumer: `src/components/news-engine/v6/tabs/MasterControlTab.tsx`
+  - Acceptance: admin sees counts + last error + timing
+
+#### E) Verification (required)
+- [x] E290 Run typecheck: `npx tsc --noEmit`
+- [x] E291 Run build: `npm run build`
+
+---
+
+## Phase 12: Expansion Execution (Post-Feature Gaps) (2026-01-13)
+
+**Purpose**: Close the remaining “static vs functional” UI gaps identified in the post-feature audit and prepare the UI for Expanding plan V2 (analytics, unified research, operational hardening).
+
+**Primary input**:
+- Post-feature audit: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/NEWS-ENGINE-FEATURE-AUDIT-2026-01-13.md`
+
+### Locked Tasks (do these in order)
+
+#### A) Trust surfaces (stop placeholder telemetry)
+- [ ] E301 Master Control: replace placeholder telemetry with truthful status surfaces
+  - UI: `src/components/news-engine/v6/tabs/MasterControlTab.tsx`
+  - Acceptance: only real values or explicitly labeled placeholders; show last-updated timestamps
+
+#### B) Queue snapshot counters (RSS + Research)
+- [ ] E310 Add admin endpoint to return queue snapshot counts
+  - API: `src/app/api/admin/news-engine/queue/snapshot/route.ts` (new)
+  - Acceptance: returns `{ rssNewCount, researchNewCount, updatedAt }` with deterministic semantics
+
+- [ ] E311 Wire Master Control “Queue Snapshot” to real API
+  - UI: `src/components/news-engine/v6/tabs/MasterControlTab.tsx`
+  - Acceptance: no `null` counts; explicit loading/empty/error UI
+
+#### C) Drafts & Reviews misleading actor identity
+- [ ] E320 Remove hardcoded avatar chips (U1/U2/U3) or replace with real actor identity
+  - UI: `src/components/news-engine/v6/tabs/DraftsReviewsTab.tsx`
+  - Acceptance: no hardcoded user identifiers shown as real actors
+
+#### D) Automation Logic hydration clarity
+- [ ] E330 Ensure Automation Logic tab reliably loads persisted config on mount
+  - UI: `src/components/news-engine/v6/tabs/AutomationLogicTab.tsx`
+  - Acceptance: persisted config always rehydrates; add "Reset to Saved" action
+
+#### E) Verification (required)
+- [ ] E390 Run typecheck: `npx tsc --noEmit`
+- [ ] E391 Run build: `npm run build`
+
+---
+
+## Phase 13: Feature Expansion Execution (3-Phase Workflow) (2026-01-13)
+
+**Strict rule**: This file (`DOC/FEATURES/NEWS ENGINE/tasks.md`) is the master track record. Update it for every action/change/sub-phase.
+
+**Supporting docs (to avoid hallucination)**:
+- `DOC/GUIDELINES & SOT/README.md`
+
+### Phase 1 — Build Expanded Frontend (follow prompt pack)
+
+**Input prompt pack (sequence-locked)**:
+- `DOC/FEATURES/NEWS ENGINE/Fontend UI UX Prompts/frontend-expansion-uiux-prompts-2026-01-13.md`
+
+**Execution rule**:
+- Implement the frontend in the same order as the prompt pack steps (one intent at a time).
+- While implementing, complete the corresponding locked UI tasks in Phase 12 (E301–E391) and add additional subtasks here if new UI gaps are discovered.
+
+- [ ] X101 Phase 1 kickoff: confirm prompt pack is the only driver for frontend expansion work
+- [ ] X102 Implement prompt pack Step 1 (Master Control telemetry is truthful)
+- [ ] X103 Implement prompt pack Step 2 (Queue Snapshot loading/empty/error; no confusing nulls)
+- [ ] X104 Implement prompt pack Step 3 (Remove hardcoded actor/avatar chips)
+- [ ] X105 Implement prompt pack Step 4 (Automation Logic persisted config always hydrates; Reset to Saved)
+- [ ] X106 Implement prompt pack Step 5 (Run Automation Now shows deterministic run summary panel)
+- [ ] X107 Implement prompt pack Step 6 (Unified Research Center entry point + UI shell only)
+- [ ] X108 Implement prompt pack Step 7 (Dashboard KPI placeholders explicitly labeled)
+- [ ] X109 Implement prompt pack Step 8 (A11y sweep for changed surfaces)
+- [ ] X190 Phase 1 verification: run `npx tsc --noEmit` and `npm run build` and record results here
+
+### Phase 2 — Validation Bridge (Audit Expanded Frontend → Fix Loop)
+
+**Audit driver prompt**:
+- `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
+
+**Audit output report (required)**:
+- `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-frontend-expansion-audit-2026-01-14.md`
+
+**Gate conditions (non-negotiable)**:
+- If the audit report finds gaps/issues/missing implementations: fix them first, update tasks.md with explicit fix tasks, then re-audit.
+- If the audit report is green: double-check the backend expansion plan accuracy vs the final frontend build, then proceed to Phase 3.
+
+- [ ] X201 Run gates before audit: `npx tsc --noEmit` and `npm run build`
+- [ ] X202 Run comprehensive feature implementation audit for the expanded frontend (use the audit driver prompt)
+- [ ] X203 Write audit report to `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-frontend-expansion-audit-2026-01-14.md`
+- [ ] X204 If gaps found: add fix tasks under Phase 2, implement fixes, then repeat X202–X203 until green
+- [ ] X205 If no gaps found: validate backend plan accuracy vs final frontend build (see Phase 3 prerequisite)
+
+### Phase 3 — Build Backend (follow updated backend expansion plan)
+
+**Backend expansion plan (authoritative)**:
+- `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md` (use the 2026-01-13 addendum as the authoritative expansion delta)
+
+**Prerequisite**:
+- Phase 2 is green OR Phase 2 gaps have been fixed and re-audited to green.
+
+- [ ] X301 Phase 3 kickoff: re-check backend plan vs final frontend build; add/remove endpoints in the plan if needed
+- [ ] X302 Translate the backend expansion plan into implementation tasks here (group by user story / subsystem)
+- [ ] X303 Implement backend expansion work incrementally (small PR-sized tasks), updating tasks.md after each change
+- [ ] X390 Phase 3 verification: run `npx prisma validate`, `npx tsc --noEmit`, and `npm run build`
+
+### Build Pass & Post-Feature Test/Docs (after Phase 13)
+
+#### Build Pass: E2E Script Validation
+- [ ] X401 Run all News Engine scripts in `scripts/` to validate each function E2E (automation, research, AI, publish, etc.)
+  - scripts/news-engine-e2e-automation-test.ts
+  - scripts/news-engine-rss-http-test.ts
+  - scripts/news-engine-cleanup-test-data.ts
+  - scripts/news-engine-rss-http-test.ts (repeat for all relevant scripts)
+- [ ] X402 Log/track any failures or gaps as explicit tasks above before proceeding
+
+#### Post-Feature Test & Documentation Prompt
+- [ ] X501 Run full post-implementation feature audit using:
+  DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md
+- [ ] X502 Prepare the final user guide, tooltips, functionality map, and checklist using:
+  DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md
+  - Documentation must be section-by-section for every main tab/section in the UI
+  - For each tab/section: explain what it does, why it exists, who uses it, and how it impacts the system end-to-end
+  - Cover routing/automation, config profiles, secret/key handling, review/provenance, E2E flows, system health, errors/blockers, limitations, and release verification
+- [ ] X503 Prepare all documentation in:
+  DOC/FEATURES/NEWS ENGINE/POST FEATURE

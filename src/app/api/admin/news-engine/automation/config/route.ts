@@ -28,6 +28,47 @@ function safeParseJson(raw: string | undefined): unknown {
   }
 }
 
+function normalizeAutomationConfig(raw: unknown): { normalized: unknown; warnings: string[] } {
+  const warnings: string[] = [];
+
+  if (raw === null) return { normalized: null, warnings };
+  if (raw === undefined) return { normalized: undefined, warnings };
+
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    warnings.push('config must be a JSON object (or null)');
+    return { normalized: raw, warnings };
+  }
+
+  const obj = raw as Record<string, unknown>;
+  const normalized: Record<string, unknown> = { ...obj };
+
+  if ('windows' in obj) {
+    const windowsRaw = obj.windows;
+    if (!Array.isArray(windowsRaw)) {
+      delete normalized.windows;
+      warnings.push('config.windows must be an array of strings (removed)');
+    } else {
+      normalized.windows = windowsRaw
+        .filter((v) => typeof v === 'string')
+        .map((v) => v.trim())
+        .filter(Boolean)
+        .slice(0, 500);
+    }
+  }
+
+  if ('operationalRules' in obj) {
+    const rulesRaw = obj.operationalRules;
+    if (!Array.isArray(rulesRaw)) {
+      delete normalized.operationalRules;
+      warnings.push('config.operationalRules must be an array (removed)');
+    } else {
+      normalized.operationalRules = rulesRaw.slice(0, 200);
+    }
+  }
+
+  return { normalized, warnings };
+}
+
 // GET /api/admin/news-engine/automation/config
 export async function GET() {
   try {
@@ -62,6 +103,8 @@ export async function PUT(request: NextRequest) {
     const auth = await requireAdmin();
     const body = await request.json();
 
+    let configWarnings: string[] = [];
+
     const updates: Array<Promise<void>> = [];
 
     if (body.automation && typeof body.automation === 'object') {
@@ -77,7 +120,9 @@ export async function PUT(request: NextRequest) {
     }
 
     if ('config' in body) {
-      const configJson = body.config === null ? '' : JSON.stringify(body.config);
+      const { normalized, warnings } = normalizeAutomationConfig(body.config);
+      configWarnings = warnings;
+      const configJson = normalized === null ? '' : JSON.stringify(normalized);
       updates.push(setSetting(KEY_CONFIG_JSON, configJson, auth.userId, 'News Engine automation config JSON'));
     }
 
@@ -86,7 +131,7 @@ export async function PUT(request: NextRequest) {
     await writeNewsAuditLog({
       action: 'news_automation_config_updated',
       actorId: auth.userId,
-      metadata: { keysUpdated: updates.length },
+      metadata: { keysUpdated: updates.length, ...(configWarnings.length ? { warnings: configWarnings } : {}) },
     });
 
     const settings = await getSettings([KEY_AUTO_DRAFT, KEY_AUTO_SCHEDULE, KEY_AUTO_PUBLISH, KEY_CONFIG_JSON]);

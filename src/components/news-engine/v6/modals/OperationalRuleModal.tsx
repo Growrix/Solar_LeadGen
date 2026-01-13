@@ -21,8 +21,8 @@ export type OperationalRuleCondition = {
   value: string;
 };
 
-export type OperationalRule = {
-  id: number;
+export type OperationalRuleDraft = {
+  name: string;
   scope: OperationalRuleScope;
   conditions: OperationalRuleCondition[];
   action: OperationalRuleAction;
@@ -33,7 +33,7 @@ export type OperationalRule = {
 
 type Props = {
   onClose: () => void;
-  onSave: (rule: OperationalRule) => void;
+  onSave: (rule: OperationalRuleDraft) => void;
 };
 
 export function OperationalRuleModal({ onClose, onSave }: Props) {
@@ -41,6 +41,7 @@ export function OperationalRuleModal({ onClose, onSave }: Props) {
     return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
   }, []);
 
+  const [name, setName] = React.useState('');
   const [scope, setScope] = React.useState<OperationalRuleScope>('gate');
   const [action, setAction] = React.useState<OperationalRuleAction>('require_review');
   const [severity, setSeverity] = React.useState<OperationalRuleSeverity>('warn');
@@ -166,8 +167,11 @@ export function OperationalRuleModal({ onClose, onSave }: Props) {
   const handleSave = React.useCallback(() => {
     if (!canSave) return;
 
+    const safeName = name.trim();
+    if (!safeName) return;
+
     onSave({
-      id: Date.now(),
+      name: safeName,
       scope,
       conditions,
       action,
@@ -175,7 +179,7 @@ export function OperationalRuleModal({ onClose, onSave }: Props) {
       enabled,
       actionValue: action === 'force_model' || action === 'priority' ? actionValue.trim() || undefined : undefined,
     });
-  }, [action, actionValue, canSave, conditions, enabled, onSave, scope, severity]);
+  }, [action, actionValue, canSave, conditions, enabled, name, onSave, scope, severity]);
 
   return (
     <div
@@ -209,6 +213,21 @@ export function OperationalRuleModal({ onClose, onSave }: Props) {
         </div>
 
         <div className="p-6 space-y-5">
+          <div className="space-y-2">
+            <label className="block text-body-small text-muted-foreground uppercase tracking-widest" htmlFor="rule-name">
+              Rule Name
+            </label>
+            <input
+              id="rule-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Block spam keywords"
+              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-body text-foreground focus:outline-none focus:ring-2 focus:ring-accent/20"
+            />
+            <p className="text-body-small text-muted-foreground">Used to identify the rule in audit logs and the runner summary.</p>
+          </div>
+
           <div className="space-y-2">
             <p className="text-body-small uppercase tracking-widest text-muted-foreground">Presets</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -406,7 +425,7 @@ export function OperationalRuleModal({ onClose, onSave }: Props) {
           <button
             type="button"
             onClick={handleSave}
-            disabled={!canSave}
+            disabled={!canSave || !name.trim()}
             className="px-6 py-2 bg-accent text-accent-foreground rounded-xl shadow-neu-outset hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             Save

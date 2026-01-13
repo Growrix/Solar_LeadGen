@@ -15,6 +15,28 @@ function pickErrorMessage(payload: unknown): string | null {
 	return null;
 }
 
+function pickSummary(payload: unknown): unknown {
+	if (!payload || typeof payload !== 'object') return null;
+	const summary = (payload as any).summary;
+	return summary && typeof summary === 'object' ? summary : null;
+}
+
+function pickRunId(payload: unknown): string | null {
+	if (!payload || typeof payload !== 'object') return null;
+	const runId = (payload as any).runId;
+	return typeof runId === 'string' && runId.trim() ? runId.trim() : null;
+}
+
+function pickTiming(payload: unknown): { startedAt: string | null; finishedAt: string | null } {
+	if (!payload || typeof payload !== 'object') return { startedAt: null, finishedAt: null };
+	const startedAt = (payload as any).startedAt;
+	const finishedAt = (payload as any).finishedAt;
+	return {
+		startedAt: typeof startedAt === 'string' ? startedAt : null,
+		finishedAt: typeof finishedAt === 'string' ? finishedAt : null,
+	};
+}
+
 export async function POST(request: Request) {
 	await requireAdmin();
 
@@ -98,5 +120,17 @@ export async function POST(request: Request) {
 		);
 	}
 
-	return NextResponse.json({ ok: true, payload });
+	const summary = pickSummary(payload);
+	const runId = pickRunId(payload);
+	const timing = pickTiming(payload);
+
+	return NextResponse.json({
+		ok: true,
+		mode,
+		runId,
+		startedAt: timing.startedAt,
+		finishedAt: timing.finishedAt,
+		summary,
+		payload,
+	});
 }

@@ -139,6 +139,110 @@ type AutomationConfig = {
   windows?: string[];
 };
 
+type OperationalRuleScope = 'select' | 'research' | 'draft' | 'gate' | 'schedule' | 'publish';
+type OperationalRuleAction = 'allow' | 'block' | 'require_review' | 'force_model' | 'priority';
+type OperationalRuleSeverity = 'warn' | 'block';
+type OperationalRuleConditionKind = 'category' | 'keywords_blacklist' | 'min_sources' | 'duplicate_similarity_gt';
+
+type OperationalRuleCondition = {
+  id: string;
+  kind: OperationalRuleConditionKind;
+  value: string;
+};
+
+type OperationalRuleConfig = {
+  scope: OperationalRuleScope;
+  conditions: OperationalRuleCondition[];
+  action: OperationalRuleAction;
+  severity: OperationalRuleSeverity;
+  actionValue?: string;
+};
+
+type ParsedOperationalRule = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  config: OperationalRuleConfig;
+};
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function parseOperationalRuleConfig(raw: unknown): OperationalRuleConfig | null {
+  if (!isPlainObject(raw)) return null;
+  const scope = typeof raw.scope === 'string' ? (raw.scope.trim() as OperationalRuleScope) : null;
+  const action = typeof raw.action === 'string' ? (raw.action.trim() as OperationalRuleAction) : null;
+  const severity = typeof raw.severity === 'string' ? (raw.severity.trim() as OperationalRuleSeverity) : null;
+  const actionValue = typeof raw.actionValue === 'string' ? raw.actionValue.trim() : '';
+
+  const allowedScopes: OperationalRuleScope[] = ['select', 'research', 'draft', 'gate', 'schedule', 'publish'];
+  const allowedActions: OperationalRuleAction[] = ['allow', 'block', 'require_review', 'force_model', 'priority'];
+  const allowedSeverities: OperationalRuleSeverity[] = ['warn', 'block'];
+
+  if (!scope || !allowedScopes.includes(scope)) return null;
+  if (!action || !allowedActions.includes(action)) return null;
+  if (!severity || !allowedSeverities.includes(severity)) return null;
+
+  const rawConditions = Array.isArray(raw.conditions) ? raw.conditions : [];
+  const conditions: OperationalRuleCondition[] = rawConditions
+    .filter((c) => isPlainObject(c))
+    .map((c) => ({
+      id: typeof c.id === 'string' ? c.id : '',
+      kind: typeof c.kind === 'string' ? (c.kind.trim() as OperationalRuleConditionKind) : 'category',
+      value: typeof c.value === 'string' ? c.value : '',
+    }))
+    .filter((c) => !!c.kind && !!c.value);
+
+  return {
+    scope,
+    conditions,
+    action,
+    severity,
+    ...(actionValue ? { actionValue } : {}),
+  };
+}
+
+function normalizeKeywordsList(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 50);
+}
+
+function entryTextForRules(entry: { title: string; url: string; rawJson: unknown }): string {
+  const pieces: string[] = [];
+  if (entry.title) pieces.push(entry.title);
+  if (entry.url) pieces.push(entry.url);
+  if (isPlainObject(entry.rawJson)) {
+    const maybeSnippet = entry.rawJson.contentSnippet;
+    if (typeof maybeSnippet === 'string' && maybeSnippet.trim()) pieces.push(maybeSnippet);
+    const maybeContent = entry.rawJson.content;
+    if (typeof maybeContent === 'string' && maybeContent.trim()) pieces.push(maybeContent);
+  }
+  return pieces.join('\n').toLowerCase();
+}
+
+function pickLastErrorFromResults(input: {
+  rssResults: Array<{ error?: string; status?: string }>;
+  draftResults: Array<{ error?: string }>;
+}): string | null {
+  for (let i = input.draftResults.length - 1; i >= 0; i -= 1) {
+    const e = input.draftResults[i]?.error;
+    if (typeof e === 'string' && e.trim()) return e.trim();
+  }
+  for (let i = input.rssResults.length - 1; i >= 0; i -= 1) {
+    const e = input.rssResults[i]?.error;
+    if (typeof e === 'string' && e.trim()) return e.trim();
+    const s = input.rssResults[i]?.status;
+    if (typeof s === 'string' && s.trim() && s !== 'ok' && s !== 'not_modified' && s !== 'skipped_dry_run') {
+      return `RSS: ${s}`;
+    }
+  }
+  return null;
+}
+
 function safeParseSourcesConfig(raw: string | null | undefined): SourcesConfig {
   const fallback: SourcesConfig = {
     researchWeights: { web: 70, social: 30, journals: 50 },
@@ -390,6 +494,24 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         runId: jobLogId,
+        startedAt: startedAt.toISOString(),
+        finishedAt: finishedAt.toISOString(),
+        summary: {
+          ok: true,
+          pipelineStatus,
+          runMode,
+          dryRun: isDryRun,
+          skipped: true,
+          skippedReason: `Pipeline is ${pipelineStatus}`,
+          enabledSourceCount: 0,
+          rssImportedCount: 0,
+          selectedEntryCount: 0,
+          draftCreatedCount: 0,
+          ignoredByRulesCount: 0,
+          forcedNeedsReviewCount: 0,
+          priorityOverridesCount: 0,
+          lastError: null,
+        },
         results: {
           skipped: true,
           reason: `Pipeline is ${pipelineStatus}`,
@@ -426,6 +548,19 @@ export async function POST(request: NextRequest) {
     const autoPublish = parseBool(settingMap.get(KEY_AUTO_PUBLISH), false);
 
     const automationConfig = safeParseAutomationConfig(settingMap.get(KEY_AUTOMATION_CONFIG_JSON));
+
+    const dbRules = await prisma.newsAutomationRule.findMany({
+      where: { enabled: true },
+      select: { id: true, name: true, enabled: true, config: true },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+    });
+
+    const operationalRules: ParsedOperationalRule[] = [];
+    for (const rule of dbRules) {
+      const parsed = parseOperationalRuleConfig(rule.config);
+      if (!parsed) continue;
+      operationalRules.push({ id: rule.id, name: rule.name, enabled: rule.enabled, config: parsed });
+    }
 
     const allEnabledSources = await prisma.newsSource.findMany({
       where: { enabled: true },
@@ -482,6 +617,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           runId: jobLogId,
+          startedAt: startedAt.toISOString(),
+          finishedAt: finishedAt.toISOString(),
+          summary: {
+            ok: false,
+            pipelineStatus,
+            runMode,
+            dryRun: isDryRun,
+            skipped: false,
+            skippedReason: null,
+            enabledSourceCount: sources.length,
+            rssImportedCount: 0,
+            selectedEntryCount: 0,
+            draftCreatedCount: 0,
+            ignoredByRulesCount: 0,
+            forcedNeedsReviewCount: 0,
+            priorityOverridesCount: 0,
+            lastError: reason,
+          },
           results: {
             pipelineStatus,
             runMode,
@@ -741,7 +894,40 @@ export async function POST(request: NextRequest) {
 
     const draftResults: Array<{ entryId: string; ok: boolean; itemId?: string; status?: string; error?: string }> = [];
 
+    let ignoredByRulesCount = 0;
+    let forcedNeedsReviewCount = 0;
+    let priorityOverridesCount = 0;
+
     for (const entry of selectableEntries) {
+      if (!isDryRun && operationalRules.length) {
+        const entryText = entryTextForRules(entry);
+        const matchingSelectRule = operationalRules.find((r) => {
+          if (r.config.scope !== 'select') return false;
+          if (r.config.action !== 'block') return false;
+          if (r.config.severity !== 'block') return false;
+          return r.config.conditions.some((c) => {
+            if (c.kind !== 'keywords_blacklist') return false;
+            const keywords = normalizeKeywordsList(c.value);
+            return keywords.some((kw) => entryText.includes(kw));
+          });
+        });
+
+        if (matchingSelectRule) {
+          await prisma.newsSourceEntry
+            .update({
+              where: { id: entry.id },
+              data: {
+                status: 'IGNORED',
+                error: `blocked_by_rule:${matchingSelectRule.id}`,
+              },
+            })
+            .catch(() => null);
+          ignoredByRulesCount += 1;
+          draftResults.push({ entryId: entry.id, ok: true, status: 'ignored_by_rule' });
+          continue;
+        }
+      }
+
       if (isDryRun) {
         if (!autoDraft) {
           draftResults.push({ entryId: entry.id, ok: true, status: 'dry_run_skipped_autoDraft_disabled' });
@@ -846,6 +1032,55 @@ export async function POST(request: NextRequest) {
         let scheduledFor: Date | null = null;
         let status: 'NEEDS_REVIEW' | 'SCHEDULED' | 'PUBLISHED' = 'NEEDS_REVIEW';
 
+        let schedulePriority: string | null = null;
+        let forceNeedsReview = false;
+
+        if (operationalRules.length) {
+          const draftText = `${title}\n${summary}\n${contentHtml}\n${category}`.toLowerCase();
+
+          for (const r of operationalRules) {
+            const cfg = r.config;
+            const shouldConsiderScope = cfg.scope === 'draft' || cfg.scope === 'gate' || cfg.scope === 'schedule' || cfg.scope === 'publish';
+            if (!shouldConsiderScope) continue;
+
+            const matched = cfg.conditions.length
+              ? cfg.conditions.some((c) => {
+                  if (c.kind === 'category') {
+                    return category.trim().toLowerCase() === c.value.trim().toLowerCase();
+                  }
+                  if (c.kind === 'keywords_blacklist') {
+                    const keywords = normalizeKeywordsList(c.value);
+                    return keywords.some((kw) => draftText.includes(kw));
+                  }
+                  return false;
+                })
+              : false;
+
+            if (!matched) continue;
+
+            if (cfg.action === 'block' && cfg.severity === 'block') {
+              await prisma.newsSourceEntry
+                .update({
+                  where: { id: entry.id },
+                  data: { status: 'IGNORED', error: `blocked_by_rule:${r.id}` },
+                })
+                .catch(() => null);
+
+              ignoredByRulesCount += 1;
+              draftResults.push({ entryId: entry.id, ok: true, status: 'ignored_by_rule' });
+              throw new Error('__RULE_BLOCKED__');
+            }
+
+            if (cfg.action === 'require_review') {
+              forceNeedsReview = true;
+            }
+
+            if (cfg.scope === 'schedule' && cfg.action === 'priority' && cfg.actionValue?.trim()) {
+              schedulePriority = cfg.actionValue.trim();
+            }
+          }
+        }
+
         if (!shouldAutoPublish && autoSchedule) {
           scheduledFor = chooseNextScheduleTime(automationConfig, now);
           status = 'SCHEDULED';
@@ -853,6 +1088,16 @@ export async function POST(request: NextRequest) {
 
         if (shouldAutoPublish) {
           status = 'PUBLISHED';
+        }
+
+        if (forceNeedsReview && (status === 'SCHEDULED' || status === 'PUBLISHED')) {
+          forcedNeedsReviewCount += 1;
+          status = 'NEEDS_REVIEW';
+          scheduledFor = null;
+        }
+
+        if (schedulePriority && status === 'SCHEDULED') {
+          priorityOverridesCount += 1;
         }
 
         const createdItem = await prisma.newsItem.create({
@@ -868,6 +1113,7 @@ export async function POST(request: NextRequest) {
             sourceId: entry.sourceId,
             status,
             scheduledFor,
+            ...(schedulePriority ? { schedulePriority } : {}),
             publishedAt: shouldAutoPublish ? now : null,
             seoTitle,
             seoDescription,
@@ -958,6 +1204,9 @@ export async function POST(request: NextRequest) {
           status: publishBlockedByOgApproval ? 'NEEDS_REVIEW' : status,
         });
       } catch (error) {
+        if (error instanceof Error && error.message === '__RULE_BLOCKED__') {
+          continue;
+        }
         const message = error instanceof Error ? error.message : 'Draft generation failed';
 
         await reportNewsAiKeyError(prisma, resolvedApiKeyId, message);
@@ -1035,8 +1284,30 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const rssImportedCount = rssResults.reduce((acc, r) => acc + (typeof r.imported === 'number' ? r.imported : 0), 0);
+    const draftCreatedCount = draftResults.filter((d) => d.ok && d.itemId).length;
+    const lastError = pickLastErrorFromResults({ rssResults, draftResults });
+
     return NextResponse.json({
       runId: jobLogId,
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      summary: {
+        ok: true,
+        pipelineStatus,
+        runMode,
+        dryRun: isDryRun,
+        skipped: false,
+        skippedReason: null,
+        enabledSourceCount: sources.length,
+        rssImportedCount,
+        selectedEntryCount: selectableEntries.length,
+        draftCreatedCount,
+        ignoredByRulesCount,
+        forcedNeedsReviewCount,
+        priorityOverridesCount,
+        lastError,
+      },
       results: {
         pipelineStatus,
         runMode,
@@ -1054,6 +1325,13 @@ export async function POST(request: NextRequest) {
         rssResults,
         selectedEntryCount: selectableEntries.length,
         draftResults,
+        operationalRules: {
+          enabledCount: dbRules.length,
+          parsedCount: operationalRules.length,
+          ignoredByRulesCount,
+          forcedNeedsReviewCount,
+          priorityOverridesCount,
+        },
       },
     });
   } catch (error) {

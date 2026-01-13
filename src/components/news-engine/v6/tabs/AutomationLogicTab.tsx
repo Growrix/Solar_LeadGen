@@ -14,8 +14,15 @@ import {
   Zap,
 } from 'lucide-react';
 import type { NewsEngineState } from '@/lib/ui-stubs/news-engine';
+import {
+  adminCreateAutomationRule,
+  adminDeleteAutomationRule,
+  adminUpdateAutomationRule,
+  fetchAdminAutomationRules,
+  type AdminAutomationRule,
+} from '@/lib/news-engine/client';
 import type { useSavedIndicator } from '../shared';
-import { OperationalRuleModal, type OperationalRule } from '../modals/OperationalRuleModal';
+import { OperationalRuleModal, type OperationalRuleDraft } from '../modals/OperationalRuleModal';
 
 type SavedIndicator = ReturnType<typeof useSavedIndicator>;
 
@@ -96,41 +103,85 @@ export function AutomationLogicTabV6({
     return `${yyyy}-${mm}-${dd}`;
   });
 
-  const [operationalRules, setOperationalRules] = React.useState(
-    () =>
-      [
-        {
-          id: 1,
-          scope: 'schedule',
-          conditions: [{ id: 'seed_1', kind: 'category', value: 'general' }],
-          action: 'priority',
-          actionValue: 'normal',
-          severity: 'warn',
-          enabled: true,
-        },
-        {
-          id: 2,
-          scope: 'draft',
-          conditions: [{ id: 'seed_2', kind: 'keywords_blacklist', value: 'comma,separated,keywords' }],
-          action: 'block',
-          severity: 'block',
-          enabled: true,
-        },
-        {
-          id: 3,
-          scope: 'gate',
-          conditions: [{ id: 'seed_3', kind: 'min_sources', value: '2' }],
-          action: 'require_review',
-          severity: 'warn',
-          enabled: false,
-        },
-      ] as OperationalRule[]
-  );
+  type DbOperationalRule = {
+    id: string;
+    name: string;
+    enabled: boolean;
+    config: {
+      scope: 'select' | 'research' | 'draft' | 'gate' | 'schedule' | 'publish';
+      conditions: Array<{ id: string; kind: string; value: string }>;
+      action: string;
+      severity: string;
+      actionValue?: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+  };
 
-  const summarizeRuleConditions = React.useCallback((rule: OperationalRule) => {
-    if (!rule.conditions || rule.conditions.length === 0) return 'No conditions (applies globally)';
+  const [operationalRules, setOperationalRules] = React.useState<DbOperationalRule[]>([]);
+  const [rulesLoading, setRulesLoading] = React.useState(false);
+  const [rulesError, setRulesError] = React.useState<string | null>(null);
 
-    return rule.conditions
+  const normalizeDbRule = React.useCallback((rule: AdminAutomationRule): DbOperationalRule | null => {
+    const cfg = rule.config;
+    if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return null;
+
+    const scope = typeof (cfg as any).scope === 'string' ? String((cfg as any).scope).trim() : '';
+    const action = typeof (cfg as any).action === 'string' ? String((cfg as any).action).trim() : '';
+    const severity = typeof (cfg as any).severity === 'string' ? String((cfg as any).severity).trim() : '';
+    const actionValue = typeof (cfg as any).actionValue === 'string' ? String((cfg as any).actionValue).trim() : '';
+    const rawConditions = Array.isArray((cfg as any).conditions) ? (cfg as any).conditions : [];
+
+    const allowedScopes = new Set(['select', 'research', 'draft', 'gate', 'schedule', 'publish']);
+    if (!allowedScopes.has(scope)) return null;
+
+    return {
+      id: rule.id,
+      name: rule.name,
+      enabled: rule.enabled,
+      config: {
+        scope: scope as DbOperationalRule['config']['scope'],
+        conditions: rawConditions
+          .filter((c: any) => c && typeof c === 'object')
+          .map((c: any) => ({
+            id: typeof c.id === 'string' ? c.id : `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            kind: typeof c.kind === 'string' ? c.kind : 'category',
+            value: typeof c.value === 'string' ? c.value : '',
+          }))
+          .filter((c: any) => !!c.kind && !!c.value),
+        action,
+        severity,
+        ...(actionValue ? { actionValue } : {}),
+      },
+      createdAt: rule.createdAt,
+      updatedAt: rule.updatedAt,
+    };
+  }, []);
+
+  const reloadOperationalRules = React.useCallback(async () => {
+    setRulesLoading(true);
+    setRulesError(null);
+    try {
+      const rules = await fetchAdminAutomationRules();
+      const normalized = rules
+        .map((r) => normalizeDbRule(r))
+        .filter((r): r is DbOperationalRule => !!r);
+      setOperationalRules(normalized);
+    } catch (error) {
+      setRulesError(error instanceof Error ? error.message : 'Failed to load operational rules');
+    } finally {
+      setRulesLoading(false);
+    }
+  }, [normalizeDbRule]);
+
+  React.useEffect(() => {
+    void reloadOperationalRules();
+  }, [reloadOperationalRules]);
+
+  const summarizeRuleConditions = React.useCallback((rule: DbOperationalRule) => {
+    if (!rule.config.conditions || rule.config.conditions.length === 0) return 'No conditions (applies globally)';
+
+    return rule.config.conditions
       .map((c) => {
         switch (c.kind) {
           case 'category':
@@ -148,14 +199,14 @@ export function AutomationLogicTabV6({
       .join(' • ');
   }, []);
 
-  const summarizeRuleAction = React.useCallback((rule: OperationalRule) => {
-    const base = `${rule.action}`;
-    const extra = rule.actionValue?.trim() ? ` (${rule.actionValue.trim()})` : '';
-    return `${base}${extra} • ${rule.severity}`;
+  const summarizeRuleAction = React.useCallback((rule: DbOperationalRule) => {
+    const base = `${rule.config.action}`;
+    const extra = rule.config.actionValue?.trim() ? ` (${rule.config.actionValue.trim()})` : '';
+    return `${base}${extra} • ${rule.config.severity}`;
   }, []);
 
-  const explainRule = React.useCallback((rule: OperationalRule) => {
-    const readableScope: Record<OperationalRule['scope'], string> = {
+  const explainRule = React.useCallback((rule: DbOperationalRule) => {
+    const readableScope: Record<DbOperationalRule['config']['scope'], string> = {
       select: 'selection',
       research: 'research',
       draft: 'drafting',
@@ -166,19 +217,81 @@ export function AutomationLogicTabV6({
 
     const cond = summarizeRuleConditions(rule);
     const action = summarizeRuleAction(rule);
-    return `When ${cond}, apply ${action} during ${readableScope[rule.scope]}.`;
+    return `When ${cond}, apply ${action} during ${readableScope[rule.config.scope]}.`;
   }, [summarizeRuleAction, summarizeRuleConditions]);
 
   const triggerSaved = React.useCallback(() => {
     automationSaved.trigger();
   }, [automationSaved]);
 
+  const runnerWindows = React.useMemo(() => {
+    const now = new Date();
+    const blackout = new Set(publishWindowsV2.blackoutDates ?? []);
+
+    const windows: Array<{ startsAt: Date; window: string }> = [];
+    const scanDays = 35;
+
+    for (let i = 0; i < scanDays; i += 1) {
+      const dayDate = new Date(now);
+      dayDate.setHours(0, 0, 0, 0);
+      dayDate.setDate(dayDate.getDate() + i);
+
+      const yyyy = String(dayDate.getFullYear());
+      const mm = String(dayDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(dayDate.getDate()).padStart(2, '0');
+      const ymd = `${yyyy}-${mm}-${dd}`;
+      if (blackout.has(ymd)) continue;
+
+      const jsDay = dayDate.getDay();
+      const def = dayDefs.find((d) => d.jsDay === jsDay);
+      if (!def) continue;
+      const dayCfg = publishWindowsV2.days[def.key];
+      if (!dayCfg.enabled) continue;
+
+      for (const range of dayCfg.ranges) {
+        if (!range.start || !range.end) continue;
+        if (range.end <= range.start) continue;
+
+        const [sh, sm] = range.start.split(':').map((v) => parseInt(v, 10));
+        if (Number.isNaN(sh) || Number.isNaN(sm)) continue;
+
+        const startsAt = new Date(dayDate);
+        startsAt.setHours(sh, sm, 0, 0);
+        if (startsAt <= now) continue;
+
+        windows.push({
+          startsAt,
+          window: `${ymd} • ${range.start} - ${range.end}`,
+        });
+      }
+    }
+
+    windows.sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+    return windows.map((w) => w.window).slice(0, 120);
+  }, [dayDefs, publishWindowsV2.blackoutDates, publishWindowsV2.days]);
+
   const handleSaveOperationalRule = React.useCallback(
-    (rule: OperationalRule) => {
-      setOperationalRules((prev) => [rule, ...prev]);
-      triggerSaved();
+    async (rule: OperationalRuleDraft) => {
+      try {
+        setRulesLoading(true);
+        await adminCreateAutomationRule({
+          name: rule.name,
+          enabled: rule.enabled,
+          config: {
+            scope: rule.scope,
+            conditions: rule.conditions,
+            action: rule.action,
+            severity: rule.severity,
+            ...(rule.actionValue ? { actionValue: rule.actionValue } : {}),
+          },
+        });
+        triggerSaved();
+        await reloadOperationalRules();
+      } finally {
+        setRulesLoading(false);
+      }
     },
-    [triggerSaved]
+    [reloadOperationalRules, triggerSaved]
   );
 
   const saveConfiguration = React.useCallback(() => {
@@ -188,18 +301,24 @@ export function AutomationLogicTabV6({
       config: {
         minScore: config.minScore,
         strategy: config.strategy,
+        windows: runnerWindows,
         publishWindowsV2,
-        operationalRules,
       },
     });
-  }, [automationSaved, config.minScore, config.strategy, onSave, operationalRules, publishWindowsV2, state.automation]);
+  }, [automationSaved, config.minScore, config.strategy, onSave, publishWindowsV2, runnerWindows, state.automation]);
 
   const deleteRule = React.useCallback(
-    (id: number) => {
-      setOperationalRules((prev) => prev.filter((r) => r.id !== id));
-      triggerSaved();
+    async (id: string) => {
+      try {
+        setRulesLoading(true);
+        await adminDeleteAutomationRule(id);
+        triggerSaved();
+        await reloadOperationalRules();
+      } finally {
+        setRulesLoading(false);
+      }
     },
-    [triggerSaved]
+    [reloadOperationalRules, triggerSaved]
   );
 
   const hasInvalidRange = React.useMemo(() => {
@@ -496,6 +615,18 @@ export function AutomationLogicTabV6({
             </div>
 
             <div className="divide-y divide-border">
+              {rulesError ? (
+                <div className="p-4 text-body text-destructive">{rulesError}</div>
+              ) : null}
+
+              {rulesLoading && operationalRules.length === 0 ? (
+                <div className="p-4 text-body text-muted-foreground">Loading rules…</div>
+              ) : null}
+
+              {!rulesLoading && operationalRules.length === 0 && !rulesError ? (
+                <div className="p-4 text-body text-muted-foreground">No operational rules yet. Add one to persist it to the database.</div>
+              ) : null}
+
               {operationalRules.map((rule) => (
                 <div
                   key={rule.id}
@@ -515,8 +646,9 @@ export function AutomationLogicTabV6({
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-body-small uppercase tracking-widest text-muted-foreground">{rule.scope}</span>
-                        <h5 className="text-body text-foreground">{summarizeRuleAction(rule)}</h5>
+                        <span className="text-body-small uppercase tracking-widest text-muted-foreground">{rule.config.scope}</span>
+                        <h5 className="text-body text-foreground">{rule.name}</h5>
+                        <span className="text-body-small text-muted-foreground">• {summarizeRuleAction(rule)}</span>
                       </div>
                       <p className="text-body-small text-muted-foreground mt-0.5">{summarizeRuleConditions(rule)}</p>
                       <p className="text-body-small text-muted-foreground mt-1">What this does: {explainRule(rule)}</p>
@@ -526,14 +658,24 @@ export function AutomationLogicTabV6({
                     <Toggle
                       active={rule.enabled}
                       onChange={() => {
-                        setOperationalRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
-                        triggerSaved();
+                        void (async () => {
+                          setOperationalRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
+                          triggerSaved();
+                          try {
+                            await adminUpdateAutomationRule(rule.id, { enabled: !rule.enabled });
+                            await reloadOperationalRules();
+                          } catch (error) {
+                            setRulesError(error instanceof Error ? error.message : 'Failed to update rule');
+                          }
+                        })();
                       }}
+                      disabled={rulesLoading}
                     />
                     <button
                       type="button"
-                      onClick={() => deleteRule(rule.id)}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                      onClick={() => void deleteRule(rule.id)}
+                      disabled={rulesLoading}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Delete rule"
                     >
                       <Trash2 size={16} />
@@ -885,8 +1027,10 @@ export function AutomationLogicTabV6({
         <OperationalRuleModal
           onClose={onCloseOperationalRuleModal}
           onSave={(rule) => {
-            handleSaveOperationalRule(rule);
-            onCloseOperationalRuleModal();
+            void (async () => {
+              await handleSaveOperationalRule(rule);
+              onCloseOperationalRuleModal();
+            })();
           }}
         />
       ) : null}

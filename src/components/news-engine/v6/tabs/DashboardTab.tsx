@@ -3,14 +3,11 @@
 import React from 'react';
 import {
   Activity,
-  ArrowDownRight,
-  ArrowUpRight,
   Calendar,
   ChevronDown,
   ChevronRight,
   Clock,
   Filter,
-  MoreVertical,
   Plus,
   Rss,
   Search,
@@ -66,12 +63,58 @@ export function DashboardTabV6({
   openReviewForItem,
   openManualDraft,
 }: Props) {
+  const pageSize = 20;
+  const [pageIndex, setPageIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    setPageIndex(0);
+  }, [dashboardSearchTerm, dashboardFilters]);
+
+  const visibleItems = React.useMemo(() => {
+    const start = pageIndex * pageSize;
+    return filteredDashboardNews.slice(start, start + pageSize);
+  }, [filteredDashboardNews, pageIndex]);
+
+  const totalItems = filteredDashboardNews.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const canPrev = pageIndex > 0;
+  const canNext = pageIndex + 1 < totalPages;
+
+  const nonDeletedItems = React.useMemo(
+    () => state.items.filter((it) => !it.deletedAt),
+    [state.items]
+  );
+
+  const last30DaysItems = React.useMemo(() => {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return nonDeletedItems.filter((it) => {
+      const createdAtMs = Date.parse(it.createdAt);
+      return Number.isFinite(createdAtMs) && createdAtMs >= cutoff;
+    });
+  }, [nonDeletedItems]);
+
+  const totalStoriesLast30 = last30DaysItems.length;
+  const avgRelevanceLast30 = React.useMemo(() => {
+    if (!last30DaysItems.length) return null;
+    const sum = last30DaysItems.reduce((acc, it) => acc + (Number.isFinite(it.relevanceScore) ? it.relevanceScore : 0), 0);
+    return Math.round(sum / last30DaysItems.length);
+  }, [last30DaysItems]);
+
+  const reviewQueueCount = React.useMemo(() => {
+    return nonDeletedItems.filter((it) => it.status === 'NEEDS_REVIEW' || it.status === 'DRAFT_READY' || it.status === 'DRAFT').length;
+  }, [nonDeletedItems]);
+
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500">
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Stories', value: 1284, trend: 12.5, icon: <Rss size={20} />, description: 'Last 30 days' },
-          { label: 'Avg. Relevance', value: '92%', trend: 4.2, icon: <Activity size={20} />, description: 'AI quality score' },
+          { label: 'Total Stories', value: totalStoriesLast30, icon: <Rss size={20} />, description: 'Created (last 30 days)' },
+          {
+            label: 'Avg. Relevance',
+            value: avgRelevanceLast30 === null ? '—' : `${avgRelevanceLast30}%`,
+            icon: <Activity size={20} />,
+            description: 'Avg. score (last 30 days)',
+          },
           {
             label: 'Automations',
             value:
@@ -80,11 +123,10 @@ export function DashboardTabV6({
                 : state.pipelineStatus === 'PAUSED'
                   ? 'Paused'
                   : 'Stopped',
-            trend: 0,
             icon: <Zap size={20} />,
             description: 'System status',
           },
-          { label: 'Review Queue', value: 12, trend: -18, icon: <Clock size={20} />, description: 'Pending approval' },
+          { label: 'Review Queue', value: reviewQueueCount, icon: <Clock size={20} />, description: 'Needs review / drafts' },
         ].map((kpi) => (
           <div
             key={kpi.label}
@@ -92,10 +134,6 @@ export function DashboardTabV6({
           >
             <div className="flex justify-between items-start mb-4">
               <div className="p-2 bg-background rounded-lg text-brand-accent shadow-neu-inset">{kpi.icon}</div>
-              <div className={`flex items-center gap-1 text-body-small ${kpi.trend >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {kpi.trend >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                {Math.abs(kpi.trend)}%
-              </div>
             </div>
             <div className="space-y-1">
               <p className="text-body-small text-muted-foreground tracking-wider">{kpi.label}</p>
@@ -256,7 +294,7 @@ export function DashboardTabV6({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredDashboardNews.map((item) => (
+                {visibleItems.map((item) => (
                   <tr key={item.id} className="hover:bg-surface-hover transition-colors group">
                     <td className="px-6 py-4 max-w-md">
                       <div className="flex flex-col">
@@ -301,9 +339,6 @@ export function DashboardTabV6({
                           Review
                           <ChevronRight size={14} strokeWidth={3} />
                         </button>
-                        <button type="button" className="text-muted-foreground hover:text-foreground p-1" aria-label="More options">
-                          <MoreVertical size={18} />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -337,18 +372,26 @@ export function DashboardTabV6({
         {filteredDashboardNews.length > 0 ? (
           <div className="px-6 py-4 bg-background border-t border-border flex items-center justify-between">
             <span className="text-body-small text-muted-foreground uppercase tracking-widest">
-              Showing {filteredDashboardNews.length} of {state.items.length} results
+              Showing {Math.min(pageSize, Math.max(0, totalItems - pageIndex * pageSize))} of {totalItems} results
             </span>
             <div className="flex gap-2">
               <button
                 type="button"
-                className="px-4 py-1.5 text-body-small uppercase tracking-widest bg-surface border border-border rounded-lg text-muted-foreground cursor-not-allowed"
+                onClick={() => setPageIndex((prev) => Math.max(0, prev - 1))}
+                disabled={!canPrev}
+                className={`px-4 py-1.5 text-body-small uppercase tracking-widest bg-surface border border-border rounded-lg transition-colors ${
+                  canPrev ? 'text-foreground hover:bg-surface-hover' : 'text-muted-foreground cursor-not-allowed opacity-60'
+                }`}
               >
                 Previous
               </button>
               <button
                 type="button"
-                className="px-4 py-1.5 text-body-small uppercase tracking-widest bg-surface border border-border rounded-lg text-foreground hover:bg-surface-hover transition-colors"
+                onClick={() => setPageIndex((prev) => Math.min(totalPages - 1, prev + 1))}
+                disabled={!canNext}
+                className={`px-4 py-1.5 text-body-small uppercase tracking-widest bg-surface border border-border rounded-lg transition-colors ${
+                  canNext ? 'text-foreground hover:bg-surface-hover' : 'text-muted-foreground cursor-not-allowed opacity-60'
+                }`}
               >
                 Next
               </button>
