@@ -5428,3 +5428,22 @@ This ensures the feature is fully tested, documented, and ready for production.
 The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. 
 
 ***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+
+----------------------------------------------------------------
+
+
+
+
+***My Visual Findings to add in a separate section & fix*** 
+- Currently I do not have any option to edit any post. I mean there is no manual control on the content to edit such as the title and body texts and tags. And also the generated contents are mostly plain texts. The body texts are not reader friendly e.g There is no bullet points or h1,h2,h3 maintained.
+- The review modal's all the sections are not clear to me. I can see there are a lot of things in the UI showing but maybe not working in the backend. such as the SEO analysis, Readability analysis , plagiarism check etc. I am not sure which one is actually working and which one is not working.
+You need to make sure that everything is working or else remove the non working sections from the UI to avoid confusion. I prefer it to work , but if it is not possible then remove it from the UI.
+
+- The AI image generation is not working in the review modal> SEO & compliance section. And the Image url it is fetching is workng and mostly not working.
+
+- The research summary on review modal > Model profile sections seems only showing rss only. just make sure all are working there. 
+- Overall you need to check on the review modal deeply.
+
+***Instructions*** 
+As I am refining my plan and also mentioned some issues I have noticed, I want you to update this plan v2 file by adding a sparate section for my visual findings and also fix them accordingly while updating the plan v2 file.
