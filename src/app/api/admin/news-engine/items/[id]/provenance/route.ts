@@ -21,8 +21,8 @@ export async function GET(_request: Request, context: { params: { id: string } }
       select: {
         id: true,
         sourceType: true,
-        sourceEntries: { select: { url: true, title: true } },
-        researchEntries: { select: { url: true, title: true, kind: true } },
+        sourceEntries: { select: { url: true, title: true, publishedAt: true, fetchedAt: true } },
+        researchEntries: { select: { url: true, title: true, kind: true, publishedAt: true, fetchedAt: true } },
         aiRequestLogs: {
           orderBy: { createdAt: 'asc' },
           select: {
@@ -43,6 +43,45 @@ export async function GET(_request: Request, context: { params: { id: string } }
     const rssEntryUrls = Array.from(new Set((item.sourceEntries ?? []).map((e) => e.url).filter(Boolean)));
     const researchUrls = Array.from(new Set((item.researchEntries ?? []).map((e) => e.url).filter(Boolean)));
 
+    type ProvenanceSource = {
+      kind: 'RSS' | 'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND';
+      title: string;
+      url: string;
+      timestamp: string | null;
+    };
+
+    const sources: ProvenanceSource[] = [];
+    const seen = new Set<string>();
+
+    for (const e of item.sourceEntries ?? []) {
+      const url = normalizeString(e.url);
+      if (!url) continue;
+      const key = `RSS|${url}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      sources.push({
+        kind: 'RSS',
+        title: normalizeString(e.title) || url,
+        url,
+        timestamp: (e.publishedAt ?? e.fetchedAt)?.toISOString() ?? null,
+      });
+    }
+
+    for (const e of item.researchEntries ?? []) {
+      const url = normalizeString(e.url);
+      if (!url) continue;
+      const kind = (e.kind as ProvenanceSource['kind']) ?? 'WEB';
+      const key = `${kind}|${url}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      sources.push({
+        kind,
+        title: normalizeString(e.title) || url,
+        url,
+        timestamp: (e.publishedAt ?? e.fetchedAt)?.toISOString() ?? null,
+      });
+    }
+
     const stages = (item.aiRequestLogs ?? []).map((l) => ({
       action: l.action,
       taskType: l.taskType,
@@ -56,6 +95,7 @@ export async function GET(_request: Request, context: { params: { id: string } }
     return NextResponse.json({
       itemId: item.id,
       sourceType: item.sourceType,
+      sources,
       rssEntryUrls,
       researchUrls,
       stages,

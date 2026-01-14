@@ -831,7 +831,7 @@
 - [x] X390 Phase 3 verification: run `npx prisma validate`, `npx tsc --noEmit`, and `npm run build`
   - `npx prisma validate`: PASS
   - `npx tsc --noEmit`: PASS
-  - `npm run build`: PASS (eslint warnings only)
+  - `npm run build`: PASS (eslint warnings only, non-blocking)
 
 #### Phase 3 backend task breakdown (implementation tasks)
 
@@ -965,16 +965,55 @@
 > - Add subtasks for each UI, logic, and audit step as needed.
 > - Do not begin E020 until all tasks are planned and checked in.
 
-- [ ] E019 **[PLANNING]** Plan and lock all actionable tasks for Phase 3 (see `.specify/templates/tasks-template.md`)
-- [ ] E020 Implement the frontend expansion/enhancement following Phase 2 prompts
-- [ ] E021 Run a comprehensive frontend-vs-plan audit
+- [x] E019 **[PLANNING]** Plan and lock all actionable tasks for Phase 3 (see `.specify/templates/tasks-template.md`)
+  - **Scope lock**: Must satisfy `DOC/FEATURES/NEWS ENGINE/Plan/Expand_userstory.md` (US1–US4) and the FE section of `DOC/FEATURES/NEWS ENGINE/Plan/NEWS-ENGINE-EXPANSION-UNIFIED-PLAN-V3-2026-01-14.md`.
+  - **Execution lock**: Implement tasks in the order below; do not start backend work in Phase 3.
+  - **Truthfulness rule**: If a UI surface depends on Phase 4 backend work (e.g., server image-health check, enriched provenance rows), the UI must label it as unavailable and disable the action (no fake values).
+
+  **Phase 3 planned task breakdown (execution order)**
+  - [x] E019a Inventory current Review modal behavior vs acceptance criteria (US1–US4)
+    - target file: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+    - confirm what is currently editable, what persists, and what is placeholder
+  - [x] E019b Implement **Rich manual editing** (US1)
+    - Replace the plain textarea “Article Body” with a rich editor that outputs `contentHtml`.
+    - Add toolbar actions: H1/H2/H3, bullet list, numbered list, bold, italic, link.
+    - Add **Preview** toggle that matches public rendering (`dangerouslySetInnerHTML`).
+    - Add “Raw HTML (advanced)” toggle (hidden by default).
+  - [x] E019c Implement **Format content** action (US1)
+    - User-triggered normalization (safe, no surprise auto-mutation).
+  - [x] E019d Implement **deterministic Save** (US1/US2)
+    - Save must persist title + contentHtml (and any edited SEO fields) via admin API.
+    - On reload/reopen, formatting must remain.
+  - [x] E019e Review modal **clarity pass** (US2)
+    - Remove/label any “dead UI” sections (e.g., compliance widgets) as “Planned / Not available yet”.
+    - Ensure every visible action has loading/success/error states.
+  - [x] E019f Image controls UX reliability (US3)
+    - Add status badge (OK/Broken/Unknown) and a “Re-check” action.
+    - If Phase 4 server image check is not yet implemented, label “Server check: planned” and keep “Re-check” as client-only load test.
+  - [x] E019g Provenance/Research Summary panel (US4)
+    - Add “Copy sources” + “Open all sources” (with warning).
+    - If Phase 4 provenance enrichment is not yet implemented, show URL-only rows with an explicit “Details pending Phase 4” label.
+  - [x] E019h Public Share modal quick win (WhatsApp + Email) (US1/US6)
+    - Verify WhatsApp + Email are present and use standard share URL formats.
+
+- [x] E020 Implement the frontend expansion/enhancement following Phase 2 prompts
+  - [x] E020a Install rich editor deps (`@tiptap/react`, `@tiptap/starter-kit`, `@tiptap/extension-link`)
+  - [x] E020b Add rich editor component `src/components/news-engine/v6/components/RichHtmlEditor.tsx`
+  - [x] E020c Wire Review modal edits + persistence (title, `contentHtml`, SEO fields) in `src/components/news-engine/v6/modals/ReviewModal.tsx`
+  - [x] E020c1 Add editable Tags field (comma-separated) and persist via `adminUpdateItem` (US1)
+  - [x] E020d Add provenance “Copy sources” + “Open all” actions (truthful URL-only labeling if Phase 4 enrichment pending)
+  - [x] E020e Add OG image health badge + client-only “Re-check” (server check explicitly marked planned)
+  - [x] E020f Public share Email body includes title + URL (`src/app/news/[slug]/page.tsx`)
+  - [x] E020g Gates: `npx tsc --noEmit` PASS; `npm run build` PASS (ESLint warnings in unrelated file only)
+- [x] E021 Run a comprehensive frontend-vs-plan audit
   - prompt: `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
   - output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/` (new file)
 - [ ] E022 Conditional: if audit finds gaps, fix them and re-audit until green
-- [ ] E023 If green: double-check Phase 1 backend plan against final frontend build and proceed
+- [x] E023 If green: double-check Phase 1 backend plan against final frontend build and proceed
+  - Confirmed Phase 4 plan covers remaining Phase 3 gaps: BE-2 (server OG image health check) + BE-3 (provenance enrichment)
 
 **Phase 3 checkpoint (must link files here once created)**:
-- Latest post-frontend audit report: `DOC/FEATURES/NEWS ENGINE/Audit Reports/TBD.md`
+- Latest post-frontend audit report: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase3-frontend-audit-2026-01-14.md`
 
 ---
 
@@ -986,18 +1025,58 @@
 > - Add subtasks for each API, DB, logic, and audit step as needed.
 > - Do not begin E031 until all tasks are planned and checked in.
 
-- [ ] E029 **[PLANNING]** Plan and lock all actionable tasks for Phase 4 (see `.specify/templates/tasks-template.md`)
-- [ ] E030 Create backend expansion/enhancement plan in `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/`
+- [x] E029 **[PLANNING]** Plan and lock all actionable tasks for Phase 4 (see `.specify/templates/tasks-template.md`)
+
+  **Phase 4 planned task breakdown (execution order)**
+  - [x] E029a Inventory current backend state vs Phase 4 targets
+    - current provenance endpoint: `src/app/api/admin/news-engine/items/[id]/provenance/route.ts`
+    - current image controls: `src/app/api/admin/news-engine/items/[id]/image-controls/route.ts`
+    - current client wrappers: `src/lib/news-engine/client.ts`
+    - current schema fields: `prisma/schema.prisma` (`NewsSourceEntry.publishedAt/fetchedAt`, `NewsResearchEntry.kind/publishedAt/fetchedAt`, `NewsItem.ogImageUrl`)
+  - [x] E029b Lock Phase 4 acceptance targets from `DOC/FEATURES/NEWS ENGINE/Plan/Expand_userstory.md` (US3/US4)
+    - US3: server-backed OG image health “Re-check” (and persisted last-check fields)
+    - US4: provenance rows include kind/title/url/timestamp across RSS + research
+  - [x] E029c Schema + migration plan (safe, additive)
+    - add `NewsItem.ogImageLastCheckedAt DateTime?`
+    - add `NewsItem.ogImageLastCheckStatus String?` (or enum) with values `OK|BROKEN|UNKNOWN`
+    - add `NewsItem.ogImageLastCheckError String?`
+    - run gates: `npx prisma validate`
+  - [x] E029d Backend endpoint plan: server OG image check
+    - new route: `src/app/api/admin/news-engine/items/[id]/og-image/check/route.ts` (POST)
+    - validate URL scheme (http/https), apply timeout, return status + persist fields
+    - write audit log entry (e.g. `news_item_og_image_checked`) via `writeNewsAuditLog`
+  - [x] E029e Backend endpoint plan: provenance enrichment response shape
+    - extend `/provenance` response to include a unified `sources[]` list with:
+      - `kind` (RSS/WEB/SOCIAL/JOURNAL/TREND)
+      - `title`, `url`
+      - `timestamp` (prefer `publishedAt`, fallback `fetchedAt`)
+    - keep existing `stages[]` output intact
+  - [x] E029f Frontend wiring plan (to consume Phase 4 backend)
+    - update `src/lib/news-engine/client.ts` types + wrapper for og-image check endpoint
+    - update `src/components/news-engine/v6/modals/ReviewModal.tsx`:
+      - replace client-only OG check with server call
+      - render enriched provenance rows (kind/title/timestamp)
+      - remove/adjust Phase 3 “Phase 4 pending” labels once truly implemented
+  - [x] E029g Phase 4 gate plan
+    - `npx prisma validate` PASS
+    - `npx tsc --noEmit` PASS
+    - `npm run build` PASS
+- [x] E030 Create backend expansion/enhancement plan in `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/`
   - must be aligned to: Phase 1 plan + Phase 3 frontend final state + Phase 3 audit report
-- [ ] E031 Implement backend expansion/enhancement per plan
-- [ ] E032 Run inventory/mapping audit vs plan
+- [x] E031 Implement backend expansion/enhancement per plan
+  - Schema: add persisted OG image last-check fields on `NewsItem` (+ migration)
+  - API: add `POST /api/admin/news-engine/items/[id]/og-image/check` + enrich provenance response
+  - UI: wire Review modal to server OG re-check + render enriched provenance rows when available
+  - Gates run: `npx prisma validate`, `npx prisma generate`, `npx tsc --noEmit`, `npm run build` (PASS; ESLint warnings only, unrelated)
+- [x] E032 Run inventory/mapping audit vs plan
   - prompt: `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/feature-implementation-inventory-mapping-audit-prompt.md`
   - output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/` (new file)
-- [ ] E033 Conditional: if audit finds gaps, fix them and re-audit until green
+- [x] E033 Conditional: if audit finds gaps, fix them and re-audit until green
+  - No gaps found in E032; no fix loop required.
 
 **Phase 4 checkpoint (must link files here once created)**:
-- Backend expansion plan: `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/TBD.md`
-- Post-backend inventory/mapping audit: `DOC/FEATURES/NEWS ENGINE/Audit Reports/TBD.md`
+- Backend expansion plan: `DOC/FEATURES/NEWS ENGINE/BACKEND PLAN/news-engine-expansion-backend-plan-v3-2026-01-14.md`
+- Post-backend inventory/mapping audit: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase4-inventory-mapping-audit-2026-01-14.md`
 
 ---
 
@@ -1009,13 +1088,44 @@
 > - Add subtasks for each test script, coverage, and fix loop as needed.
 > - Do not begin E041 until all tasks are planned and checked in.
 
-- [ ] E039 **[PLANNING]** Plan and lock all actionable tasks for Phase 5 (see `.specify/templates/tasks-template.md`)
-- [ ] E040 Create E2E testing script(s) for the entire expanded/enhanced feature
-- [ ] E041 Run E2E tests; fix any issues until green
+- [x] E039 **[PLANNING]** Plan and lock all actionable tasks for Phase 5 (see `.specify/templates/tasks-template.md`)
+
+  **Phase 5 planned task breakdown (execution order)**
+  - [x] E039a Inventory existing E2E infrastructure
+    - Playwright runner: `playwright.config.ts` (uses `npm run dev:e2e` and base URL `http://localhost:3001`)
+    - Prior News Engine E2E spec: `tests/e2e/news-engine-phase13-router-vault-provenance.spec.ts`
+    - Prior News Engine node scripts: `scripts/news-engine-e2e-automation-test.ts`, `scripts/news-engine-cleanup-test-data.ts`
+  - [x] E039b Define Phase 14 Phase 5 scope
+    - Must cover Phase 14 expansions added in Phase 3 + Phase 4:
+      - US3: server-backed OG image re-check endpoint + persisted last-check fields
+      - US4: provenance enrichment (`sources[]` kind/title/url/timestamp) + UI rendering
+  - [x] E039c Define test strategy + environment assumptions
+    - Use Playwright with programmatic admin sign-in (existing pattern)
+    - Use Prisma within the test to seed a NewsItem + linked source/research rows (non-destructive)
+    - Clean up test rows at end to avoid polluting local DB
+  - [x] E039d Lock test cases (minimum acceptance)
+    - TC1: Seed item with provenance rows → Review modal shows enriched sources
+    - TC2: Seed item with OG image URL → “Re-check” calls server endpoint and persists status
+    - TC3: Close/reopen Review modal → last-check status loads from image-controls response
+  - [x] E039e Lock execution + green-run criteria
+    - Run a targeted Playwright spec for Phase 14
+    - Green criteria: spec passes end-to-end (no flaky waits), and cleanup succeeds
+
+- [x] E040 Create E2E testing script(s) for the entire expanded/enhanced feature
+  - Added Phase 14 targeted Playwright spec: `tests/e2e/news-engine-phase14-expansion.spec.ts`
+- [x] E041 Run E2E tests; fix any issues until green
+  - DB schema prerequisite: applied pending migration via `npx prisma migrate deploy` (adds `ogImageLastCheckedAt` + related fields)
+  - Fix: TipTap SSR/hydration runtime crash resolved by setting `immediatelyRender: false` in `src/components/news-engine/v6/components/RichHtmlEditor.tsx`
+  - Fix: Playwright strict-mode collision resolved by clicking `Research Summary` tab (instead of ambiguous `Research`)
+  - Green run: `npx playwright test tests/e2e/news-engine-phase14-expansion.spec.ts` (PASS)
 
 **Phase 5 checkpoint**:
-- E2E scripts (paths): TBD
-- Test results summary: TBD
+- E2E scripts (paths): `tests/e2e/news-engine-phase14-expansion.spec.ts`
+- Test results summary: PASS (targeted Phase 14 spec)
+
+**Governance rule:**
+Before moving to the next phase, run all test scripts built for the News Engine (including all E2E, integration, and automation scripts).
+If any test fails, fix the issue and re-run the tests. Only proceed to the next phase when all test runs pass successfully (no failures).
 
 ---
 
@@ -1039,4 +1149,4 @@
 - Final audit report: `DOC/FEATURES/NEWS ENGINE/Audit Reports/TBD.md`
 - Final documentation bundle: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/TBD.md`
 
---- 
+---

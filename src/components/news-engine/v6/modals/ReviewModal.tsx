@@ -6,11 +6,13 @@ import {
   BookOpen,
   CheckCircle2,
   CheckSquare,
+  Copy,
   Clock,
   ExternalLink,
   FileText,
   Globe,
   History,
+  Image as ImageIcon,
   RefreshCcw,
   Save,
   Search,
@@ -21,13 +23,16 @@ import {
 } from 'lucide-react';
 import type { AuditLogEntry, NewsItem } from '@/lib/ui-stubs/news-engine';
 import {
+  adminUpdateItem,
   adminApproveItemOgImage,
+  adminCheckItemOgImage,
   adminFetchItemImageControls,
   adminFetchItemProvenance,
   adminGenerateItemOgImage,
   adminUpdateItemImageControls,
   type AdminItemProvenance,
 } from '@/lib/news-engine/client';
+import { RichHtmlEditor } from '../components/RichHtmlEditor';
 import { getStatusBadgeClasses } from '../shared';
 
 type ReviewTabV6 = 'research' | 'article' | 'seo' | 'history';
@@ -65,11 +70,22 @@ export function ReviewModalV6({
 
   const [provenance, setProvenance] = React.useState<AdminItemProvenance | null>(null);
 
+  const [draftTitle, setDraftTitle] = React.useState('');
+  const [draftContentHtml, setDraftContentHtml] = React.useState('');
+  const [draftSeoTitle, setDraftSeoTitle] = React.useState('');
+  const [draftSeoDescription, setDraftSeoDescription] = React.useState('');
+  const [draftTagsCsv, setDraftTagsCsv] = React.useState('');
+
   const [requireImageApproval, setRequireImageApproval] = React.useState(true);
   const [ogImageOverride, setOgImageOverride] = React.useState('');
   const [ogImageApprovedAt, setOgImageApprovedAt] = React.useState<string | null>(null);
   const [isGeneratingOgImage, setIsGeneratingOgImage] = React.useState(false);
   const [isApprovingOgImage, setIsApprovingOgImage] = React.useState(false);
+
+  const [ogImageHealth, setOgImageHealth] = React.useState<'OK' | 'BROKEN' | 'UNKNOWN'>('UNKNOWN');
+  const [ogImageCheckedAt, setOgImageCheckedAt] = React.useState<string | null>(null);
+  const [ogImageCheckError, setOgImageCheckError] = React.useState<string | null>(null);
+  const [isCheckingOgImage, setIsCheckingOgImage] = React.useState(false);
 
   React.useEffect(() => {
     if (!isOpen || !item) return;
@@ -77,6 +93,16 @@ export function ReviewModalV6({
     setRequireImageApproval(true);
     setOgImageOverride(item.ogImageUrl ?? '');
     setOgImageApprovedAt(null);
+
+    setDraftTitle(item.title ?? '');
+    setDraftSeoTitle((item.seoTitle ?? '').trim());
+    setDraftSeoDescription((item.seoDescription ?? item.summary ?? '').trim());
+    setDraftContentHtml((typeof item.contentHtml === 'string' ? item.contentHtml : '') || '');
+    setDraftTagsCsv((item.tags ?? []).join(', '));
+
+    setOgImageHealth('UNKNOWN');
+    setOgImageCheckedAt(null);
+    setOgImageCheckError(null);
   }, [isOpen, item]);
 
   React.useEffect(() => {
@@ -95,6 +121,9 @@ export function ReviewModalV6({
         setRequireImageApproval(Boolean(img.ogImageApprovalRequired));
         setOgImageOverride(img.ogImageUrl ?? '');
         setOgImageApprovedAt(img.ogImageApprovedAt ?? null);
+        setOgImageHealth(img.ogImageLastCheckStatus ?? 'UNKNOWN');
+        setOgImageCheckedAt(img.ogImageLastCheckedAt ?? null);
+        setOgImageCheckError(img.ogImageLastCheckError ?? null);
       } catch (err) {
         if (cancelled) return;
         console.error(err);
@@ -147,8 +176,55 @@ export function ReviewModalV6({
 
   const sourceUrls = extractUrls(promptUsed);
 
-  const rssEntryUrls = provenance?.rssEntryUrls?.length ? provenance.rssEntryUrls : [];
-  const researchUrls = provenance?.researchUrls?.length ? provenance.researchUrls : sourceUrls;
+  const provenanceSources = provenance?.sources?.length ? provenance.sources : null;
+
+  const rssEntryUrls = provenanceSources
+    ? provenanceSources.filter((s) => s.kind === 'RSS').map((s) => s.url)
+    : (provenance?.rssEntryUrls?.length ? provenance.rssEntryUrls : []);
+
+  const researchUrls = provenanceSources
+    ? provenanceSources.filter((s) => s.kind !== 'RSS').map((s) => s.url)
+    : (provenance?.researchUrls?.length ? provenance.researchUrls : sourceUrls);
+
+  async function copyToClipboard(text: string): Promise<boolean> {
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand('copy');
+      textarea.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function openMany(urls: string[]) {
+    const unique = Array.from(new Set(urls.filter(Boolean)));
+    if (!unique.length) return;
+    const safeCount = Math.min(unique.length, 12);
+    const confirmText =
+      unique.length > 5
+        ? `Open ${safeCount} sources in new tabs? (Showing first ${safeCount} of ${unique.length})`
+        : `Open ${unique.length} sources in new tabs?`;
+    if (!window.confirm(confirmText)) return;
+    for (const u of unique.slice(0, safeCount)) {
+      try {
+        window.open(u, '_blank', 'noopener,noreferrer');
+      } catch {
+        // ignore
+      }
+    }
+  }
 
   const researchUsedLabel = (() => {
     const hasRss = item.sourceType === 'RSS Feed';
@@ -181,10 +257,13 @@ export function ReviewModalV6({
     }
   }
 
-  const articleText =
-    typeof item.contentHtml === 'string' && item.contentHtml.trim()
-      ? htmlToPlainText(item.contentHtml)
-      : (item.summary ?? '').trim();
+  const htmlForCounts = draftContentHtml?.trim()
+    ? draftContentHtml
+    : (typeof item.contentHtml === 'string' ? item.contentHtml : '');
+
+  const articleText = htmlForCounts.trim()
+    ? htmlToPlainText(htmlForCounts)
+    : (item.summary ?? '').trim();
 
   const wordCount = articleText ? articleText.split(/\s+/).filter(Boolean).length : 0;
   const readMins = Math.max(1, Math.round(wordCount / 200));
@@ -204,6 +283,13 @@ export function ReviewModalV6({
 
   const isPublished = item.status === 'PUBLISHED';
   const isRejected = item.status === 'REJECTED';
+
+  const draftTags = draftTagsCsv
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const effectiveOgUrl = (ogImageOverride || item.ogImageUrl || '').trim();
 
   const TabButton = ({
     id,
@@ -313,16 +399,17 @@ export function ReviewModalV6({
                       <label className="text-body-small text-muted-foreground uppercase tracking-widest">Headline</label>
                       <input
                         type="text"
-                        defaultValue={item.title}
+                        value={draftTitle}
+                        onChange={(e) => setDraftTitle(e.target.value)}
                         className="w-full text-heading-1 text-foreground bg-transparent border-none p-0 focus:ring-0 placeholder:text-muted-foreground"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-body-small text-muted-foreground uppercase tracking-widest">Article Body</label>
-                      <textarea
-                        className="w-full h-[500px] text-body text-foreground leading-relaxed bg-transparent border-none p-0 focus:ring-0 resize-none"
-                        defaultValue={articleText || item.summary || ''}
+                      <RichHtmlEditor
+                        initialHtml={draftContentHtml}
+                        onHtmlChange={setDraftContentHtml}
                       />
                     </div>
 
@@ -346,15 +433,93 @@ export function ReviewModalV6({
                   <section className="bg-background p-8 rounded-[32px] border border-border shadow-neu-outset space-y-6">
                     <div className="flex items-center justify-between gap-4">
                       <h3 className="text-heading-3 text-foreground">Provenance</h3>
-                      <span className="text-body-small text-muted-foreground uppercase tracking-widest">
-                        Research used: {researchUsedLabel}
-                      </span>
+                      <div className="flex items-center gap-3 flex-wrap justify-end">
+                        <span className="text-body-small text-muted-foreground uppercase tracking-widest">
+                          Research used: {researchUsedLabel}
+                        </span>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset"
+                          onClick={() => {
+                            const all = Array.from(new Set([...rssEntryUrls, ...researchUrls].filter(Boolean)));
+                            void (async () => {
+                              const ok = await copyToClipboard(all.join('\n'));
+                              window.alert(ok ? 'Sources copied to clipboard.' : 'Failed to copy sources.');
+                            })();
+                          }}
+                          disabled={!rssEntryUrls.length && !researchUrls.length}
+                          title="Copy all recorded source URLs"
+                        >
+                          <Copy size={14} />
+                          Copy sources
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset"
+                          onClick={() => openMany([...rssEntryUrls, ...researchUrls])}
+                          disabled={!rssEntryUrls.length && !researchUrls.length}
+                          title="Open sources (may open multiple tabs)"
+                        >
+                          <ExternalLink size={14} />
+                          Open all
+                        </button>
+                      </div>
                     </div>
+
+                    {!provenanceSources ? (
+                      <div className="p-4 rounded-2xl bg-surface border border-border">
+                        <p className="text-body text-foreground">Details view is URL-only</p>
+                        <p className="text-body-small text-muted-foreground mt-1">
+                          This item does not yet have enriched provenance rows.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-surface border border-border">
+                        <p className="text-body text-foreground">Details view is enriched (Phase 4)</p>
+                        <p className="text-body-small text-muted-foreground mt-1">
+                          Kind/title/timestamp are server-supplied and persisted from source rows.
+                        </p>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
-                        <p className="text-body-small text-muted-foreground uppercase tracking-widest">URLs used</p>
+                        <p className="text-body-small text-muted-foreground uppercase tracking-widest">
+                          {provenanceSources ? 'Sources' : 'URLs used'}
+                        </p>
                         <div className="space-y-2">
+                          {provenanceSources ? (
+                            <div className="p-3 rounded-xl bg-surface border border-border">
+                              <p className="text-body-small text-muted-foreground">Sources (server)</p>
+                              <div className="mt-2 space-y-2">
+                                {provenanceSources.slice(0, 12).map((s) => (
+                                  <a
+                                    key={`${s.kind}:${s.url}`}
+                                    href={s.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block p-2 rounded-lg bg-background border border-border hover:bg-surface"
+                                    title={s.timestamp ? new Date(s.timestamp).toLocaleString() : undefined}
+                                  >
+                                    <div className="flex items-center justify-between gap-3">
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-border bg-surface text-body-small text-muted-foreground uppercase tracking-widest">
+                                        {s.kind}
+                                      </span>
+                                      <span className="text-body-small text-muted-foreground">
+                                        {s.timestamp ? formatRelative(s.timestamp) : ''}
+                                      </span>
+                                    </div>
+                                    <div className="mt-1 text-body text-foreground truncate">{(s.title || s.url).trim()}</div>
+                                    <div className="mt-0.5 text-body-small text-muted-foreground truncate">{s.url}</div>
+                                  </a>
+                                ))}
+                                {provenanceSources.length > 12 ? (
+                                  <p className="text-body-small text-muted-foreground">Showing first 12 of {provenanceSources.length} sources.</p>
+                                ) : null}
+                              </div>
+                            </div>
+                          ) : null}
+
                           <div className="p-3 rounded-xl bg-surface border border-border">
                             <p className="text-body-small text-muted-foreground">RSS entry URLs</p>
                             {rssEntryUrls.length ? (
@@ -493,14 +658,36 @@ export function ReviewModalV6({
                         <div className="space-y-1.5">
                           <label className="text-body-small text-muted-foreground uppercase tracking-widest">Target Keyword</label>
                           <div className="px-3 py-2 bg-surface border border-border rounded-xl text-body text-brand-accent">
-                            {(item.tags && item.tags[0]) || item.category || '—'}
+                            {draftTags[0] || item.category || '—'}
                           </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-body-small text-muted-foreground uppercase tracking-widest">Tags</label>
+                          <input
+                            className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-body text-foreground focus:ring-0"
+                            value={draftTagsCsv}
+                            onChange={(e) => setDraftTagsCsv(e.target.value)}
+                            placeholder={(item.tags ?? []).length ? (item.tags ?? []).join(', ') : 'e.g. Solar, Policy, Market'}
+                          />
+                          <p className="text-body-small text-muted-foreground">
+                            Comma-separated. Saved as <span className="font-mono">tags[]</span>.
+                          </p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-body-small text-muted-foreground uppercase tracking-widest">SEO Title</label>
+                          <input
+                            className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-body text-foreground focus:ring-0"
+                            value={draftSeoTitle}
+                            onChange={(e) => setDraftSeoTitle(e.target.value)}
+                            placeholder={item.title}
+                          />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-body-small text-muted-foreground uppercase tracking-widest">Meta Description</label>
                           <textarea
                             className="w-full h-24 px-3 py-2 bg-surface border border-border rounded-xl text-body text-foreground focus:ring-0 resize-none"
-                            defaultValue={(item.seoDescription ?? item.summary ?? '').trim()}
+                            value={draftSeoDescription}
+                            onChange={(e) => setDraftSeoDescription(e.target.value)}
                           />
                         </div>
                       </div>
@@ -511,21 +698,11 @@ export function ReviewModalV6({
                         <Target size={18} className="text-success" />
                         <span className="text-body-small text-muted-foreground uppercase tracking-widest">Compliance & Quality</span>
                       </div>
-                      <div className="space-y-4">
-                        {[
-                          { label: 'Fact Consistency', status: 'Not evaluated' },
-                          { label: 'Plagiarism Scan', status: 'Not evaluated' },
-                          { label: 'Tone', status: 'Not evaluated' },
-                          { label: 'Hallucination Check', status: 'Not evaluated' },
-                        ].map((c) => (
-                          <div key={c.label} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                            <span className="text-body text-muted-foreground">{c.label}</span>
-                            <div className="flex items-center gap-1.5 text-muted-foreground text-body-small uppercase tracking-widest">
-                              <CheckSquare size={12} />
-                              {c.status}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="p-4 rounded-xl bg-surface border border-border">
+                        <p className="text-body text-foreground">Planned / Not available yet</p>
+                        <p className="text-body-small text-muted-foreground mt-1">
+                          Automated compliance scanning is not implemented in this expansion cycle.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -535,6 +712,53 @@ export function ReviewModalV6({
                       <div className="space-y-0.5">
                         <p className="text-body-small text-muted-foreground uppercase tracking-widest">Image controls</p>
                         <p className="text-body text-foreground">OG Image</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-body-small uppercase tracking-widest ${
+                            ogImageHealth === 'OK'
+                              ? 'bg-success text-success-foreground border-success/20'
+                              : ogImageHealth === 'BROKEN'
+                                ? 'bg-destructive text-destructive-foreground border-destructive/20'
+                                : 'bg-surface text-muted-foreground border-border'
+                          }`}
+                          title={
+                            ogImageCheckedAt
+                              ? `Last checked: ${new Date(ogImageCheckedAt).toLocaleString()}${ogImageCheckError ? `; Error: ${ogImageCheckError}` : ''}`
+                              : 'Not checked yet'
+                          }
+                        >
+                          <ImageIcon size={14} />
+                          {isCheckingOgImage ? 'CHECKING' : ogImageHealth}
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={isCheckingOgImage || !effectiveOgUrl}
+                          className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body-small text-foreground hover:bg-surface-hover shadow-neu-outset disabled:opacity-50"
+                          onClick={() => {
+                            if (!effectiveOgUrl) return;
+                            void (async () => {
+                              setIsCheckingOgImage(true);
+                              try {
+                                const res = await adminCheckItemOgImage(item.id);
+                                if (res.ogImageUrl != null) setOgImageOverride(res.ogImageUrl);
+                                setOgImageHealth(res.status);
+                                setOgImageCheckedAt(res.checkedAt);
+                                setOgImageCheckError(res.error ?? null);
+                              } catch (err) {
+                                const msg = err instanceof Error ? err.message : 'Failed to check OG image';
+                                window.alert(msg);
+                              } finally {
+                                setIsCheckingOgImage(false);
+                              }
+                            })();
+                          }}
+                          title="Server-side OG image check (persisted)"
+                        >
+                          <RefreshCcw size={16} />
+                          Re-check
+                        </button>
                       </div>
                       <button
                         type="button"
@@ -618,7 +842,7 @@ export function ReviewModalV6({
                         <div className="flex items-center justify-between gap-4">
                           <div className="space-y-0.5">
                             <p className="text-body text-foreground">Require approval before publish</p>
-                            <p className="text-body-small text-muted-foreground">UI-only toggle; publishing enforcement is backend-owned.</p>
+                            <p className="text-body-small text-muted-foreground">This setting is persisted and enforced on publish paths.</p>
                           </div>
                           <button
                             type="button"
@@ -738,6 +962,13 @@ export function ReviewModalV6({
                   if (!item) return;
                   setIsSaving(true);
                   try {
+                    await adminUpdateItem(item.id, {
+                      title: draftTitle.trim(),
+                      contentHtml: draftContentHtml,
+                      tags: draftTags,
+                      seoTitle: draftSeoTitle.trim() ? draftSeoTitle.trim() : null,
+                      seoDescription: draftSeoDescription.trim() ? draftSeoDescription.trim() : null,
+                    });
                     await adminUpdateItemImageControls(item.id, {
                       ogImageUrl: ogImageOverride.trim() ? ogImageOverride.trim() : null,
                       ogImageApprovalRequired: requireImageApproval,

@@ -213,7 +213,7 @@ export default function PublicNewsDetailPage({ params }: { params: { slug: strin
       { name: 'WhatsApp', onClick: () => openShareUrl(`https://wa.me/?text=${encode(`${shareText} ${url}`.trim())}`), icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M20 11.5a8.5 8.5 0 0 1-12.74 7.33L4 20l1.25-3.09A8.5 8.5 0 1 1 20 11.5Z" /><path d="M8.8 8.9c.2-.4.4-.4.6-.4h.5c.2 0 .4 0 .5.3l.7 1.7c.1.3.1.5 0 .7l-.4.5c-.1.2-.2.3 0 .6.2.3.8 1.3 1.8 2.1 1.2.9 2.2 1.2 2.5 1.3.3.1.5.1.6-.1l.8-1c.2-.2.4-.2.6-.1l1.6.8c.2.1.3.3.3.5 0 1.2-.7 2.3-1.8 2.6-1 .3-2.3.2-4.4-.9-2.4-1.3-4-3.3-4.6-4.6-.6-1.3-.7-2.4-.5-3.2Z" /></svg>
       ), color: 'hover:bg-primary/80 hover:text-background' },
-      { name: 'Email', onClick: () => (window.location.href = `mailto:?subject=${encode(shareText)}&body=${encode(url)}`), icon: (
+      { name: 'Email', onClick: () => (window.location.href = `mailto:?subject=${encode(shareText)}&body=${encode(`${shareText}\n\n${url}`.trim())}`), icon: (
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="inline-block"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg>
       ), color: 'hover:bg-primary/80 hover:text-background' },
     ];

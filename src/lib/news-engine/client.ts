@@ -392,6 +392,9 @@ export async function adminUpdateItem(
     category: string;
     tags: string[];
     contentHtml: string;
+    seoTitle: string | null;
+    seoDescription: string | null;
+    ogImageUrl: string | null;
     status: string;
   }>
 ): Promise<NewsItem> {
@@ -926,6 +929,12 @@ export async function adminDeleteKeyVaultKey(id: string): Promise<void> {
 export type AdminItemProvenance = {
   itemId: string;
   sourceType: string;
+  sources?: Array<{
+    kind: 'RSS' | 'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND';
+    title: string;
+    url: string;
+    timestamp: string | null;
+  }>;
   rssEntryUrls: string[];
   researchUrls: string[];
   stages: Array<{
@@ -946,6 +955,9 @@ export async function adminFetchItemProvenance(itemId: string): Promise<AdminIte
 export type AdminItemImageControls = {
   itemId: string;
   ogImageUrl: string | null;
+  ogImageLastCheckedAt: string | null;
+  ogImageLastCheckStatus: 'OK' | 'BROKEN' | 'UNKNOWN' | null;
+  ogImageLastCheckError: string | null;
   ogImageApprovalRequired: boolean;
   ogImageApprovedAt: string | null;
   ogImageApprovedById: string | null;
@@ -977,6 +989,21 @@ export async function adminGenerateItemOgImage(itemId: string, input?: { promptO
     body: JSON.stringify({ ...(input?.promptOverride ? { promptOverride: input.promptOverride } : {}) }),
     timeoutMs: 120_000,
   } as RequestInit & { timeoutMs: number });
+}
+
+export type AdminOgImageCheckResponse = {
+  ok: true;
+  itemId: string;
+  ogImageUrl: string | null;
+  status: 'OK' | 'BROKEN' | 'UNKNOWN';
+  checkedAt: string;
+  error: string | null;
+};
+
+export async function adminCheckItemOgImage(itemId: string): Promise<AdminOgImageCheckResponse> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/og-image/check`, {
+    method: 'POST',
+  });
 }
 
 export async function adminApproveItemOgImage(itemId: string): Promise<{

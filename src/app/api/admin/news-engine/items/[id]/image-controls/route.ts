@@ -22,6 +22,9 @@ export async function GET(_request: NextRequest, context: { params: { id: string
       select: {
         id: true,
         ogImageUrl: true,
+        ogImageLastCheckedAt: true,
+        ogImageLastCheckStatus: true,
+        ogImageLastCheckError: true,
         ogImageApprovalRequired: true,
         ogImageApprovedAt: true,
         ogImageApprovedById: true,
@@ -33,6 +36,9 @@ export async function GET(_request: NextRequest, context: { params: { id: string
     return NextResponse.json({
       itemId: item.id,
       ogImageUrl: item.ogImageUrl,
+      ogImageLastCheckedAt: item.ogImageLastCheckedAt ? item.ogImageLastCheckedAt.toISOString() : null,
+      ogImageLastCheckStatus: item.ogImageLastCheckStatus ?? null,
+      ogImageLastCheckError: item.ogImageLastCheckError ?? null,
       ogImageApprovalRequired: item.ogImageApprovalRequired,
       ogImageApprovedAt: item.ogImageApprovedAt ? item.ogImageApprovedAt.toISOString() : null,
       ogImageApprovedById: item.ogImageApprovedById,
@@ -75,6 +81,9 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
       select: {
         id: true,
         ogImageUrl: true,
+        ogImageLastCheckedAt: true,
+        ogImageLastCheckStatus: true,
+        ogImageLastCheckError: true,
         ogImageApprovalRequired: true,
         ogImageApprovedAt: true,
         ogImageApprovedById: true,
@@ -91,6 +100,9 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
     return NextResponse.json({
       itemId: updated.id,
       ogImageUrl: updated.ogImageUrl,
+      ogImageLastCheckedAt: updated.ogImageLastCheckedAt ? updated.ogImageLastCheckedAt.toISOString() : null,
+      ogImageLastCheckStatus: updated.ogImageLastCheckStatus ?? null,
+      ogImageLastCheckError: updated.ogImageLastCheckError ?? null,
       ogImageApprovalRequired: updated.ogImageApprovalRequired,
       ogImageApprovedAt: updated.ogImageApprovedAt ? updated.ogImageApprovedAt.toISOString() : null,
       ogImageApprovedById: updated.ogImageApprovedById,

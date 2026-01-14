@@ -478,6 +478,10 @@ model NewsItem {
   seoDescription  String?
   ogImageUrl      String?
 
+  ogImageLastCheckedAt   DateTime?
+  ogImageLastCheckStatus String?
+  ogImageLastCheckError  String?
+
   ogImageApprovalRequired Boolean   @default(true)
   ogImageApprovedAt       DateTime?
   ogImageApprovedById     String?

@@ -117,7 +117,10 @@ As we have enhance and expanded the frontend based on the new enhancement plan, 
 ***Phase 5*** 
 - create the script in order to do the e2e testing of the entire expanded/enhanced feature and run the tests. 
 - fix any issues found during the testing.
-- Move to the next phase when all the tests are passed with green signal. 
+- After that run all the test scripts and make sure everything is passed green.
+- if everything is passed green , update the tasks.md accordingly.
+- If not, fix the issues and re run the tests until everything is passed green.
+- Move to the next phase only when all the tests are passed with green signal. 
 
 ***Phase 6***
 **Post-Feature Test & Documentation Prompt**
@@ -148,11 +151,16 @@ This ensures the feature is fully tested, documented, and ready for production.
 ***Strickt Rules***
 
 The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. Always refer to the tasks.md file before starting any new phase or sub-phase. Always update/Add with the executional tasks before any action. 
+**Task Planning Required:**
+> - Before starting implementation, enumerate and lock all actionable tasks for this phase below, following `.specify/templates/tasks-template.md`.
+> - Add subtasks for each UI, logic, and audit step as needed.
+> - Do not begin until all tasks are planned and checked in.
+**Note**
+- Add this section "ask Planning Required" in each phase in the tasks.md file of the News Engine Feature where ever applicable.
 
 ***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
 
-
-
+------------------------------
 
 
 
