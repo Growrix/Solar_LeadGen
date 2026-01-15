@@ -1,6 +1,35 @@
 /**
  * News Engine RSS Entry HTTP Test
  *
+ * What this does (safe, non-destructive):
+ * - Ensures News Engine automation settings allow drafting
+ * - Ensures the internal runner has an enabled OpenAI Drafting key
+ * - Seeds a disabled NewsSource + one NEW NewsSourceEntry
+ * - Calls the INTERNAL automation runner over HTTP
+ * - Verifies the entry was processed and a NewsItem was created
+ *
+ * Requires:
+ * - NEWS_ENGINE_CRON_SECRET in `.env`
+ * - OPENAI_API_KEY in `.env`
+ *
+ * Notes:
+ * - If base URL is http://localhost:3001, this script auto-starts `npm run dev:e2e`
+ *   (and stops it afterward) to make the HTTP test self-contained.
+ *
+ * Run:
+ *   npx tsx scripts/news-engine-rss-http-test.ts
+ */
+
+import { PrismaClient } from '@prisma/client';
+import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import net from 'node:net';
+import { resolve } from 'node:path';
+import { encryptWithNewsMasterKey } from '../src/lib/news-engine/key-vault';
+
+const prisma = new PrismaClient();
+
+function loadDotEnvFallback(): void {
   const envPath = resolve(process.cwd(), '.env');
   let raw = '';
   try {
@@ -21,7 +50,7 @@
     if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
     if (process.env[key] === undefined) process.env[key] = value;
   }
-
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -112,6 +141,8 @@ async function main(): Promise<void> {
     await ensureSetting('news.settings.daily_limit', '10');
     await ensureSetting('news.settings.deduplication_enabled', 'true');
 
+    // Ensure the internal runner has at least one valid Drafting key.
+    // Playwright E2E uses dummy keys, which should not be used by the runner.
     await prisma.newsApiKey.updateMany({
       where: {
         pools: { has: 'DRAFTING' },
@@ -142,6 +173,7 @@ async function main(): Promise<void> {
       });
     }
 
+    // Seed a disabled source so the runner will NOT attempt external RSS fetch.
     const sourceId = `e2e-http-source-${Date.now().toString(36)}`;
     await prisma.newsSource.create({
       data: {
@@ -221,70 +253,3 @@ main().catch((err) => {
   console.error(err);
   process.exitCode = 1;
 });
-        const item = await prisma.newsItem.findUnique({
-          where: { id: refreshedEntry.itemId },
-          select: { id: true, title: true, status: true },
-        });
-
-        if (!item) {
-          throw new Error('Runner created itemId but NewsItem row is missing.');
-        }
-
-        console.log('✅ Processed entry status:', refreshedEntry.status);
-        console.log('✅ Created/linked NewsItem:', item);
-        console.log('\n🎉 RSS HTTP test PASSED');
-      } finally {
-        await prisma.$disconnect().catch(() => undefined);
-        if (managedServer) await managedServer.stop();
-      }
-        const resp = await fetch(`${baseUrl}/api/internal/news-engine/automation/run?mode=live`, {
-
-    main().catch((err) => {
-      console.error('❌ RSS HTTP test FAILED');
-      console.error(err);
-      process.exitCode = 1;
-    });
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'x-news-engine-cron-secret': cronSecret,
-          },
-          body: JSON.stringify({ reason: 'e2e_rss_http_test' }),
-        });
-  });
-        if (!resp.ok) {
-          const text = await resp.text().catch(() => '');
-          throw new Error(`Runner HTTP failed: ${resp.status} ${resp.statusText} ${text ? `\n${text}` : ''}`);
-        }
-  });
-        const payload = (await resp.json()) as { ok: boolean; summary?: unknown; error?: string };
-        if (!payload.ok) {
-          throw new Error(`Runner returned ok=false: ${(payload as any).error ?? 'Unknown error'}`);
-        }
-  console.log('- Refresh /admin/news-engine → Drafts & Reviews to see the new item.');
-        // Verify the seeded entry was processed.
-        const updated = await prisma.newsSourceEntry.findUnique({
-          where: { id: entry.id },
-          select: { status: true, itemId: true },
-        });
-
-        if (!updated || updated.status === 'NEW') {
-          throw new Error(`Seeded entry was not processed (status=${updated?.status ?? 'missing'})`);
-        }
-
-        if (!updated.itemId) {
-          throw new Error('Seeded entry processed but did not link to a NewsItem (missing itemId).');
-        }
-
-        const item = await prisma.newsItem.findUnique({ where: { id: updated.itemId }, select: { id: true, title: true, status: true } });
-        if (!item) {
-          throw new Error('Runner created itemId but NewsItem row is missing.');
-        }
-
-        console.log('✅ Processed entry status:', updated.status);
-        console.log('✅ Created/linked NewsItem:', item);
-
-        console.log('\n🎉 RSS HTTP test PASSED');
-      } finally {
-        if (managedServer) await managedServer.stop();
-      }
