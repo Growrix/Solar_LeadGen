@@ -1137,16 +1137,179 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 > - Add subtasks for each audit, doc, and checklist item as needed.
 > - Do not begin E051 until all tasks are planned and checked in.
 
-- [ ] E049 **[PLANNING]** Plan and lock all actionable tasks for Phase 6 (see `.specify/templates/tasks-template.md`)
-- [ ] E050 Run full post-implementation feature audit
+- [x] E049 **[PLANNING]** Plan and lock all actionable tasks for Phase 6 (see `.specify/templates/tasks-template.md`)
+
+  **Phase 6 planned task breakdown (execution order)**
+  - [x] E049a Phase 6 scope lock
+    - This Phase 6 is the Phase 14 post-expansion audit + docs addendum (Phase 13 post-feature docs already exist).
+    - Do not re-implement; documentation-only unless audit finds true gaps.
+  - [x] E049b Evidence lock (what must be cited in the audit)
+    - Phase 3 frontend audit: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase3-frontend-audit-2026-01-14.md`
+    - Phase 4 inventory/mapping audit: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase4-inventory-mapping-audit-2026-01-14.md`
+    - Phase 5 green runs: Playwright Phase 13 + Phase 14 specs, plus all `scripts/news-engine-*.ts` runs
+  - [x] E049c Audit output lock
+    - Write a new Phase 14 audit report using:
+      `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
+    - Must include: UI wiring, API wiring, DB schema/migrations, E2E evidence, and any static/non-functional elements.
+  - [x] E049d Final docs output lock
+    - Write a new Phase 14 post-feature docs bundle using:
+      `DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md`
+    - Must include: tooltip reference + functionality map updates for Phase 14 deltas.
+
+- [x] E050 Run full post-implementation feature audit (Phase 14 expansion addendum)
   - prompt: `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`
-  - output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/` (new file)
-- [ ] E051 Prepare final user guide + tooltips + functionality map + checklist
+  - output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase6-post-feature-audit-2026-01-15.md`
+
+- [x] E051 Prepare final user guide + tooltips + functionality map + checklist (Phase 14 docs addendum)
   - template: `DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md`
-  - output folder: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/`
+  - output folder: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/`
+  - output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase14-expansion-post-feature-docs-2026-01-15.md`
 
 **Phase 6 checkpoint**:
-- Final audit report: `DOC/FEATURES/NEWS ENGINE/Audit Reports/TBD.md`
-- Final documentation bundle: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/TBD.md`
+- Final audit report: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase6-post-feature-audit-2026-01-15.md`
+- Final documentation bundle: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase14-expansion-post-feature-docs-2026-01-15.md`
 
 ---
+
+## Phase 15: Visual + Functional Findings Remediation (V1) — Image + Publish + Public UX + Content Quality (2026-01-15)
+
+**Purpose**: Address real-world UI/UX and functionality gaps found after Phase 14 sign-off (image pipeline, public rendering, publish gating behavior, editability, content quality, and model profile management).
+
+**Governance (hard rule)**:
+- Do not begin implementation until Phase 15 tasks are fully planned and checked in.
+- Each fix must be verified by repeatable checks (typecheck/build + targeted scripts/specs).
+
+---
+
+### Phase 15 — Task Planning + Scope Lock
+
+> **Task Planning Required:**
+> - Before starting any implementation, enumerate and lock all actionable tasks for Phase 15 below.
+> - For each task: include acceptance criteria + exact target file paths.
+> - Do not begin E062 until all tasks are planned and checked in.
+
+- [ ] E060 **[PLANNING]** Capture/confirm findings → tasks mapping (scope lock)
+  - **Inputs**: owner-provided visual findings + Phase 14 Phase 6 checkpoint docs
+  - **Output**: Phase 15 scope mapping written directly into this ledger (below)
+
+- [ ] E061 **[PLANNING]** Lock test/verification plan (minimum)
+  - `npx tsc --noEmit`
+  - `npm run build`
+  - Playwright: re-run existing News Engine specs (Phase 13 + Phase 14)
+  - Run all News Engine scripts (per Phase 14 governance rule) and fix until green
+
+---
+
+### Phase 15 — Planned Task Breakdown (Execution Order)
+
+#### A) OG Images: Generate/Fetch → Persist to S3 → Display Everywhere
+
+- [ ] E062 Implement server-side OG image ingestion to S3 (foundation)
+  - Add helper to fetch remote image bytes and upload to S3 using `src/lib/s3.ts`
+  - Acceptance:
+    - Given a remote image URL, server stores it under a stable S3 key and returns a stable URL suitable for public OG tags.
+    - Failure states are actionable (bad URL, timeout, unsupported content type).
+
+- [ ] E063 Update OG image generate endpoint to store to S3 (no ephemeral URLs)
+  - Target: `src/app/api/admin/news-engine/items/[id]/og-image/generate/route.ts`
+  - Acceptance:
+    - Generate returns `ogImageUrl` pointing to S3 (not OpenAI-hosted temporary URL).
+    - Works even if admin reloads hours later (preview still loads).
+
+- [ ] E064 Add “Save/ingest override URL to S3” path for free-source/manual URLs
+  - Targets:
+    - Admin route: `src/app/api/admin/news-engine/items/[id]/og-image/ingest/route.ts` (new)
+    - UI wiring: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+  - Acceptance:
+    - Pasting a valid image URL and clicking ingest results in `ogImageUrl` updated to S3-backed URL.
+    - Preview updates immediately.
+
+- [ ] E065 Ensure public pages render actual OG image (not placeholders)
+  - Targets:
+    - Public list: `src/app/news/page.tsx`
+    - Public detail: `src/app/news/[slug]/page.tsx`
+    - Public API: `src/app/api/news/route.ts`, `src/app/api/news/[slug]/route.ts`
+    - Types/wrappers: `src/lib/news-engine/client.ts`
+  - Acceptance:
+    - `/news` cards show `ogImageUrl` when present.
+    - `/news/[slug]` shows the hero image when present.
+    - Tags are visible where intended (list + detail) and match DB.
+
+- [ ] E066 Ensure OG meta tags are present in server-rendered HTML (crawler-visible)
+  - Targets:
+    - `src/app/news/[slug]/page.tsx` (or split server wrapper + client component)
+  - Acceptance:
+    - View-source contains `og:image`, `og:title`, `og:description` for published items.
+
+#### B) Publish Gating: “Require Approval” Must Be Respected
+
+- [ ] E067 Fix approval toggle persistence + publish-now enforcement alignment
+  - Targets:
+    - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+    - API: `src/app/api/admin/news-engine/items/[id]/image-controls/route.ts`
+    - API: `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts`
+  - Acceptance:
+    - If approval is toggled OFF and saved, publish does not block on approval.
+    - If approval is toggled ON, publish blocks until approved.
+    - No stale-state behavior when publishing immediately after toggling.
+
+#### C) Content Quality + Editability (Formatting, Rewrite Rules, Title-Copy “Red Alert”)
+
+- [ ] E068 Make all AI-generated fields editable end-to-end
+  - Targets:
+    - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+    - API: `src/app/api/admin/news-engine/items/[id]/route.ts`
+  - Acceptance:
+    - Admin can edit: title, summary, contentHtml, tags, category/source labeling (where applicable), SEO title/description.
+    - Changes persist and reflect on public pages.
+
+- [ ] E069 Improve default draft formatting output (no wall-of-text)
+  - Targets:
+    - Drafting pipeline prompt builder(s) in `src/lib/news-engine/**` and/or internal runner routes
+  - Acceptance:
+    - Generated drafts include headings, paragraphs, and lists where appropriate.
+    - Public render reads cleanly without manual edits.
+
+- [ ] E070 Add hard guard against copying RSS titles (“Red Alert”)
+  - Targets:
+    - Drafting pipeline prompt + server-side validation before saving/publishing
+  - Acceptance:
+    - System rejects/rewrites titles that are identical (or near-identical) to RSS titles.
+    - Audit trail records when a title-collision is detected.
+
+#### D) Published Editing + Republish Workflow
+
+- [ ] E071 Enable edit-published + republish flow
+  - Targets:
+    - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+    - API: `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts` (or new `republish` route)
+  - Acceptance:
+    - Admin can update a published item and republish without manual DB edits.
+    - Audit log records republish event.
+
+#### E) Model Profiles UX (Modal Close + Delete + Bulk Delete)
+
+- [ ] E072 Add close button + escape/overlay close for model profile modal
+  - Target: `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+  - Acceptance:
+    - Modal has explicit close control and is dismissible safely.
+
+- [ ] E073 Add delete + bulk delete model profiles
+  - Targets:
+    - API: `src/app/api/admin/news-engine/model-profiles/[id]/route.ts` (add DELETE)
+    - API: `src/app/api/admin/news-engine/model-profiles/route.ts` (optional bulk delete)
+    - UI: `src/components/news-engine/v6/tabs/SettingsTab.tsx`
+  - Acceptance:
+    - Admin can delete one profile.
+    - Admin can bulk delete selected profiles.
+    - Default routing dropdowns stay consistent after deletions.
+
+---
+
+### Phase 15 — Verification + Docs (post-fix)
+
+- [ ] E080 Run all locked verification (typecheck/build + all News Engine scripts/specs) until fully green
+- [ ] E081 Write Phase 15 audit addendum (must include “Red Alert” analysis + best remediation)
+  - Output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/` (new file)
+- [ ] E082 Write Phase 15 docs addendum (operator-facing changes)
+  - Output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/` (new file)
