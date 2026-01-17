@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog } from '@/lib/news-engine';
+import { buildDistinctTitle, isNearDuplicateTitle } from '@/lib/news-engine/title-guard';
 import { callOpenAiJson } from '@/lib/openai';
 import {
   resolveNewsAiCallConfig,
@@ -62,7 +63,7 @@ function isKind(value: unknown): value is ResearchKind {
 }
 
 const NEWS_ENGINE_SYSTEM_PROMPT =
-  'You are an assistant that drafts NEWS ENGINE posts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl. contentHtml must be valid HTML and should not include unverified claims.';
+  'You are an assistant that drafts NEWS ENGINE posts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl. contentHtml must be valid HTML (not markdown) and should use headings (h2/h3), paragraphs, lists when relevant, and emphasis tags (<strong>/<em>) to improve readability. Do not include unverified claims.';
 
 // POST /api/admin/news-engine/research/generate-draft
 export async function POST(request: NextRequest) {
@@ -174,6 +175,7 @@ export async function POST(request: NextRequest) {
       '- Output JSON only (no markdown).',
       '- The article must avoid unverifiable claims; use cautious language when details are unknown.',
       '- contentHtml must be valid HTML (<p>, <h2>, <ul>/<li> as needed).',
+      '- Create a distinct headline; do not copy source titles verbatim.',
       '- Make it relevant to solar leads / homeowners / energy industry where reasonable.',
     ]
       .filter(Boolean)
@@ -200,6 +202,24 @@ export async function POST(request: NextRequest) {
       seoDescription: pickString(parsed, 'seoDescription', '') || null,
       ogImageUrl: pickString(parsed, 'ogImageUrl', '') || null,
     };
+
+    let titleCollision = false;
+    let matchedSourceTitle: string | null = null;
+    for (const sourceTitle of researchEntries.map((e) => e.title).filter(Boolean)) {
+      if (draft.title && isNearDuplicateTitle(draft.title, sourceTitle)) {
+        titleCollision = true;
+        matchedSourceTitle = sourceTitle;
+        break;
+      }
+    }
+
+    if (titleCollision) {
+      draft.title = buildDistinctTitle({
+        summary: draft.summary,
+        category: draft.category,
+        fallback: draft.title,
+      });
+    }
 
     const createdItem = await prisma.newsItem.create({
       data: {
@@ -246,7 +266,14 @@ export async function POST(request: NextRequest) {
       action: 'news_ai_draft_generated',
       actorId: auth.userId,
       itemId: createdItem.id,
-      metadata: { query: query || null, kinds, limit, model: modelUsed },
+      metadata: {
+        query: query || null,
+        kinds,
+        limit,
+        model: modelUsed,
+        titleCollision,
+        sourceTitle: titleCollision ? matchedSourceTitle : undefined,
+      },
       promptUsed: prompt,
     });
 

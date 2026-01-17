@@ -29,6 +29,7 @@ import {
   adminFetchItemImageControls,
   adminFetchItemProvenance,
   adminGenerateItemOgImage,
+  adminIngestItemOgImage,
   adminUpdateItemImageControls,
   type AdminItemProvenance,
 } from '@/lib/news-engine/client';
@@ -71,7 +72,9 @@ export function ReviewModalV6({
   const [provenance, setProvenance] = React.useState<AdminItemProvenance | null>(null);
 
   const [draftTitle, setDraftTitle] = React.useState('');
+  const [draftSummary, setDraftSummary] = React.useState('');
   const [draftContentHtml, setDraftContentHtml] = React.useState('');
+  const [draftCategory, setDraftCategory] = React.useState('');
   const [draftSeoTitle, setDraftSeoTitle] = React.useState('');
   const [draftSeoDescription, setDraftSeoDescription] = React.useState('');
   const [draftTagsCsv, setDraftTagsCsv] = React.useState('');
@@ -81,11 +84,94 @@ export function ReviewModalV6({
   const [ogImageApprovedAt, setOgImageApprovedAt] = React.useState<string | null>(null);
   const [isGeneratingOgImage, setIsGeneratingOgImage] = React.useState(false);
   const [isApprovingOgImage, setIsApprovingOgImage] = React.useState(false);
+  const [isIngestingOgImage, setIsIngestingOgImage] = React.useState(false);
 
   const [ogImageHealth, setOgImageHealth] = React.useState<'OK' | 'BROKEN' | 'UNKNOWN'>('UNKNOWN');
   const [ogImageCheckedAt, setOgImageCheckedAt] = React.useState<string | null>(null);
   const [ogImageCheckError, setOgImageCheckError] = React.useState<string | null>(null);
   const [isCheckingOgImage, setIsCheckingOgImage] = React.useState(false);
+  const lastSavedApprovalRef = React.useRef<boolean | null>(null);
+  const autoIngestAttemptedRef = React.useRef<string | null>(null);
+  const autoIngestInFlightRef = React.useRef(false);
+
+  function isStableOgImageUrl(value: string): boolean {
+    const trimmed = value.trim();
+    if (!trimmed) return false;
+    // Stable if it's already pointing at News Engine stored assets.
+    if (trimmed.includes('news-engine/og-images/')) return true;
+    // Stable if it's the app proxy route to S3 (relative URLs are expected here).
+    if (trimmed.startsWith('/api/public/news-engine/s3/')) return true;
+    return false;
+  }
+
+  function buildFreeImageQuery(): string {
+    const tokens = [
+      'solar',
+      'renewable',
+      (draftCategory || item?.category || '').trim(),
+      (draftTitle || item?.title || '').trim(),
+      ...((item?.tags ?? []).slice(0, 4)),
+    ]
+      .flatMap((t) => String(t || '').split(/\s+/))
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean)
+      .filter((t) => t.length >= 3)
+      .slice(0, 10);
+
+    return Array.from(new Set(tokens)).join(' ');
+  }
+
+  const ingestOgImageIfNeeded = React.useCallback(async (inputUrl: string): Promise<string | null> => {
+    if (!item) return null;
+    const trimmed = inputUrl.trim();
+    if (!trimmed) return null;
+    if (isStableOgImageUrl(trimmed)) return trimmed;
+
+    const current = (item.ogImageUrl ?? '').trim();
+    if (trimmed === current && isStableOgImageUrl(current)) return trimmed;
+    if (trimmed.startsWith('/')) {
+      // Relative URLs cannot be ingested server-side (server expects http(s) remote fetch).
+      // If it got here, it means it's not our stable proxy route.
+      throw new Error('Image URL must be an absolute http(s) URL');
+    }
+
+    setIsIngestingOgImage(true);
+    try {
+      const res = await adminIngestItemOgImage(item.id, trimmed);
+      const nextUrl = res.ogImageUrl ?? '';
+      setOgImageOverride(nextUrl);
+      setOgImageApprovedAt(res.ogImageApprovedAt ?? null);
+      return nextUrl || null;
+    } finally {
+      setIsIngestingOgImage(false);
+    }
+  }, [item]);
+
+  // Phase 17: Auto-ingest initial OG image URL so preview/approval does not require manual "Save to S3".
+  React.useEffect(() => {
+    if (!isOpen || !item) return;
+    const current = (ogImageOverride || item.ogImageUrl || '').trim();
+    if (!current) return;
+    if (isStableOgImageUrl(current)) return;
+    if (autoIngestAttemptedRef.current === item.id) return;
+    if (autoIngestInFlightRef.current) return;
+
+    autoIngestInFlightRef.current = true;
+
+    void (async () => {
+      try {
+        const nextUrl = await ingestOgImageIfNeeded(current);
+        if (nextUrl) {
+          autoIngestAttemptedRef.current = item.id;
+        }
+      } catch (err) {
+        // Non-blocking: operator can still override manually.
+        console.warn(err);
+      } finally {
+        autoIngestInFlightRef.current = false;
+      }
+    })();
+  }, [isOpen, item, ogImageOverride, ingestOgImageIfNeeded]);
 
   React.useEffect(() => {
     if (!isOpen || !item) return;
@@ -95,6 +181,8 @@ export function ReviewModalV6({
     setOgImageApprovedAt(null);
 
     setDraftTitle(item.title ?? '');
+    setDraftSummary((item.summary ?? '').trim());
+    setDraftCategory((item.category ?? '').trim());
     setDraftSeoTitle((item.seoTitle ?? '').trim());
     setDraftSeoDescription((item.seoDescription ?? item.summary ?? '').trim());
     setDraftContentHtml((typeof item.contentHtml === 'string' ? item.contentHtml : '') || '');
@@ -103,6 +191,7 @@ export function ReviewModalV6({
     setOgImageHealth('UNKNOWN');
     setOgImageCheckedAt(null);
     setOgImageCheckError(null);
+    lastSavedApprovalRef.current = null;
   }, [isOpen, item]);
 
   React.useEffect(() => {
@@ -124,6 +213,7 @@ export function ReviewModalV6({
         setOgImageHealth(img.ogImageLastCheckStatus ?? 'UNKNOWN');
         setOgImageCheckedAt(img.ogImageLastCheckedAt ?? null);
         setOgImageCheckError(img.ogImageLastCheckError ?? null);
+        lastSavedApprovalRef.current = Boolean(img.ogImageApprovalRequired);
       } catch (err) {
         if (cancelled) return;
         console.error(err);
@@ -137,6 +227,24 @@ export function ReviewModalV6({
       cancelled = true;
     };
   }, [isOpen, item]);
+
+  React.useEffect(() => {
+    if (!item) return;
+    if (lastSavedApprovalRef.current === null) return;
+    if (lastSavedApprovalRef.current === requireImageApproval) return;
+
+    const nextValue = requireImageApproval;
+    lastSavedApprovalRef.current = nextValue;
+
+    void (async () => {
+      try {
+        await adminUpdateItemImageControls(item.id, { ogImageApprovalRequired: nextValue });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to persist approval requirement';
+        console.error(msg);
+      }
+    })();
+  }, [item, requireImageApproval]);
 
   const modelProfileLabelByTask = React.useMemo(() => {
     const map: Record<string, string> = {};
@@ -263,7 +371,7 @@ export function ReviewModalV6({
 
   const articleText = htmlForCounts.trim()
     ? htmlToPlainText(htmlForCounts)
-    : (item.summary ?? '').trim();
+    : (draftSummary || item.summary || '').trim();
 
   const wordCount = articleText ? articleText.split(/\s+/).filter(Boolean).length : 0;
   const readMins = Math.max(1, Math.round(wordCount / 200));
@@ -403,6 +511,28 @@ export function ReviewModalV6({
                         onChange={(e) => setDraftTitle(e.target.value)}
                         className="w-full text-heading-1 text-foreground bg-transparent border-none p-0 focus:ring-0 placeholder:text-muted-foreground"
                       />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-body-small text-muted-foreground uppercase tracking-widest">Summary</label>
+                        <textarea
+                          value={draftSummary}
+                          onChange={(e) => setDraftSummary(e.target.value)}
+                          className="w-full h-28 px-3 py-2 bg-surface border border-border rounded-xl text-body text-foreground focus:ring-0 resize-none"
+                          placeholder="Short summary used on listing and SEO."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-body-small text-muted-foreground uppercase tracking-widest">Category</label>
+                        <input
+                          type="text"
+                          value={draftCategory}
+                          onChange={(e) => setDraftCategory(e.target.value)}
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-xl text-body text-foreground focus:ring-0"
+                          placeholder={item.category || 'e.g. Policy, Market, Technology'}
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -658,7 +788,7 @@ export function ReviewModalV6({
                         <div className="space-y-1.5">
                           <label className="text-body-small text-muted-foreground uppercase tracking-widest">Target Keyword</label>
                           <div className="px-3 py-2 bg-surface border border-border rounded-xl text-body text-brand-accent">
-                            {draftTags[0] || item.category || '—'}
+                            {draftTags[0] || draftCategory || item.category || '—'}
                           </div>
                         </div>
                         <div className="space-y-1.5">
@@ -771,6 +901,9 @@ export function ReviewModalV6({
                               const res = await adminGenerateItemOgImage(item.id);
                               setOgImageOverride(res.ogImageUrl ?? '');
                               setOgImageApprovedAt(res.ogImageApprovedAt ?? null);
+                              if (res.notice && String(res.notice).trim()) {
+                                window.alert(String(res.notice).trim());
+                              }
                             } catch (err) {
                               const msg = err instanceof Error ? err.message : 'Failed to generate OG image';
                               window.alert(msg);
@@ -782,6 +915,48 @@ export function ReviewModalV6({
                       >
                         <Zap size={16} />
                         {isGeneratingOgImage ? 'Generating…' : 'Generate AI image'}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isIngestingOgImage}
+                        className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body-small text-foreground hover:bg-surface-hover shadow-neu-outset disabled:opacity-50"
+                        onClick={() => {
+                          if (!item) return;
+                          void (async () => {
+                            setIsIngestingOgImage(true);
+                            try {
+                              const e2eOverride = (process.env.NEXT_PUBLIC_NEWS_ENGINE_E2E_FREE_IMAGE_URL || '').trim();
+                              let imageUrl = e2eOverride;
+
+                              if (!imageUrl) {
+                                const q = buildFreeImageQuery();
+                                const response = await fetch(
+                                  `/api/admin/news-engine/free-image/unsplash?q=${encodeURIComponent(q || 'solar')}`
+                                );
+                                const body = (await response.json().catch(() => null)) as any;
+                                if (!response.ok) {
+                                  throw new Error(String(body?.error || 'Failed to find a free image'));
+                                }
+                                imageUrl = String(body?.imageUrl || '').trim();
+                                if (!imageUrl) throw new Error('Free image search returned no image URL');
+                              }
+
+                              const res = await adminIngestItemOgImage(item.id, imageUrl);
+                              setOgImageOverride(res.ogImageUrl ?? '');
+                              setOgImageApprovedAt(res.ogImageApprovedAt ?? null);
+                            } catch (err) {
+                              const msg = err instanceof Error ? err.message : 'Failed to fetch a free-source image';
+                              window.alert(msg);
+                            } finally {
+                              setIsIngestingOgImage(false);
+                            }
+                          })();
+                        }}
+                        title="Find and ingest a free image via Unsplash"
+                      >
+                        <Search size={16} />
+                        {isIngestingOgImage ? 'Fetching…' : 'Find free image'}
                       </button>
                     </div>
 
@@ -818,11 +993,29 @@ export function ReviewModalV6({
                               void (async () => {
                                 setIsApprovingOgImage(true);
                                 try {
-                                  const urlToSave = ogImageOverride.trim() ? ogImageOverride.trim() : null;
-                                  await adminUpdateItemImageControls(item.id, {
-                                    ogImageUrl: urlToSave,
+                                  const effectiveUrl = (ogImageOverride || item.ogImageUrl || '').trim();
+                                  if (!effectiveUrl) {
+                                    throw new Error('Cannot approve: ogImageUrl is not set');
+                                  }
+
+                                  let urlToPersist: string | null = effectiveUrl;
+
+                                  // Prefer ingesting to stable storage, but do not block approval if the host
+                                  // is fetchable by the browser yet blocks server-side ingestion.
+                                  if (!isStableOgImageUrl(effectiveUrl) && !effectiveUrl.startsWith('/')) {
+                                    try {
+                                      urlToPersist = await ingestOgImageIfNeeded(effectiveUrl);
+                                    } catch {
+                                      urlToPersist = effectiveUrl;
+                                    }
+                                  }
+
+                                  const updatePayload: { ogImageApprovalRequired: boolean; ogImageUrl?: string | null } = {
                                     ogImageApprovalRequired: requireImageApproval,
-                                  });
+                                  };
+                                  if (urlToPersist != null) updatePayload.ogImageUrl = urlToPersist;
+
+                                  await adminUpdateItemImageControls(item.id, updatePayload);
                                   const res = await adminApproveItemOgImage(item.id);
                                   setOgImageApprovedAt(res.ogImageApprovedAt ?? null);
                                 } catch (err) {
@@ -868,6 +1061,25 @@ export function ReviewModalV6({
                             placeholder="https://..."
                             className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
                           />
+                          <button
+                            type="button"
+                            disabled={isIngestingOgImage || !ogImageOverride.trim()}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-body-small text-foreground hover:bg-surface shadow-neu-outset disabled:opacity-50"
+                            onClick={() => {
+                              if (!item) return;
+                              void (async () => {
+                                try {
+                                  await ingestOgImageIfNeeded(ogImageOverride);
+                                } catch (err) {
+                                  const msg = err instanceof Error ? err.message : 'Failed to save OG image';
+                                  window.alert(msg);
+                                }
+                              })();
+                            }}
+                          >
+                            <Save size={14} />
+                            {isIngestingOgImage ? 'Saving…' : 'Save to S3'}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -964,13 +1176,18 @@ export function ReviewModalV6({
                   try {
                     await adminUpdateItem(item.id, {
                       title: draftTitle.trim(),
+                      summary: draftSummary.trim(),
                       contentHtml: draftContentHtml,
+                      category: draftCategory.trim(),
                       tags: draftTags,
                       seoTitle: draftSeoTitle.trim() ? draftSeoTitle.trim() : null,
                       seoDescription: draftSeoDescription.trim() ? draftSeoDescription.trim() : null,
                     });
+                    const resolvedOgUrl = ogImageOverride.trim()
+                      ? await ingestOgImageIfNeeded(ogImageOverride)
+                      : null;
                     await adminUpdateItemImageControls(item.id, {
-                      ogImageUrl: ogImageOverride.trim() ? ogImageOverride.trim() : null,
+                      ogImageUrl: resolvedOgUrl,
                       ogImageApprovalRequired: requireImageApproval,
                     });
                     await onSave?.();
@@ -991,16 +1208,44 @@ export function ReviewModalV6({
 
             <button
               type="button"
-              onClick={onPublish}
-              disabled={isPublished}
+              onClick={() => {
+                void (async () => {
+                  if (!item) return;
+                  setIsSaving(true);
+                  try {
+                    await adminUpdateItem(item.id, {
+                      title: draftTitle.trim(),
+                      summary: draftSummary.trim(),
+                      contentHtml: draftContentHtml,
+                      category: draftCategory.trim(),
+                      tags: draftTags,
+                      seoTitle: draftSeoTitle.trim() ? draftSeoTitle.trim() : null,
+                      seoDescription: draftSeoDescription.trim() ? draftSeoDescription.trim() : null,
+                    });
+                    const resolvedOgUrl = ogImageOverride.trim()
+                      ? await ingestOgImageIfNeeded(ogImageOverride)
+                      : null;
+                    await adminUpdateItemImageControls(item.id, {
+                      ogImageUrl: resolvedOgUrl,
+                      ogImageApprovalRequired: requireImageApproval,
+                    });
+                    await onSave?.();
+                    onPublish?.();
+                  } catch (err) {
+                    const msg = err instanceof Error ? err.message : 'Failed to publish';
+                    window.alert(msg);
+                  } finally {
+                    setIsSaving(false);
+                  }
+                })();
+              }}
+              disabled={isSaving}
               className={`flex items-center gap-2 px-6 py-3 text-body-small rounded-2xl uppercase tracking-widest ${
-                isPublished
-                  ? 'bg-surface text-muted-foreground cursor-not-allowed border border-border'
-                  : 'text-brand-accent bg-surface border border-border hover:bg-surface-hover active:scale-95'
+                'text-brand-accent bg-surface border border-border hover:bg-surface-hover active:scale-95'
               }`}
             >
               <Globe size={18} />
-              {isPublished ? 'Already Published' : 'Publish Now'}
+              {isPublished ? 'Republish Now' : 'Publish Now'}
             </button>
 
             <button

@@ -3,6 +3,10 @@ import type { NewsAiTaskType } from './ai-router';
 import { resolveModelProfileForTask } from './ai-router';
 import { markNewsApiKeyError, markNewsApiKeySuccess, resolveNewsApiKeyForPool } from './key-vault';
 
+function shouldPreferKeyVaultKeys(): boolean {
+  return (process.env.NEWS_ENGINE_PREFER_KEY_VAULT_KEYS || '').trim().toLowerCase() === 'true';
+}
+
 export type NewsAiKeyPool = 'RESEARCH' | 'DRAFTING' | 'IMAGES';
 
 export type ResolvedNewsAiCallConfig = {
@@ -30,7 +34,9 @@ export async function resolveNewsAiCallConfig(
     const provider = profile?.provider || input.fallbackProvider || 'openai';
     const model = profile?.modelId || input.fallbackModel;
 
-    const key = await resolveNewsApiKeyForPool(prisma, input.pool);
+    const envKeyPresent = Boolean((process.env.OPENAI_API_KEY || '').trim());
+    const useKeyVault = shouldPreferKeyVaultKeys() || !envKeyPresent;
+    const key = useKeyVault ? await resolveNewsApiKeyForPool(prisma, input.pool) : null;
 
     return {
       provider,

@@ -1188,11 +1188,11 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 > - For each task: include acceptance criteria + exact target file paths.
 > - Do not begin E062 until all tasks are planned and checked in.
 
-- [ ] E060 **[PLANNING]** Capture/confirm findings → tasks mapping (scope lock)
+- [x] E060 **[PLANNING]** Capture/confirm findings → tasks mapping (scope lock)
   - **Inputs**: owner-provided visual findings + Phase 14 Phase 6 checkpoint docs
   - **Output**: Phase 15 scope mapping written directly into this ledger (below)
 
-- [ ] E061 **[PLANNING]** Lock test/verification plan (minimum)
+- [x] E061 **[PLANNING]** Lock test/verification plan (minimum)
   - `npx tsc --noEmit`
   - `npm run build`
   - Playwright: re-run existing News Engine specs (Phase 13 + Phase 14)
@@ -1204,19 +1204,19 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 
 #### A) OG Images: Generate/Fetch → Persist to S3 → Display Everywhere
 
-- [ ] E062 Implement server-side OG image ingestion to S3 (foundation)
+- [x] E062 Implement server-side OG image ingestion to S3 (foundation)
   - Add helper to fetch remote image bytes and upload to S3 using `src/lib/s3.ts`
   - Acceptance:
     - Given a remote image URL, server stores it under a stable S3 key and returns a stable URL suitable for public OG tags.
     - Failure states are actionable (bad URL, timeout, unsupported content type).
 
-- [ ] E063 Update OG image generate endpoint to store to S3 (no ephemeral URLs)
+- [x] E063 Update OG image generate endpoint to store to S3 (no ephemeral URLs)
   - Target: `src/app/api/admin/news-engine/items/[id]/og-image/generate/route.ts`
   - Acceptance:
     - Generate returns `ogImageUrl` pointing to S3 (not OpenAI-hosted temporary URL).
     - Works even if admin reloads hours later (preview still loads).
 
-- [ ] E064 Add “Save/ingest override URL to S3” path for free-source/manual URLs
+- [x] E064 Add “Save/ingest override URL to S3” path for free-source/manual URLs
   - Targets:
     - Admin route: `src/app/api/admin/news-engine/items/[id]/og-image/ingest/route.ts` (new)
     - UI wiring: `src/components/news-engine/v6/modals/ReviewModal.tsx`
@@ -1224,7 +1224,7 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
     - Pasting a valid image URL and clicking ingest results in `ogImageUrl` updated to S3-backed URL.
     - Preview updates immediately.
 
-- [ ] E065 Ensure public pages render actual OG image (not placeholders)
+- [x] E065 Ensure public pages render actual OG image (not placeholders)
   - Targets:
     - Public list: `src/app/news/page.tsx`
     - Public detail: `src/app/news/[slug]/page.tsx`
@@ -1235,7 +1235,7 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
     - `/news/[slug]` shows the hero image when present.
     - Tags are visible where intended (list + detail) and match DB.
 
-- [ ] E066 Ensure OG meta tags are present in server-rendered HTML (crawler-visible)
+- [x] E066 Ensure OG meta tags are present in server-rendered HTML (crawler-visible)
   - Targets:
     - `src/app/news/[slug]/page.tsx` (or split server wrapper + client component)
   - Acceptance:
@@ -1243,7 +1243,7 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 
 #### B) Publish Gating: “Require Approval” Must Be Respected
 
-- [ ] E067 Fix approval toggle persistence + publish-now enforcement alignment
+- [x] E067 Fix approval toggle persistence + publish-now enforcement alignment
   - Targets:
     - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
     - API: `src/app/api/admin/news-engine/items/[id]/image-controls/route.ts`
@@ -1255,7 +1255,7 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 
 #### C) Content Quality + Editability (Formatting, Rewrite Rules, Title-Copy “Red Alert”)
 
-- [ ] E068 Make all AI-generated fields editable end-to-end
+- [x] E068 Make all AI-generated fields editable end-to-end
   - Targets:
     - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
     - API: `src/app/api/admin/news-engine/items/[id]/route.ts`
@@ -1263,14 +1263,14 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
     - Admin can edit: title, summary, contentHtml, tags, category/source labeling (where applicable), SEO title/description.
     - Changes persist and reflect on public pages.
 
-- [ ] E069 Improve default draft formatting output (no wall-of-text)
+- [x] E069 Improve default draft formatting output (no wall-of-text)
   - Targets:
     - Drafting pipeline prompt builder(s) in `src/lib/news-engine/**` and/or internal runner routes
   - Acceptance:
     - Generated drafts include headings, paragraphs, and lists where appropriate.
     - Public render reads cleanly without manual edits.
 
-- [ ] E070 Add hard guard against copying RSS titles (“Red Alert”)
+- [x] E070 Add hard guard against copying RSS titles (“Red Alert”)
   - Targets:
     - Drafting pipeline prompt + server-side validation before saving/publishing
   - Acceptance:
@@ -1279,7 +1279,7 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 
 #### D) Published Editing + Republish Workflow
 
-- [ ] E071 Enable edit-published + republish flow
+- [x] E071 Enable edit-published + republish flow
   - Targets:
     - UI: `src/components/news-engine/v6/modals/ReviewModal.tsx`
     - API: `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts` (or new `republish` route)
@@ -1289,12 +1289,12 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 
 #### E) Model Profiles UX (Modal Close + Delete + Bulk Delete)
 
-- [ ] E072 Add close button + escape/overlay close for model profile modal
+- [x] E072 Add close button + escape/overlay close for model profile modal
   - Target: `src/components/news-engine/v6/tabs/SettingsTab.tsx`
   - Acceptance:
     - Modal has explicit close control and is dismissible safely.
 
-- [ ] E073 Add delete + bulk delete model profiles
+- [x] E073 Add delete + bulk delete model profiles
   - Targets:
     - API: `src/app/api/admin/news-engine/model-profiles/[id]/route.ts` (add DELETE)
     - API: `src/app/api/admin/news-engine/model-profiles/route.ts` (optional bulk delete)
@@ -1308,8 +1308,249 @@ If any test fails, fix the issue and re-run the tests. Only proceed to the next 
 
 ### Phase 15 — Verification + Docs (post-fix)
 
-- [ ] E080 Run all locked verification (typecheck/build + all News Engine scripts/specs) until fully green
-- [ ] E081 Write Phase 15 audit addendum (must include “Red Alert” analysis + best remediation)
-  - Output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/` (new file)
-- [ ] E082 Write Phase 15 docs addendum (operator-facing changes)
-  - Output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/` (new file)
+- [x] E080 Run all locked verification (typecheck/build + all News Engine scripts/specs) until fully green
+  - `npx tsc --noEmit`: PASS
+  - `npm run build`: PASS
+  - Playwright Phase 13: `tests/e2e/news-engine-phase13-router-vault-provenance.spec.ts` PASS (updated OG image expectation for S3 ingest)
+  - Playwright Phase 14: `tests/e2e/news-engine-phase14-expansion.spec.ts` PASS
+  - Scripts:
+    - `scripts/news-engine-e2e-automation-test.ts`: PASS
+    - `scripts/news-engine-rss-http-test.ts`: PASS (auto-started dev:e2e)
+    - `scripts/news-engine-cleanup-test-data.ts`: PASS (dry-run)
+- [x] E081 Write Phase 15 audit addendum (must include “Red Alert” analysis + best remediation)
+  - Output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase15-audit-2026-01-15.md`
+- [x] E082 Write Phase 15 docs addendum (operator-facing changes)
+  - Output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase15-remediation-post-feature-docs-2026-01-15.md`
+
+---
+
+## Phase 16: Phase 15 Reality Check + Fixes (V1) — Real OpenAI, OG Preview, Republish Reflection, Public Images (2026-01-15)
+
+**Purpose**: Address owner-reported post-Phase 15 gaps observed in real UI use: real OpenAI key usage (no “dummy”), OG preview reliability when pasting URLs, republish reflecting edits immediately, and public pages reliably showing images.
+
+**Governance (hard rule)**:
+- Do not begin implementation until Phase 16 tasks are fully planned and checked in.
+- Each fix must be verified by repeatable checks (typecheck/build + targeted scripts/specs).
+
+---
+
+### Phase 16 — ask Planning Required
+
+> **Task Planning Required:**
+> - Before starting any implementation, enumerate and lock all actionable tasks for Phase 16 below.
+> - For each task: include acceptance criteria + exact target file paths.
+> - Do not begin F160 until all tasks are planned and checked in.
+
+- [x] P160 **[PLANNING]** Reproduce + document current failures (screens + request/response evidence)
+  - Acceptance:
+    - Capture exact UI path + item IDs for: (1) OpenAI “dummy key” error, (2) OG override URL not previewing, (3) republish not reflecting edits on public, (4) public images missing.
+    - Record the relevant API responses and server logs for each.
+  - Evidence:
+    - `DOC/FEATURES/NEWS ENGINE/POST FEATURE/FIXING ISSUES/news-engine-phase16-failure-repro-notes-2026-01-15.md`
+
+- [x] P161 **[PLANNING]** Lock Phase 16 verification plan (minimum)
+  - `npx tsc --noEmit`
+  - `npm run build`
+  - Playwright: rerun News Engine specs (Phase 13 + Phase 14)
+  - Manual smoke:
+    - Generate/ingest OG image → approve → publish → verify `/news` and `/news/[slug]` show the image.
+    - Edit a published item (title/tags/content) → republish → verify public reflects within 1 refresh.
+
+---
+
+### Phase 16 — Planned Task Breakdown (Execution Order)
+
+#### A) Real OpenAI Key Wiring (No Dummy Fallback)
+
+- [x] F160 Remove any “dummy key” fallback and use env key consistently for server calls
+  - Targets (to confirm during P160): `src/lib/**` OpenAI client setup + any admin routes calling OpenAI
+  - Acceptance:
+    - When `OPENAI_API_KEY` is set, server uses it (no placeholder/dummy).
+    - When missing/invalid, UI shows a clear actionable error (no ambiguous alerts).
+
+#### B) OG Preview Reliability (Override URL → Works for common pages like Unsplash)
+
+- [x] F161 Make “Save to S3” accept common HTML pages by resolving `og:image` then ingesting
+  - Targets:
+    - `src/lib/news-engine/og-image.ts`
+    - `src/app/api/admin/news-engine/items/[id]/og-image/ingest/route.ts`
+    - `src/components/news-engine/v6/modals/ReviewModal.tsx`
+  - Acceptance:
+    - Pasting an Unsplash photo page (or similar) results in a valid image preview after Save.
+    - If URL is not resolvable, UI shows a specific reason.
+
+#### C) Republish Must Reflect Edits Immediately (Public + Admin)
+
+- [x] F162 Ensure republish invalidates public caches and reflects latest saved fields
+  - Targets:
+    - `src/app/api/admin/news-engine/items/[id]/publish-now/route.ts`
+    - Public pages: `src/app/news/page.tsx`, `src/app/news/[slug]/page.tsx`
+  - Acceptance:
+    - After updating a published item and republishing, `/news` and `/news/[slug]` reflect new title/tags/content/image within one refresh.
+
+#### D) Public Images Must Render Reliably
+
+- [x] F163 Ensure Next image rendering supports S3/CloudFront URLs (no silent blocking)
+  - Targets:
+    - `next.config.js` (image domains/remotePatterns)
+    - Public pages/components that render images
+  - Acceptance:
+    - Public list + detail consistently render `ogImageUrl` from S3-backed URLs.
+
+---
+
+### Phase 16 — Verification + Docs (post-fix)
+
+- [x] V160 Run locked verification until green
+  - `npx tsc --noEmit`
+  - `npm run build`
+  - Playwright Phase 13: `tests/e2e/news-engine-phase13-router-vault-provenance.spec.ts`
+  - Playwright Phase 14: `tests/e2e/news-engine-phase14-expansion.spec.ts`
+
+- [x] D160 Write Phase 16 audit addendum (owner-reported gaps → fixes → evidence)
+  - Output: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase16-audit-2026-01-15.md`
+  - Evidence: written and cross-referenced to Phase 16 fix targets.
+
+- [x] D161 Write Phase 16 docs addendum (operator-facing changes)
+  - Output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase16-remediation-post-feature-docs-2026-01-15.md`
+
+---
+
+### Phase 16 — Execution Notes (initial fixes applied)
+
+- Implemented fixes (code):
+  - OpenAI key usage: default News Engine AI calls to env `OPENAI_API_KEY` unless `NEWS_ENGINE_PREFER_KEY_VAULT_KEYS=true` is set (prevents accidental E2E dummy DB keys from being used).
+    - `src/lib/news-engine/ai-runtime.ts`
+  - OG image generation: falls back to env `OPENAI_API_KEY` when Key Vault IMAGES key is not present; guards invalid image models.
+    - `src/app/api/admin/news-engine/items/[id]/og-image/generate/route.ts`
+  - OG override URL ingest: accepts common HTML pages by resolving `og:image`/`twitter:image` then ingesting the resolved image.
+    - `src/lib/news-engine/og-image.ts`
+  - Public image reliability for private buckets: generate public URLs via app proxy route by default; added proxy endpoint.
+    - `src/lib/s3.ts`
+    - `src/app/api/public/news-engine/s3/[...key]/route.ts`
+  - Republish reflection: Publish/Republish button now persists edits + image controls before calling publish.
+    - `src/components/news-engine/v6/modals/ReviewModal.tsx`
+  - Next image allowlist expanded for S3 hosts.
+    - `next.config.js`
+
+- Verification evidence (repeatable):
+  - `npm run build`: PASS
+  - Playwright Phase 13: `tests/e2e/news-engine-phase13-router-vault-provenance.spec.ts`: PASS
+  - Playwright Phase 14: `tests/e2e/news-engine-phase14-expansion.spec.ts`: PASS
+
+---
+
+## Phase 17: OG Image & Model Access Remediation (V2) — DALL·E Access + Free Image URLs + Auto S3 + Approval Blocking Fixes (2026-01-17)
+
+**Bridge / authority references (must read before execution)**:
+- Phase 14 checkpoint audit: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase6-post-feature-audit-2026-01-15.md`
+- Phase 14 checkpoint docs: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase14-expansion-post-feature-docs-2026-01-15.md`
+- Testing governance: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`
+
+**Purpose**: Solve the remaining operator-reported OG image pipeline failures and configuration gaps:
+- DALL·E image generation failing due to access/authorization.
+- Free-source image URL generation not relevant/reliable.
+- OG preview only works after clicking “Save to S3”; initial URL should auto-ingest to S3.
+- Approve Image blocks with “Image URL is invalid” despite preview showing.
+- Expand configuration so OpenAI GPT models and image models can be used safely (with validation).
+
+---
+
+### Phase 17 — ask Planning Required
+
+> **Task Planning Required:**
+> - Before starting implementation, enumerate and lock all actionable tasks for Phase 17 below.
+> - Each task must include acceptance criteria + exact target file paths.
+> - Do not begin I170 until Phase 17 tasks are fully planned and checked in.
+
+---
+
+### Phase 17 / Phase 1 — User Story Spec (Required)
+
+- [x] S170 **Create user story spec (template-based)**
+  - Template: `.specify/templates/spec-template.md`
+  - Output folder: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/FIXING ISSUES/`
+  - Output file: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/FIXING ISSUES/news-engine-phase17-og-image-model-access-spec-2026-01-17.md`
+  - Must include user stories + acceptance criteria covering:
+    - DALL·E access/authorization fallback behavior
+    - Free-source image discovery relevance + validity
+    - Auto-ingest initial image URL to S3 (override remains)
+    - Approve Image should not block when preview is valid
+    - Model enablement/validation rules for GPT + image models
+
+---
+
+### Phase 17 / Phase 2 — Create Test Scripts (Before Fixing)
+
+- [x] T170 Create test scripts mapped to the Phase 17 user stories
+  - Follow: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`
+  - Acceptance:
+    - Tests are user-story driven, independently runnable, and repeatable.
+    - Includes at minimum one E2E path for:
+      - Generate OG image (or fallback) → auto-ingest → preview visible → approve → publish
+      - Override URL (page URL + direct image URL) → ingest → approve → publish
+      - Approval does not block when a valid preview exists
+  - Evidence:
+    - E2E suite: `tests/e2e/news-engine-phase17-og-image-remediation.spec.ts`
+    - Deterministic helpers (dev-only): `src/app/api/e2e/test-image/route.ts`, `src/app/api/e2e/og-page/route.ts`
+
+---
+
+### Phase 17 / Phase 3 — Fixing Issues (Iterative, One-by-One)
+
+**Workflow rule (strict)**: Each issue fix must start with a short analysis section (symptom → root cause hypothesis → confirm with evidence), then implement the fix, then visual test, then mark complete.
+
+- [x] I170 Fix 1 — DALL·E access failures (authorization / model availability)
+  - Acceptance:
+    - If requested image model is not available, system falls back to an allowed image model (or to free-source image flow) with a clear operator-visible message.
+    - No “dummy key” usage in real UI paths.
+  - Evidence:
+    - Server fallback + operator notice: `src/app/api/admin/news-engine/items/[id]/og-image/generate/route.ts`
+
+- [x] I171 Fix 2 — Free-source image URL generation relevance + validity
+  - Acceptance:
+    - Given title/summary, system finds a relevant image URL that resolves to a real image (not an HTML page unless we can resolve og:image).
+    - Errors are actionable and do not silently fail.
+  - Evidence:
+    - Operator UI “Find free image” + ingest: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+
+- [x] I172 Fix 3 — Auto S3 ingest for initial OG image URL (override remains)
+  - Acceptance:
+    - When an OG image URL is present/selected, the system automatically ingests to S3 (or proxy-backed storage) without requiring manual “Save to S3”.
+    - Override flow remains available and works.
+  - Evidence:
+    - Auto-ingest on modal open + stable URL detection: `src/components/news-engine/v6/modals/ReviewModal.tsx`
+
+- [x] I173 Fix 4 — Approve Image invalid URL blocking despite preview
+  - Acceptance:
+    - If the preview is showing a valid image, approval must not fail due to URL parsing.
+    - If the URL changes during ingest, approval flow must approve the ingested URL and persist it.
+    - Manual approval should still block if there is truly no valid image.
+  - Evidence:
+    - Approval paths exercised in `tests/e2e/news-engine-phase17-og-image-remediation.spec.ts`
+
+- [x] I174 Fix 5 — Model enablement and validation rules (GPT + image models)
+  - Acceptance:
+    - Admin can select supported models; server validates and rejects unsupported combos with clear errors.
+    - OpenAI model usage is consistent and configurable without breaking production.
+  - Evidence:
+    - Allowed-model validation + fallback model candidates: `src/app/api/admin/news-engine/items/[id]/og-image/generate/route.ts`
+
+---
+
+
+### Phase 17 / Phase 4 — Post-Fixing Tests (Gate)
+
+- [x] V170 Run scripts/tests per `AI-implementation-testing-guidelines.md`
+  - Acceptance:
+    - All Phase 17 tests pass as written against the user story acceptance criteria.
+    - If any fail: fix product code (not tests) unless the test is incorrect.
+
+  - Verification evidence (repeatable, as of 2026-01-17):
+    - `npx tsc --noEmit`: PASS
+    - `npm run build`: PASS
+    - `npx playwright test tests/e2e/news-engine-phase17-og-image-remediation.spec.ts`: PASS (3/3)
+
+  - Root cause of prior failures: Playwright E2E web server sometimes started with a corrupted `.next` manifest (from previous failed/partial builds), causing runtime `SyntaxError: Unexpected end of JSON input` and navigation aborts. This is now fixed by cleaning `.next` before E2E runs (see `scripts/dev-e2e.js`).
+
+  - Output: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase16-remediation-post-feature-docs-2026-01-15.md`

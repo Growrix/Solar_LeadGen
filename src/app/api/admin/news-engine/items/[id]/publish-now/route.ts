@@ -60,6 +60,7 @@ export async function POST(
         title: true,
         slug: true,
         deletedAt: true,
+        status: true,
         ogImageUrl: true,
         ogImageApprovalRequired: true,
         ogImageApprovedAt: true,
@@ -108,11 +109,13 @@ export async function POST(
       },
     });
 
+    const isRepublish = existing.status === 'PUBLISHED';
+
     await writeNewsAuditLog({
-      action: 'news_item_published_now',
+      action: isRepublish ? 'news_item_republished' : 'news_item_published_now',
       actorId: auth.userId,
       itemId: id,
-      metadata: { slug: updated.slug },
+      metadata: { slug: updated.slug, republished: isRepublish },
     });
 
     return NextResponse.json({ item: updated });

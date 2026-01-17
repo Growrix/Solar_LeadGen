@@ -6,6 +6,7 @@ import type { NewsEngineState } from '@/lib/ui-stubs/news-engine';
 import {
   adminCreateModelProfile,
   adminCreateKeyVaultKey,
+  adminDisableModelProfile,
   adminGetAiRouterDefaults,
   adminGetKeyVaultState,
   adminListKeyVaultKeys,
@@ -62,6 +63,7 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
   const [modelProfiles, setModelProfiles] = React.useState<
     Array<{ id: string; displayName: string; provider: string; modelId: string; enabled: boolean }>
   >([]);
+  const [selectedModelProfileIds, setSelectedModelProfileIds] = React.useState<string[]>([]);
 
   const [isAddModelProfileOpen, setIsAddModelProfileOpen] = React.useState(false);
   const [editingModelProfileId, setEditingModelProfileId] = React.useState<string | null>(null);
@@ -76,6 +78,12 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
     modelId: 'o3-mini',
     enabled: true,
   });
+
+  const closeModelProfileModal = React.useCallback(() => {
+    setIsAddModelProfileOpen(false);
+    setEditingModelProfileId(null);
+    setModelProfileForm({ displayName: 'OpenAI o3-mini', provider: 'openai', modelId: 'o3-mini', enabled: true });
+  }, []);
 
   const [keyVaultMasterKeyConfigured, setKeyVaultMasterKeyConfigured] = React.useState(false);
 
@@ -172,6 +180,25 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
       cancelled = true;
     };
   }, [AI_ROUTER_TASK_TYPES]);
+
+  React.useEffect(() => {
+    if (!isAddModelProfileOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeModelProfileModal();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isAddModelProfileOpen, closeModelProfileModal]);
+
+  React.useEffect(() => {
+    if (!modelProfiles.length) {
+      setSelectedModelProfileIds([]);
+      return;
+    }
+    setSelectedModelProfileIds((prev) => prev.filter((id) => modelProfiles.some((p) => p.id === id)));
+  }, [modelProfiles]);
 
   const writingTone = state.settings.writingTone ?? 'Journalistic';
   const modelLabel = state.settings.modelLabel ?? 'OpenAI o3-mini';
@@ -300,22 +327,67 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
     })();
   };
 
+  const allModelProfilesSelected = modelProfiles.length > 0 && selectedModelProfileIds.length === modelProfiles.length;
+
+  const toggleAllModelProfiles = () => {
+    if (allModelProfilesSelected) {
+      setSelectedModelProfileIds([]);
+    } else {
+      setSelectedModelProfileIds(modelProfiles.map((p) => p.id));
+    }
+  };
+
+  const toggleModelProfile = (id: string) => {
+    setSelectedModelProfileIds((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
+  };
+
+  const deleteModelProfiles = (ids: string[]) => {
+    if (!ids.length) return;
+    const label = ids.length === 1 ? 'this model profile' : `${ids.length} model profiles`;
+    if (!window.confirm(`Disable ${label}? This will remove them from routing.`)) return;
+    void (async () => {
+      try {
+        await Promise.all(ids.map((id) => adminDisableModelProfile(id)));
+        const profiles = await adminListModelProfiles();
+        setModelProfiles(
+          (profiles ?? []).map((p) => ({
+            id: p.id,
+            displayName: p.displayName,
+            provider: p.provider,
+            modelId: p.modelId,
+            enabled: p.enabled,
+          }))
+        );
+        setSelectedModelProfileIds([]);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to delete model profiles';
+        window.alert(msg);
+      }
+    })();
+  };
+
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-500 pb-32 relative">
       {isAddModelProfileOpen ? (
         <div className="fixed inset-0 z-[1700] flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-            onClick={() => {
-              setIsAddModelProfileOpen(false);
-              setEditingModelProfileId(null);
-              setModelProfileForm({ displayName: 'OpenAI o3-mini', provider: 'openai', modelId: 'o3-mini', enabled: true });
-            }}
+            onClick={closeModelProfileModal}
           />
           <div className="relative w-full max-w-xl bg-background rounded-[28px] border border-border shadow-neu-outset overflow-hidden">
-            <div className="p-6 border-b border-border">
-              <h3 className="text-heading-3 text-foreground">{editingModelProfileId ? 'Update Model Profile' : 'Add Model Profile'}</h3>
-              <p className="text-body text-muted-foreground">Used by the AI Router defaults.</p>
+            <div className="p-6 border-b border-border flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-heading-3 text-foreground">{editingModelProfileId ? 'Update Model Profile' : 'Add Model Profile'}</h3>
+                <p className="text-body text-muted-foreground">Used by the AI Router defaults.</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeModelProfileModal}
+                className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-surface"
+                aria-label="Close model profile modal"
+              >
+                ✕
+              </button>
             </div>
 
             <div className="p-6 space-y-5">
@@ -412,9 +484,7 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
 
                       settingsSaved.trigger();
 
-                      setIsAddModelProfileOpen(false);
-                      setEditingModelProfileId(null);
-                      setModelProfileForm({ displayName: 'OpenAI o3-mini', provider: 'openai', modelId: 'o3-mini', enabled: true });
+                      closeModelProfileModal();
                     } catch (err) {
                       const msg = err instanceof Error ? err.message : 'Failed to save model profile';
                       window.alert(msg);
@@ -612,22 +682,40 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
             <p className="text-body text-foreground">Model profiles</p>
             <p className="text-body-small text-muted-foreground">Create, enable/disable, and edit profiles used by routing.</p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setEditingModelProfileId(null);
-              setModelProfileForm({ displayName: 'OpenAI o3-mini', provider: 'openai', modelId: 'o3-mini', enabled: true });
-              setIsAddModelProfileOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body shadow-neu-outset hover:bg-surface-hover transition-colors"
-          >
-            <Save size={16} />
-            Add Profile
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => deleteModelProfiles(selectedModelProfileIds)}
+              disabled={!selectedModelProfileIds.length}
+              className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body shadow-neu-outset hover:bg-surface-hover transition-colors disabled:opacity-50"
+            >
+              Delete Selected
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingModelProfileId(null);
+                setModelProfileForm({ displayName: 'OpenAI o3-mini', provider: 'openai', modelId: 'o3-mini', enabled: true });
+                setIsAddModelProfileOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-xl text-body shadow-neu-outset hover:bg-surface-hover transition-colors"
+            >
+              <Save size={16} />
+              Add Profile
+            </button>
+          </div>
         </div>
 
         <div className="bg-background rounded-2xl border border-border shadow-neu-outset overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 px-6 py-3 bg-surface border-b border-border">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3 px-6 py-3 bg-surface border-b border-border">
+            <div className="text-body-small text-muted-foreground uppercase tracking-widest">
+              <input
+                type="checkbox"
+                checked={allModelProfilesSelected}
+                onChange={toggleAllModelProfiles}
+                aria-label="Select all model profiles"
+              />
+            </div>
             <div className="text-body-small text-muted-foreground uppercase tracking-widest">Name</div>
             <div className="text-body-small text-muted-foreground uppercase tracking-widest">Provider</div>
             <div className="text-body-small text-muted-foreground uppercase tracking-widest">Model</div>
@@ -636,7 +724,15 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
           </div>
           <div className="divide-y divide-border">
             {modelProfiles.map((p) => (
-              <div key={p.id} className="grid grid-cols-1 md:grid-cols-5 gap-3 px-6 py-4 bg-background">
+              <div key={p.id} className="grid grid-cols-1 md:grid-cols-6 gap-3 px-6 py-4 bg-background">
+                <div>
+                  <input
+                    type="checkbox"
+                    checked={selectedModelProfileIds.includes(p.id)}
+                    onChange={() => toggleModelProfile(p.id)}
+                    aria-label={`Select model profile ${p.displayName}`}
+                  />
+                </div>
                 <div className="text-body text-foreground">{p.displayName}</div>
                 <div className="text-body text-foreground">{p.provider}</div>
                 <div className="text-body text-foreground">{p.modelId}</div>
@@ -678,7 +774,7 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
                     />
                   </button>
                 </div>
-                <div className="flex items-start justify-end">
+                <div className="flex items-start justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -694,6 +790,13 @@ export function SettingsTabV6({ state, setState, settingsSaved, onSave }: Props)
                     className="px-3 py-2 text-body-small text-brand-accent hover:bg-surface rounded-lg transition-colors"
                   >
                     Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteModelProfiles([p.id])}
+                    className="px-3 py-2 text-body-small text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

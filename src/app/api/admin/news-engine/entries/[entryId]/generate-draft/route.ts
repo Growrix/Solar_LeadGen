@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog } from '@/lib/news-engine';
+import { buildDistinctTitle, isNearDuplicateTitle } from '@/lib/news-engine/title-guard';
 import { callOpenAiJson } from '@/lib/openai';
 import {
   resolveNewsAiCallConfig,
@@ -53,7 +54,7 @@ function pickStringArray(obj: Record<string, unknown> | null, key: string): stri
 }
 
 const NEWS_ENGINE_SYSTEM_PROMPT =
-  'You are an assistant that drafts NEWS ENGINE posts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl. contentHtml must be valid HTML and should not include unverified claims.';
+  'You are an assistant that drafts NEWS ENGINE posts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl. contentHtml must be valid HTML (not markdown) and should use headings (h2/h3), paragraphs, lists when relevant, and emphasis tags (<strong>/<em>) to improve readability. Do not include unverified claims.';
 
 // POST /api/admin/news-engine/entries/[entryId]/generate-draft
 export async function POST(request: NextRequest, context: { params: Promise<{ entryId: string }> }) {
@@ -156,6 +157,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
       '- Produce JSON only (no markdown).',
       '- The article must avoid unverifiable claims; if specifics are unknown, keep it high-level.',
       '- contentHtml must be valid HTML (<p>, <h2>, <ul>/<li> as needed).',
+      '- Create a distinct headline; do not copy the RSS title verbatim.',
       '- Make it relevant to solar leads / homeowners / energy industry where reasonable.',
     ]
       .filter(Boolean)
@@ -182,6 +184,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
       seoDescription: pickString(parsed, 'seoDescription', '') || null,
       ogImageUrl: pickString(parsed, 'ogImageUrl', '') || null,
     };
+
+    let titleCollision = false;
+    const sourceTitle = entry.title || '';
+    if (draft.title && sourceTitle && isNearDuplicateTitle(draft.title, sourceTitle)) {
+      titleCollision = true;
+      draft.title = buildDistinctTitle({
+        summary: draft.summary || snippet,
+        category: draft.category,
+        fallback: draft.title,
+      });
+    }
 
     const createdItem = await prisma.newsItem.create({
       data: {
@@ -230,7 +243,12 @@ export async function POST(request: NextRequest, context: { params: Promise<{ en
       actorId: auth.userId,
       itemId: createdItem.id,
       sourceId: entry.sourceId,
-      metadata: { entryId: entry.id, model: modelUsed },
+      metadata: {
+        entryId: entry.id,
+        model: modelUsed,
+        titleCollision,
+        sourceTitle: titleCollision ? sourceTitle : undefined,
+      },
       promptUsed: prompt,
     });
 

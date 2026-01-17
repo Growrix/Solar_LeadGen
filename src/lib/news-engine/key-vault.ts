@@ -127,35 +127,60 @@ export type ResolvedNewsApiKey = {
   rawKey: string;
 };
 
+function isLikelyTestOrDummyKey(rawKey: string, label: string): boolean {
+  const key = rawKey.trim().toLowerCase();
+  const lbl = label.trim().toLowerCase();
+
+  // Playwright seeds dummy keys like: sk-e2e-<timestamp>-dummy
+  if (key.includes('dummy')) return true;
+  if (key.startsWith('sk-e2e-')) return true;
+  if (lbl.includes('e2e')) return true;
+  if (lbl.includes('dummy')) return true;
+
+  return false;
+}
+
 export async function resolveNewsApiKeyForPool(
   prisma: PrismaClient,
   pool: 'RESEARCH' | 'DRAFTING' | 'IMAGES'
 ): Promise<ResolvedNewsApiKey | null> {
   if (!getNewsKeyVaultMasterKeyOrNull()) return null;
 
-  const candidate = await prisma.newsApiKey.findFirst({
+  const candidates = await prisma.newsApiKey.findMany({
     where: {
       enabled: true,
       pools: { has: pool },
     },
     orderBy: [{ lastUsedAt: 'asc' }, { createdAt: 'asc' }],
+    take: 25,
     select: { id: true, provider: true, label: true, encryptedKey: true },
   });
 
-  if (!candidate) return null;
+  for (const candidate of candidates) {
+    let rawKey = '';
+    try {
+      rawKey = decryptWithNewsMasterKey(candidate.encryptedKey);
+    } catch {
+      continue;
+    }
 
-  const rawKey = decryptWithNewsMasterKey(candidate.encryptedKey);
+    if (isLikelyTestOrDummyKey(rawKey, candidate.label)) {
+      continue;
+    }
 
-  await prisma.newsApiKey
-    .update({ where: { id: candidate.id }, data: { lastUsedAt: new Date() } })
-    .catch(() => null);
+    await prisma.newsApiKey
+      .update({ where: { id: candidate.id }, data: { lastUsedAt: new Date() } })
+      .catch(() => null);
 
-  return {
-    provider: candidate.provider,
-    apiKeyId: candidate.id,
-    label: candidate.label,
-    rawKey,
-  };
+    return {
+      provider: candidate.provider,
+      apiKeyId: candidate.id,
+      label: candidate.label,
+      rawKey,
+    };
+  }
+
+  return null;
 }
 
 export async function markNewsApiKeySuccess(prisma: PrismaClient, apiKeyId: string): Promise<void> {

@@ -163,7 +163,7 @@ test.describe('News Engine Phase 13', () => {
     await page.getByRole('button', { name: 'SEO & Compliance' }).click();
     await page.getByText('Image controls').waitFor();
 
-    const ogUrl = `https://example.com/og/${Date.now()}.png`;
+      const ogUrl = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80';
     await page.fill('input[placeholder="https://..."]', ogUrl);
 
     const saveResp = page.waitForResponse((r) => r.url().includes('/api/admin/news-engine/items/') && r.url().includes('/image-controls') && r.request().method() === 'PUT');
@@ -180,6 +180,6 @@ test.describe('News Engine Phase 13', () => {
     await page.getByText('Image controls').waitFor({ timeout: 15000 });
     const ogInput = page.locator('input[placeholder="https://..."]');
     await expect(ogInput).toBeVisible();
-    await expect(ogInput).toHaveValue(ogUrl);
+    await expect(ogInput).toHaveValue(/news-engine\/og-images/);
   });
 });

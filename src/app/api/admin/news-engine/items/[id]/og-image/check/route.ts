@@ -13,12 +13,12 @@ function normalizeString(value: unknown): string {
 
 type OgImageCheckStatus = 'OK' | 'BROKEN' | 'UNKNOWN';
 
-function validateHttpUrl(rawUrl: string): { ok: true; url: string } | { ok: false; reason: string } {
+function validateHttpUrl(rawUrl: string, origin: string): { ok: true; url: string } | { ok: false; reason: string } {
   const trimmed = rawUrl.trim();
   if (!trimmed) return { ok: false, reason: 'ogImageUrl is empty' };
 
   try {
-    const parsed = new URL(trimmed);
+    const parsed = trimmed.startsWith('/') ? new URL(trimmed, origin) : new URL(trimmed);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       return { ok: false, reason: 'ogImageUrl must be http/https' };
     }
@@ -76,7 +76,7 @@ async function checkOgImageUrlServerSide(url: string): Promise<{ status: OgImage
 }
 
 // POST /api/admin/news-engine/items/[id]/og-image/check
-export async function POST(_request: NextRequest, context: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: { params: { id: string } }) {
   try {
     const auth = await requireAdmin();
     const id = normalizeString(context.params.id);
@@ -94,7 +94,7 @@ export async function POST(_request: NextRequest, context: { params: { id: strin
 
     const now = new Date();
     const urlRaw = item.ogImageUrl ?? '';
-    const validated = validateHttpUrl(urlRaw);
+    const validated = validateHttpUrl(urlRaw, request.nextUrl.origin);
 
     let status: OgImageCheckStatus = 'UNKNOWN';
     let error: string | null = null;

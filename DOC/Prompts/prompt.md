@@ -5494,3 +5494,98 @@ After implimenting the phase 14, I do not see any signle changes in the frontend
 - Add this section "ask Planning Required" in each phase in the tasks.md file of the News Engine Feature where ever applicable.
 
 ***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+
+------------------------------------------------
+***Visual check***
+- The AI is not generating image. and also there is no og preview even with the link I have entered. And it is showing we used dummy API, I want you to setup the real API as I already has the Open AI API Key in the .env file. 
+
+- The published post editing and reposting is not actually showing the updated texts. The republishing option is there but not the functionality as per mentioned in the phase 15. There is no reflection of editing anything in the review modal even after republish. 
+
+- The public page doesnt show the images. 
+
+- Overall it is hard to explain each issues from the phase 15. Now some are working some are not, this is so pathetic and painful to explain the same issue again and again. 
+- I have doublt on your script and tests. It really did not solve my issues. 
+
+***Instructions***
+lets go back the the phase 15 and check back all the issues once again. And fix these what are not done in real. and also focus on what I mentioned. 
+
+
+
+***Strickt Rules***
+- create an new phase 16 in the tasks.md and lets continue tasking from there. 
+- The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. Always refer to the tasks.md file before starting any new phase or sub-phase. Always update/Add with the executional tasks before any action. 
+- Always work based on the bridge which is the last phase audit report and post feature documentations menioned in the tasks.md file for initial reference. But read the entire last phase if needed to understand what was done while tasking. 
+**Task Planning Required:**
+> - Before starting implementation, enumerate and lock all actionable tasks for this phase below, following `.specify/templates/tasks-template.md`.
+> - Add subtasks for each UI, logic, and audit step as needed.
+> - Do not begin until all tasks are planned and checked in.
+**Note**
+- Add this section "ask Planning Required" in each phase in the tasks.md file of the News Engine Feature where ever applicable.
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+-----------------------------------------------
+
+- The AI image generation is failed due to access of dall-e-3. 
+- The AI is not generating the appropriate image url from the free sources. 
+- The Url only shows OG preview when I click on the Save to S3. The initial url should be auto saved to s3. And the overriding function should still remain as it is. 
+- When I clicked on Approve Image> it is showing error that Image URL is invalid and blocking the approval while the image preview is also showing up. So, The publishing also getting blocked by this same issue. need to address and fix it. There should be no blocking when the preview is showing up in the auto publish function. But It should not block while doing it manually. there might be one reason i think, the image url is getting changed when I clicked on save to s3 button. 
+- In order to use open AI gpt modals, I want you to enable and do all the necessary setting to use all the modals . e.g gpt5.2, 4 , Dall-e-3 , etc I want you to make sure all the models can be used. 
+- 
+--------------------------------------------------------------------------------------
+
+
+I want to create prompts where The AI create its own workflow phases based on the feature requirements and complexity. so that the AI can manage the entire feature development lifecycle more effectively without my constant supervision. What I want AI to do : 
+
+- I will share my plan/issues/Requirements etc with the AI.
+- I want AI to follow a Task management approach to create the workflow phases based on the requirements/plan/issues shared by me. But the framework will be given by me. 
+- The framework should be built by you based on the best practices the folloewd in the industry
+
+-----------------------------------------
+
+***Prepare Phases In the Tasks.md***
+- Add a new phase and sub-phases as required in `DOC/FEATURES/[FEATURE]/tasks.md` based on the scenario below.
+- At the beginning of the created phase, copy and paste all issues exactly as written by the user into tasks.md for tracking. This ensures all issues are preserved and visible in one place.
+
+***Phase 1: User Story Creation***
+- Create user stories using the template: `DOC/.specify/templates/spec-template.md` based on the issues listed below.
+- Save the user story file(s) in: DOC/FEATURES/[FEATURE]/POST FEATURE/FIXING ISSUES
+
+***Issues to solve***
+
+- Image fetch failed and giving 503 error. Identify the root cause and fix it.
+- 
+
+***Phase 2: Test Script Creation***
+- Create all test scripts following: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`, strictly based on the user stories from Phase 1.
+- Review the last phase user stories to understand the pain points and issues to solve.
+
+***Phase 3: Issue Fixing***
+- Prepare a step-by-step task list to fix each issue above, one by one.
+- For each issue:
+  - Start with a short analysis of the issue and why it is happening.
+  - Identify the root cause and fix it.
+  - After each fix, perform visual testing and confirm resolution.
+  - Update tasks.md with each action and result.
+- Do not batch fixes; address and verify each issue sequentially.
+
+***Phase 4: Post-Fix Testing***
+- Run the scripts and perform testing as per: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`.
+- Only move to the next phase if all tests pass as per the user stories.
+- If any test fails, fix the code and re-test before proceeding.
+
+***Instructions***
+- Address all findings and issues listed above by fixing them accordingly.
+- Reference the latest audit reports and documentation from tasks.md and related files as needed.
+- Always update tasks.md for every action, change, and sub-phase.
+- Do not begin work until all tasks for the phase are planned and checked in tasks.md.
+- For supporting documentation and to avoid hallucination, always refer to: `DOC/GUIDELINES & SOT/README.md`
+
+***Task Planning Required***
+> - Before starting implementation, enumerate and lock all actionable tasks for this phase below, following `.specify/templates/tasks-template.md`.
+> - Add subtasks for each UI, logic, and audit step as needed.
+> - Do not begin until all tasks are planned and checked in.
+
+**Note**
+- Add this section "Task Planning Required" in each phase in the tasks.md file of the relevant feature where applicable.

@@ -34,12 +34,15 @@ loadSimpleDotEnvFilesIntoProcessEnv(['.env', '.env.local']);
 
 // Some Playwright versions do not type-support `webServer.env`.
 // Ensure required env vars are present for the spawned web server.
-process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL || process.env.E2E_BASE_URL || 'http://localhost:3001';
+process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL || process.env.E2E_BASE_URL || 'http://localhost:3000';
 process.env.NEXTAUTH_URL_INTERNAL =
-  process.env.NEXTAUTH_URL_INTERNAL || process.env.E2E_BASE_URL || 'http://localhost:3001';
+  process.env.NEXTAUTH_URL_INTERNAL || process.env.E2E_BASE_URL || 'http://localhost:3000';
 process.env.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || 'e2e-nextauth-secret-not-for-production';
 process.env.NEWS_ENGINE_KEY_VAULT_MASTER_KEY = process.env.NEWS_ENGINE_KEY_VAULT_MASTER_KEY ?? '';
 process.env.NEWS_KEY_VAULT_MASTER_KEY = process.env.NEWS_KEY_VAULT_MASTER_KEY ?? '';
+process.env.NEXT_PUBLIC_NEWS_ENGINE_E2E_FREE_IMAGE_URL =
+  process.env.NEXT_PUBLIC_NEWS_ENGINE_E2E_FREE_IMAGE_URL ||
+  `${process.env.E2E_BASE_URL || 'http://localhost:3000'}/api/e2e/test-image`;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -47,12 +50,12 @@ export default defineConfig({
   retries: 0,
   webServer: {
     command: process.env.E2E_WEB_COMMAND || 'npm run dev:e2e',
-    url: process.env.E2E_BASE_URL || 'http://localhost:3001',
+    url: process.env.E2E_BASE_URL || 'http://localhost:3000',
     reuseExistingServer: false,
     timeout: 120_000,
   },
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:3001',
+    baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
     navigationTimeout: 60_000,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',

@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:e2e": "cross-env NEXTAUTH_URL=http://localhost:3001 next dev --port 3001",
-    "prebuild": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
+    "dev:e2e": "node scripts/dev-e2e.js",
+    "prebuild": "node scripts/clean-next.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -52,7 +52,7 @@ function pickStringArray(obj: Record<string, unknown>, key: string): string[] {
 }
 
 const NEWS_ENGINE_REGEN_SYSTEM_PROMPT =
-  'You are an assistant that regenerates rejected NEWS ENGINE drafts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl.';
+  'You are an assistant that regenerates rejected NEWS ENGINE drafts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl. contentHtml must be valid HTML (not markdown) and should use headings (h2/h3), paragraphs, lists when relevant, and emphasis tags (<strong>/<em>) to improve readability.';
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const startedAt = new Date();

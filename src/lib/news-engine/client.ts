@@ -147,6 +147,7 @@ export type PublicNewsListItem = {
   category: string;
   tags: string[];
   createdAt?: string;
+  ogImageUrl?: string | null;
 };
 
 export type PublicNewsItemDetail = {
@@ -175,6 +176,7 @@ export async function fetchPublicNewsList(): Promise<PublicNewsListItem[]> {
       publishedAt: normalizeIso(it.publishedAt),
       category: String(it.category ?? ''),
       tags: Array.isArray(it.tags) ? it.tags.filter((t: any) => typeof t === 'string') : [],
+      ogImageUrl: it.ogImageUrl ?? null,
       createdAt: normalizeIso(it.createdAt),
     }))
     .filter((it) => Boolean(it.slug));
@@ -983,10 +985,25 @@ export async function adminGenerateItemOgImage(itemId: string, input?: { promptO
   ogImageUrl: string | null;
   ogImageApprovedAt: string | null;
   ogImageApprovedById: string | null;
+  notice?: string | null;
 }> {
   return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/og-image/generate`, {
     method: 'POST',
     body: JSON.stringify({ ...(input?.promptOverride ? { promptOverride: input.promptOverride } : {}) }),
+    timeoutMs: 120_000,
+  } as RequestInit & { timeoutMs: number });
+}
+
+export async function adminIngestItemOgImage(itemId: string, imageUrl: string): Promise<{
+  ok: true;
+  itemId: string;
+  ogImageUrl: string | null;
+  ogImageApprovedAt: string | null;
+  ogImageApprovedById: string | null;
+}> {
+  return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/og-image/ingest`, {
+    method: 'POST',
+    body: JSON.stringify({ imageUrl }),
     timeoutMs: 120_000,
   } as RequestInit & { timeoutMs: number });
 }
@@ -1015,4 +1032,18 @@ export async function adminApproveItemOgImage(itemId: string): Promise<{
   return await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(itemId)}/og-image/approve`, {
     method: 'POST',
   });
+}
+
+export async function adminFindFreeImageViaUnsplash(query: string): Promise<{
+  ok: true;
+  imageUrl: string;
+  attribution: {
+    source: 'unsplash';
+    imagePageUrl: string | null;
+    photographerName: string | null;
+    photographerUrl: string | null;
+  };
+}> {
+  const q = String(query || '').trim();
+  return await apiFetch(`/api/admin/news-engine/free-image/unsplash?q=${encodeURIComponent(q)}`);
 }

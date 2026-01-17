@@ -6,6 +6,10 @@ Start here for all tasks (human or AI).
 - Primary entry: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
 - Defines authority hierarchy, AI navigation rules, and execution workflow.
 
+## 1a) AI Implementation & Testing Guidelines
+- See: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md
+- **All AI and human contributors must follow these rules for script creation, testing, and editing.**
+
 ## 2) Technical Documentation
 - Technical index: DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/README.md
 - Maps engineering tasks to architecture, coding standards, testing, ops docs.
@@ -112,6 +116,7 @@ This keeps a single entry point without merging large indexes.
 
 ---
 
+
 ## Product Planning Standard (6-Phase, Legacy-Safe)
 
 All feature planning in this repo must follow the **Legacy-Safe 6-Phase Product Build Framework**.
@@ -119,11 +124,19 @@ All feature planning in this repo must follow the **Legacy-Safe 6-Phase Product 
 - Canonical framework (read before creating any feature plan):
 	- DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md
 
+### Feature Specification Template Usage
+
+- For every new feature, begin by copying the canonical spec template from:
+	- `DOC/.specify/templates/spec-template.md`
+- Fill out this template to create the feature's SOT file:
+	- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+- This FEATURE-SOT.md must capture all user stories, requirements, and success criteria before any planning or implementation begins.
+- The spec-template.md is the main bridge from research to planning and implementation, and is referenced throughout the feature's lifecycle.
 
 Folderization rule (to prevent planning chaos):
 
 - Default: one feature = one SOT file:
-    - `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+	- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
 - Do NOT create `tasks.md`, `IMPLEMENTATION-PLAN.md`, or `INDEX.md` in the SOT folder.
 - Do NOT create a `Plan` folder if it would be empty.
 

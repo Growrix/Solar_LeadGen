@@ -50,7 +50,7 @@ function pickStringArray(obj: Record<string, unknown>, key: string): string[] {
 }
 
 const MANUAL_DRAFT_SYSTEM_PROMPT =
-  'You are an AI assistant that writes professional news articles for a solar energy lead-generation company. The user will provide a title and prompt. Generate a complete article. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription.';
+  'You are an AI assistant that writes professional news articles for a solar energy lead-generation company. The user will provide a title and prompt. Generate a complete article. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription. contentHtml must be valid HTML (not markdown) and should use headings (h2/h3), paragraphs, lists when relevant, and emphasis tags (<strong>/<em>) to improve readability.';
 
 export async function POST(request: NextRequest) {
   const startedAt = new Date();
