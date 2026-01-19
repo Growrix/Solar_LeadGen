@@ -831,8 +831,79 @@ export async function adminUpdateModelProfile(
   return data.profile;
 }
 
-export async function adminDisableModelProfile(id: string): Promise<void> {
+export async function adminDeleteModelProfile(id: string): Promise<void> {
   await apiFetch(`/api/admin/news-engine/model-profiles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+export async function adminBulkDeleteModelProfiles(ids: string[]): Promise<{ deletedCount: number; clearedDefaultsCount: number }> {
+  const data = await apiFetch<{ ok?: boolean; deletedCount?: number; clearedDefaultsCount?: number }>(
+    `/api/admin/news-engine/model-profiles/bulk-delete`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }
+  );
+
+  return {
+    deletedCount: typeof data.deletedCount === 'number' ? data.deletedCount : 0,
+    clearedDefaultsCount: typeof data.clearedDefaultsCount === 'number' ? data.clearedDefaultsCount : 0,
+  };
+}
+
+export type AdminOpenAiModelInfo = { id: string; type: string; label: string };
+export type AdminOpenAiModelsKeyUsed = { source: 'key_vault' | 'env' | 'none'; id: string | null; label: string; pools: string[] };
+export type AdminOpenAiModelsResponse = {
+  ok?: boolean;
+  provider?: string;
+  cached?: boolean;
+  keySource?: 'key_vault' | 'env' | 'none';
+  keysUsed?: AdminOpenAiModelsKeyUsed[];
+  warnings?: string[];
+  error?: string;
+  models: AdminOpenAiModelInfo[];
+};
+
+export async function adminListOpenAiModels(input?: { refresh?: boolean }): Promise<AdminOpenAiModelsResponse> {
+  const refreshParam = input?.refresh ? '&refresh=1' : '';
+  return await apiFetch<AdminOpenAiModelsResponse>(`/api/admin/news-engine/ai/models?provider=openai${refreshParam}`);
+}
+
+export type AdminGeminiModelInfo = { id: string; type: string; label: string };
+export type AdminGeminiModelsKeyUsed = { source: 'key_vault' | 'env' | 'none'; id: string | null; label: string; pools: string[] };
+export type AdminGeminiModelsResponse = {
+  ok?: boolean;
+  provider?: string;
+  cached?: boolean;
+  keySource?: 'key_vault' | 'env' | 'none';
+  keysUsed?: AdminGeminiModelsKeyUsed[];
+  warnings?: string[];
+  error?: string;
+  models: AdminGeminiModelInfo[];
+};
+
+export async function adminListGeminiModels(input?: { refresh?: boolean }): Promise<AdminGeminiModelsResponse> {
+  const refreshParam = input?.refresh ? '&refresh=1' : '';
+  return await apiFetch<AdminGeminiModelsResponse>(`/api/admin/news-engine/ai/models?provider=gemini${refreshParam}`);
+}
+
+export type AdminAiModelInfo = { id: string; type: string; label: string };
+export type AdminAiModelsKeyUsed = { source: 'key_vault' | 'env' | 'none' | string; id: string | null; label: string; pools: string[] };
+export type AdminAiModelsResponse = {
+  ok?: boolean;
+  provider?: string;
+  cached?: boolean;
+  keySource?: 'key_vault' | 'env' | 'none' | string;
+  keysUsed?: AdminAiModelsKeyUsed[];
+  warnings?: string[];
+  error?: string;
+  models: AdminAiModelInfo[];
+};
+
+export async function adminListAiModels(provider: string, input?: { refresh?: boolean }): Promise<AdminAiModelsResponse> {
+  const refreshParam = input?.refresh ? '&refresh=1' : '';
+  return await apiFetch<AdminAiModelsResponse>(
+    `/api/admin/news-engine/ai/models?provider=${encodeURIComponent(provider)}${refreshParam}`
+  );
 }
 
 export type AdminAiRouterDefaults = Record<
@@ -862,7 +933,8 @@ export async function adminUpdateAiRouterDefaults(input: { defaults: Partial<Adm
 
 export type AdminKeyVaultEntry = {
   id: string;
-  provider: 'OpenAI' | 'Other' | string;
+  provider: string;
+  providerLabel?: string;
   label: string;
   pool: 'Research' | 'Drafting' | 'Images' | string;
   enabled: boolean;

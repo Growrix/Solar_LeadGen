@@ -103,7 +103,7 @@ test.describe('News Engine Phase 13', () => {
 
     await page.getByRole('heading', { name: 'Add Key' }).waitFor();
 
-    await page.locator('select').first().selectOption('OpenAI');
+    await page.locator('select').first().selectOption({ label: 'OpenAI' });
     const keyLabel = `E2E Drafting Key ${Date.now()}`;
     await page.fill('input[placeholder^="e.g."]', keyLabel);
 
@@ -112,7 +112,9 @@ test.describe('News Engine Phase 13', () => {
     await page.locator('select').nth(1).selectOption('Images');
 
     // Raw Key is write-only; use a dummy string (encryption happens server-side).
-    await page.fill('input[type="password"]', `sk-e2e-${Date.now()}-dummy`);
+  // NOTE: Avoid values that the app filters as "dummy" (e.g. sk-e2e-* or *dummy*),
+  // otherwise the key won't show up in the Key Vault list and this test will fail.
+  await page.fill('input[type="password"]', `sk-test-${Date.now()}-placeholder`);
 
     const saveKey = page.getByRole('button', { name: 'Save Key' });
     const createResp = page.waitForResponse((r) => r.url().includes('/api/admin/news-engine/key-vault') && r.request().method() === 'POST');

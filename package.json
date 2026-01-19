@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:e2e": "node scripts/dev-e2e.js",
     "prebuild": "node scripts/clean-next.js",
-    "build": "next build",
+    "build": "node scripts/next-build.js",
     "start": "next start",
     "lint": "next lint",
     "seed:admin": "npx tsx prisma/seed-admin.ts",

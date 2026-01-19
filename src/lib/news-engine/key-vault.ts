@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import type { PrismaClient } from '@prisma/client';
+import { expandProviderIdsForLookup, normalizeNewsProviderId } from './provider-id';
 
 function b64urlEncode(buf: Buffer): string {
   return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
@@ -129,26 +130,32 @@ export type ResolvedNewsApiKey = {
 
 function isLikelyTestOrDummyKey(rawKey: string, label: string): boolean {
   const key = rawKey.trim().toLowerCase();
-  const lbl = label.trim().toLowerCase();
 
   // Playwright seeds dummy keys like: sk-e2e-<timestamp>-dummy
+  // Only treat a key as "dummy" when the raw key itself looks fake.
+  // Labels (e.g. "E2E Drafting Key") may be used for real keys.
   if (key.includes('dummy')) return true;
   if (key.startsWith('sk-e2e-')) return true;
-  if (lbl.includes('e2e')) return true;
-  if (lbl.includes('dummy')) return true;
 
   return false;
 }
 
 export async function resolveNewsApiKeyForPool(
   prisma: PrismaClient,
+  provider: string,
   pool: 'RESEARCH' | 'DRAFTING' | 'IMAGES'
 ): Promise<ResolvedNewsApiKey | null> {
   if (!getNewsKeyVaultMasterKeyOrNull()) return null;
 
+  const providerId = normalizeNewsProviderId(provider);
+  if (!providerId) return null;
+
+  const providerIds = expandProviderIdsForLookup(providerId);
+
   const candidates = await prisma.newsApiKey.findMany({
     where: {
       enabled: true,
+      provider: { in: providerIds },
       pools: { has: pool },
     },
     orderBy: [{ lastUsedAt: 'asc' }, { createdAt: 'asc' }],

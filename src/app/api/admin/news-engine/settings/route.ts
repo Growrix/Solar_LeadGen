@@ -41,7 +41,7 @@ export async function GET() {
         deduplicationEnabled: parseBool(raw['news.settings.deduplication_enabled'], true),
 
         writingTone: parseString(raw['news.ai.writing_tone'], 'Journalistic'),
-        modelLabel: parseString(raw['news.ai.model_label'], 'OpenAI o3-mini'),
+        aiInputPrompt: parseString(raw['news.ai.input_prompt'], ''),
         dedupSensitivity: parseNumber(raw['news.settings.dedup_sensitivity'], 85),
         hallucinationMonitoring: parseBool(raw['news.ai.hallucination_monitoring'], true),
         contentPreservation: parseBool(raw['news.ai.content_preservation'], true),
@@ -99,8 +99,8 @@ export async function PUT(request: NextRequest) {
       if (typeof body.settings.writingTone === 'string') {
         updates.push(setNewsEngineSetting('news.ai.writing_tone', body.settings.writingTone.trim(), auth.userId));
       }
-      if (typeof body.settings.modelLabel === 'string') {
-        updates.push(setNewsEngineSetting('news.ai.model_label', body.settings.modelLabel.trim(), auth.userId));
+      if (typeof body.settings.aiInputPrompt === 'string') {
+        updates.push(setNewsEngineSetting('news.ai.input_prompt', body.settings.aiInputPrompt.trim(), auth.userId));
       }
       if (typeof body.settings.dedupSensitivity === 'number' && Number.isFinite(body.settings.dedupSensitivity)) {
         const v = Math.max(0, Math.min(100, Math.floor(body.settings.dedupSensitivity)));

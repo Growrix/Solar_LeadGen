@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { writeNewsAuditLog, slugify, findAvailableSlug } from '@/lib/news-engine';
-import { callOpenAiJson } from '@/lib/openai';
+import { callNewsAiJson } from '@/lib/news-engine/ai-call';
 import { resolveNewsAiCallConfig, reportNewsAiKeyError, reportNewsAiKeySuccess } from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
@@ -134,11 +134,12 @@ export async function POST(request: NextRequest) {
 
     // Call OpenAI
     const aiStartMs = Date.now();
-    const { raw, modelUsed } = await callOpenAiJson({
+    const { raw, modelUsed } = await callNewsAiJson({
+      provider: aiConfig.provider,
+      model: aiConfig.model,
       system: MANUAL_DRAFT_SYSTEM_PROMPT,
       prompt: aiPrompt,
-      modelOverride: aiConfig.model,
-      apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
+      apiKeyOverride: aiConfig.apiKeyOverride,
       temperature: 0.5,
     });
     const durationMs = Math.max(0, Date.now() - aiStartMs);

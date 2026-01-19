@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
-import { encryptWithNewsMasterKey, getNewsKeyVaultMasterKeyOrNull, tryMaskEncryptedKey } from '@/lib/news-engine/key-vault';
+import { decryptWithNewsMasterKey, encryptWithNewsMasterKey, getNewsKeyVaultMasterKeyOrNull, tryMaskEncryptedKey } from '@/lib/news-engine/key-vault';
 import { writeNewsAuditLog } from '@/lib/news-engine';
 
 export const dynamic = 'force-dynamic';
@@ -24,15 +24,72 @@ function mapPoolDbToUi(pool: 'RESEARCH' | 'DRAFTING' | 'IMAGES'): 'Research' | '
   return 'Research';
 }
 
-function mapProviderUiToDb(provider: string): string {
-  const v = provider.trim().toLowerCase();
+function normalizeProviderId(provider: string): string {
+  const raw = provider.trim();
+  if (!raw) return 'other';
+  const v = raw.toLowerCase();
+
+  // Back-compat for the old UI values.
   if (v === 'openai') return 'openai';
-  if (v) return v;
-  return 'other';
+  if (v === 'other') return 'other';
+
+  // Common aliases.
+  if (v === 'google' || v === 'google-gemini' || v === 'gemini' || v === 'google gemini') return 'gemini';
+  if (v === 'anthropic' || v === 'claude') return 'anthropic';
+  if (v === 'deepseek') return 'deepseek';
+  if (v === 'xai' || v === 'x-ai') return 'xai';
+  if (v === 'azure' || v === 'azure-openai' || v === 'azure openai') return 'azure-openai';
+  if (v === 'aws' || v === 'bedrock' || v === 'aws-bedrock' || v === 'aws bedrock') return 'bedrock';
+  if (v === 'openrouter' || v === 'open-router') return 'openrouter';
+  if (v === 'vertex' || v === 'vertexai' || v === 'vertex ai') return 'vertexai';
+
+  // Generic normalization: keep it stable and URL-safe.
+  return v
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9._-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'other';
 }
 
-function mapProviderDbToUi(provider: string): 'OpenAI' | 'Other' {
-  return provider.trim().toLowerCase() === 'openai' ? 'OpenAI' : 'Other';
+function toTitleCase(value: string): string {
+  return value
+    .split(/[-_\s]+/g)
+    .filter(Boolean)
+    .map((t) => (t.length <= 3 ? t.toUpperCase() : t[0].toUpperCase() + t.slice(1)))
+    .join(' ');
+}
+
+function providerLabel(providerId: string): string {
+  const v = providerId.trim().toLowerCase();
+  const known: Record<string, string> = {
+    openai: 'OpenAI',
+    gemini: 'Google Gemini',
+    anthropic: 'Anthropic',
+    deepseek: 'DeepSeek',
+    xai: 'xAI',
+    mistral: 'Mistral',
+    cohere: 'Cohere',
+    groq: 'Groq',
+    together: 'Together.ai',
+    fireworks: 'Fireworks',
+    openrouter: 'OpenRouter',
+    perplexity: 'Perplexity',
+    'azure-openai': 'Azure OpenAI',
+    bedrock: 'AWS Bedrock',
+    vertexai: 'Google Vertex AI',
+    huggingface: 'Hugging Face',
+    ollama: 'Ollama',
+    other: 'Other',
+  };
+  return known[v] ?? toTitleCase(providerId.trim() || 'other');
+}
+
+function isLikelyDummyRawKey(rawKey: string): boolean {
+  const key = rawKey.trim().toLowerCase();
+  if (!key) return true;
+  if (key.includes('dummy')) return true;
+  if (key.startsWith('sk-e2e-')) return true;
+  return false;
 }
 
 // GET /api/admin/news-engine/key-vault
@@ -58,11 +115,24 @@ export async function GET() {
       },
     });
 
+    const filtered = masterKeyConfigured
+      ? keys.filter((k) => {
+          try {
+            const raw = decryptWithNewsMasterKey(k.encryptedKey);
+            return !isLikelyDummyRawKey(raw);
+          } catch {
+            // If we cannot decrypt, keep it (it may be a real key, but the vault is misconfigured).
+            return true;
+          }
+        })
+      : keys;
+
     return NextResponse.json({
       masterKeyConfigured,
-      keys: keys.map((k) => ({
+      keys: filtered.map((k) => ({
         id: k.id,
-        provider: mapProviderDbToUi(k.provider),
+        provider: k.provider,
+        providerLabel: providerLabel(k.provider),
         label: k.label,
         pool: mapPoolDbToUi(k.pools?.[0] ?? 'RESEARCH'),
         enabled: k.enabled,
@@ -92,7 +162,7 @@ export async function POST(request: NextRequest) {
     const auth = await requireAdmin();
     const body = (await request.json().catch(() => null)) as any;
 
-    const provider = mapProviderUiToDb(normalizeString(body?.provider));
+    const provider = normalizeProviderId(normalizeString(body?.provider));
     const label = normalizeString(body?.label) || 'Untitled key';
     const pool = mapPoolUiToDb(normalizeString(body?.pool));
     const enabled = typeof body?.enabled === 'boolean' ? body.enabled : true;
@@ -122,7 +192,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       key: {
         id: created.id,
-        provider: mapProviderDbToUi(created.provider),
+        provider: created.provider,
+        providerLabel: providerLabel(created.provider),
         label: created.label,
         pool: mapPoolDbToUi(created.pools?.[0] ?? 'RESEARCH'),
         enabled: created.enabled,

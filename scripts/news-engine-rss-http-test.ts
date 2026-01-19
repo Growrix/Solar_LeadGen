@@ -17,7 +17,11 @@
  *   (and stops it afterward) to make the HTTP test self-contained.
  *
  * Run:
- *   npx tsx scripts/news-engine-rss-http-test.ts
+ *   npx tsx scripts/news-engine-rss-http-test.ts --apply
+ *
+ * Optional:
+ * - Seed a Key Vault Drafting key (writes to DB):
+ *   npx tsx scripts/news-engine-rss-http-test.ts --apply --seed-key
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -28,6 +32,10 @@ import { resolve } from 'node:path';
 import { encryptWithNewsMasterKey } from '../src/lib/news-engine/key-vault';
 
 const prisma = new PrismaClient();
+
+function hasFlag(name: string): boolean {
+  return process.argv.includes(name);
+}
 
 function loadDotEnvFallback(): void {
   const envPath = resolve(process.cwd(), '.env');
@@ -123,12 +131,25 @@ async function ensureSetting(key: string, value: string): Promise<void> {
 async function main(): Promise<void> {
   loadDotEnvFallback();
 
+  if (process.env.NODE_ENV === 'production' && !hasFlag('--force-production')) {
+    throw new Error('Refusing to run in production. If you truly intend this, pass --force-production.');
+  }
+
+  const apply = hasFlag('--apply');
+  if (!apply) {
+    throw new Error('This script writes test data to the DB. Re-run with --apply to proceed.');
+  }
+
+  const seedKey = hasFlag('--seed-key') || process.env.NEWS_ENGINE_ALLOW_TEST_KEY_SEED === '1';
+
   const openAiApiKey = (process.env.OPENAI_API_KEY || '').trim();
   const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001').replace(/\/$/, '');
   const cronSecret = (process.env.NEWS_ENGINE_CRON_SECRET || '').trim();
 
   if (!cronSecret) throw new Error('Missing NEWS_ENGINE_CRON_SECRET in .env (required to call internal automation runner).');
-  if (!openAiApiKey) throw new Error('Missing OPENAI_API_KEY in .env (required to seed a Drafting key for the automation runner).');
+  if (!openAiApiKey && seedKey) {
+    throw new Error('Missing OPENAI_API_KEY in .env (required to seed a Drafting key for the automation runner).');
+  }
 
   console.log('🧪 News Engine RSS HTTP Test');
   console.log(`- Base URL: ${baseUrl}`);
@@ -142,7 +163,7 @@ async function main(): Promise<void> {
     await ensureSetting('news.settings.deduplication_enabled', 'true');
 
     // Ensure the internal runner has at least one valid Drafting key.
-    // Playwright E2E uses dummy keys, which should not be used by the runner.
+    // Playwright E2E uses placeholder keys, which should not be used by the runner.
     await prisma.newsApiKey.updateMany({
       where: {
         pools: { has: 'DRAFTING' },
@@ -160,11 +181,17 @@ async function main(): Promise<void> {
       select: { id: true },
     });
 
-    if (!existingDraftingKey) {
+    if (!existingDraftingKey && !seedKey) {
+      throw new Error(
+        'No enabled openai Drafting key found in Key Vault. Either add one via Admin > News Engine > Settings > Key Vault, or rerun this script with --seed-key.'
+      );
+    }
+
+    if (!existingDraftingKey && seedKey) {
       await prisma.newsApiKey.create({
         data: {
           provider: 'openai',
-          label: `E2E Script Drafting Key (${new Date().toISOString().slice(0, 10)})`,
+          label: `Local Script Drafting Key (${new Date().toISOString().slice(0, 10)})`,
           pools: ['DRAFTING'],
           enabled: true,
           encryptedKey: encryptWithNewsMasterKey(openAiApiKey),

@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
         const modelProfileId = normalizeString(incoming[key]);
 
         if (!modelProfileId) {
-          await tx.newsModelRouterDefault.delete({ where: { taskType } }).catch(() => null);
+          await tx.newsModelRouterDefault.deleteMany({ where: { taskType } });
           continue;
         }
 
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
           // Stale UI state or deleted/disabled profile. Do not fail the entire save.
           // Clear the default for this task so the UI can recover gracefully.
           warnings.push(`Cleared invalid modelProfileId for ${taskType}`);
-          await tx.newsModelRouterDefault.delete({ where: { taskType } }).catch(() => null);
+          await tx.newsModelRouterDefault.deleteMany({ where: { taskType } });
           continue;
         }
 

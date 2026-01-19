@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { ensureDefaultModelProfiles } from '@/lib/news-engine/ai-router';
 import { writeNewsAuditLog } from '@/lib/news-engine';
+import { assertAdminOpenAiModelIdIsValid } from '@/lib/news-engine/openai-admin-models';
+import { assertAdminGeminiModelIdIsValid } from '@/lib/news-engine/gemini-admin-models';
+import { normalizeNewsProviderId } from '@/lib/news-engine/provider-id';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,12 +66,31 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => null)) as any;
 
     const displayName = normalizeString(body?.displayName);
-    const provider = normalizeString(body?.provider);
+    const provider = normalizeNewsProviderId(normalizeString(body?.provider));
     const modelId = normalizeString(body?.modelId);
 
     if (!displayName) return NextResponse.json({ error: 'displayName is required' }, { status: 400 });
     if (!provider) return NextResponse.json({ error: 'provider is required' }, { status: 400 });
     if (!modelId) return NextResponse.json({ error: 'modelId is required' }, { status: 400 });
+
+    const normalizedProvider = provider;
+    if (normalizedProvider === 'openai') {
+      try {
+        await assertAdminOpenAiModelIdIsValid(modelId);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Invalid OpenAI modelId';
+        return NextResponse.json({ error: msg }, { status: 400 });
+      }
+    }
+
+    if (normalizedProvider === 'gemini') {
+      try {
+        await assertAdminGeminiModelIdIsValid(modelId);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Invalid Gemini modelId';
+        return NextResponse.json({ error: msg }, { status: 400 });
+      }
+    }
 
     const useCaseTags = normalizeStringArray(body?.useCaseTags);
     const costTier = normalizeString(body?.costTier);
@@ -79,7 +101,7 @@ export async function POST(request: NextRequest) {
     const created = await prisma.newsModelProfile.create({
       data: {
         displayName,
-        provider,
+        provider: normalizedProvider,
         modelId,
         useCaseTags,
         costTier,

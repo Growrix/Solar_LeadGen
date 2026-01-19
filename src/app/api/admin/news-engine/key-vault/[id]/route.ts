@@ -24,15 +24,64 @@ function mapPoolDbToUi(pool: 'RESEARCH' | 'DRAFTING' | 'IMAGES'): 'Research' | '
   return 'Research';
 }
 
-function mapProviderUiToDb(provider: string): string {
-  const v = provider.trim().toLowerCase();
+function normalizeProviderId(provider: string): string {
+  const raw = provider.trim();
+  if (!raw) return 'other';
+  const v = raw.toLowerCase();
+
+  // Back-compat for the old UI values.
   if (v === 'openai') return 'openai';
-  if (v) return v;
-  return 'other';
+  if (v === 'other') return 'other';
+
+  // Common aliases.
+  if (v === 'google' || v === 'google-gemini' || v === 'gemini' || v === 'google gemini') return 'gemini';
+  if (v === 'anthropic' || v === 'claude') return 'anthropic';
+  if (v === 'deepseek') return 'deepseek';
+  if (v === 'xai' || v === 'x-ai') return 'xai';
+  if (v === 'azure' || v === 'azure-openai' || v === 'azure openai') return 'azure-openai';
+  if (v === 'aws' || v === 'bedrock' || v === 'aws-bedrock' || v === 'aws bedrock') return 'bedrock';
+  if (v === 'openrouter' || v === 'open-router') return 'openrouter';
+  if (v === 'vertex' || v === 'vertexai' || v === 'vertex ai') return 'vertexai';
+
+  // Generic normalization: keep it stable and URL-safe.
+  return v
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9._-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'other';
 }
 
-function mapProviderDbToUi(provider: string): 'OpenAI' | 'Other' {
-  return provider.trim().toLowerCase() === 'openai' ? 'OpenAI' : 'Other';
+function toTitleCase(value: string): string {
+  return value
+    .split(/[-_\s]+/g)
+    .filter(Boolean)
+    .map((t) => (t.length <= 3 ? t.toUpperCase() : t[0].toUpperCase() + t.slice(1)))
+    .join(' ');
+}
+
+function providerLabel(providerId: string): string {
+  const v = providerId.trim().toLowerCase();
+  const known: Record<string, string> = {
+    openai: 'OpenAI',
+    gemini: 'Google Gemini',
+    anthropic: 'Anthropic',
+    deepseek: 'DeepSeek',
+    xai: 'xAI',
+    mistral: 'Mistral',
+    cohere: 'Cohere',
+    groq: 'Groq',
+    together: 'Together.ai',
+    fireworks: 'Fireworks',
+    openrouter: 'OpenRouter',
+    perplexity: 'Perplexity',
+    'azure-openai': 'Azure OpenAI',
+    bedrock: 'AWS Bedrock',
+    vertexai: 'Google Vertex AI',
+    huggingface: 'Hugging Face',
+    ollama: 'Ollama',
+    other: 'Other',
+  };
+  return known[v] ?? toTitleCase(providerId.trim() || 'other');
 }
 
 // PUT /api/admin/news-engine/key-vault/[id]
@@ -46,7 +95,7 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
 
     const data: Record<string, unknown> = {};
 
-    if (typeof body?.provider === 'string') data.provider = mapProviderUiToDb(normalizeString(body.provider));
+    if (typeof body?.provider === 'string') data.provider = normalizeProviderId(normalizeString(body.provider));
     if (typeof body?.label === 'string') data.label = normalizeString(body.label) || 'Untitled key';
     if (typeof body?.pool === 'string') data.pools = [mapPoolUiToDb(normalizeString(body.pool))];
     if (typeof body?.enabled === 'boolean') data.enabled = body.enabled;
@@ -82,7 +131,8 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
     return NextResponse.json({
       key: {
         id: updated.id,
-        provider: mapProviderDbToUi(updated.provider),
+        provider: updated.provider,
+        providerLabel: providerLabel(updated.provider),
         label: updated.label,
         pool: mapPoolDbToUi(updated.pools?.[0] ?? 'RESEARCH'),
         enabled: updated.enabled,

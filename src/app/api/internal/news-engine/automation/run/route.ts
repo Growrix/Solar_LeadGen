@@ -5,13 +5,60 @@ import { prisma } from '@/lib/prisma';
 import { getNewsEnginePipelineStatus } from '@/lib/news-engine/settings';
 import { writeNewsAuditLog } from '@/lib/news-engine/audit';
 import { slugify } from '@/lib/news-engine/slug';
-import { callOpenAiJson } from '@/lib/openai';
+import { callNewsAiJson } from '@/lib/news-engine/ai-call';
 import { resolveNewsAiCallConfig, reportNewsAiKeyError, reportNewsAiKeySuccess } from '@/lib/news-engine/ai-runtime';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const RSS_FETCH_TIMEOUT_MS = 20_000;
+
+const DAILY_BUDGET_TIME_ZONE = 'Australia/Sydney';
+
+function getTimeZoneDayStartUtc(now: Date, timeZone: string): Date {
+  // Compute the UTC instant corresponding to 00:00:00 of "today" in the given IANA timezone.
+  // Uses Intl formatting + a small correction loop (handles DST transitions).
+  const dtf = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  });
+
+  const partsNow = dtf.formatToParts(now);
+  const getPart = (type: string) => partsNow.find((p) => p.type === type)?.value ?? '';
+  const year = Number(getPart('year'));
+  const month = Number(getPart('month'));
+  const day = Number(getPart('day'));
+
+  // Start with 00:00Z of that calendar day, then correct so it becomes 00:00 in the target TZ.
+  let candidateMs = Date.UTC(year, month - 1, day, 0, 0, 0);
+
+  for (let i = 0; i < 3; i += 1) {
+    const parts = dtf.formatToParts(new Date(candidateMs));
+    const p = (t: string) => parts.find((x) => x.type === t)?.value ?? '';
+    const cy = Number(p('year'));
+    const cm = Number(p('month'));
+    const cd = Number(p('day'));
+    const ch = Number(p('hour'));
+    const cmin = Number(p('minute'));
+    const csec = Number(p('second'));
+
+    if (cy === year && cm === month && cd === day && ch === 0 && cmin === 0 && csec === 0) {
+      return new Date(candidateMs);
+    }
+
+    // Shift backwards by the local time-of-day in the target TZ.
+    const minutes = (Number.isFinite(ch) ? ch : 0) * 60 + (Number.isFinite(cmin) ? cmin : 0);
+    candidateMs -= minutes * 60_000;
+  }
+
+  return new Date(candidateMs);
+}
 
 function truncateForLog(value: string, max = 600): string {
   if (!value) return '';
@@ -39,6 +86,8 @@ const CRON_SECRET_HEADER = 'x-news-engine-cron-secret';
 
 const KEY_DAILY_LIMIT = 'news.settings.daily_limit';
 const KEY_DEDUP_ENABLED = 'news.settings.deduplication_enabled';
+
+const KEY_AI_INPUT_PROMPT = 'news.ai.input_prompt';
 
 const KEY_AUTO_DRAFT = 'news.automation.auto_draft';
 const KEY_AUTO_SCHEDULE = 'news.automation.auto_schedule';
@@ -525,6 +574,7 @@ export async function POST(request: NextRequest) {
           in: [
             KEY_DAILY_LIMIT,
             KEY_DEDUP_ENABLED,
+            KEY_AI_INPUT_PROMPT,
             KEY_AUTO_DRAFT,
             KEY_AUTO_SCHEDULE,
             KEY_AUTO_PUBLISH,
@@ -539,9 +589,25 @@ export async function POST(request: NextRequest) {
     const settingMap = new Map<string, string>(settings.map((row) => [row.key, row.value] as const));
 
     const dailyLimit = Math.min(Math.max(parseNumber(settingMap.get(KEY_DAILY_LIMIT), 6), 0), 50);
+    const aiInputPrompt = (settingMap.get(KEY_AI_INPUT_PROMPT) ?? '').trim();
     const sourcesConfig = safeParseSourcesConfig(settingMap.get(KEY_SOURCES_CONFIG_JSON));
     const blacklistHosts = parseBlacklistHosts(sourcesConfig.blacklist);
     const deduplicationEnabled = sourcesConfig.rules.deduplication;
+
+    // Enforce per-day budget (Australia). This avoids repeated manual runs exceeding the user's daily cap.
+    const budgetNow = new Date();
+    const budgetDayStartUtc = getTimeZoneDayStartUtc(budgetNow, DAILY_BUDGET_TIME_ZONE);
+    const draftsCreatedToday =
+      dailyLimit > 0
+        ? await prisma.newsItem.count({
+            where: {
+              sourceType: 'RSS_FEED',
+              deletedAt: null,
+              createdAt: { gte: budgetDayStartUtc },
+            },
+          })
+        : 0;
+    const remainingDailyBudget = Math.max(0, dailyLimit - draftsCreatedToday);
 
     const autoDraft = parseBool(settingMap.get(KEY_AUTO_DRAFT), true);
     const autoSchedule = parseBool(settingMap.get(KEY_AUTO_SCHEDULE), false);
@@ -875,22 +941,24 @@ export async function POST(request: NextRequest) {
     }
 
 
-    const selectableEntries = await prisma.newsSourceEntry.findMany({
-      where: {
-        status: 'NEW',
-        ...(deduplicationEnabled ? { itemId: null } : {}),
-      },
-      orderBy: [{ publishedAt: 'desc' }, { fetchedAt: 'desc' }, { id: 'asc' }],
-      take: dailyLimit,
-      select: {
-        id: true,
-        sourceId: true,
-        url: true,
-        title: true,
-        publishedAt: true,
-        rawJson: true,
-      },
-    });
+    const selectableEntries = remainingDailyBudget
+      ? await prisma.newsSourceEntry.findMany({
+          where: {
+            status: 'NEW',
+            ...(deduplicationEnabled ? { itemId: null } : {}),
+          },
+          orderBy: [{ publishedAt: 'desc' }, { fetchedAt: 'desc' }, { id: 'asc' }],
+          take: remainingDailyBudget,
+          select: {
+            id: true,
+            sourceId: true,
+            url: true,
+            title: true,
+            publishedAt: true,
+            rawJson: true,
+          },
+        })
+      : [];
 
     const draftResults: Array<{ entryId: string; ok: boolean; itemId?: string; status?: string; error?: string }> = [];
 
@@ -979,6 +1047,7 @@ export async function POST(request: NextRequest) {
               title: entry.title,
               url: entry.url,
               publishedAt: entry.publishedAt ? entry.publishedAt.toISOString() : null,
+              aiInputPrompt: aiInputPrompt || null,
             },
             success: false,
           },
@@ -994,6 +1063,8 @@ export async function POST(request: NextRequest) {
           `- URL: ${entry.url}`,
           entry.publishedAt ? `- PublishedAt: ${entry.publishedAt.toISOString()}` : null,
           sourcesConfig.countries.length ? `- Geographic focus: ${sourcesConfig.countries.join(', ')}` : null,
+          aiInputPrompt ? '' : null,
+          aiInputPrompt ? `Additional instructions: ${aiInputPrompt}` : null,
           '',
           'Constraints:',
           '- Be accurate and avoid unverifiable claims.',
@@ -1008,11 +1079,12 @@ export async function POST(request: NextRequest) {
           'You are an assistant that drafts NEWS ENGINE posts for a solar lead-gen company. Output must be valid JSON only with fields: title, summary, contentHtml, category, tags (array of strings), seoTitle, seoDescription, ogImageUrl.';
 
         const aiStartMs = Date.now();
-        const { raw, modelUsed } = await callOpenAiJson({
+        const { raw, modelUsed } = await callNewsAiJson({
+          provider: aiConfig.provider,
+          model: aiConfig.model,
           system,
           prompt,
-          modelOverride: aiConfig.model,
-          apiKeyOverride: aiConfig.apiKeyOverride ?? undefined,
+          apiKeyOverride: aiConfig.apiKeyOverride,
         });
         const durationMs = Math.max(0, Date.now() - aiStartMs);
         const parsed = tryParseJsonObject(raw);
@@ -1251,6 +1323,10 @@ export async function POST(request: NextRequest) {
           finishedAt: finishedAt.toISOString(),
           settings: {
             dailyLimit,
+            draftsCreatedToday,
+            remainingDailyBudget,
+            budgetTimeZone: DAILY_BUDGET_TIME_ZONE,
+            budgetDayStartUtc: budgetDayStartUtc.toISOString(),
             deduplicationEnabled,
             autoDraft,
             autoSchedule,
@@ -1286,6 +1362,31 @@ export async function POST(request: NextRequest) {
 
     const rssImportedCount = rssResults.reduce((acc, r) => acc + (typeof r.imported === 'number' ? r.imported : 0), 0);
     const draftCreatedCount = draftResults.filter((d) => d.ok && d.itemId).length;
+    const draftFailureResults = draftResults.filter((d) => !d.ok);
+    const draftFailureCount = draftFailureResults.length;
+    const draftSkippedCount = draftResults.filter((d) => d.ok && !d.itemId).length;
+    const topDraftErrors = (() => {
+      const counts = new Map<string, number>();
+      for (const r of draftFailureResults) {
+        const e = (r.error || '').trim();
+        if (!e) continue;
+        counts.set(e, (counts.get(e) || 0) + 1);
+      }
+      return Array.from(counts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([error, count]) => ({ error, count }));
+    })();
+
+    const newEntryCount = await prisma.newsSourceEntry.count({
+      where: {
+        status: 'NEW',
+        ...(deduplicationEnabled ? { itemId: null } : {}),
+      },
+    });
+    const errorEntryCount = await prisma.newsSourceEntry.count({ where: { status: 'ERROR' } });
+    const ignoredEntryCount = await prisma.newsSourceEntry.count({ where: { status: 'IGNORED' } });
+
     const lastError = pickLastErrorFromResults({ rssResults, draftResults });
 
     return NextResponse.json({
@@ -1303,6 +1404,8 @@ export async function POST(request: NextRequest) {
         rssImportedCount,
         selectedEntryCount: selectableEntries.length,
         draftCreatedCount,
+        draftFailureCount,
+        draftSkippedCount,
         ignoredByRulesCount,
         forcedNeedsReviewCount,
         priorityOverridesCount,
@@ -1325,6 +1428,26 @@ export async function POST(request: NextRequest) {
         rssResults,
         selectedEntryCount: selectableEntries.length,
         draftResults,
+        diagnostics: {
+          dailyBudget: {
+            dailyLimit,
+            draftsCreatedToday,
+            remainingDailyBudget,
+            budgetTimeZone: DAILY_BUDGET_TIME_ZONE,
+            budgetDayStartUtc: budgetDayStartUtc.toISOString(),
+          },
+          entries: {
+            newSelectableCount: newEntryCount,
+            ignoredCount: ignoredEntryCount,
+            errorCount: errorEntryCount,
+            verifyPayloadIgnoredCount: ignoredVerifyPayloadTotal,
+          },
+          drafting: {
+            autoDraft,
+            failures: draftFailureCount,
+            topErrors: topDraftErrors,
+          },
+        },
         operationalRules: {
           enabledCount: dbRules.length,
           parsedCount: operationalRules.length,

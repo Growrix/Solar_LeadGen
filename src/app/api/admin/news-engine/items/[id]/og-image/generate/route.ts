@@ -7,6 +7,7 @@ import { resolveNewsAiCallConfig, reportNewsAiKeyError, reportNewsAiKeySuccess }
 import { ingestOgImageToS3 } from '@/lib/news-engine/og-image';
 import { uploadFile, getPublicUrlForKey } from '@/lib/s3';
 import { searchUnsplashLandscapeImage } from '@/lib/news-engine/unsplash';
+import { generateNewsEngineImageToS3, shouldFallbackFromAiImageError } from '@/lib/news-engine/ai-image';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -198,39 +199,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     resolvedApiKeyId = aiConfig.apiKeyId;
 
-    if (aiConfig.provider !== 'openai') {
-      return NextResponse.json({ error: `Image generation provider not supported: ${aiConfig.provider}` }, { status: 400 });
-    }
-
-    const fallbackEnvKey = (process.env.OPENAI_API_KEY || '').trim();
-    const apiKey = (aiConfig.apiKeyOverride || '').trim() || fallbackEnvKey;
-    if (!apiKey) {
-      return NextResponse.json(
-        {
-          error:
-            'Missing OpenAI API key. Set OPENAI_API_KEY in .env (or configure News Engine Key Vault keys for the IMAGES pool).',
-        },
-        { status: 400 }
-      );
-    }
-
     const requestedModel = (aiConfig.model || '').trim() || (process.env.NEWS_ENGINE_IMAGE_MODEL || 'dall-e-3');
-    const defaultModel = (process.env.NEWS_ENGINE_IMAGE_MODEL || 'dall-e-3').trim() || 'dall-e-3';
+    const initialModel = requestedModel;
 
-    const initialModel = isAllowedOpenAiImageModel(requestedModel) ? requestedModel : defaultModel;
-    if (!isAllowedOpenAiImageModel(requestedModel)) {
-      notice = `Requested image model "${requestedModel}" is not allowed. Using "${initialModel}".`;
-    }
-
+    const normalizedProvider = (aiConfig.provider || '').trim().toLowerCase() || 'openai';
     const modelCandidates = Array.from(
       new Set(
-        [
-          initialModel,
-          // Try other allowed models as fallbacks.
-          'gpt-image-1',
-          'dall-e-3',
-          'dall-e-2',
-        ].filter((m) => isAllowedOpenAiImageModel(m))
+        normalizedProvider === 'openai'
+          ? [initialModel, 'gpt-image-1', 'dall-e-3', 'dall-e-2']
+          : [initialModel]
       )
     );
 
@@ -254,7 +231,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     const aiStartMs = Date.now();
 
-    let usedProvider: 'openai' | 'free_source' = 'openai';
+    let usedProvider: string = normalizedProvider;
     let usedModel: string | null = null;
     let sourceUrl: string | null = null;
     let ogImageUrl: string | null = null;
@@ -265,52 +242,36 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
       for (const candidate of modelCandidates) {
         try {
-          const generated = await generateOpenAiImageUrl({
-            apiKey,
+          const generated = await generateNewsEngineImageToS3({
+            itemId: item.id,
+            provider: aiConfig.provider,
             model: candidate,
             prompt,
+            apiKeyOverride: aiConfig.apiKeyOverride,
           });
 
-          let ingested: { url: string; contentType: string; sourceUrl: string };
-
-          if (generated.b64Json) {
-            const uploaded = await uploadOpenAiBase64ToS3({ itemId: item.id, b64Json: generated.b64Json });
-            ingested = {
-              url: uploaded.url,
-              contentType: 'image/png',
-              sourceUrl: uploaded.url,
-            };
-          } else if (generated.url) {
-            ingested = await ingestOgImageToS3({
-              itemId: item.id,
-              imageUrl: generated.url,
-            });
-          } else {
-            throw new Error('OpenAI image generation returned no image');
-          }
-
-          usedProvider = 'openai';
-          usedModel = candidate;
-          ogImageUrl = ingested.url;
-          sourceUrl = ingested.sourceUrl;
-          ingestedContentType = ingested.contentType;
+          usedProvider = generated.providerUsed;
+          usedModel = generated.modelUsed;
+          ogImageUrl = generated.url;
+          sourceUrl = generated.sourceUrl ?? generated.url;
+          ingestedContentType = generated.contentType ?? null;
 
           if (candidate !== initialModel) {
-            notice = `OpenAI image model "${initialModel}" was not available; used fallback model "${candidate}".`;
+            notice = `AI image model "${initialModel}" was not available; used fallback model "${candidate}".`;
           }
 
           lastError = null;
           break;
         } catch (err) {
           lastError = err;
-          if (!shouldFallbackFromOpenAiImageError(err)) {
+          if (!shouldFallbackFromAiImageError(err)) {
             throw err;
           }
         }
       }
 
       if (!usedModel) {
-        // All allowed OpenAI image models failed with model/access errors -> fallback to free-source image.
+        // AI image generation failed with model/access/transient errors -> fallback to free-source image.
         const freeUrl = await findFreeSourceImageUrl({ title: item.title, category: item.category, tags: item.tags });
         const ingested = await ingestOgImageToS3({ itemId: item.id, imageUrl: freeUrl });
         usedProvider = 'free_source';
@@ -319,7 +280,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         sourceUrl = ingested.sourceUrl;
         ingestedContentType = ingested.contentType;
         notice =
-          'OpenAI image model access failed; used a free-source image fallback. Configure a supported OpenAI image model to enable AI generation.';
+          `AI image generation failed for provider "${normalizedProvider}"; used a free-source image fallback. Verify the provider key/model configuration to enable AI generation.`;
         void lastError;
       }
     } finally {

@@ -17,7 +17,6 @@ export const NEWS_ENGINE_SETTING_KEYS = {
   aiProvider: 'news.ai.provider',
   aiModel: 'news.ai.model',
   aiWritingTone: 'news.ai.writing_tone',
-  aiModelLabel: 'news.ai.model_label',
   aiHallucinationMonitoring: 'news.ai.hallucination_monitoring',
   aiContentPreservation: 'news.ai.content_preservation',
 } as const;
@@ -60,7 +59,6 @@ export async function getNewsEngineSettings() {
     NEWS_ENGINE_SETTING_KEYS.aiProvider,
     NEWS_ENGINE_SETTING_KEYS.aiModel,
     NEWS_ENGINE_SETTING_KEYS.aiWritingTone,
-    NEWS_ENGINE_SETTING_KEYS.aiModelLabel,
     NEWS_ENGINE_SETTING_KEYS.aiHallucinationMonitoring,
     NEWS_ENGINE_SETTING_KEYS.aiContentPreservation,
   ]);

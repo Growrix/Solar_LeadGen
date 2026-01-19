@@ -35,6 +35,7 @@ export type NewsEngineAuditAction =
   | 'news_model_profile_created'
   | 'news_model_profile_updated'
   | 'news_model_profile_disabled'
+  | 'news_model_profile_deleted'
   | 'news_key_vault_key_created'
   | 'news_key_vault_key_updated'
   | 'news_key_vault_key_deleted'

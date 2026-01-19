@@ -2,6 +2,7 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import type { NewsAiTaskType } from './ai-router';
 import { resolveModelProfileForTask } from './ai-router';
 import { markNewsApiKeyError, markNewsApiKeySuccess, resolveNewsApiKeyForPool } from './key-vault';
+import { normalizeNewsProviderId } from './provider-id';
 
 function shouldPreferKeyVaultKeys(): boolean {
   return (process.env.NEWS_ENGINE_PREFER_KEY_VAULT_KEYS || '').trim().toLowerCase() === 'true';
@@ -31,12 +32,23 @@ export async function resolveNewsAiCallConfig(
   try {
     const profile = await resolveModelProfileForTask(prisma, input.taskType);
 
-    const provider = profile?.provider || input.fallbackProvider || 'openai';
+    const provider = normalizeNewsProviderId(profile?.provider || input.fallbackProvider || 'openai');
     const model = profile?.modelId || input.fallbackModel;
 
-    const envKeyPresent = Boolean((process.env.OPENAI_API_KEY || '').trim());
+    const normalizedProvider = normalizeNewsProviderId(provider);
+    const envKeyPresent =
+      normalizedProvider === 'openai'
+        ? Boolean((process.env.OPENAI_API_KEY || '').trim())
+        : normalizedProvider === 'gemini'
+          ? Boolean(
+              (process.env.GEMINI_API_KEY || '').trim() ||
+                (process.env.GOOGLE_GEMINI_API_KEY || '').trim() ||
+                (process.env.GOOGLE_API_KEY || '').trim()
+            )
+          : false;
+
     const useKeyVault = shouldPreferKeyVaultKeys() || !envKeyPresent;
-    const key = useKeyVault ? await resolveNewsApiKeyForPool(prisma, input.pool) : null;
+    const key = useKeyVault ? await resolveNewsApiKeyForPool(prisma, provider, input.pool) : null;
 
     return {
       provider,
