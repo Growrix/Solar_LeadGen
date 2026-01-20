@@ -294,7 +294,7 @@ export default function MediaLibrary() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-4xl">
           <div className="bg-surface shadow-neu-outset rounded-2xl p-3 border border-border flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
-              <span className="bg-background text-foreground text-body-small text-heading-6 px-3 py-1 rounded-full shadow-neu-inset">
+              <span className="bg-background text-foreground text-label px-3 py-1 rounded-full shadow-neu-inset">
                 {selectedIds.size}
               </span>
               <span className="text-body text-foreground whitespace-nowrap">Selected</span>
