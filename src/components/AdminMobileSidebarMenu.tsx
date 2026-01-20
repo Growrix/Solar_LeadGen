@@ -174,6 +174,9 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
         else if (page === 'Instant Quotes') router.push('/admin/instant-quotes');
       else if (page === 'Blog') router.push('/admin/blog');
       else if (page === 'Blog: Create Post') router.push('/admin/blog/new');
+      else if (page === 'Blog: Content Manager') router.push('/admin/blog/content-manager');
+      else if (page === 'Blog: Media Library') router.push('/admin/blog/media');
+      else if (page === 'Blog: Comments') router.push('/admin/blog/comments');
       else if (page === 'Blog: Categories') router.push('/admin/blog/categories');
       else if (page === 'Blog: Tags') router.push('/admin/blog/tags');
     };
@@ -257,6 +260,24 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
                       title="Blog: Create Post"
                       isActive={activePage === 'Blog: Create Post'}
                       onClick={() => handleNavClick('Blog: Create Post')}
+                    />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog: Content Manager"
+                      isActive={activePage === 'Blog: Content Manager'}
+                      onClick={() => handleNavClick('Blog: Content Manager')}
+                    />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog: Media Library"
+                      isActive={activePage === 'Blog: Media Library'}
+                      onClick={() => handleNavClick('Blog: Media Library')}
+                    />
+                    <NavItem
+                      icon={<BlogIcon />}
+                      title="Blog: Comments"
+                      isActive={activePage === 'Blog: Comments'}
+                      onClick={() => handleNavClick('Blog: Comments')}
                     />
                     <NavItem
                       icon={<BlogIcon />}

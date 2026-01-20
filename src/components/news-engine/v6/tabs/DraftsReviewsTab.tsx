@@ -17,7 +17,8 @@ type Props = {
   draftsBoardColumns: DraftsBoardColumn[];
   draftsFilteredItems: NewsItem[];
   openReviewForItem: (itemId: string) => void;
-  openManualDraft: () => void;
+  openCreateNews: () => void;
+  openGenerateAiDraft: () => void;
 };
 
 export function DraftsReviewsTabV6({
@@ -26,7 +27,8 @@ export function DraftsReviewsTabV6({
   draftsBoardColumns,
   draftsFilteredItems,
   openReviewForItem,
-  openManualDraft,
+  openCreateNews,
+  openGenerateAiDraft,
 }: Props) {
   return (
     <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
@@ -44,7 +46,7 @@ export function DraftsReviewsTabV6({
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 flex-wrap justify-end">
           <span
             className="text-body-small uppercase tracking-widest text-muted-foreground bg-surface px-3 py-1 rounded-full border border-border shadow-neu-inset"
             aria-label="Actor identity is not available"
@@ -53,11 +55,19 @@ export function DraftsReviewsTabV6({
           </span>
           <button
             type="button"
-            onClick={openManualDraft}
+            onClick={openCreateNews}
             className="bg-accent text-background px-4 py-1.5 rounded-lg text-body-small hover:bg-accent-hover shadow-neu-outset transition-colors uppercase tracking-widest"
-            aria-label="Create Manual Draft"
+            aria-label="Create News"
           >
-            Create Manual Draft
+            Create News
+          </button>
+          <button
+            type="button"
+            onClick={openGenerateAiDraft}
+            className="bg-surface text-foreground px-4 py-1.5 rounded-lg text-body-small hover:bg-surface-hover shadow-neu-outset transition-colors uppercase tracking-widest border border-border"
+            aria-label="Generate AI Draft"
+          >
+            Generate AI Draft
           </button>
         </div>
       </div>
@@ -82,10 +92,10 @@ export function DraftsReviewsTabV6({
                   </div>
                   <button
                     type="button"
-                    onClick={openManualDraft}
+                    onClick={openCreateNews}
                     className="text-muted-foreground hover:text-brand-accent p-1 rounded-md hover:bg-background transition-colors"
-                    title="Create Manual Draft"
-                    aria-label={`Create Manual Draft in ${col.label} column`}
+                    title="Create News"
+                    aria-label={`Create News in ${col.label} column`}
                   >
                     <Plus size={16} />
                   </button>

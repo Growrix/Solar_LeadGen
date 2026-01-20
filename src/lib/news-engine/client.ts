@@ -417,6 +417,12 @@ export async function adminPublishNow(id: string): Promise<void> {
   });
 }
 
+export async function adminUnpublishItem(id: string): Promise<void> {
+  await apiFetch(`/api/admin/news-engine/items/${encodeURIComponent(id)}/unpublish`, {
+    method: 'POST',
+  });
+}
+
 export async function adminSchedule(
   id: string,
   scheduledForIso: string,

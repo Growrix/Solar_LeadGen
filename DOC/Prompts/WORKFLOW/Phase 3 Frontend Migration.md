@@ -1,23 +1,27 @@
 ***Frontend Migration Workflow***
   - Here is the prototype we built with google ai studio :
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V6
+  `DOC\FEATURES\BLOG\GoogleAIStudio UI UX`
  
   - Follow the file instructions strictly while preparing the migration plan
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\FRONTEND-PROTOTYPE-WORKFLOW\README.md .
+ `DOC\GUIDELINES & SOT\FRONTEND-PROTOTYPE-WORKFLOW\README.md`
 
    - Create the Migration plan in the :
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\MIGRATION.
-
+  `DOC\FEATURES\BLOG\Migration`
+`
   - Based on the Migration plan that you have created, update the single root tasks file for the feature (do NOT create any additional tasks.md files):
-  `DOC/FEATURES/NEWS ENGINE/tasks.md`
+  `DOC\FEATURES\BLOG\tasks.md`
   - Use the canonical template rules at:
   `DOC/.specify/templates/tasks-template.md`
 
   ***Instructions*** 
-  I only need to migrate the news frontend pages and its realted modals. 
-  - News Page
-  - News Details Page
-  - Share Modal.
+  I only need to migrate as follows :
+  - Content Manager 
+  - Media Library
+  - Comments
+  
+  Note: these migrated pages should be added in my existing admin dashboard. 
+  
+
 
 
 ### EXECUTION-GRADE AI PROMPT

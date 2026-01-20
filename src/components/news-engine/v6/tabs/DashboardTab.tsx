@@ -45,7 +45,8 @@ type Props = {
   filteredDashboardNews: NewsItem[];
 
   openReviewForItem: (itemId: string) => void;
-  openManualDraft: () => void;
+  openCreateNews: () => void;
+  openGenerateAiDraft: () => void;
 };
 
 export function DashboardTabV6({
@@ -62,7 +63,8 @@ export function DashboardTabV6({
   hasActiveDashboardFilters,
   filteredDashboardNews,
   openReviewForItem,
-  openManualDraft,
+  openCreateNews,
+  openGenerateAiDraft,
 }: Props) {
   const pageSize = 20;
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -221,30 +223,47 @@ export function DashboardTabV6({
 
       <section className="bg-surface p-4 rounded-xl border border-border shadow-neu-outset flex flex-col gap-4">
         <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <input
-              type="text"
-              placeholder="Search articles, summaries or categories..."
-              className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-colors text-body text-foreground"
-              value={dashboardSearchTerm}
-              onChange={(e) => setDashboardSearchTerm(e.target.value)}
-            />
-          </div>
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <input
+                type="text"
+                placeholder="Search articles, summaries or categories..."
+                className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-colors text-body text-foreground"
+                value={dashboardSearchTerm}
+                onChange={(e) => setDashboardSearchTerm(e.target.value)}
+              />
+            </div>
 
-          <button
-            type="button"
-            onClick={clearDashboardFilters}
-            className={`flex items-center gap-1.5 text-body-small px-3 py-2 rounded-lg transition-colors ${
-              hasActiveDashboardFilters
-                ? 'text-brand-accent bg-background hover:bg-surface-hover'
-                : 'text-muted-foreground bg-background cursor-not-allowed opacity-50'
-            }`}
-            disabled={!hasActiveDashboardFilters}
-          >
-            <XCircle size={14} />
-            Clear All
-          </button>
+            <button
+              type="button"
+              onClick={clearDashboardFilters}
+              className={`flex items-center gap-1.5 text-body-small px-3 py-2 rounded-lg transition-colors ${
+                hasActiveDashboardFilters
+                  ? 'text-brand-accent bg-background hover:bg-surface-hover'
+                  : 'text-muted-foreground bg-background cursor-not-allowed opacity-50'
+              }`}
+              disabled={!hasActiveDashboardFilters}
+            >
+              <XCircle size={14} />
+              Clear All
+            </button>
+
+            <button
+              type="button"
+              onClick={openCreateNews}
+              className="bg-accent text-background px-4 py-1.5 rounded-lg text-body-small hover:bg-accent-hover shadow-neu-outset transition-colors uppercase tracking-widest"
+              aria-label="Create News"
+            >
+              Create News
+            </button>
+            <button
+              type="button"
+              onClick={openGenerateAiDraft}
+              className="bg-surface text-foreground px-4 py-1.5 rounded-lg text-body-small hover:bg-surface-hover shadow-neu-outset transition-colors uppercase tracking-widest border border-border"
+              aria-label="Generate AI Draft"
+            >
+              Generate AI Draft
+            </button>
         </div>
 
         <div className="flex items-center gap-3 w-full overflow-x-auto pb-1">
@@ -434,11 +453,14 @@ export function DashboardTabV6({
               <Button variant="secondary" className="px-6 py-3" onClick={clearDashboardFilters}>
                 Reset All Filters
               </Button>
-              <Button variant="primary" className="px-6 py-3" onClick={openManualDraft}>
+              <Button variant="primary" className="px-6 py-3" onClick={openCreateNews}>
                 <span className="inline-flex items-center gap-2">
                   <Plus size={18} />
-                  Create Manual Draft
+                  Create News
                 </span>
+              </Button>
+              <Button variant="secondary" className="px-6 py-3" onClick={openGenerateAiDraft}>
+                Generate AI Draft
               </Button>
             </div>
           </div>

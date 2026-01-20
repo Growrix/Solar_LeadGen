@@ -15,6 +15,17 @@ function normalizeString(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
+function stripHtmlToText(html: string): string {
+  const raw = (html ?? '').trim();
+  if (!raw) return '';
+  return raw
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 async function findAvailableSlug(base: string, excludeItemId?: string): Promise<string | null> {
   const normalizedBase = base.trim();
   if (!normalizedBase) return null;
@@ -61,6 +72,7 @@ export async function POST(
         slug: true,
         deletedAt: true,
         status: true,
+        contentHtml: true,
         ogImageUrl: true,
         ogImageApprovalRequired: true,
         ogImageApprovedAt: true,
@@ -69,6 +81,14 @@ export async function POST(
 
     if (!existing || existing.deletedAt) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    const contentText = stripHtmlToText(normalizeString(existing.contentHtml));
+    if (contentText.length < 80) {
+      return NextResponse.json(
+        { error: 'Content is too short to publish. Add more body content and retry.' },
+        { status: 400 }
+      );
     }
 
     if (existing.ogImageApprovalRequired && !existing.ogImageApprovedAt) {

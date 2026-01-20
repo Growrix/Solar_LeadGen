@@ -4,8 +4,11 @@ import React from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TipTapLink from '@tiptap/extension-link';
+import TipTapUnderline from '@tiptap/extension-underline';
+import TipTapImage from '@tiptap/extension-image';
 import {
   Bold,
+  Image as ImageIcon,
   Heading1,
   Heading2,
   Heading3,
@@ -77,6 +80,13 @@ export function RichHtmlEditor({
           class: 'text-brand-accent underline underline-offset-4',
         },
       }),
+      TipTapUnderline,
+      TipTapImage.configure({
+        allowBase64: false,
+        HTMLAttributes: {
+          class: 'rounded-2xl border border-border shadow-neu-outset',
+        },
+      }),
     ],
     content: initialHtml?.trim() ? initialHtml : '<p></p>',
     onUpdate: ({ editor: ed }) => {
@@ -85,7 +95,7 @@ export function RichHtmlEditor({
     editorProps: {
       attributes: {
         class:
-          'prose prose-neutral max-w-none focus:outline-none min-h-[360px] px-4 py-3 text-foreground',
+          'prose prose-neutral prose-lg max-w-none focus:outline-none min-h-[360px] px-4 py-3 text-foreground',
       },
     },
   });
@@ -112,6 +122,15 @@ export function RichHtmlEditor({
       return;
     }
     editor.chain().focus().extendMarkRange('link').setLink({ href: next }).run();
+  }, [editor]);
+
+  const insertImage = React.useCallback(() => {
+    if (!editor) return;
+    const url = window.prompt('Enter image URL (https://...)', 'https://');
+    if (url === null) return;
+    const src = url.trim();
+    if (!src) return;
+    editor.chain().focus().setImage({ src }).run();
   }, [editor]);
 
   const ToolbarButton = ({
@@ -159,6 +178,13 @@ export function RichHtmlEditor({
           onClick={() => editor?.chain().focus().toggleItalic().run()}
         />
         <ToolbarButton
+          label="Underline"
+          icon={<span className="text-body-small underline">U</span>}
+          disabled={!canToggle}
+          active={editor?.isActive('underline')}
+          onClick={() => editor?.chain().focus().toggleUnderline().run()}
+        />
+        <ToolbarButton
           label="Heading 1"
           icon={<Heading1 size={16} />}
           disabled={!canToggle}
@@ -199,6 +225,13 @@ export function RichHtmlEditor({
           disabled={!canToggle}
           active={editor?.isActive('link')}
           onClick={setLink}
+        />
+        <ToolbarButton
+          label="Insert image"
+          icon={<ImageIcon size={16} />}
+          disabled={!canToggle}
+          active={false}
+          onClick={insertImage}
         />
 
         <div className="ml-auto flex items-center gap-2">
@@ -268,8 +301,8 @@ export function RichHtmlEditor({
         <div className="rounded-2xl border border-border bg-background p-6">
           {currentHtml?.trim() ? (
             <div
-              className="prose prose-neutral max-w-none"
-              dangerouslySetInnerHTML={{ __html: currentHtml }}
+              className="prose prose-neutral prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: normalizeHtmlConservatively(currentHtml) }}
             />
           ) : (
             <p className="text-body text-muted-foreground">No content yet.</p>

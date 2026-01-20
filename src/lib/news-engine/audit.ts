@@ -6,6 +6,7 @@ export type NewsEngineAuditAction =
   | 'news_item_updated'
   | 'news_item_published_now'
   | 'news_item_republished'
+  | 'news_item_unpublished'
   | 'news_item_auto_published'
   | 'news_item_scheduled'
   | 'news_item_rejected'

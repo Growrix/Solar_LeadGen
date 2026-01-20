@@ -5648,3 +5648,33 @@ MAke sure the backend functionality works as well. do not make it static only. i
 - Both the AI and Manual functionality should work accordingly without any issues. 
 
 ***Instructions*** Analyze the curernt frontend and backend e2e and plan the expansion accordingly. prepare the plan in the DOC\FEATURES\NEWS ENGINE\Plan folder. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+
+-------------------------------------------
+
+Right now I do not have any functionality to give access of the admin backend for the authors/moderators etc.
+
+-------------------------------------
+
+Based on the current codebase, here is a list of the key UI/UX modules missing to make this a fully functional CMS:
+Authentication & Onboarding Flow
+Login, Register, Forgot Password, and Reset Password screens.
+Initial setup wizard (Site Name, First Admin creation).
+"My Profile" / Account Settings
+A page for the currently logged-in user to update their own password, email, and avatar (separate from the "Authors" management list).
+General Site Settings
+A configuration screen for global site variables: Site Title, Tagline, Logo upload, Favicon, Timezone, and Date Format settings.
+Navigation / Menu Builder
+A drag-and-drop interface to construct the public-facing Header and Footer menus (linking pages, categories, or custom URLs).
+Static Pages Management
+Separate from "Blog Posts". A section to manage static content like "About Us", "Contact", "Privacy Policy", or "Terms of Service".
+Revision History
+A UI within the Post Editor to view previous saves, compare changes, and restore older versions of content.
+Theme / Appearance Customizer
+Basic controls to set the public site's primary colors, fonts, and layout options (e.g., Grid vs. List view for the blog index).
+Webhooks & Integrations
+A settings page to manage external connections (e.g., Google Analytics ID, Mailchimp API keys, or Webhooks to trigger static site builds).

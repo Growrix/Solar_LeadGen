@@ -34,6 +34,7 @@ import {
   adminDeleteItem,
   adminPurgeItem,
   adminPublishNow,
+  adminUnpublishItem,
   adminReject,
   adminRunAutomationNow,
   adminRegenerateItem,
@@ -77,6 +78,7 @@ import { AuditDateRangeModal, type AuditDateRange } from './v6/modals/AuditDateR
 import { AuditLogDetailsModal } from './v6/modals/AuditLogDetailsModal';
 import { AutomationGuidelinesModal } from './v6/modals/AutomationGuidelinesModal';
 import { ConfirmationModal } from './v6/modals/ConfirmationModal';
+import { CreateNewsModalV6 } from './v6/modals/CreateNewsModal';
 import { ManualDraftModalV6 } from './v6/modals/ManualDraftModal';
 import { PromptDetailsModal } from './v6/modals/PromptDetailsModal';
 import { RejectModal } from './v6/modals/RejectModal';
@@ -102,6 +104,8 @@ export default function AdminNewsEngineHub() {
   const [activeTab, setActiveTab] = React.useState<NewsEngineTab>('Dashboard');
   const [state, setState] = React.useState<NewsEngineState | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+
+  const [taxonomyCategories, setTaxonomyCategories] = React.useState<string[]>([]);
 
   const [queueSnapshot, setQueueSnapshot] = React.useState<{
     rssNewEntries: number;
@@ -142,6 +146,7 @@ export default function AdminNewsEngineHub() {
   const [promptDetailsLog, setPromptDetailsLog] = React.useState<AuditLogEntry | null>(null);
 
   const [manualDraftOpen, setManualDraftOpen] = React.useState(false);
+  const [createNewsOpen, setCreateNewsOpen] = React.useState(false);
 
   const [sourceModalOpen, setSourceModalOpen] = React.useState(false);
   const [editingSourceId, setEditingSourceId] = React.useState<string | null>(null);
@@ -231,6 +236,30 @@ export default function AdminNewsEngineHub() {
   React.useEffect(() => {
     void reloadState();
   }, [reloadState]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch('/api/admin/blog/categories', { method: 'GET' });
+        if (!res.ok) return;
+        const data = (await res.json()) as { categories?: Array<{ name?: unknown }> };
+        if (cancelled) return;
+        const names = Array.isArray(data.categories)
+          ? data.categories
+              .map((c) => (typeof c?.name === 'string' ? c.name.trim() : ''))
+              .filter(Boolean)
+          : [];
+        setTaxonomyCategories(names);
+      } catch {
+        // non-blocking
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const selectedItem = React.useMemo(() => {
     if (!state || !selectedItemId) return null;
@@ -576,13 +605,15 @@ export default function AdminNewsEngineHub() {
           hasActiveDashboardFilters={hasActiveDashboardFilters}
           filteredDashboardNews={filteredDashboardNews}
           openReviewForItem={openReviewForItem}
-          openManualDraft={() => setManualDraftOpen(true)}
+          openCreateNews={() => setCreateNewsOpen(true)}
+          openGenerateAiDraft={() => setManualDraftOpen(true)}
         />
       ) : null}
 
       <ManualDraftModalV6
         isOpen={manualDraftOpen}
         onClose={() => setManualDraftOpen(false)}
+        categoryOptions={taxonomyCategories}
         onGenerate={async (data) => {
           ensureState(state);
           const nextTitle = data.title?.trim()
@@ -610,6 +641,19 @@ export default function AdminNewsEngineHub() {
         }}
       />
 
+      <CreateNewsModalV6
+        isOpen={createNewsOpen}
+        onClose={() => setCreateNewsOpen(false)}
+        categoryOptions={taxonomyCategories}
+        onCreated={async (itemId) => {
+          setCreateNewsOpen(false);
+          setSelectedItemId(itemId);
+          setActiveTab('Drafts & Reviews');
+          await reloadState();
+          setReviewOpen(true);
+        }}
+      />
+
       {activeTab === 'Drafts & Reviews' ? (
         <DraftsReviewsTabV6
           draftsBoardFilterTerm={draftsBoardFilterTerm}
@@ -617,7 +661,8 @@ export default function AdminNewsEngineHub() {
           draftsBoardColumns={draftsBoardColumns}
           draftsFilteredItems={draftsFilteredItems}
           openReviewForItem={openReviewForItem}
-          openManualDraft={() => setManualDraftOpen(true)}
+          openCreateNews={() => setCreateNewsOpen(true)}
+          openGenerateAiDraft={() => setManualDraftOpen(true)}
         />
       ) : null}
 
@@ -764,6 +809,17 @@ export default function AdminNewsEngineHub() {
         onPublish={() => {
           setConfirmationKind({ type: 'PUBLISH_NOW' });
           setConfirmationOpen(true);
+        }}
+        onUnpublish={() => {
+          if (!selectedItem) return;
+
+          void (async () => {
+            try {
+              await adminUnpublishItem(selectedItem.id);
+            } finally {
+              await reloadState();
+            }
+          })();
         }}
         onRegenerate={() => {
           if (!selectedItem) return;

@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Target,
   X,
+  XCircle,
   Zap,
 } from 'lucide-react';
 import type { AuditLogEntry, NewsItem } from '@/lib/ui-stubs/news-engine';
@@ -36,7 +37,7 @@ import {
 import { RichHtmlEditor } from '../components/RichHtmlEditor';
 import { getStatusBadgeClasses } from '../shared';
 
-type ReviewTabV6 = 'research' | 'article' | 'seo' | 'history';
+type ReviewTabV6 = 'research' | 'article' | 'preview' | 'seo' | 'history';
 
 export function ReviewModalV6({
   isOpen,
@@ -45,6 +46,7 @@ export function ReviewModalV6({
   auditLogs,
   onApprove,
   onPublish,
+  onUnpublish,
   onRewrite,
   onReject,
   onDelete,
@@ -58,6 +60,7 @@ export function ReviewModalV6({
   auditLogs?: AuditLogEntry[];
   onApprove?: () => void;
   onPublish?: () => void;
+  onUnpublish?: () => void;
   onRewrite?: () => void;
   onReject?: () => void;
   onDelete?: () => void;
@@ -392,6 +395,9 @@ export function ReviewModalV6({
   const isPublished = item.status === 'PUBLISHED';
   const isRejected = item.status === 'REJECTED';
 
+  const isManualEntry = item.sourceType === 'Manual Entry';
+  const articleTabLabel = isManualEntry ? 'Article' : 'Generated Article';
+
   const draftTags = draftTagsCsv
     .split(',')
     .map((t) => t.trim())
@@ -482,7 +488,8 @@ export function ReviewModalV6({
 
         <nav className="flex px-4 border-b border-border bg-background overflow-x-auto no-scrollbar">
           <TabButton id="research" label="Research Summary" icon={<BookOpen size={18} />} />
-          <TabButton id="article" label="Generated Article" icon={<FileText size={18} />} />
+          <TabButton id="article" label={articleTabLabel} icon={<FileText size={18} />} />
+          <TabButton id="preview" label="Preview" icon={<Globe size={18} />} />
           <TabButton id="seo" label="SEO & Compliance" icon={<ShieldCheck size={18} />} />
           <TabButton id="history" label="Version History" icon={<History size={18} />} />
         </nav>
@@ -500,6 +507,60 @@ export function ReviewModalV6({
             </div>
           ) : (
             <div className="p-10 max-w-4xl mx-auto">
+              {activeTab === 'preview' ? (
+                <div className="space-y-8 animate-in fade-in duration-500">
+                  <div className="bg-background p-8 rounded-[32px] border border-border shadow-neu-outset space-y-6">
+                    <div className="text-body-small text-muted-foreground uppercase tracking-widest">
+                      {(draftCategory || '').trim() || 'Category'}
+                    </div>
+
+                    <h1 className="text-heading-1 text-foreground tracking-tight">
+                      {draftTitle.trim() || 'Title goes here'}
+                    </h1>
+
+                    {draftSummary.trim() ? (
+                      <p className="text-body text-muted-foreground">{draftSummary.trim()}</p>
+                    ) : null}
+
+                    {draftTags.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {draftTags.slice(0, 10).map((t) => (
+                          <span
+                            key={t}
+                            className="px-3 py-1 bg-surface text-foreground rounded-full text-body-small uppercase tracking-wider border border-border"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {effectiveOgUrl ? (
+                      <div className="rounded-2xl border border-border overflow-hidden bg-surface">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={effectiveOgUrl}
+                          alt=""
+                          className="w-full h-auto block"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : null}
+
+                    <div className="border-t border-border pt-6">
+                      {(draftContentHtml || '').trim() ? (
+                        <div
+                          className="prose prose-neutral prose-lg max-w-none"
+                          dangerouslySetInnerHTML={{ __html: draftContentHtml }}
+                        />
+                      ) : (
+                        <p className="text-body text-muted-foreground">No article content yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               {activeTab === 'article' ? (
                 <div className="space-y-8 animate-in fade-in duration-500">
                   <div className="bg-background p-8 rounded-[32px] border border-border shadow-neu-outset space-y-6">
@@ -1247,6 +1308,51 @@ export function ReviewModalV6({
               <Globe size={18} />
               {isPublished ? 'Republish Now' : 'Publish Now'}
             </button>
+
+            {isPublished ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!window.confirm('Unpublish this post? It will be moved back to Draft and removed from public pages.')) {
+                    return;
+                  }
+
+                  void (async () => {
+                    if (!item) return;
+                    setIsSaving(true);
+                    try {
+                      await adminUpdateItem(item.id, {
+                        title: draftTitle.trim(),
+                        summary: draftSummary.trim(),
+                        contentHtml: draftContentHtml,
+                        category: draftCategory.trim(),
+                        tags: draftTags,
+                        seoTitle: draftSeoTitle.trim() ? draftSeoTitle.trim() : null,
+                        seoDescription: draftSeoDescription.trim() ? draftSeoDescription.trim() : null,
+                      });
+                      const resolvedOgUrl = ogImageOverride.trim()
+                        ? await ingestOgImageIfNeeded(ogImageOverride)
+                        : null;
+                      await adminUpdateItemImageControls(item.id, {
+                        ogImageUrl: resolvedOgUrl,
+                        ogImageApprovalRequired: requireImageApproval,
+                      });
+                      onUnpublish?.();
+                    } catch (err) {
+                      const msg = err instanceof Error ? err.message : 'Failed to unpublish';
+                      window.alert(msg);
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  })();
+                }}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-6 py-3 text-body-small text-foreground border border-border rounded-2xl hover:bg-surface shadow-neu-outset active:scale-95 disabled:opacity-50 uppercase tracking-widest"
+              >
+                <XCircle size={18} />
+                Unpublish
+              </button>
+            ) : null}
 
             <button
               type="button"
