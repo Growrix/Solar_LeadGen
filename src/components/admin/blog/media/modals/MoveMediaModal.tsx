@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/Button';
+import { AdminButton, AdminSelect, AdminModal } from '@/components/admin/ui';
 import type { MediaFolder } from '@/components/admin/blog/shared/blogPrototypeStore';
 
 export default function MoveMediaModal(props: {
@@ -20,57 +20,24 @@ export default function MoveMediaModal(props: {
     setFolderId(defaultFolderId);
   }, [isOpen, defaultFolderId]);
 
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const selectClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small appearance-none cursor-pointer';
+  const folderOptions = [
+    { value: '', label: 'Root (No folder)' },
+    ...folders.map((f) => ({ value: f.id, label: f.name })),
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm px-4 py-8" onClick={onClose}>
-      <div
-        className="w-full max-w-lg rounded-2xl bg-surface shadow-neu-outset p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mb-6">
-          <h2 className="text-heading-2 text-foreground mb-1">Move Media</h2>
-          <p className="text-body-small text-muted-foreground">
-            Move {count} item{count > 1 ? 's' : ''} to a folder.
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-background shadow-neu-inset p-5">
-          <label className="block text-body-small text-muted-foreground mb-3">Destination folder</label>
-          <select
-            className={selectClass}
-            value={folderId ?? ''}
-            onChange={(e) => setFolderId(e.target.value ? e.target.value : null)}
-          >
-            <option value="">(Root)</option>
-            {folders.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <Button variant="secondary" onClick={onClose}>
+    <AdminModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Move Media"
+      description={`Move ${count} item${count > 1 ? 's' : ''} to a folder.`}
+      size="sm"
+      footer={
+        <>
+          <AdminButton variant="ghost" onClick={onClose}>
             Cancel
-          </Button>
-          <Button
+          </AdminButton>
+          <AdminButton
             variant="primary"
             onClick={() => {
               onMove(folderId);
@@ -78,9 +45,16 @@ export default function MoveMediaModal(props: {
             }}
           >
             Move
-          </Button>
-        </div>
-      </div>
-    </div>
+          </AdminButton>
+        </>
+      }
+    >
+      <AdminSelect
+        label="Destination folder"
+        options={folderOptions}
+        value={folderId ?? ''}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFolderId(e.target.value || null)}
+      />
+    </AdminModal>
   );
 }

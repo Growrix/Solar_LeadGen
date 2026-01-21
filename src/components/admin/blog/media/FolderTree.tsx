@@ -1,12 +1,8 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/Button';
+import { AdminButton, AdminInput, AdminCard } from '@/components/admin/ui';
 import type { MediaFolder } from '@/components/admin/blog/shared/blogPrototypeStore';
-
-function cn(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ');
-}
 
 function buildTree(folders: MediaFolder[]) {
   const byParent = new Map<string | null, MediaFolder[]>();
@@ -39,23 +35,29 @@ export default function FolderTree(props: {
   const renderNodes = (parentId: string | null, depth: number) => {
     const nodes = byParent.get(parentId) ?? [];
     return (
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {nodes.map((f) => {
           const active = currentFolderId === f.id;
           return (
-            <div key={f.id} className="space-y-1">
+            <div key={f.id} className="space-y-0.5">
               <button
                 type="button"
                 onClick={() => onSelectFolder(f.id)}
-                className={cn(
-                  'w-full text-left px-4 py-2.5 rounded-xl text-body-small transition-all duration-200',
-                  active
-                    ? 'bg-background text-foreground shadow-neu-inset font-medium'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-                )}
-                style={{ paddingLeft: `${16 + depth * 16}px` }}
+                className={`
+                  w-full text-left px-3 py-2 rounded-[var(--admin-radius)] text-sm transition-all duration-150
+                  ${active
+                    ? 'bg-[var(--admin-primary-muted)] text-[var(--admin-fg-primary)] font-medium border-l-2 border-[var(--admin-primary)]'
+                    : 'text-[var(--admin-fg-secondary)] hover:text-[var(--admin-fg-primary)] hover:bg-[var(--admin-bg-hover)]'
+                  }
+                `}
+                style={{ paddingLeft: `${12 + depth * 16}px` }}
               >
-                {f.name}
+                <span className="flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
+                    <path d="M2 4C2 3.44772 2.44772 3 3 3H6L7.5 5H13C13.5523 5 14 5.44772 14 6V12C14 12.5523 13.5523 13 13 13H3C2.44772 13 2 12.5523 2 12V4Z" stroke="currentColor" strokeWidth="1.5" fill={active ? 'currentColor' : 'none'} fillOpacity="0.2"/>
+                  </svg>
+                  {f.name}
+                </span>
               </button>
               {renderNodes(f.id, depth + 1)}
             </div>
@@ -65,31 +67,29 @@ export default function FolderTree(props: {
     );
   };
 
-  const inputClass = 'flex-1 px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
-
   return (
-    <div className="bg-surface rounded-2xl shadow-neu-outset p-5">
+    <AdminCard variant="elevated" padding="lg">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="text-heading-4 text-foreground font-medium">Folders</div>
+        <h3 className="text-base font-semibold text-[var(--admin-fg-primary)]">Folders</h3>
         <button
           type="button"
           onClick={() => onSelectFolder(null)}
-          className="px-3 py-1.5 rounded-lg text-body-small text-primary hover:text-primary/80 transition-colors"
+          className="text-xs text-[var(--admin-primary)] hover:text-[var(--admin-primary-hover)] transition-colors font-medium"
         >
-          Root
+          Go to Root
         </button>
       </div>
 
-      <div className="flex gap-3 mb-5">
-        <input
+      <div className="flex gap-2 mb-4">
+        <AdminInput
           value={newFolderName}
-          onChange={(e) => setNewFolderName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewFolderName(e.target.value)}
           placeholder="New folder..."
-          className={inputClass}
+          size="sm"
         />
-        <Button
+        <AdminButton
           variant="secondary"
-          className="px-4 py-2"
+          size="sm"
           disabled={!newFolderName.trim()}
           onClick={() => {
             onAddFolder(newFolderName.trim(), currentFolderId);
@@ -97,24 +97,31 @@ export default function FolderTree(props: {
           }}
         >
           Add
-        </Button>
+        </AdminButton>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <button
           type="button"
           onClick={() => onSelectFolder(null)}
-          className={cn(
-            'w-full text-left px-4 py-2.5 rounded-xl text-body-small transition-all duration-200',
-            currentFolderId === null
-              ? 'bg-background text-foreground shadow-neu-inset font-medium'
-              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
-          )}
+          className={`
+            w-full text-left px-3 py-2 rounded-[var(--admin-radius)] text-sm transition-all duration-150
+            ${currentFolderId === null
+              ? 'bg-[var(--admin-primary-muted)] text-[var(--admin-fg-primary)] font-medium border-l-2 border-[var(--admin-primary)]'
+              : 'text-[var(--admin-fg-secondary)] hover:text-[var(--admin-fg-primary)] hover:bg-[var(--admin-bg-hover)]'
+            }
+          `}
         >
-          All Media
+          <span className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
+              <rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M2 6H14" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+            All Media
+          </span>
         </button>
         {renderNodes(null, 0)}
       </div>
-    </div>
+    </AdminCard>
   );
 }

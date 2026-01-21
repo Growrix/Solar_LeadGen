@@ -1,13 +1,21 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/Button';
+import { AdminButton, AdminSelect, AdminInput, AdminModal, AdminFileUploader } from '@/components/admin/ui';
 import type { MediaFolder, MediaItem, MediaType } from '@/components/admin/blog/shared/blogPrototypeStore';
 
 function inferType(file: File): MediaType {
   if (file.type.startsWith('image')) return 'image';
   if (file.type.startsWith('video')) return 'video';
   return 'document';
+}
+
+function formatSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
 export default function UploadMediaModal(props: {
@@ -33,21 +41,6 @@ export default function UploadMediaModal(props: {
     setCaption('');
   }, [isOpen, defaultFolderId]);
 
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   const tagList = tags
     .split(',')
     .map((t) => t.trim())
@@ -57,14 +50,13 @@ export default function UploadMediaModal(props: {
     if (files.length === 0) return;
     const items = files.map((file) => {
       const type = inferType(file);
-      const sizeMb = (file.size / 1024 / 1024).toFixed(1);
       const url = URL.createObjectURL(file);
 
       return {
         name: file.name,
         url,
         type,
-        size: `${sizeMb} MB`,
+        size: formatSize(file.size),
         folderId,
         altText: altText.trim() || undefined,
         caption: caption.trim() || undefined,
@@ -76,100 +68,103 @@ export default function UploadMediaModal(props: {
     onClose();
   };
 
-  const inputClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
-  const selectClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small appearance-none cursor-pointer';
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const folderOptions = [
+    { value: '', label: 'Root (No folder)' },
+    ...folders.map((f) => ({ value: f.id, label: f.name })),
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm px-4 py-8" onClick={onClose}>
-      <div
-        className="w-full max-w-2xl rounded-2xl bg-surface shadow-neu-outset p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-heading-2 text-foreground mb-1">Upload Media</h2>
-            <p className="text-body-small text-muted-foreground">Upload files to your media library.</p>
-          </div>
-          <Button variant="secondary" onClick={onClose} className="px-4 py-2">
-            Close
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5">
-          <div className="rounded-2xl bg-background shadow-neu-inset p-5">
-            <label className="block text-body-small text-muted-foreground mb-3">Files</label>
-            <input
-              type="file"
-              multiple
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-              className={inputClass}
-            />
-            {files.length > 0 && (
-              <div className="mt-3 text-body-small text-primary font-medium">
-                Selected: {files.length} file(s)
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
-              <label className="block text-body-small text-muted-foreground mb-3">Folder</label>
-              <select
-                className={selectClass}
-                value={folderId ?? ''}
-                onChange={(e) => setFolderId(e.target.value ? e.target.value : null)}
-              >
-                <option value="">(Root)</option>
-                {folders.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
-              <label className="block text-body-small text-muted-foreground mb-3">Tags (comma-separated)</label>
-              <input
-                className={inputClass}
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="tag1, tag2, tag3"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
-              <label className="block text-body-small text-muted-foreground mb-3">Alt text</label>
-              <input
-                className={inputClass}
-                value={altText}
-                onChange={(e) => setAltText(e.target.value)}
-                placeholder="Describe the image..."
-              />
-            </div>
-            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
-              <label className="block text-body-small text-muted-foreground mb-3">Caption</label>
-              <input
-                className={inputClass}
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Optional caption..."
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <Button variant="secondary" onClick={onClose}>
+    <AdminModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Upload Media"
+      description="Upload files to your media library"
+      size="lg"
+      footer={
+        <>
+          <AdminButton variant="ghost" onClick={onClose}>
             Cancel
-          </Button>
-          <Button variant="primary" disabled={files.length === 0} onClick={handleSubmit}>
-            Upload
-          </Button>
+          </AdminButton>
+          <AdminButton variant="primary" disabled={files.length === 0} onClick={handleSubmit}>
+            Upload {files.length > 0 && `(${files.length})`}
+          </AdminButton>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <AdminFileUploader
+          accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+          multiple
+          maxSize={50 * 1024 * 1024}
+          onFilesSelected={(newFiles: File[]) => setFiles((prev) => [...prev, ...newFiles])}
+          label="Drop files here"
+          hint="or click to browse. Max 50MB per file."
+        />
+
+        {files.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-[var(--admin-fg-primary)]">
+              Selected files ({files.length})
+            </div>
+            <div className="max-h-32 overflow-y-auto space-y-2">
+              {files.map((file, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-3 p-2.5 rounded-[var(--admin-radius)] bg-[var(--admin-bg-base)] border border-[var(--admin-border)]"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-[var(--admin-fg-primary)] truncate">{file.name}</div>
+                    <div className="text-xs text-[var(--admin-fg-muted)]">{formatSize(file.size)}</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="p-1 rounded text-[var(--admin-fg-muted)] hover:text-[var(--admin-destructive)] hover:bg-[var(--admin-destructive-muted)] transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AdminSelect
+            label="Destination folder"
+            options={folderOptions}
+            value={folderId ?? ''}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFolderId(e.target.value || null)}
+          />
+          <AdminInput
+            label="Tags (comma-separated)"
+            value={tags}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)}
+            placeholder="tag1, tag2, tag3"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AdminInput
+            label="Alt text"
+            value={altText}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAltText(e.target.value)}
+            placeholder="Describe the image..."
+          />
+          <AdminInput
+            label="Caption"
+            value={caption}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCaption(e.target.value)}
+            placeholder="Optional caption..."
+          />
         </div>
       </div>
-    </div>
+    </AdminModal>
   );
 }
