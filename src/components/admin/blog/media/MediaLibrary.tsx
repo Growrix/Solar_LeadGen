@@ -1,132 +1,142 @@
 'use client';
 
+
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import Button from '@/components/Button';
-import { NeumorphicInput } from '@/components/ui/neumorphic-input';
-import ConfirmDialog from '@/components/admin/blog/shared/ConfirmDialog';
 import FolderTree from '@/components/admin/blog/media/FolderTree';
 import UploadMediaModal from '@/components/admin/blog/media/modals/UploadMediaModal';
-import MediaDetailsModal from '@/components/admin/blog/media/modals/MediaDetailsModal';
 import MoveMediaModal from '@/components/admin/blog/media/modals/MoveMediaModal';
+import MediaDetailsModal from '@/components/admin/blog/media/modals/MediaDetailsModal';
 import BulkEditMediaModal from '@/components/admin/blog/media/modals/BulkEditMediaModal';
-import { useBlogPrototypeStore, type MediaItem, type MediaType, type TrashedMediaItem } from '@/components/admin/blog/shared/blogPrototypeStore';
+import {
+  useBlogPrototypeStore,
+  type MediaFolder,
+  type MediaItem,
+  type MediaType,
+} from '@/components/admin/blog/shared/blogPrototypeStore';
 
-type TabKey = 'library' | 'trash';
+type Tab = 'library' | 'trash';
+type ViewMode = 'grid' | 'list';
+type ThumbSize = 'small' | 'medium' | 'large';
+type SortBy = 'date' | 'name';
+type SortDir = 'desc' | 'asc';
 
-type Notification = { message: string; type: 'success' | 'error' };
-
-function parseDate(dateStr: string): number {
-  if (dateStr === 'Just now') return new Date().getTime();
-  return Date.parse(dateStr) || 0;
+function cn(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(' ');
 }
 
-function MediaThumb({ item }: { item: MediaItem }) {
-  if (item.type === 'image') {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={item.url} alt={item.altText ?? item.name} className="w-full h-full object-cover" />;
-  }
 
-  if (item.type === 'video') {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-        <span className="text-body-small">Video</span>
-      </div>
-    );
-  }
+function formatDate(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function normalizeDayValue(value: string) {
+  if (!value) return '';
+  // value already in yyyy-mm-dd from <input type="date" />
+  return value;
+}
 
-  return (
-    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-      <span className="text-body-small">Document</span>
-    </div>
-  );
+function thumbClass(size: ThumbSize) {
+  if (size === 'small') return 'h-24';
+  if (size === 'large') return 'h-44';
+  return 'h-32';
+}
+
+function typePill(type: MediaType) {
+  // Prototype uses colored pills; keep semantic (no hardcoded palette)
+  if (type === 'image') return 'bg-primary/12 text-primary';
+  if (type === 'video') return 'bg-accent/12 text-accent';
+  return 'bg-muted text-muted-foreground';
+}
+
+function typeLabel(type: MediaType) {
+  if (type === 'image') return 'Image';
+  if (type === 'video') return 'Video';
+  return 'Document';
 }
 
 export default function MediaLibrary() {
-  const router = useRouter();
-  const store = useBlogPrototypeStore();
 
-  const [activeTab, setActiveTab] = React.useState<TabKey>('library');
+  const store = useBlogPrototypeStore();
+  const { media, trashedMedia, folders } = store;
   const [currentFolderId, setCurrentFolderId] = React.useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  const [activeTab, setActiveTab] = React.useState<Tab>('library');
+  const [viewMode, setViewMode] = React.useState<ViewMode>('grid');
+  const [thumbnailSize, setThumbnailSize] = React.useState<ThumbSize>('medium');
+  const [sortBy, setSortBy] = React.useState<SortBy>('date');
+  const [sortDir, setSortDir] = React.useState<SortDir>('desc');
 
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [typeFilter, setTypeFilter] = React.useState<'all' | MediaType>('all');
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
-  const [thumbnailSize, setThumbnailSize] = React.useState(200);
-
-  const [showDateFilter, setShowDateFilter] = React.useState(false);
-  const [dateRange, setDateRange] = React.useState<{ start: string; end: string }>({ start: '', end: '' });
+  const [typeFilter, setTypeFilter] = React.useState<MediaType | 'all'>('all');
+  const [dateFrom, setDateFrom] = React.useState('');
+  const [dateTo, setDateTo] = React.useState('');
 
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
-  const [notification, setNotification] = React.useState<Notification | null>(null);
+  const [detailId, setDetailId] = React.useState<string | null>(null);
 
   const [isUploadOpen, setIsUploadOpen] = React.useState(false);
-  const [detailsItem, setDetailsItem] = React.useState<MediaItem | null>(null);
   const [isMoveOpen, setIsMoveOpen] = React.useState(false);
-  const [isBulkEditOpen, setIsBulkEditOpen] = React.useState(false);
+  const [isBulkOpen, setIsBulkOpen] = React.useState(false);
 
-  const [confirmState, setConfirmState] = React.useState<
-    | null
-    | {
-        kind: 'trash' | 'restore' | 'delete';
-        ids: string[];
-      }
-  >(null);
+  const sourceItems = activeTab === 'trash' ? trashedMedia : media;
 
-  React.useEffect(() => {
-    const timer = notification ? window.setTimeout(() => setNotification(null), 3000) : undefined;
-    return () => {
-      if (timer) window.clearTimeout(timer);
-    };
-  }, [notification]);
+  const filteredItems = React.useMemo(() => {
+    const base =
+      activeTab === 'trash'
+        ? sourceItems
+        : sourceItems.filter((it) => it.folderId === currentFolderId);
 
-  React.useEffect(() => {
-    // mimic prototype behavior: clear filters on tab change
-    setSelectedIds(new Set());
-    setSearchQuery('');
-    setTypeFilter('all');
-    setShowDateFilter(false);
-    setDateRange({ start: '', end: '' });
-  }, [activeTab]);
+    const needle = searchQuery.trim().toLowerCase();
 
-  const sourceList: Array<MediaItem | TrashedMediaItem> = activeTab === 'library' ? store.media : store.trashedMedia;
-
-  const filtered = React.useMemo(() => {
-    return sourceList.filter((raw) => {
-      const item = raw as MediaItem;
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === 'all' || item.type === typeFilter;
-
-      let matchesDate = true;
-      if (dateRange.start || dateRange.end) {
-        const itemTime = parseDate(item.uploadedAt);
-        if (dateRange.start) {
-          const startTime = new Date(dateRange.start).setHours(0, 0, 0, 0);
-          if (itemTime < startTime) matchesDate = false;
+    const filtered = base
+      .filter((it) => {
+        if (!needle) return true;
+        const tags = it.tags ?? [];
+        return (
+          it.name.toLowerCase().includes(needle) ||
+          (it.altText ?? '').toLowerCase().includes(needle) ||
+          (it.caption ?? '').toLowerCase().includes(needle) ||
+          tags.some((t) => t.toLowerCase().includes(needle))
+        );
+      })
+      .filter((it) => (typeFilter === 'all' ? true : it.type === typeFilter))
+      .filter((it) => {
+        if (!dateFrom && !dateTo) return true;
+        const dt = new Date(it.uploadedAt);
+        if (dateFrom) {
+          const start = new Date(dateFrom);
+          start.setHours(0, 0, 0, 0);
+          if (dt < start) return false;
         }
-        if (dateRange.end && matchesDate) {
-          const endTime = new Date(dateRange.end).setHours(23, 59, 59, 999);
-          if (itemTime > endTime) matchesDate = false;
+        if (dateTo) {
+          const end = new Date(dateTo);
+          end.setHours(23, 59, 59, 999);
+          if (dt > end) return false;
         }
-      }
+        return true;
+      });
 
-      let matchesFolder = true;
-      if (activeTab === 'library' && !searchQuery && !dateRange.start && !dateRange.end) {
-        matchesFolder = item.folderId === currentFolderId || (currentFolderId === null && !item.folderId);
-      }
-
-      return matchesSearch && matchesType && matchesFolder && matchesDate;
+    const sign = sortDir === 'asc' ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'name') return sign * a.name.localeCompare(b.name);
+      const da = new Date(a.uploadedAt).getTime();
+      const db = new Date(b.uploadedAt).getTime();
+      return sign * (da - db);
     });
-  }, [activeTab, currentFolderId, dateRange.end, dateRange.start, searchQuery, sourceList, typeFilter]);
+  }, [activeTab, currentFolderId, dateFrom, dateTo, searchQuery, sortBy, sortDir, sourceItems, typeFilter]);
 
-  const allSelected = filtered.length > 0 && selectedIds.size === filtered.length;
+  const selectedCount = selectedIds.size;
+  const currentItem = React.useMemo(() => {
+    if (!detailId) return null;
+    const all = [...media, ...trashedMedia];
+    return all.find((x) => x.id === detailId) ?? null;
+  }, [detailId, media, trashedMedia]);
 
-  const currentFolderName = currentFolderId
-    ? store.folders.find((f) => f.id === currentFolderId)?.name || 'Unknown Folder'
-    : 'All Media';
+  const clearSelection = React.useCallback(() => setSelectedIds(new Set()), []);
 
-  const toggleOne = (id: string) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -135,531 +145,409 @@ export default function MediaLibrary() {
     });
   };
 
-  const selectAll = (checked: boolean) => {
-    if (!checked) {
-      setSelectedIds(new Set());
-      return;
+  const isAllSelected = filteredItems.length > 0 && selectedCount === filteredItems.length;
+
+  const selectAll = () => setSelectedIds(new Set(filteredItems.map((x) => x.id)));
+
+  const currentFolderName = React.useMemo(() => {
+    if (!currentFolderId) return 'All Media';
+    const f = folders.find((x) => x.id === currentFolderId);
+    return f?.name ?? 'All Media';
+  }, [currentFolderId, folders]);
+
+  const bulkTrashOrDelete = () => {
+    if (selectedCount === 0) return;
+    if (activeTab === 'trash') {
+      selectedIds.forEach((id) => store.permanentlyDeleteMedia(id));
+    } else {
+      selectedIds.forEach((id) => store.moveMediaToTrash(id));
     }
-    setSelectedIds(new Set(filtered.map((m) => m.id)));
+    clearSelection();
   };
 
-  const clearSelection = () => setSelectedIds(new Set());
-
-  const selectedList = Array.from(selectedIds);
-
-  const openConfirm = (kind: 'trash' | 'restore' | 'delete', ids: string[]) => {
-    setConfirmState({ kind, ids });
+  const bulkRestore = () => {
+    if (activeTab !== 'trash' || selectedCount === 0) return;
+    selectedIds.forEach((id) => store.restoreMediaFromTrash(id));
+    clearSelection();
   };
 
-  const confirmTitle =
-    confirmState?.kind === 'trash'
-      ? 'Move to trash?'
-      : confirmState?.kind === 'restore'
-        ? 'Restore from trash?'
-        : 'Delete permanently?';
+  const today = React.useMemo(() => formatDate(new Date()), []);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const itemsPerPage = 20;
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
 
-  const confirmMessage =
-    confirmState?.kind === 'trash'
-      ? `Move ${confirmState.ids.length} item(s) to Trash?`
-      : confirmState?.kind === 'restore'
-        ? `Restore ${confirmState.ids.length} item(s) back to Library?`
-        : `Permanently delete ${confirmState?.ids.length ?? 0} item(s)? This can’t be undone.`;
+  React.useEffect(() => {
+    setCurrentPage(1);
+    clearSelection();
+  }, [activeTab, currentFolderId, searchQuery, typeFilter, dateFrom, dateTo, sortBy, sortDir, viewMode, thumbnailSize, clearSelection]);
 
-  const runConfirm = () => {
-    if (!confirmState) return;
+  const pagedItems = React.useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredItems.slice(start, start + itemsPerPage);
+  }, [currentPage, filteredItems]);
 
-    try {
-      if (confirmState.kind === 'trash') {
-        confirmState.ids.forEach((id) => store.moveMediaToTrash(id));
-        setNotification({ message: 'Moved to trash.', type: 'success' });
-      }
-      if (confirmState.kind === 'restore') {
-        confirmState.ids.forEach((id) => store.restoreMediaFromTrash(id));
-        setNotification({ message: 'Restored.', type: 'success' });
-      }
-      if (confirmState.kind === 'delete') {
-        confirmState.ids.forEach((id) => store.permanentlyDeleteMedia(id));
-        setNotification({ message: 'Deleted permanently.', type: 'success' });
-      }
-
-      clearSelection();
-    } catch (e) {
-      setNotification({ message: e instanceof Error ? e.message : 'Action failed', type: 'error' });
-    } finally {
-      setConfirmState(null);
-    }
-  };
+  const topBarButton =
+    'inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-label text-foreground hover:bg-muted';
+  const topBarButtonPrimary =
+    'inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-label text-primary-foreground hover:opacity-90';
+  const chipBase = 'inline-flex items-center rounded-xl border border-border bg-card px-3 py-1.5 text-label text-foreground';
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <UploadMediaModal
-        isOpen={isUploadOpen}
-        folders={store.folders}
-        defaultFolderId={currentFolderId}
-        onClose={() => setIsUploadOpen(false)}
-        onUpload={(items) => {
-          items.forEach((it) => store.addMedia(it));
-          setNotification({ message: `Uploaded ${items.length} file(s).`, type: 'success' });
-        }}
-      />
-
-      <MediaDetailsModal
-        isOpen={!!detailsItem}
-        item={detailsItem}
-        onClose={() => setDetailsItem(null)}
-        onSave={(id, updates) => {
-          store.updateMedia(id, updates);
-          setNotification({ message: 'Saved.', type: 'success' });
-          setDetailsItem((prev) => (prev && prev.id === id ? { ...prev, ...updates } : prev));
-        }}
-        onRename={(id, name) => {
-          store.renameMedia(id, name);
-          setNotification({ message: 'Renamed.', type: 'success' });
-          setDetailsItem((prev) => (prev && prev.id === id ? { ...prev, name } : prev));
-        }}
-        onReplace={(id, file) => {
-          store.replaceMedia(id, file);
-          setNotification({ message: 'Replaced file.', type: 'success' });
-          setDetailsItem((prev) =>
-            prev && prev.id === id
-              ? {
-                  ...prev,
-                  name: file.name,
-                  url: URL.createObjectURL(file),
-                  size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-                  uploadedAt: 'Just now',
-                }
-              : prev
-          );
-        }}
-      />
-
-      <MoveMediaModal
-        isOpen={isMoveOpen}
-        folders={store.folders}
-        defaultFolderId={currentFolderId}
-        count={selectedIds.size}
-        onClose={() => setIsMoveOpen(false)}
-        onMove={(folderId) => {
-          store.moveMediaToFolder(selectedList, folderId);
-          setNotification({ message: 'Moved.', type: 'success' });
-          if (folderId !== currentFolderId) clearSelection();
-        }}
-      />
-
-      <BulkEditMediaModal
-        isOpen={isBulkEditOpen}
-        count={selectedIds.size}
-        onClose={() => setIsBulkEditOpen(false)}
-        onConfirm={(updates) => {
-          store.bulkUpdateMedia(selectedList, updates);
-          setNotification({ message: 'Updated.', type: 'success' });
-        }}
-      />
-
-      <ConfirmDialog
-        isOpen={!!confirmState}
-        title={confirmTitle}
-        message={confirmMessage}
-        confirmLabel={confirmState?.kind === 'trash' ? 'Move to Trash' : confirmState?.kind === 'restore' ? 'Restore' : 'Delete'}
-        variant={confirmState?.kind === 'delete' ? 'danger' : 'default'}
-        onConfirm={runConfirm}
-        onCancel={() => setConfirmState(null)}
-      />
-
-      <div className="flex items-start justify-between gap-4 mb-6">
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-heading-1 text-foreground mb-2">Media Library</h1>
-          <p className="text-heading-4 text-muted-foreground">Prototype-mirror UI (stored locally for now).</p>
+          <h1 className="text-heading-2 text-foreground">Media Library</h1>
+          <p className="text-body text-muted-foreground">Organize and manage all your media files.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="secondary" onClick={() => router.push('/admin/blog/content-manager')}>
-            Content Manager
-          </Button>
-          <Button variant="secondary" onClick={() => router.push('/admin/blog')}>
-            Back
-          </Button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className={topBarButtonPrimary} onClick={() => setIsUploadOpen(true)}>
+            Upload
+          </button>
+          <button
+            type="button"
+            className={topBarButton}
+            onClick={() => {
+              store.addFolder('New Folder', null);
+            }}
+          >
+            New Folder
+          </button>
+          {activeTab === 'trash' ? (
+            <button
+              type="button"
+              className={topBarButton}
+              disabled={trashedMedia.length === 0}
+              onClick={() => {
+                trashedMedia.forEach((item) => store.permanentlyDeleteMedia(item.id));
+                clearSelection();
+              }}
+            >
+              Empty Trash
+            </button>
+          ) : null}
         </div>
       </div>
 
-      {notification ? (
-        <div className="fixed top-24 right-6 z-50">
-          <div className="bg-surface shadow-neu-outset rounded-2xl px-4 py-3 border border-border">
-            <div className="text-body text-foreground">{notification.message}</div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <aside className="lg:col-span-3">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="mb-3 text-heading-6 text-foreground">Folders</div>
+            <FolderTree
+              folders={folders}
+              currentFolderId={currentFolderId}
+              onSelectFolder={(id) => {
+                setActiveTab('library');
+                setCurrentFolderId(id);
+              }}
+              onAddFolder={(name, parentId) => store.addFolder(name, parentId)}
+            />
           </div>
-        </div>
-      ) : null}
+        </aside>
 
-      {selectedIds.size > 0 ? (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-4xl">
-          <div className="bg-surface shadow-neu-outset rounded-2xl p-3 border border-border flex flex-col sm:flex-row items-center gap-4">
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
-              <span className="bg-background text-foreground text-label px-3 py-1 rounded-full shadow-neu-inset">
-                {selectedIds.size}
-              </span>
-              <span className="text-body text-foreground whitespace-nowrap">Selected</span>
-            </div>
-
-            <div className="h-px w-full sm:h-8 sm:w-px bg-border" />
-
-            <div className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto">
-              {activeTab === 'library' ? (
-                <>
-                  <Button variant="secondary" className="px-3 py-2" onClick={() => setIsMoveOpen(true)}>
-                    Move
-                  </Button>
-                  <Button variant="secondary" className="px-3 py-2" onClick={() => setIsBulkEditOpen(true)}>
-                    Bulk Edit
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="px-3 py-2"
-                    onClick={() => openConfirm('trash', selectedList)}
+        <section className="lg:col-span-9">
+          <div className="rounded-2xl border border-border bg-card">
+            <div className="border-b border-border p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    className={cn(
+                      chipBase,
+                      activeTab === 'library' ? 'bg-muted text-foreground' : ''
+                    )}
+                    onClick={() => {
+                      setActiveTab('library');
+                    }}
+                  >
+                    Library
+                  </button>
+                  <button
+                    type="button"
+                    className={cn(
+                      chipBase,
+                      activeTab === 'trash' ? 'bg-muted text-foreground' : ''
+                    )}
+                    onClick={() => {
+                      setActiveTab('trash');
+                    }}
                   >
                     Trash
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="secondary"
-                    className="px-3 py-2"
-                    onClick={() => openConfirm('restore', selectedList)}
-                  >
-                    Restore
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="px-3 py-2"
-                    onClick={() => openConfirm('delete', selectedList)}
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
+                  </button>
 
-              <Button variant="secondary" className="px-3 py-2" onClick={clearSelection}>
-                Clear
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="hidden lg:block w-[320px]">
-          <FolderTree
-            folders={store.folders}
-            currentFolderId={currentFolderId}
-            onSelectFolder={(id) => {
-              setCurrentFolderId(id);
-              setIsSidebarOpen(false);
-            }}
-            onAddFolder={(name, parentId) => {
-              store.addFolder(name, parentId);
-              setNotification({ message: 'Folder created.', type: 'success' });
-            }}
-          />
-        </div>
-
-        <div className="flex-1">
-          <div className="bg-surface rounded-2xl shadow-neu-outset p-6 mb-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <div className="text-body text-foreground">{activeTab === 'library' ? currentFolderName : 'Trash'}</div>
-                  <div className="text-body-small text-muted-foreground">{filtered.length} item(s)</div>
+                  <div className="ml-0 sm:ml-2 text-body-small text-muted-foreground">
+                    {activeTab === 'trash' ? 'Trash' : currentFolderName} • {filteredItems.length} items
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button variant="secondary" className="px-3 py-2 lg:hidden" onClick={() => setIsSidebarOpen(true)}>
-                    Folders
-                  </Button>
-                  <Button variant={activeTab === 'library' ? 'primary' : 'secondary'} onClick={() => setActiveTab('library')}>
-                    Library
-                  </Button>
-                  <Button variant={activeTab === 'trash' ? 'primary' : 'secondary'} onClick={() => setActiveTab('trash')}>
-                    Trash
-                  </Button>
-                  <Button variant="primary" onClick={() => setIsUploadOpen(true)}>
-                    Upload
-                  </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    className={cn(chipBase, viewMode === 'grid' ? 'bg-muted' : '')}
+                    onClick={() => setViewMode('grid')}
+                  >
+                    Grid
+                  </button>
+                  <button
+                    type="button"
+                    className={cn(chipBase, viewMode === 'list' ? 'bg-muted' : '')}
+                    onClick={() => setViewMode('list')}
+                  >
+                    List
+                  </button>
+
+                  <select
+                    className="form-input h-10 rounded-xl"
+                    value={thumbnailSize}
+                    onChange={(e) => setThumbnailSize(e.target.value as ThumbSize)}
+                    aria-label="Thumbnail size"
+                  >
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2">
-                  <NeumorphicInput
-                    label="Search"
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-12">
+                <div className="md:col-span-4">
+                  <input
+                    className="form-input w-full rounded-xl"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search files by name…"
+                    placeholder="Search files..."
                   />
                 </div>
-
-                <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
-                  <label className="block text-body-small text-muted-foreground mb-2">Type</label>
+                <div className="md:col-span-2">
                   <select
-                    className="form-input w-full"
+                    className="form-input w-full rounded-xl"
                     value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value as any)}
+                    onChange={(e) => setTypeFilter(e.target.value as MediaType | 'all')}
                   >
-                    <option value="all">All</option>
+                    <option value="all">All Types</option>
                     <option value="image">Images</option>
                     <option value="video">Videos</option>
                     <option value="document">Documents</option>
                   </select>
                 </div>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Button variant={viewMode === 'grid' ? 'primary' : 'secondary'} onClick={() => setViewMode('grid')}>
-                    Grid
-                  </Button>
-                  <Button variant={viewMode === 'list' ? 'primary' : 'secondary'} onClick={() => setViewMode('list')}>
-                    List
-                  </Button>
-
-                  <Button variant="secondary" onClick={() => setShowDateFilter((v) => !v)}>
-                    Date Filter
-                  </Button>
+                <div className="md:col-span-2">
+                  <select className="form-input w-full rounded-xl" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+                    <option value="date">Sort: Date</option>
+                    <option value="name">Sort: Name</option>
+                  </select>
                 </div>
-
-                <div className="bg-surface rounded-2xl shadow-neu-inset p-4 w-full md:w-[360px]">
-                  <label className="block text-body-small text-muted-foreground mb-2">Thumbnail size</label>
+                <div className="md:col-span-2">
+                  <select className="form-input w-full rounded-xl" value={sortDir} onChange={(e) => setSortDir(e.target.value as SortDir)}>
+                    <option value="desc">Newest</option>
+                    <option value="asc">Oldest</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2 flex items-center gap-2">
                   <input
-                    type="range"
-                    min={120}
-                    max={260}
-                    value={thumbnailSize}
-                    onChange={(e) => setThumbnailSize(Number(e.target.value))}
-                    className="w-full"
+                    className="form-input w-full rounded-xl"
+                    type="date"
+                    max={today}
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(normalizeDayValue(e.target.value))}
+                    aria-label="From date"
+                  />
+                  <input
+                    className="form-input w-full rounded-xl"
+                    type="date"
+                    max={today}
+                    value={dateTo}
+                    onChange={(e) => setDateTo(normalizeDayValue(e.target.value))}
+                    aria-label="To date"
                   />
                 </div>
               </div>
 
-              {showDateFilter ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
-                    <label className="block text-body-small text-muted-foreground mb-2">Start</label>
-                    <input
-                      type="date"
-                      className="form-input w-full"
-                      value={dateRange.start}
-                      onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
-                    />
-                  </div>
-                  <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
-                    <label className="block text-body-small text-muted-foreground mb-2">End</label>
-                    <input
-                      type="date"
-                      className="form-input w-full"
-                      value={dateRange.end}
-                      onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
-                    />
+              {selectedCount > 0 ? (
+                <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-body-small text-foreground">Selected: {selectedCount}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {activeTab === 'trash' ? (
+                      <>
+                        <button type="button" className={topBarButton} onClick={bulkRestore}>
+                          Restore
+                        </button>
+                        <button type="button" className={topBarButton + ' text-destructive'} onClick={bulkTrashOrDelete}>
+                          Delete Forever
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className={topBarButton} onClick={() => setIsMoveOpen(true)}>
+                          Move
+                        </button>
+                        <button type="button" className={topBarButton} onClick={() => setIsBulkOpen(true)}>
+                          Bulk Edit
+                        </button>
+                        <button type="button" className={topBarButton + ' text-destructive'} onClick={bulkTrashOrDelete}>
+                          Move to Trash
+                        </button>
+                      </>
+                    )}
+                    <button type="button" className={topBarButton} onClick={clearSelection}>
+                      Clear
+                    </button>
                   </div>
                 </div>
               ) : null}
             </div>
-          </div>
 
-          <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <label className="flex items-center gap-3 text-body-small text-muted-foreground">
-                <input type="checkbox" checked={allSelected} onChange={(e) => selectAll(e.target.checked)} />
-                Select all
-              </label>
-              <div className="text-body-small text-muted-foreground">{activeTab === 'library' ? 'Library' : 'Trash'}</div>
-            </div>
+            <div className="p-4">
+              {filteredItems.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-background p-10 text-center text-muted-foreground">
+                  No media found.
+                </div>
+              ) : viewMode === 'grid' ? (
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+                  {pagedItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group overflow-hidden rounded-2xl border border-border bg-background"
+                    >
+                      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
+                        <label className="inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(item.id)}
+                            onChange={() => toggleSelect(item.id)}
+                          />
+                          <span className="sr-only">Select</span>
+                        </label>
+                        <span className={['rounded-full px-3 py-1 text-label', typePill(item.type)].join(' ')}>{typeLabel(item.type)}</span>
+                      </div>
 
-            {filtered.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground">No media matches your filters.</div>
-            ) : viewMode === 'grid' ? (
-              <div
-                className="p-4 grid gap-4"
-                style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${Math.max(160, thumbnailSize)}px, 1fr))` }}
-              >
-                {filtered.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-background rounded-2xl shadow-neu-outset overflow-hidden hover:shadow-neu-inset transition-shadow cursor-pointer"
-                    onClick={() => {
-                      if (activeTab === 'library') setDetailsItem(item as MediaItem);
-                    }}
-                  >
-                    <div className="relative" style={{ height: `${thumbnailSize}px` }}>
-                      <MediaThumb item={item as MediaItem} />
-                      <div className="absolute top-3 left-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(item.id)}
-                          onChange={() => toggleOne(item.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <div className="text-body text-foreground truncate">{item.name}</div>
-                      <div className="text-body-small text-muted-foreground mt-1">
-                        {item.type} • {item.size}
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {activeTab === 'library' ? (
-                          <>
-                            <button
-                              type="button"
-                              className="text-body-small text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void navigator.clipboard.writeText(item.url);
-                                setNotification({ message: 'URL copied.', type: 'success' });
-                              }}
-                            >
-                              Copy URL
-                            </button>
-                            <span className="text-muted-foreground">|</span>
-                            <button
-                              type="button"
-                              className="text-body-small text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openConfirm('trash', [item.id]);
-                              }}
-                            >
-                              Trash
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              className="text-body-small text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openConfirm('restore', [item.id]);
-                              }}
-                            >
-                              Restore
-                            </button>
-                            <span className="text-muted-foreground">|</span>
-                            <button
-                              type="button"
-                              className="text-body-small text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openConfirm('delete', [item.id]);
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-surface shadow-neu-inset">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-body-small text-muted-foreground">Select</th>
-                      <th className="px-4 py-3 text-left text-body-small text-muted-foreground">Name</th>
-                      <th className="px-4 py-3 text-left text-body-small text-muted-foreground">Type</th>
-                      <th className="px-4 py-3 text-left text-body-small text-muted-foreground">Size</th>
-                      <th className="px-4 py-3 text-left text-body-small text-muted-foreground">Uploaded</th>
-                      <th className="px-4 py-3 text-right text-body-small text-muted-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((item) => (
-                      <tr key={item.id} className="border-t border-border hover:bg-surface-hover">
-                        <td className="px-4 py-3">
-                          <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleOne(item.id)} />
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            className="text-left"
-                            onClick={() => {
-                              if (activeTab === 'library') setDetailsItem(item as MediaItem);
-                            }}
-                          >
-                            <div className="text-body text-foreground">{item.name}</div>
-                            <div className="text-body-small text-muted-foreground">{item.url}</div>
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 text-body-small text-muted-foreground">{item.type}</td>
-                        <td className="px-4 py-3 text-body-small text-muted-foreground">{item.size}</td>
-                        <td className="px-4 py-3 text-body-small text-muted-foreground">{item.uploadedAt}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex justify-end gap-3">
-                            {activeTab === 'library' ? (
-                              <>
-                                <Button
-                                  variant="secondary"
-                                  className="px-3 py-2"
-                                  onClick={() => {
-                                    void navigator.clipboard.writeText(item.url);
-                                    setNotification({ message: 'URL copied.', type: 'success' });
-                                  }}
-                                >
-                                  Copy URL
-                                </Button>
-                                <Button variant="secondary" className="px-3 py-2" onClick={() => openConfirm('trash', [item.id])}>
-                                  Trash
-                                </Button>
-                              </>
+                      <button type="button" className="block w-full text-left" onClick={() => setDetailId(item.id)}>
+                        <div className={['w-full bg-card p-2', thumbClass(thumbnailSize)].join(' ')}>
+                          <div className="h-full w-full overflow-hidden rounded-xl border border-border bg-background">
+                            {item.type === 'image' ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={item.url} alt={item.altText ?? item.name} className="h-full w-full object-cover" />
+                            ) : item.type === 'video' ? (
+                              <div className="flex h-full items-center justify-center text-muted-foreground">Video</div>
                             ) : (
-                              <>
-                                <Button
-                                  variant="secondary"
-                                  className="px-3 py-2"
-                                  onClick={() => openConfirm('restore', [item.id])}
-                                >
-                                  Restore
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  className="px-3 py-2"
-                                  onClick={() => openConfirm('delete', [item.id])}
-                                >
-                                  Delete
-                                </Button>
-                              </>
+                              <div className="flex h-full items-center justify-center text-muted-foreground">Document</div>
                             )}
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+
+                        <div className="space-y-1 px-3 py-3">
+                          <div className="truncate text-body text-foreground">{item.name}</div>
+                          <div className="flex items-center justify-between text-body-small text-muted-foreground">
+                            <span>{item.size}</span>
+                            <span>{item.uploadedAt}</span>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-2xl border border-border bg-background">
+                  <div className="grid grid-cols-12 gap-2 border-b border-border px-4 py-3 text-body-small text-muted-foreground">
+                    <div className="col-span-1">
+                      <button type="button" className="underline" onClick={isAllSelected ? clearSelection : selectAll}>
+                        {isAllSelected ? 'None' : 'All'}
+                      </button>
+                    </div>
+                    <div className="col-span-6">Name</div>
+                    <div className="col-span-2">Type</div>
+                    <div className="col-span-2">Size</div>
+                    <div className="col-span-1">Date</div>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {pagedItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="grid cursor-pointer grid-cols-12 gap-2 px-4 py-3 hover:bg-muted/40"
+                        onClick={() => setDetailId(item.id)}
+                      >
+                        <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
+                          <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleSelect(item.id)} />
+                        </div>
+                        <div className="col-span-6 truncate text-body text-foreground">{item.name}</div>
+                        <div className="col-span-2">
+                          <span className={['rounded-full px-3 py-1 text-label', typePill(item.type)].join(' ')}>{typeLabel(item.type)}</span>
+                        </div>
+                        <div className="col-span-2 text-body-small text-muted-foreground">{item.size}</div>
+                        <div className="col-span-1 text-body-small text-muted-foreground">{item.uploadedAt}</div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-body-small text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className={topBarButton}
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    className={topBarButton}
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      {isSidebarOpen ? (
-        <div className="fixed inset-0 z-40 bg-overlay backdrop-blur-sm lg:hidden" onClick={() => setIsSidebarOpen(false)}>
-          <div className="absolute top-0 left-0 h-full w-[320px] p-4" onClick={(e) => e.stopPropagation()}>
-            <FolderTree
-              folders={store.folders}
-              currentFolderId={currentFolderId}
-              onSelectFolder={(id) => {
-                setCurrentFolderId(id);
-                setIsSidebarOpen(false);
-              }}
-              onAddFolder={(name, parentId) => {
-                store.addFolder(name, parentId);
-                setNotification({ message: 'Folder created.', type: 'success' });
-              }}
-            />
-          </div>
-        </div>
-      ) : null}
+      <UploadMediaModal
+        isOpen={isUploadOpen}
+        folders={folders}
+        defaultFolderId={currentFolderId}
+        onClose={() => setIsUploadOpen(false)}
+        onUpload={(itemsToAdd) => {
+          itemsToAdd.forEach((item) => store.addMedia(item));
+        }}
+      />
+
+      <MoveMediaModal
+        isOpen={isMoveOpen}
+        folders={folders}
+        defaultFolderId={currentFolderId}
+        count={selectedCount}
+        onClose={() => setIsMoveOpen(false)}
+        onMove={(folderId) => {
+          store.moveMediaToFolder(Array.from(selectedIds), folderId);
+          clearSelection();
+        }}
+      />
+
+      <BulkEditMediaModal
+        isOpen={isBulkOpen}
+        count={selectedCount}
+        onClose={() => setIsBulkOpen(false)}
+        onConfirm={(updates) => {
+          store.bulkUpdateMedia(Array.from(selectedIds), updates);
+          clearSelection();
+        }}
+      />
+
+      <MediaDetailsModal
+        isOpen={Boolean(detailId)}
+        item={currentItem}
+        onClose={() => setDetailId(null)}
+        onSave={(id, updates) => store.updateMedia(id, updates)}
+        onRename={(id, name) => store.renameMedia(id, name)}
+        onReplace={(id, file) => store.replaceMedia(id, file)}
+      />
     </div>
   );
 }

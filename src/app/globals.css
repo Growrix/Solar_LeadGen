@@ -298,7 +298,6 @@
   --color-background: 44 29 77;           /* #2C1D4D - Deep purple */
   --color-background-elevated: 62 41 108; /* #3E296C - Lighter purple for elevation */
   --color-background-hover: 76 51 131;    /* #4C3383 - Hover state */
-  --color-overlay: 0 0 0;                 /* Modal backdrop overlay */
   
   /* Foreground/Text Colors - 3-level hierarchy */
   --color-foreground: 233 227 255;        /* #E9E3FF - Light lavender primary */

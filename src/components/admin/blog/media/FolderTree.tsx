@@ -61,7 +61,7 @@ export default function FolderTree(props: {
   return (
     <div className="bg-surface rounded-2xl shadow-neu-outset p-4">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="text-heading-5 text-foreground">Folders</div>
+        <div className="text-heading-6 text-foreground">Folders</div>
         <Button variant="secondary" className="px-3 py-2" onClick={() => onSelectFolder(null)}>
           Root
         </Button>

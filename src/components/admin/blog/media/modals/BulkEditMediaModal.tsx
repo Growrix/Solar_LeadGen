@@ -1,7 +1,15 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/Button';
+
+function cn(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(' ');
+}
+
+const buttonBase =
+  'inline-flex items-center justify-center rounded-xl px-4 py-2 text-label focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50';
+const buttonSecondary = cn(buttonBase, 'border border-border bg-card text-foreground hover:bg-muted');
+const buttonPrimary = cn(buttonBase, 'bg-primary text-primary-foreground hover:opacity-90');
 
 export default function BulkEditMediaModal(props: {
   isOpen: boolean;
@@ -42,34 +50,35 @@ export default function BulkEditMediaModal(props: {
     .filter(Boolean);
 
   return (
-    <div className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8" onClick={onClose}>
-      <div className="theme-card w-full max-w-2xl p-6 sm:p-8" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4 py-8" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6" onClick={(e) => e.stopPropagation()}>
         <div className="mb-6">
           <h2 className="text-heading-3 text-foreground">Bulk Edit</h2>
           <p className="text-body-small text-muted-foreground">Apply updates to {count} selected items.</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
+          <div className="rounded-2xl border border-border bg-background p-4">
             <label className="block text-body-small text-muted-foreground mb-2">Alt text</label>
             <input className="form-input w-full" value={altText} onChange={(e) => setAltText(e.target.value)} />
           </div>
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
+          <div className="rounded-2xl border border-border bg-background p-4">
             <label className="block text-body-small text-muted-foreground mb-2">Caption</label>
             <input className="form-input w-full" value={caption} onChange={(e) => setCaption(e.target.value)} />
           </div>
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
+          <div className="rounded-2xl border border-border bg-background p-4">
             <label className="block text-body-small text-muted-foreground mb-2">Tags (comma-separated)</label>
             <input className="form-input w-full" value={tags} onChange={(e) => setTags(e.target.value)} />
           </div>
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <Button variant="secondary" onClick={onClose}>
+          <button type="button" className={buttonSecondary} onClick={onClose}>
             Cancel
-          </Button>
-          <Button
-            variant="primary"
+          </button>
+          <button
+            type="button"
+            className={buttonPrimary}
             onClick={() => {
               onConfirm({
                 altText: altText.trim() || undefined,
@@ -80,7 +89,7 @@ export default function BulkEditMediaModal(props: {
             }}
           >
             Apply
-          </Button>
+          </button>
         </div>
       </div>
     </div>

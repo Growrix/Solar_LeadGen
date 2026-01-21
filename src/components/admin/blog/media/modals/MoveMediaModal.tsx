@@ -1,8 +1,16 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/Button';
 import type { MediaFolder } from '@/components/admin/blog/shared/blogPrototypeStore';
+
+function cn(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(' ');
+}
+
+const buttonBase =
+  'inline-flex items-center justify-center rounded-xl px-4 py-2 text-label focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50';
+const buttonSecondary = cn(buttonBase, 'border border-border bg-card text-foreground hover:bg-muted');
+const buttonPrimary = cn(buttonBase, 'bg-primary text-primary-foreground hover:opacity-90');
 
 export default function MoveMediaModal(props: {
   isOpen: boolean;
@@ -36,14 +44,14 @@ export default function MoveMediaModal(props: {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8" onClick={onClose}>
-      <div className="theme-card w-full max-w-lg p-6 sm:p-8" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4 py-8" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6" onClick={(e) => e.stopPropagation()}>
         <div className="mb-6">
           <h2 className="text-heading-3 text-foreground">Move Media</h2>
           <p className="text-body-small text-muted-foreground">Move {count} item(s) to a folder.</p>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-neu-inset p-4">
+        <div className="rounded-2xl border border-border bg-background p-4">
           <label className="block text-body-small text-muted-foreground mb-2">Destination folder</label>
           <select
             className="form-input w-full"
@@ -60,18 +68,19 @@ export default function MoveMediaModal(props: {
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <Button variant="secondary" onClick={onClose}>
+          <button type="button" className={buttonSecondary} onClick={onClose}>
             Cancel
-          </Button>
-          <Button
-            variant="primary"
+          </button>
+          <button
+            type="button"
+            className={buttonPrimary}
             onClick={() => {
               onMove(folderId);
               onClose();
             }}
           >
             Move
-          </Button>
+          </button>
         </div>
       </div>
     </div>

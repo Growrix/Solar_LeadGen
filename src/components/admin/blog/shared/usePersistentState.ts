@@ -2,8 +2,6 @@
 
 import React from 'react';
 
-type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
-
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
 function getStorage(): StorageLike | null {
@@ -15,7 +13,7 @@ function getStorage(): StorageLike | null {
   }
 }
 
-export function usePersistentState<T extends Json>(
+export function usePersistentState<T>(
   key: string,
   initialValue: T
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
