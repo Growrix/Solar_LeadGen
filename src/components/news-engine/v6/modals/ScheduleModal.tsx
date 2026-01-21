@@ -11,7 +11,12 @@ export function ScheduleModal({
 }: {
   item: NewsItem;
   onClose: () => void;
-  onSchedule: (iso: string) => void;
+  onSchedule: (input: {
+    scheduledForIso: string;
+    schedulePriority: 'Low' | 'Normal' | 'High' | 'Urgent';
+    scheduleExpiresAt: string | null;
+    scheduleIsFeatured: boolean;
+  }) => void;
 }) {
   const [publishDate, setPublishDate] = React.useState(() => new Date().toISOString().split('T')[0]);
   const [publishTime, setPublishTime] = React.useState('09:00');
@@ -20,6 +25,52 @@ export function ScheduleModal({
   const [expiryDate, setExpiryDate] = React.useState('');
   const [isFeatured, setIsFeatured] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [validationError, setValidationError] = React.useState<string | null>(null);
+
+  const toLocalDateInput = React.useCallback((dt: Date): string => {
+    const yyyy = dt.getFullYear();
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }, []);
+
+  const toLocalTimeInput = React.useCallback((dt: Date): string => {
+    const hh = String(dt.getHours()).padStart(2, '0');
+    const mm = String(dt.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }, []);
+
+  React.useEffect(() => {
+    if (!item.scheduledFor) return;
+    const dt = new Date(item.scheduledFor);
+    if (Number.isNaN(dt.getTime())) return;
+
+    setPublishDate(toLocalDateInput(dt));
+    setPublishTime(toLocalTimeInput(dt));
+  }, [item.id, item.scheduledFor, toLocalDateInput, toLocalTimeInput]);
+
+  React.useEffect(() => {
+    const p = item.schedulePriority;
+    if (p === 'Low' || p === 'Normal' || p === 'High' || p === 'Urgent') {
+      setPriority(p);
+    } else {
+      setPriority('Normal');
+    }
+
+    const expiresIso = item.scheduleExpiresAt;
+    if (expiresIso) {
+      const dt = new Date(expiresIso);
+      if (!Number.isNaN(dt.getTime())) {
+        setHasExpiry(true);
+        setExpiryDate(toLocalDateInput(dt));
+      }
+    } else {
+      setHasExpiry(false);
+      setExpiryDate('');
+    }
+
+    setIsFeatured(Boolean(item.scheduleIsFeatured));
+  }, [item.id, item.schedulePriority, item.scheduleExpiresAt, item.scheduleIsFeatured, toLocalDateInput]);
 
   const PriorityButton = ({ value }: { value: typeof priority }) => {
     const active = priority === value;
@@ -56,10 +107,37 @@ export function ScheduleModal({
   );
 
   const handleConfirm = () => {
+    setValidationError(null);
+
+    const dt = new Date(`${publishDate}T${publishTime}:00`);
+    if (Number.isNaN(dt.getTime())) {
+      setValidationError('Please choose a valid date and time.');
+      return;
+    }
+
+    if (dt.getTime() <= Date.now()) {
+      setValidationError('Scheduled time must be in the future.');
+      return;
+    }
+
     setIsSubmitting(true);
     window.setTimeout(() => {
-      const iso = new Date(`${publishDate}T${publishTime}:00`).toISOString();
-      onSchedule(iso);
+      const iso = dt.toISOString();
+
+      let expiryIso: string | null = null;
+      if (hasExpiry) {
+        const exp = new Date(`${expiryDate}T23:59:59`);
+        if (!Number.isNaN(exp.getTime())) {
+          expiryIso = exp.toISOString();
+        }
+      }
+
+      onSchedule({
+        scheduledForIso: iso,
+        schedulePriority: priority,
+        scheduleExpiresAt: expiryIso,
+        scheduleIsFeatured: isFeatured,
+      });
       setIsSubmitting(false);
     }, 600);
   };
@@ -109,7 +187,10 @@ export function ScheduleModal({
               <input
                 type="date"
                 value={publishDate}
-                onChange={(e) => setPublishDate(e.target.value)}
+                onChange={(e) => {
+                  setPublishDate(e.target.value);
+                  setValidationError(null);
+                }}
                 className="w-full px-3 py-2 bg-background border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
               />
             </div>
@@ -120,11 +201,20 @@ export function ScheduleModal({
               <input
                 type="time"
                 value={publishTime}
-                onChange={(e) => setPublishTime(e.target.value)}
+                onChange={(e) => {
+                  setPublishTime(e.target.value);
+                  setValidationError(null);
+                }}
                 className="w-full px-3 py-2 bg-background border border-border rounded-lg text-body focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground"
               />
             </div>
           </div>
+
+          {validationError ? (
+            <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-body-small text-warning">
+              {validationError}
+            </div>
+          ) : null}
 
           <div className="space-y-3">
             <label className="text-body-small text-muted-foreground flex items-center gap-2 uppercase tracking-widest">

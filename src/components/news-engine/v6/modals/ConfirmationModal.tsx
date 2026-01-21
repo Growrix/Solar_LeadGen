@@ -2,9 +2,14 @@
 
 import React from 'react';
 import type { NewsItem } from '@/lib/ui-stubs/news-engine';
-import { AlertOctagon, CheckCircle2, Globe, Loader2, PauseCircle, X } from 'lucide-react';
+import { AlertOctagon, CheckCircle2, Globe, Loader2, PauseCircle, RefreshCw, X } from 'lucide-react';
 
-type ConfirmationKindV6 = { type: 'PUBLISH_NOW' } | { type: 'PAUSE' } | { type: 'RESUME' } | { type: 'EMERGENCY_STOP' };
+type ConfirmationKindV6 =
+  | { type: 'PUBLISH_NOW' }
+  | { type: 'PAUSE' }
+  | { type: 'RESUME' }
+  | { type: 'EMERGENCY_STOP' }
+  | { type: 'RUN_AUTOMATION_NOW' };
 
 export function ConfirmationModal({
   kind,
@@ -15,7 +20,7 @@ export function ConfirmationModal({
   kind: ConfirmationKindV6;
   item: NewsItem | null;
   onClose: () => void;
-  onConfirm: (typed: string) => void;
+  onConfirm: (typed: string) => void | Promise<void>;
 }) {
   const config = React.useMemo(() => {
     if (kind.type === 'PAUSE') {
@@ -50,22 +55,37 @@ export function ConfirmationModal({
       };
     }
 
+    if (kind.type === 'RUN_AUTOMATION_NOW') {
+      return {
+        title: 'Run Automation Now?',
+        message:
+          'This will trigger the full automation runner immediately (research → draft → schedule/publish), respecting the current pipeline state and automation settings.',
+        confirmLabel: 'Yes, Run Now',
+        variant: 'success' as const,
+        requireConfirmText: null as string | null,
+        cancelLabel: 'No',
+      };
+    }
+
     return {
       title: 'Confirm Live Publication',
       message: `You are about to publish "${item?.title ?? ''}" immediately to the live insights feed. This action cannot be undone.`,
-      confirmLabel: 'Publish Now',
+      confirmLabel: 'Yes, Publish',
       variant: 'publish' as const,
-      requireConfirmText: 'PUBLISH',
+      requireConfirmText: null as string | null,
+      cancelLabel: 'No',
     };
   }, [kind.type, item?.title]);
 
   const needsTyped = Boolean(config.requireConfirmText);
   const [typed, setTyped] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setTyped('');
     setIsSubmitting(false);
+    setSubmitError(null);
   }, [kind.type]);
 
   const theme =
@@ -75,15 +95,26 @@ export function ConfirmationModal({
         ? { icon: <AlertOctagon size={28} />, iconClass: 'bg-destructive/10 text-destructive border-destructive/30', ctaClass: 'bg-destructive text-destructive-foreground' }
         : kind.type === 'RESUME'
           ? { icon: <CheckCircle2 size={28} />, iconClass: 'bg-success/10 text-success border-success/30', ctaClass: 'bg-success text-success-foreground' }
-          : { icon: <Globe size={28} />, iconClass: 'bg-accent/10 text-brand-accent border-accent/20', ctaClass: 'bg-accent text-accent-foreground' };
+          : kind.type === 'RUN_AUTOMATION_NOW'
+            ? { icon: <RefreshCw size={28} />, iconClass: 'bg-accent/10 text-brand-accent border-accent/20', ctaClass: 'bg-accent text-accent-foreground' }
+            : { icon: <Globe size={28} />, iconClass: 'bg-accent/10 text-brand-accent border-accent/20', ctaClass: 'bg-accent text-accent-foreground' };
 
   const requiredText = config.requireConfirmText;
   const isConfirmDisabled = (needsTyped && typed !== requiredText) || isSubmitting;
 
   const handleConfirm = () => {
     setIsSubmitting(true);
+    setSubmitError(null);
+
     window.setTimeout(() => {
-      onConfirm(typed);
+      Promise.resolve(onConfirm(typed)).catch((error) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Action failed. Please try again.';
+        setSubmitError(message);
+        setIsSubmitting(false);
+      });
     }, 600);
   };
 
@@ -138,6 +169,10 @@ export function ConfirmationModal({
               />
             </div>
           ) : null}
+
+          {submitError ? (
+            <p className="text-body text-destructive">{submitError}</p>
+          ) : null}
         </div>
 
         <footer className="px-8 pb-8 flex items-center gap-3">
@@ -146,7 +181,7 @@ export function ConfirmationModal({
             onClick={onClose}
             className="flex-1 px-4 py-4 text-body-small text-muted-foreground hover:text-foreground uppercase tracking-widest transition-colors"
           >
-            Cancel
+            {'cancelLabel' in config && typeof config.cancelLabel === 'string' ? config.cancelLabel : 'Cancel'}
           </button>
           <button
             type="button"

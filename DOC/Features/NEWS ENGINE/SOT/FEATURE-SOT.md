@@ -1,12 +1,17 @@
-# NEWS ENGINE — AI News Engine (Admin + Public) — Feature SOT (Phases 0–6)
+# NEWS ENGINE — Admin + Public — Feature SOT (Phases 0–6)
 
-- Status: Draft (Generated from V6 prototype + existing UX plans)
+- Status: Baseline implemented; Enhancement planning active (2026-01-07)
 - Owner: AI (GitHub Copilot / GPT-5.2) + Human Owner
 
-This file is the canonical **Planning SOT** for the News Engine feature (Legacy-safe 6-phase framework).
+This file is the canonical **Feature SOT** for the News Engine feature (Legacy-safe 6-phase framework).
 
-Links:
+Links (start here):
 - Index / restart point: `INDEX.md`
+- Current-state implementation audit (authoritative for “what exists”): `../Audit Reports/news-engine-inventory-mapping-audit-2026-01-07.md`
+- Enhancement plan (AI/Automation/Admin deep control): `../Plan/AI-AUTOMATION-ADMIN-ENHANCEMENT-PLAN-2026-01-07.md`
+- AI/Automation SOT addendum: `AI-AUTOMATION-ADMIN-SOT-ADDENDUM.md`
+
+Framework + SOP:
 - Framework: `../../GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md`
 - Prototype-first frontend workflow: `../../GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md`
 - Admin UI prompts (step-by-step): `../Fontend UI UX Prompts/frontend-plan-admin.md`
@@ -20,16 +25,16 @@ Links:
 
 This repo is an existing Next.js application.
 
-For News Engine specifically, there is a **standalone prototype export** (Google AI Studio V6):
+For News Engine specifically, there is a working implementation in this repo (UI + API + DB). The best “what exists” map is the current-state audit:
+- `../Audit Reports/news-engine-inventory-mapping-audit-2026-01-07.md`
+
+The Google AI Studio V6 export still exists and remains the **UI reference**:
 - Prototype folder: `../GoogleAIStudio UI UX/ai-news-engine-admin- V6/`
 
-Known V6 surfaces (from `App.tsx` + page/modal inventory):
+Known V6 surfaces (also implemented as Next.js components/routes):
 - Admin views (tabbed): Dashboard, Drafts & Reviews, Audit Logs, Master Control, Automation Logic, Sources, Settings
 - Public views: Public News Listing, Public News Details
-- Modals: Review (draft review), Scheduling, Test & Preview, Manual Draft, Rewrite, Reject, Source (add/edit), Confirmation, Prompt Details, Share
-
-Audit scope constraint:
-- Only V6 is authoritative. Ignore V1–V5.
+- Modals: Review, Scheduling, Test & Preview, Manual Draft, Rewrite, Reject, Source (add/edit), Confirmation, Prompt Details
 
 ## 0.2 Supporting documentation already present
 
@@ -47,8 +52,8 @@ V6 prototype audit:
 
 ## 0.4 Gaps / risks surfaced by the V6 inventory
 
-- Prototype export is not necessarily integrated into the Next.js app yet (treat as UX reference, not production code).
-- UX documentation must remain the canonical source; prototype may contain extra UI affordances beyond the prompt plans.
+- Prototype export is a UX reference and may contain affordances not fully implemented.
+- Some backend semantics (cron wiring, scheduling behavior) are implementation-defined; see Phase 5 for current baseline and Phase 6 for enhancement alignment.
 
 ---
 
@@ -92,7 +97,7 @@ Provide an admin control center (“News Engine Hub”) that turns sources + AI 
 - As the System, I can represent content lifecycle states (including error/rejected) for operational visibility.
 
 Explicit exclusions (until approved in Phase 5):
-- No commitments to backend schema/API, automation runners, or external integrations.
+- No new AI providers, key vault, model router, rules engine semantics, or publish windows v2 unless explicitly implemented as part of the enhancement plan.
 
 ---
 
@@ -127,21 +132,27 @@ Explicit exclusions (until approved in Phase 5):
 - Details page by slug
 - Share modal
 
+## Module G — API + DB (Implemented Baseline)
+- Public read API (`/api/news`, `/api/news/[slug]`)
+- Admin API (`/api/admin/news-engine/*`) for items/sources/research/pipeline/automation/audit
+- Internal automation runner (`/api/internal/news-engine/automation/run`) guarded by a secret header
+- Prisma models/enums + migrations for News Engine entities
+
 ---
 
 # PHASE 4 — SYSTEM & FLOW DESIGN (HOW IT WORKS)
 
 ## 4.1 Core lifecycle states (UI contract)
 
-V6 prototype enumerates these statuses:
-- Draft
-- Needs Review
-- Published
-- Scheduled
-- Error
-- Research Done
-- Draft Ready
-- Rejected
+Implemented lifecycle states (Prisma enum `NewsItemStatus`) are:
+- DRAFT
+- NEEDS_REVIEW
+- RESEARCH_DONE
+- DRAFT_READY
+- PUBLISHED
+- SCHEDULED
+- REJECTED
+- ERROR
 
 ## 4.2 Admin flows (behavioral)
 
@@ -181,21 +192,53 @@ Audit flow:
 
 ---
 
-# PHASE 5 — TECHNICAL DESIGN (ONLY AFTER APPROVAL)
+# PHASE 5 — TECHNICAL BASELINE (IMPLEMENTED AS OF 2026-01-07)
 
-## 5.1 Frontend integration targets (high-level)
+This phase documents the current implementation baseline so enhancements can be built safely.
 
-- Admin UI should ultimately live inside this Next.js application’s admin area.
-- Public UI should ultimately map to `/news` and `/news/[slug]` routes.
+Authoritative inventory for this baseline:
+- `../Audit Reports/news-engine-inventory-mapping-audit-2026-01-07.md`
 
-## 5.2 UI data contracts (high-level)
+## 5.1 Routes (UI)
+- Admin hub: `/admin/news-engine`
+   - Entry: `src/app/admin/news-engine/page.tsx`
+   - Hub: `src/components/news-engine/AdminNewsEngineHub.tsx`
+- Public list: `/news` (`src/app/news/page.tsx`)
+- Public details: `/news/[slug]` (`src/app/news/[slug]/page.tsx`)
 
-Minimum UI fields inferred from V6 types:
-- News item: `title`, `summary`, `status`, `category`, `relevanceScore`, `aiModel`, `createdAt`, optional `publishedAt`, optional `slug`, `tags`, `sourceType`
-- Source: `name`, `url`, `status`, `lastSync`, `articleCount`
-- Log: `timestamp`, `action`, `source`, `origin`, `admin`, `status`, optional `promptUsed`
+## 5.2 API surfaces
+- Public read:
+   - `GET /api/news`
+   - `GET /api/news/[slug]`
+- Admin (guarded by `requireAdmin()`):
+   - Items CRUD + item actions (schedule, publish-now, reject, rewrite-request, regenerate, purge)
+   - Sources CRUD + RSS sync + entries list + sources config
+   - Research sync + AI draft from research + test preview
+   - Pipeline status + pause/resume/emergency-stop
+   - Automation config + run-now + operational rules CRUD
+   - Audit logs list
+- Internal runner:
+   - `POST /api/internal/news-engine/automation/run`
+   - Secret header: `x-news-engine-cron-secret` matching env `NEWS_ENGINE_CRON_SECRET`
 
-No DB/API design is finalized until Phase 5 is explicitly approved.
+## 5.3 Core backend helpers
+- `publishDueScheduledNewsItems()` in `src/lib/news-engine/publish-due.ts`
+   - Best-effort auto-publishes due scheduled items.
+- `writeNewsAuditLog()` in `src/lib/news-engine/audit.ts`
+- Settings wrappers in `src/lib/news-engine/settings.ts` (backed by `src/lib/services/settings-service`)
+
+## 5.4 Data model (Prisma)
+News Engine models/enums live in `prisma/schema.prisma` and are created/extended by News Engine migrations.
+
+Key models:
+- `NewsItem`, `NewsSource`, `NewsSourceEntry`, `NewsResearchEntry`
+- `NewsAutomationRule`, `NewsJobLog`, `NewsAiRequestLog`, `NewsAuditLog`
+
+## 5.5 Known behavioral notes / risks (baseline)
+- Scheduled publishing is opportunistic (triggered by select GET endpoints) and depends on traffic and/or the internal runner.
+- Cron wiring is external to the repo (runner exists; scheduler/host invoking it is not part of codebase).
+- Public pages are client-rendered; SEO/TTFB depend on client fetch behavior.
+- `contentHtml` is stored and served; content safety/sanitization assumptions should be validated separately.
 
 ---
 
@@ -213,3 +256,20 @@ Recommended execution sequence (when implementation begins):
 Verification / readiness:
 - V6 prototype audit indicates E2E publish → public flow is ready at the UI level.
 - If this SOT remains aligned with the existing Admin/Public UI plans, no additional prototype enhancement plan is required.
+
+## 6.1 Enhancement alignment (AI/Automation/Admin deep control)
+
+Planned work for the next enhancement cycle is defined here:
+- `../Plan/AI-AUTOMATION-ADMIN-ENHANCEMENT-PLAN-2026-01-07.md`
+- `AI-AUTOMATION-ADMIN-SOT-ADDENDUM.md`
+
+Implementation sequencing (as stated in the plan):
+- Phase A — Observability first (trust)
+- Phase B — Publish windows v2
+- Phase C — Rules engine v2
+- Phase D — Research decisioning
+- Phase E — Model router + multi-key
+- Phase F — AI image generation
+
+Non-goal for Phase 2 SOT update:
+- This SOT update records baseline + planned scope; it does not itself implement or redesign the feature.

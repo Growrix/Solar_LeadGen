@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit } from '@/lib/rateLimiter';
+import { callOpenAiText } from '@/lib/openai';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,54 +66,8 @@ function getClientIp(request: NextRequest): string | null {
   return request.ip ?? null;
 }
 
-async function callOpenAi(prompt: string): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('AI not configured: missing OPENAI_API_KEY');
-  }
-
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.7,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an assistant that generates blog drafts for a solar lead-gen company. Output must be valid JSON only with fields: title, excerpt, content, seoTitle, seoDescription, category, tags (array of strings), readTime.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    }),
-  });
-
-  const data = (await response.json().catch(() => null)) as any;
-
-  if (!response.ok) {
-    const message =
-      (data && typeof data === 'object' && data.error && typeof data.error.message === 'string'
-        ? data.error.message
-        : 'AI request failed');
-    throw new Error(message);
-  }
-
-  const content = data?.choices?.[0]?.message?.content;
-  if (typeof content !== 'string' || !content.trim()) {
-    throw new Error('AI response was empty');
-  }
-
-  return content;
-}
+const BLOG_SYSTEM_PROMPT =
+  'You are an assistant that generates blog drafts for a solar lead-gen company. Output must be valid JSON only with fields: title, excerpt, content, seoTitle, seoDescription, category, tags (array of strings), readTime.';
 
 export async function POST(request: NextRequest) {
   const startedAt = new Date();
@@ -184,7 +139,11 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .join('\n');
 
-    const raw = await callOpenAi(prompt);
+    const { text: raw } = await callOpenAiText({
+      system: BLOG_SYSTEM_PROMPT,
+      prompt,
+      temperature: 0.7,
+    });
     const parsed = tryParseJsonObject(raw);
 
     const response: AiGenerateResponse = {

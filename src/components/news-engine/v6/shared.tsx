@@ -14,7 +14,8 @@ export type DashboardFilterState = {
   sourceType: DashboardSourceType;
 };
 
-export function formatDateTime(iso: string): string {
+export function formatDateTime(value: string | Date): string {
+  const iso = value instanceof Date ? value.toISOString() : value;
   try {
     return new Date(iso).toLocaleString();
   } catch {
@@ -22,7 +23,8 @@ export function formatDateTime(iso: string): string {
   }
 }
 
-export function formatRelativeTime(iso: string): string {
+export function formatRelativeTime(value: string | Date): string {
+  const iso = value instanceof Date ? value.toISOString() : value;
   try {
     const then = new Date(iso).getTime();
     if (Number.isNaN(then)) return iso;

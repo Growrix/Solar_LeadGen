@@ -6,6 +6,10 @@ Start here for all tasks (human or AI).
 - Primary entry: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
 - Defines authority hierarchy, AI navigation rules, and execution workflow.
 
+## 1a) AI Implementation & Testing Guidelines
+- See: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md
+- **All AI and human contributors must follow these rules for script creation, testing, and editing.**
+
 ## 2) Technical Documentation
 - Technical index: DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/README.md
 - Maps engineering tasks to architecture, coding standards, testing, ops docs.
@@ -14,6 +18,35 @@ Start here for all tasks (human or AI).
 - Always begin with this file.
 - Then read IMPLEMENTATION SOT/README.md to determine required authorities.
 - When technical details are needed, follow TECHNICAL DOCUMENTATIONS/README.md.
+
+---
+
+## Hint Words → What to Read Immediately (AI Routing Table)
+
+Use these **hint words** inside your prompt. When an AI sees a hint word, it should immediately load the linked documents.
+
+| Hint word in prompt | Read immediately | Use when you want |
+|---|---|---|
+| **Start / Authority** | DOC/GUIDELINES & SOT/README.md → DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md | Enforce authority order + AI navigation rules |
+| **Task List / Implementation Tasks** | DOC/.specify/templates/tasks-template.md, see feature's `tasks.md` | Track and update all implementation steps, phases, and progress |
+| **System Design** | DOC/GUIDELINES & SOT/SYSTEM DESIGN/SYSTEM_CONSTITUTION.md, DOC/GUIDELINES & SOT/SYSTEM DESIGN/Blueprint.md | Architectural rules, boundaries, and constraints |
+| **Audit System** | DOC/GUIDELINES & SOT/SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md | System-wide audits (not feature-specific) |
+| **Audit Feature** | DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md | Deep implementation audit: UI + API + backend + DB + wiring + tests |
+| **Audit Prototype Enhancement** | DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/Prototype Audit & Enhancement_Prompt.md | Phase 3: prototype-first audit + additive enhancement prompts (do NOT edit SOT) |
+| **Audit Vs SOT** | DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/Prototype vs SOT Audit_Prompt.md | Phase 3: prototype vs SOT comparison (secondary to prototype-first audit) |
+| **SOT Sync (Phase 4)** | DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/SOT Sync Audit_Prompt.md | Phase 4: update SOT/plan files only to match final prototype + updated initial plan |
+| **Backend Planning** | DOC/PROMPTS/PROMPTS & TEMPLATES/BACKEND/Backend_Planning_Prompt_Template_E2E_Audit_First.md | Create an audit-first, SOT-aware backend plan prompt (plan only) |
+| **Backend Validation** | DOC/PROMPTS/PROMPTS & TEMPLATES/BACKEND/E2E_Feature_Validation_Prompt_Template.md | Reconcile original plan → UI → backend → final product (no partial acceptance) |
+| **Prototype Workflow** | DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md | Google AI Studio prototype → sequence-locked frontend plan + prompts |
+| **Migration (Prototype → Next.js)** | DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md, DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/PROTOTYPE-TO-NEXTJS-OPTION-A-PLAYBOOK.md | Prototype-preserving migration planning + execution rules |
+| **Messaging Copy** | DOC/GUIDELINES & SOT/Messaging-Standards/notification-messaging-guidelines.md, DOC/GUIDELINES & SOT/Messaging-Standards/email-template-standards.md | Any notifications/emails/messaging content |
+| **Post-Feature Documentation** | DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md | Create user guide, tooltips, functionality map, and checklist after E2E audit |
+
+
+Notes:
+- The workflow scripts in `DOC/PROMPTS/WORKFLOW/` are usage examples; use them to understand the intended sequence, but do not copy/paste large blocks into new docs unless explicitly requested.
+- **Every feature must have a single `tasks.md` in its root folder, created at Phase 0 and updated at every phase.**
+- The `tasks.md` must follow the canonical template at `DOC/.specify/templates/tasks-template.md` and is the only source of truth for all implementation steps and progress.
 
 Workflow note:
 - The official, AI-controlled feature workflow (Docs Lock → Execution Tasks) is defined in: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md
@@ -24,6 +57,10 @@ Workflow note:
 - System Design Blueprint: DOC/GUIDELINES & SOT/SYSTEM DESIGN/Blueprint.md
 - System Audit Prompt: DOC/GUIDELINES & SOT/SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md
 - Prototype-First Frontend Workflow: DOC/GUIDELINES & SOT/FRONTEND-PROTOTYPE-WORKFLOW/README.md
+- Design System SOT: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md
+- UI/UX Layout & Routing Standards: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md
+- Color System Standards: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/COLOR-SYSTEM-STANDARDS.md
+- Color Palette Guide: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/COLOR-PALETTE-GUIDE.md
 
 ## Path Alias (Legacy)
 - Any mention of `DOC/Guidelines/*` refers to `DOC/GUIDELINES & SOT/*` (canonical). Treat as the same folder.
@@ -32,6 +69,41 @@ Workflow note:
 - System Design: DOC/GUIDELINES & SOT/SYSTEM DESIGN/*
 - Implementation SOT: DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/*
 - Technical Docs: DOC/GUIDELINES & SOT/TECHNICAL DOCUMENTATIONS/*
+
+---
+
+## Prompt Template Libraries (Most Used)
+
+These folders contain reusable, standardized prompts used throughout the workflow.
+
+- Advanced Audit prompts (feature audits, prototype audits, SOT sync):
+	- DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/
+	- Start from: DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/index.md
+- Backend prompts (backend plan prompt + E2E reconciliation/validation):
+	- DOC/PROMPTS/PROMPTS & TEMPLATES/BACKEND/
+
+- Post-Feature Documentation templates (user guide, tooltips, checklist):
+	- DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/
+	- Start from: DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md
+
+---
+
+## Post-Implementation Documentation (Required Step)
+
+After the E2E feature audit (using the comprehensive-feature-implementation-audit-prompt), you must create a final feature documentation bundle:
+- User Guide (EN/BN)
+- Tooltip Reference (EN/BN)
+- Functionality Map (UI → backend)
+- Testing & Verification Checklist
+- Known Limitations
+- Final Sign-off
+
+Use the template at:
+DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md
+
+This ensures every feature is fully testable, operable, and understandable by any user or developer.
+
+If your prompt includes one of the hint words above, an AI should load the relevant prompt template file(s) immediately.
 
 ## Messaging Standards (Notifications + Emails)
 These rules are **non-negotiable** and must be followed by all humans and AI when creating or updating notification/email copy.
@@ -44,6 +116,7 @@ This keeps a single entry point without merging large indexes.
 
 ---
 
+
 ## Product Planning Standard (6-Phase, Legacy-Safe)
 
 All feature planning in this repo must follow the **Legacy-Safe 6-Phase Product Build Framework**.
@@ -51,12 +124,21 @@ All feature planning in this repo must follow the **Legacy-Safe 6-Phase Product 
 - Canonical framework (read before creating any feature plan):
 	- DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/LEGACY-SAFE-6-PHASE-PRODUCT-BUILD-FRAMEWORK.md
 
+### Feature Specification Template Usage
+
+- For every new feature, begin by copying the canonical spec template from:
+	- `DOC/.specify/templates/spec-template.md`
+- Fill out this template to create the feature's SOT file:
+	- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
+- This FEATURE-SOT.md must capture all user stories, requirements, and success criteria before any planning or implementation begins.
+- The spec-template.md is the main bridge from research to planning and implementation, and is referenced throughout the feature's lifecycle.
+
 Folderization rule (to prevent planning chaos):
 
 - Default: one feature = one SOT file:
 	- `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
-- If multiple supporting files are unavoidable:
-	- `DOC/Features/<Feature Name>/SOT/INDEX.md` must exist and list all related docs
+- Do NOT create `tasks.md`, `IMPLEMENTATION-PLAN.md`, or `INDEX.md` in the SOT folder.
+- Do NOT create a `Plan` folder if it would be empty.
 
 ---
 
@@ -64,23 +146,17 @@ Folderization rule (to prevent planning chaos):
 
 When a feature moves from **planning** to **implementation**, the feature SOT folder must include execution-level artifacts so a new AI/human can continue without losing context.
 
-Required additions under `DOC/Features/<Feature Name>/SOT/`:
 
-- `IMPLEMENTATION-PLAN.md`
-	- Purpose: clearly state *what is being implemented now*, *why*, *sequencing*, *acceptance checks*, and *stop rules*.
-	- Must remain consistent with the locked `FEATURE-SOT.md`.
+// ...existing code...
 
+**Do NOT create these in the SOT folder:**
 - `tasks.md`
-	- Purpose: a **portable execution checklist** that lives with the SOT.
-	- Must link to the repo-wide engineering tracker in `specs/<feature>/tasks.md` if one exists.
-	- Exception (NEW): For **Prototype-First Frontend Workflow** features (Google AI Studio → Frontend UI/UX Prompts), do **NOT** create `DOC/Features/<Feature Name>/SOT/tasks.md`.
-		- Track execution in `DOC/Features/<Feature Name>/MIGRATION/tasks.md` when the work is a prototype-locked migration.
-		- Otherwise track in `specs/<feature>/tasks.md` when using the repo-wide engineering tracker.
+- `IMPLEMENTATION-PLAN.md`
+- `INDEX.md`
 
-Notes:
-- `FEATURE-SOT.md` remains the canonical planning SOT (Phases 0–6).
-- `specs/<feature>/tasks.md` remains the repo-wide engineering execution tracker.
-- The SOT-local `tasks.md` is the continuity-first checklist to prevent context loss (except Prototype-First Frontend Workflow features).
+**Do NOT create a `Plan` folder if it would be empty.**
+
+// ...existing code...
 
 ---
 
@@ -140,18 +216,16 @@ Detailed audit rules:
 Reference example:
 - `DOC/Features/Blog Manual/SOT/CURRENT-UI-AUDIT-GUEST-BLOG.md`
 
-## Tasks.md Template (Mandatory)
 
-For **any** `tasks.md` created or updated in this repo (including both locations below), the author MUST follow:
+## tasks.md — Single Source of Truth (Mandatory)
 
-- `.specify/templates/tasks-template.md`
+For **every feature**, you must create and maintain a single `tasks.md` in the feature's root folder (e.g., `DOC/FEATURES/<Feature Name>/tasks.md`).
 
-Applies to:
-- `specs/<feature>/tasks.md`
-- `DOC/Features/<Feature Name>/SOT/tasks.md`
-- `DOC/Features/<Feature Name>/MIGRATION/tasks.md` (when a feature has a dedicated `MIGRATION/` execution folder)
-
-Exception (NEW): For **Prototype-First Frontend Workflow** features, `DOC/Features/<Feature Name>/SOT/tasks.md` is intentionally **not created**.
+- This file must be created at Phase 0 (Research) and updated at every phase, from planning to post-feature.
+- It must follow the canonical template at `DOC/.specify/templates/tasks-template.md`.
+- All implementation steps, phases, and requirements must be reflected in this file as the only SOT for progress and planning.
+- Do **NOT** create `tasks.md` in SOT, MIGRATION, or other subfolders—always use the root feature folder.
+- Exception: For **Prototype-First Frontend Workflow** features, you may omit `tasks.md` if no implementation is planned. If implementation begins, create `tasks.md` immediately in the root.
 
 Efficiency rule:
 - Do **not** create extra “results” files (ex: `GATE0-RESULTS.md`) unless explicitly requested.

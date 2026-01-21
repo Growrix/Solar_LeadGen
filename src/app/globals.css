@@ -56,6 +56,7 @@
   --color-background: 18 18 18;           /* #121212 - Main background (Material Design standard) */
   --color-background-elevated: 26 26 26;  /* #1A1A1A - Cards, modals, elevated surfaces */
   --color-background-hover: 37 37 37;     /* #252525 - Hover states */
+  --color-overlay: 0 0 0;                 /* Modal backdrop overlay */
   
   /* Foreground/Text Colors - 3-level hierarchy */
   --color-foreground: 243 244 246;        /* #F3F4F6 - Primary text (gray-100) */
@@ -184,6 +185,7 @@
   --color-background: 224 229 236;        /* #E0E5EC - Neumorphic light background */
   --color-background-elevated: 232 237 244; /* Slightly lighter for elevated surfaces */
   --color-background-hover: 216 221 228;  /* Slightly darker for hover */
+  --color-overlay: 0 0 0;                 /* Modal backdrop overlay */
   
   /* Foreground/Text Colors - 3-level hierarchy (HIGH CONTRAST) */
   --color-foreground: 0 0 0;              /* #000000 - Pure black primary text */

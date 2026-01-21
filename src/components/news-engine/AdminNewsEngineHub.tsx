@@ -6,33 +6,9 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-  Calendar,
-  CheckCircle2,
-  CheckSquare,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Copy,
-  ExternalLink,
-  FileText,
-  Filter,
-  Globe,
-  Hash,
-  History,
-  Layers,
-  Loader2,
-  MoreVertical,
-  Plus,
   Pause,
   Play,
   RefreshCcw,
-  RefreshCw,
-  Rss,
-  Save,
-  Search,
-  ShieldAlert,
-  ShieldCheck,
-  Sliders,
   Sparkles,
   Target,
   Type,
@@ -45,12 +21,6 @@ import {
 } from 'lucide-react';
 import Button from '@/components/Button';
 import {
-  appendAuditLog,
-  createDraftFromTitle,
-  loadNewsEngineState,
-  saveNewsEngineState,
-  slugify,
-  upsertItem,
   type AuditLogEntry,
   type NewsEngineState,
   type NewsEngineTab,
@@ -58,6 +28,31 @@ import {
   type NewsSource,
   type PipelineStatus,
 } from '@/lib/ui-stubs/news-engine';
+
+import {
+  adminCreateItem,
+  adminDeleteItem,
+  adminPurgeItem,
+  adminPublishNow,
+  adminUnpublishItem,
+  adminReject,
+  adminRunAutomationNow,
+  adminRegenerateItem,
+  adminRewriteRequest,
+  adminSchedule,
+  adminSetPipelineStatus,
+  adminToggleSourceEnabled,
+  adminUpdateSourcesConfig,
+  fetchAdminSourcesConfig,
+  fetchAdminQueueSnapshot,
+  adminUpdateAutomation,
+  adminUpdateItem,
+  adminUpdateSettings,
+  adminUpsertSource,
+  adminGenerateManualDraft,
+  fetchAdminOpsHealth,
+  fetchAdminState,
+} from '@/lib/news-engine/client';
 
 import {
   formatDateTime,
@@ -83,6 +78,7 @@ import { AuditDateRangeModal, type AuditDateRange } from './v6/modals/AuditDateR
 import { AuditLogDetailsModal } from './v6/modals/AuditLogDetailsModal';
 import { AutomationGuidelinesModal } from './v6/modals/AutomationGuidelinesModal';
 import { ConfirmationModal } from './v6/modals/ConfirmationModal';
+import { CreateNewsModalV6 } from './v6/modals/CreateNewsModal';
 import { ManualDraftModalV6 } from './v6/modals/ManualDraftModal';
 import { PromptDetailsModal } from './v6/modals/PromptDetailsModal';
 import { RejectModal } from './v6/modals/RejectModal';
@@ -90,6 +86,7 @@ import { ReviewModalV6 } from './v6/modals/ReviewModal';
 import { RewriteModal } from './v6/modals/RewriteModal';
 import { ScheduleModal } from './v6/modals/ScheduleModal';
 import { TestPreviewModal } from './v6/modals/TestPreviewModal';
+import { RunDetailsModal, type AutomationRunModeV6, type AutomationRunUiV6 } from './v6/modals/RunDetailsModal';
 
 const TABS: NewsEngineTab[] = [
   'Dashboard',
@@ -106,6 +103,37 @@ const TABS: NewsEngineTab[] = [
 export default function AdminNewsEngineHub() {
   const [activeTab, setActiveTab] = React.useState<NewsEngineTab>('Dashboard');
   const [state, setState] = React.useState<NewsEngineState | null>(null);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+
+  const [taxonomyCategories, setTaxonomyCategories] = React.useState<string[]>([]);
+
+  const [queueSnapshot, setQueueSnapshot] = React.useState<{
+    rssNewEntries: number;
+    researchNewEntries: Record<'WEB' | 'SOCIAL' | 'JOURNAL' | 'TREND', number>;
+    draftsNeedingReview: number;
+    scheduledDueSoon: number;
+    errors: number;
+    computedAt: string;
+    dueSoonWindowHours: number;
+  } | null>(null);
+  const [queueSnapshotError, setQueueSnapshotError] = React.useState<string | null>(null);
+
+  const [opsHealth, setOpsHealth] = React.useState<
+    | {
+        computedAt: string;
+        jobs: Record<
+          string,
+          {
+            type: string;
+            lastSuccessAt: string | null;
+            lastFailureAt: string | null;
+            lastFailureError: string | null;
+          }
+        >;
+      }
+    | null
+  >(null);
+  const [opsHealthError, setOpsHealthError] = React.useState<string | null>(null);
 
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(null);
 
@@ -118,6 +146,7 @@ export default function AdminNewsEngineHub() {
   const [promptDetailsLog, setPromptDetailsLog] = React.useState<AuditLogEntry | null>(null);
 
   const [manualDraftOpen, setManualDraftOpen] = React.useState(false);
+  const [createNewsOpen, setCreateNewsOpen] = React.useState(false);
 
   const [sourceModalOpen, setSourceModalOpen] = React.useState(false);
   const [editingSourceId, setEditingSourceId] = React.useState<string | null>(null);
@@ -128,6 +157,7 @@ export default function AdminNewsEngineHub() {
     | { type: 'PAUSE' }
     | { type: 'RESUME' }
     | { type: 'EMERGENCY_STOP' }
+    | { type: 'RUN_AUTOMATION_NOW' }
     | null
   >(null);
 
@@ -142,32 +172,94 @@ export default function AdminNewsEngineHub() {
 
   const [masterControlRefreshNonce, setMasterControlRefreshNonce] = React.useState(0);
 
+  const [pendingRunMode, setPendingRunMode] = React.useState<AutomationRunModeV6>('dry');
+  const [automationRun, setAutomationRun] = React.useState<AutomationRunUiV6 | null>(null);
+  const [runDetailsOpen, setRunDetailsOpen] = React.useState(false);
+
+  const reloadState = React.useCallback(async () => {
+    try {
+      const [loaded, snapshot, health] = await Promise.all([
+        fetchAdminState(),
+        fetchAdminQueueSnapshot(),
+        fetchAdminOpsHealth(),
+      ]);
+      setState(loaded);
+      setQueueSnapshot(snapshot);
+      setOpsHealth(health);
+      setQueueSnapshotError(null);
+      setOpsHealthError(null);
+      setLoadError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load News Engine';
+      setLoadError(message);
+      setQueueSnapshotError(message);
+      setOpsHealthError(message);
+    }
+  }, []);
+
   const onRefreshHealth = React.useCallback(() => {
     setMasterControlRefreshNonce(Date.now());
-    setState((prev) => {
-      if (!prev) return prev;
-      return appendAuditLog(prev, {
-        timestamp: new Date().toISOString(),
-        action: 'Health Check Refreshed',
-        origin: 'admin',
-        status: 'INFO',
-      });
-    });
-  }, []);
+    void reloadState();
+  }, [reloadState]);
+
+  const masterControlQueueSnapshot = React.useMemo(() => {
+    if (queueSnapshot) return queueSnapshot;
+    if (!state) return null;
+
+    const draftsNeedingReview = state.items.filter((it) => it.status === 'NEEDS_REVIEW').length;
+    const errors = state.items.filter((it) => it.status === 'ERROR').length;
+
+    const now = Date.now();
+    const dueSoonMs = 24 * 60 * 60 * 1000;
+    const scheduledDueSoon = state.items.filter((it) => {
+      if (it.status !== 'SCHEDULED') return false;
+      const at = it.scheduledFor ? Date.parse(it.scheduledFor) : NaN;
+      if (!Number.isFinite(at)) return false;
+      return at >= now && at <= now + dueSoonMs;
+    }).length;
+
+    return {
+      rssNewEntries: 0,
+      researchNewEntries: { WEB: 0, SOCIAL: 0, JOURNAL: 0, TREND: 0 },
+      draftsNeedingReview,
+      scheduledDueSoon,
+      errors,
+      computedAt: new Date().toISOString(),
+      dueSoonWindowHours: 24,
+    };
+  }, [queueSnapshot, state]);
 
   const sourcesSaved = useSavedIndicator();
   const automationSaved = useSavedIndicator();
   const settingsSaved = useSavedIndicator();
 
   React.useEffect(() => {
-    const loaded = loadNewsEngineState();
-    setState(loaded);
-  }, []);
+    void reloadState();
+  }, [reloadState]);
 
   React.useEffect(() => {
-    if (!state) return;
-    saveNewsEngineState(state);
-  }, [state]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch('/api/admin/blog/categories', { method: 'GET' });
+        if (!res.ok) return;
+        const data = (await res.json()) as { categories?: Array<{ name?: unknown }> };
+        if (cancelled) return;
+        const names = Array.isArray(data.categories)
+          ? data.categories
+              .map((c) => (typeof c?.name === 'string' ? c.name.trim() : ''))
+              .filter(Boolean)
+          : [];
+        setTaxonomyCategories(names);
+      } catch {
+        // non-blocking
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const selectedItem = React.useMemo(() => {
     if (!state || !selectedItemId) return null;
@@ -215,10 +307,6 @@ export default function AdminNewsEngineHub() {
     if (!s) throw new Error('News Engine state not loaded');
   };
 
-  const setAndLog = React.useCallback((next: NewsEngineState, entry: Omit<AuditLogEntry, 'id'>) => {
-    setState(appendAuditLog(next, entry));
-  }, []);
-
   const items = React.useMemo(() => state?.items ?? [], [state]);
 
   const [dashboardSearchTerm, setDashboardSearchTerm] = React.useState('');
@@ -239,6 +327,63 @@ export default function AdminNewsEngineHub() {
   const [sourcesCountries, setSourcesCountries] = React.useState<string[]>(['USA', 'UK', 'Japan', 'Germany']);
   const [sourcesCountryInput, setSourcesCountryInput] = React.useState('');
   const [sourcesBlacklist, setSourcesBlacklist] = React.useState('');
+
+  const sourcesConfigLoadedRef = React.useRef(false);
+  const sourcesConfigHydratingRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!state) return;
+    if (sourcesConfigLoadedRef.current) return;
+
+    void (async () => {
+      sourcesConfigHydratingRef.current = true;
+      try {
+        const config = await fetchAdminSourcesConfig();
+        setSourcesResearchWeights(config.researchWeights);
+        setSourcesResearchEnabled(config.researchEnabled);
+        setSourcesRules(config.rules);
+        setSourcesMinSources(config.minSources);
+        setSourcesCountries(config.countries);
+        setSourcesBlacklist(config.blacklist);
+      } catch (error) {
+        console.error('❌ [NewsEngine Sources] Failed to load sources config:', error);
+      } finally {
+        sourcesConfigLoadedRef.current = true;
+        window.setTimeout(() => {
+          sourcesConfigHydratingRef.current = false;
+        }, 0);
+      }
+    })();
+  }, [state]);
+
+  React.useEffect(() => {
+    if (!state) return;
+    if (!sourcesConfigLoadedRef.current) return;
+    if (sourcesConfigHydratingRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      void adminUpdateSourcesConfig({
+        researchWeights: sourcesResearchWeights,
+        researchEnabled: sourcesResearchEnabled,
+        rules: sourcesRules,
+        minSources: sourcesMinSources,
+        countries: sourcesCountries,
+        blacklist: sourcesBlacklist,
+      }).catch((error) => {
+        console.error('❌ [NewsEngine Sources] Failed to save sources config:', error);
+      });
+    }, 650);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    state,
+    sourcesResearchWeights,
+    sourcesResearchEnabled,
+    sourcesRules,
+    sourcesMinSources,
+    sourcesCountries,
+    sourcesBlacklist,
+  ]);
 
   const dashboardCategories = React.useMemo(() => {
     const unique = Array.from(new Set(items.map((n) => n.category))).sort();
@@ -324,6 +469,11 @@ export default function AdminNewsEngineHub() {
           dotClass: 'bg-warning',
         },
         {
+          key: 'REJECTED' as const,
+          label: 'Rejected',
+          dotClass: 'bg-destructive',
+        },
+        {
           key: 'SCHEDULED' as const,
           label: 'Scheduled',
           dotClass: 'bg-success',
@@ -349,6 +499,7 @@ export default function AdminNewsEngineHub() {
         item.status === 'DRAFT_READY' ||
         item.status === 'DRAFT' ||
         item.status === 'NEEDS_REVIEW' ||
+        item.status === 'REJECTED' ||
         item.status === 'SCHEDULED' ||
         item.status === 'PUBLISHED';
       if (!isBoardStatus) return false;
@@ -366,7 +517,8 @@ export default function AdminNewsEngineHub() {
       <div className="p-6">
         <div className="bg-surface rounded-2xl shadow-neu-outset p-10 text-center">
           <h1 className="text-heading-2 text-foreground">Loading News Engine…</h1>
-          <p className="text-muted-foreground mt-2">Preparing UI-only state.</p>
+          <p className="text-muted-foreground mt-2">Fetching admin state from the backend.</p>
+          {loadError ? <p className="text-destructive mt-4 text-body">{loadError}</p> : null}
         </div>
       </div>
     );
@@ -453,33 +605,52 @@ export default function AdminNewsEngineHub() {
           hasActiveDashboardFilters={hasActiveDashboardFilters}
           filteredDashboardNews={filteredDashboardNews}
           openReviewForItem={openReviewForItem}
-          openManualDraft={() => setManualDraftOpen(true)}
+          openCreateNews={() => setCreateNewsOpen(true)}
+          openGenerateAiDraft={() => setManualDraftOpen(true)}
         />
       ) : null}
 
       <ManualDraftModalV6
         isOpen={manualDraftOpen}
         onClose={() => setManualDraftOpen(false)}
-        onGenerate={(data) => {
+        categoryOptions={taxonomyCategories}
+        onGenerate={async (data) => {
           ensureState(state);
-          const nextTitle = data.title?.trim() ? data.title.trim() : `Draft: ${data.category} - ${new Date().toLocaleDateString()}`;
-          const draft = {
-            ...createDraftFromTitle(nextTitle, data.prompt),
-            category: data.category,
-            tags: data.tags,
-            aiModel: 'gpt-5.2',
-          } satisfies NewsItem;
-          const next = { ...state, items: [draft, ...state.items] };
-          setAndLog(next, {
-            timestamp: new Date().toISOString(),
-            action: 'Manual Draft Generated',
-            origin: 'admin',
-            status: 'INFO',
-            promptUsed: data.prompt,
-          });
-          setManualDraftOpen(false);
+          const nextTitle = data.title?.trim()
+            ? data.title.trim()
+            : `Draft: ${data.category} - ${new Date().toLocaleDateString()}`;
+
+          try {
+            const created = await adminGenerateManualDraft({
+              title: nextTitle,
+              prompt: data.prompt,
+              category: data.category,
+              tags: data.tags,
+              outline: data.outline,
+            });
+
+            await reloadState();
+            setManualDraftOpen(false);
+            setActiveTab('Drafts & Reviews');
+            openReviewForItem(created.id);
+          } catch (error) {
+            console.error('Failed to generate AI draft:', error);
+            await reloadState();
+            throw error;
+          }
+        }}
+      />
+
+      <CreateNewsModalV6
+        isOpen={createNewsOpen}
+        onClose={() => setCreateNewsOpen(false)}
+        categoryOptions={taxonomyCategories}
+        onCreated={async (itemId) => {
+          setCreateNewsOpen(false);
+          setSelectedItemId(itemId);
           setActiveTab('Drafts & Reviews');
-          openReviewForItem(draft.id);
+          await reloadState();
+          setReviewOpen(true);
         }}
       />
 
@@ -490,7 +661,8 @@ export default function AdminNewsEngineHub() {
           draftsBoardColumns={draftsBoardColumns}
           draftsFilteredItems={draftsFilteredItems}
           openReviewForItem={openReviewForItem}
-          openManualDraft={() => setManualDraftOpen(true)}
+          openCreateNews={() => setCreateNewsOpen(true)}
+          openGenerateAiDraft={() => setManualDraftOpen(true)}
         />
       ) : null}
 
@@ -507,8 +679,22 @@ export default function AdminNewsEngineHub() {
       {activeTab === 'Master Control' ? (
         <MasterControlTabV6
           pipelineStatus={state.pipelineStatus}
+          items={state.items}
+          automation={state.automation}
+          automationRun={automationRun}
+          queueSnapshot={masterControlQueueSnapshot}
+          queueSnapshotError={queueSnapshotError}
+          opsHealth={opsHealth}
+          opsHealthError={opsHealthError}
+          onOpenRunDetails={() => setRunDetailsOpen(true)}
+          onNavigateToTab={(tab) => setActiveTab(tab)}
           refreshNonce={masterControlRefreshNonce}
           onRefreshHealth={onRefreshHealth}
+          openRunAutomationNowConfirmation={(mode) => {
+            setPendingRunMode(mode);
+            setConfirmationKind({ type: 'RUN_AUTOMATION_NOW' });
+            setConfirmationOpen(true);
+          }}
           openPauseConfirmation={() => {
             setConfirmationKind({ type: 'PAUSE' });
             setConfirmationOpen(true);
@@ -529,6 +715,13 @@ export default function AdminNewsEngineHub() {
           state={state}
           setState={setState}
           automationSaved={automationSaved}
+          onSave={async (payload: Parameters<typeof adminUpdateAutomation>[0]) => {
+            try {
+              await adminUpdateAutomation(payload);
+            } finally {
+              await reloadState();
+            }
+          }}
           onOpenGuidelines={() => setAutomationGuidelinesOpen(true)}
           operationalRuleModalOpen={operationalRuleModalOpen}
           onOpenOperationalRuleModal={() => setOperationalRuleModalOpen(true)}
@@ -541,6 +734,13 @@ export default function AdminNewsEngineHub() {
           state={state}
           setState={setState}
           sourcesSaved={sourcesSaved}
+          onToggleSourceEnabled={async (sourceId, enabled) => {
+            try {
+              await adminToggleSourceEnabled(sourceId, enabled);
+            } finally {
+              await reloadState();
+            }
+          }}
           setEditingSourceId={setEditingSourceId}
           setSourceModalOpen={setSourceModalOpen}
           sourcesResearchEnabled={sourcesResearchEnabled}
@@ -561,20 +761,91 @@ export default function AdminNewsEngineHub() {
       ) : null}
 
       {activeTab === 'Settings' ? (
-        <SettingsTabV6 state={state} setState={setState} settingsSaved={settingsSaved} />
+        <SettingsTabV6
+          state={state}
+          setState={setState}
+          settingsSaved={settingsSaved}
+          onSave={async (nextState) => {
+            try {
+              await adminUpdateSettings({ settings: nextState.settings });
+            } finally {
+              await reloadState();
+            }
+          }}
+        />
       ) : null}
 
       <ReviewModalV6
         isOpen={reviewOpen}
         onClose={() => setReviewOpen(false)}
         item={selectedItem}
+        auditLogs={state?.auditLogs ?? []}
         onApprove={() => {
           setReviewOpen(false);
           setScheduleOpen(true);
         }}
+        onDelete={() => {
+          if (!selectedItem) return;
+          const isRejected = selectedItem.status === 'REJECTED';
+          const confirmText = isRejected
+            ? 'Delete this rejected item permanently? This cannot be undone.'
+            : 'Delete this item? It will be moved to deleted state.';
+
+          if (!window.confirm(confirmText)) return;
+
+          void (async () => {
+            try {
+              if (isRejected) {
+                await adminPurgeItem(selectedItem.id);
+              } else {
+                await adminDeleteItem(selectedItem.id);
+              }
+              setReviewOpen(false);
+            } finally {
+              await reloadState();
+            }
+          })();
+        }}
         onPublish={() => {
           setConfirmationKind({ type: 'PUBLISH_NOW' });
           setConfirmationOpen(true);
+        }}
+        onUnpublish={() => {
+          if (!selectedItem) return;
+
+          void (async () => {
+            try {
+              await adminUnpublishItem(selectedItem.id);
+            } finally {
+              await reloadState();
+            }
+          })();
+        }}
+        onRegenerate={() => {
+          if (!selectedItem) return;
+          if (selectedItem.status !== 'REJECTED') return;
+          if (!window.confirm('Regenerate this rejected item with OpenAI and move it back to Draft Ready?')) return;
+
+          void (async () => {
+            try {
+              await adminRegenerateItem(selectedItem.id);
+            } finally {
+              await reloadState();
+            }
+          })();
+        }}
+        onRestore={() => {
+          if (!selectedItem) return;
+          if (selectedItem.status !== 'REJECTED') return;
+
+          void (async () => {
+            try {
+              await adminUpdateItem(selectedItem.id, { status: 'DRAFT_READY' });
+              setReviewOpen(false);
+            } finally {
+              await reloadState();
+            }
+          })();
         }}
         onRewrite={() => {
           setReviewOpen(false);
@@ -585,15 +856,14 @@ export default function AdminNewsEngineHub() {
           setRejectOpen(true);
         }}
         onSave={() => {
-          if (!selectedItem || !state) return;
-          const nextItem = { ...selectedItem, status: 'DRAFT_READY' as const };
-          const next = upsertItem(state, nextItem);
-          setAndLog(next, {
-            timestamp: new Date().toISOString(),
-            action: 'Saved Edits',
-            origin: 'admin',
-            status: 'INFO',
-          });
+          if (!selectedItem) return;
+          return (async () => {
+            try {
+              await adminUpdateItem(selectedItem.id, { status: 'DRAFT_READY' });
+            } finally {
+              await reloadState();
+            }
+          })();
         }}
       />
 
@@ -601,21 +871,19 @@ export default function AdminNewsEngineHub() {
         <ScheduleModal
           item={selectedItem}
           onClose={() => setScheduleOpen(false)}
-          onSchedule={(iso) => {
-            ensureState(state);
-            const nextItem: NewsItem = {
-              ...selectedItem,
-              status: 'SCHEDULED',
-              scheduledFor: iso,
-            };
-            const next = upsertItem(state, nextItem);
-            setAndLog(next, {
-              timestamp: new Date().toISOString(),
-              action: 'Scheduled Item',
-              origin: 'admin',
-              status: 'INFO',
-            });
-            setScheduleOpen(false);
+          onSchedule={(input) => {
+            void (async () => {
+              try {
+                await adminSchedule(selectedItem.id, input.scheduledForIso, {
+                  schedulePriority: input.schedulePriority,
+                  scheduleExpiresAt: input.scheduleExpiresAt,
+                  scheduleIsFeatured: input.scheduleIsFeatured,
+                });
+              } finally {
+                await reloadState();
+                setScheduleOpen(false);
+              }
+            })();
           }}
         />
       ) : null}
@@ -628,21 +896,15 @@ export default function AdminNewsEngineHub() {
             setReviewOpen(true);
           }}
           onRewrite={(note) => {
-            ensureState(state);
-            const nextItem: NewsItem = {
-              ...selectedItem,
-              status: 'DRAFT',
-            };
-            const next = upsertItem(state, nextItem);
-            setAndLog(next, {
-              timestamp: new Date().toISOString(),
-              action: 'Rewrite Requested',
-              origin: 'admin',
-              status: 'INFO',
-              promptUsed: note,
-            });
-            setRewriteOpen(false);
-            setReviewOpen(true);
+            void (async () => {
+              try {
+                await adminRewriteRequest(selectedItem.id, note);
+              } finally {
+                await reloadState();
+                setRewriteOpen(false);
+                setReviewOpen(true);
+              }
+            })();
           }}
         />
       ) : null}
@@ -655,20 +917,15 @@ export default function AdminNewsEngineHub() {
             setReviewOpen(true);
           }}
           onReject={(reason) => {
-            ensureState(state);
-            const nextItem: NewsItem = {
-              ...selectedItem,
-              status: 'REJECTED',
-            };
-            const next = upsertItem(state, nextItem);
-            setAndLog(next, {
-              timestamp: new Date().toISOString(),
-              action: `Rejected: ${reason}`,
-              origin: 'admin',
-              status: 'WARN',
-            });
-            setRejectOpen(false);
-            setReviewOpen(true);
+            void (async () => {
+              try {
+                await adminReject(selectedItem.id, reason);
+              } finally {
+                await reloadState();
+                setRejectOpen(false);
+                setReviewOpen(true);
+              }
+            })();
           }}
         />
       ) : null}
@@ -677,39 +934,43 @@ export default function AdminNewsEngineHub() {
         <TestPreviewModal
           item={selectedItem}
           onClose={() => setTestPreviewOpen(false)}
-          onSaveToDrafts={() => {
-            ensureState(state);
-            const newDraft = createDraftFromTitle(`Draft: ${selectedItem.title}`, selectedItem.summary);
-            const next = { ...state, items: [newDraft, ...state.items] };
-            setAndLog(next, {
-              timestamp: new Date().toISOString(),
-              action: 'Test & Preview: Saved to Drafts',
-              origin: 'admin',
-              status: 'INFO',
-            });
-            setTestPreviewOpen(false);
-            setActiveTab('Drafts & Reviews');
-            openReviewForItem(newDraft.id);
+          onSaveToDrafts={(result) => {
+            void (async () => {
+              try {
+                const created = await adminCreateItem({
+                  title: result.title?.trim() ? result.title : `Draft: ${selectedItem.title}`,
+                  summary: result.summary,
+                  contentHtml: result.contentHtml,
+                  category: selectedItem.category,
+                  tags: selectedItem.tags,
+                  status: 'DRAFT',
+                  aiModel: selectedItem.aiModel,
+                  relevanceScore: selectedItem.relevanceScore,
+                  sourceType: selectedItem.sourceType,
+
+                  seoTitle: result.seoTitle ?? null,
+                  seoDescription: result.seoDescription ?? null,
+                });
+
+                await reloadState();
+                setTestPreviewOpen(false);
+                setActiveTab('Drafts & Reviews');
+                openReviewForItem(created.id);
+              } catch {
+                await reloadState();
+              }
+            })();
           }}
           onSimulatePublish={() => {
-            ensureState(state);
-            const publishedAt = new Date().toISOString();
-            const slug = selectedItem.slug ?? slugify(selectedItem.title);
-            const nextItem: NewsItem = {
-              ...selectedItem,
-              status: 'PUBLISHED',
-              publishedAt,
-              slug,
-            };
-            const next = upsertItem(state, nextItem);
-            setAndLog(next, {
-              timestamp: new Date().toISOString(),
-              action: 'Test & Preview: Simulated Publish',
-              origin: 'admin',
-              status: 'INFO',
-            });
-            setTestPreviewOpen(false);
-            window.location.href = '/news';
+            void (async () => {
+              try {
+                await adminPublishNow(selectedItem.id);
+              } finally {
+                await reloadState();
+                setTestPreviewOpen(false);
+                window.location.href = '/news';
+              }
+            })();
           }}
         />
       ) : null}
@@ -723,23 +984,22 @@ export default function AdminNewsEngineHub() {
           }}
           onSave={(nextSource) => {
             ensureState(state);
-            const existingIndex = state.sources.findIndex((s) => s.id === nextSource.id);
-            const nextSources = state.sources.slice();
-            if (existingIndex === -1) {
-              nextSources.unshift(nextSource);
-            } else {
-              nextSources[existingIndex] = nextSource;
-            }
-            const nextState = { ...state, sources: nextSources };
-            setAndLog(nextState, {
-              timestamp: new Date().toISOString(),
-              action: existingIndex === -1 ? 'Source Added' : 'Source Updated',
-              origin: 'admin',
-              status: 'INFO',
-            });
-            sourcesSaved.trigger();
-            setSourceModalOpen(false);
-            setEditingSourceId(null);
+            const exists = state.sources.some((s) => s.id === nextSource.id);
+            void (async () => {
+              try {
+                await adminUpsertSource({
+                  id: exists ? nextSource.id : undefined,
+                  name: nextSource.name,
+                  url: nextSource.url,
+                  enabled: nextSource.enabled,
+                });
+                sourcesSaved.trigger();
+              } finally {
+                await reloadState();
+                setSourceModalOpen(false);
+                setEditingSourceId(null);
+              }
+            })();
           }}
         />
       ) : null}
@@ -762,54 +1022,88 @@ export default function AdminNewsEngineHub() {
             setConfirmationOpen(false);
             setConfirmationKind(null);
           }}
-          onConfirm={(typed) => {
+          onConfirm={async (typed) => {
             ensureState(state);
-            if (confirmationKind.type === 'PUBLISH_NOW') {
-              if (!selectedItem) return;
-              if (typed !== 'PUBLISH') return;
-              const publishedAt = new Date().toISOString();
-              const slug = selectedItem.slug ?? slugify(selectedItem.title);
-              const nextItem: NewsItem = { ...selectedItem, status: 'PUBLISHED', publishedAt, slug };
-              const next = upsertItem(state, nextItem);
-              setAndLog(next, {
-                timestamp: new Date().toISOString(),
-                action: 'Published Now',
-                origin: 'admin',
-                status: 'INFO',
-              });
-              setReviewOpen(false);
+            try {
+              if (confirmationKind.type === 'RUN_AUTOMATION_NOW') {
+                const startedAt = new Date().toISOString();
+                setAutomationRun({ status: 'running', mode: pendingRunMode, startedAt });
+
+                const res = await adminRunAutomationNow(pendingRunMode);
+
+                const payload = res.payload;
+                const runId = res.runId ?? undefined;
+                const summary =
+                  res.summary
+                    ? {
+                        ...res.summary,
+                        skipped: res.summary.skipped ?? undefined,
+                      }
+                    : undefined;
+
+                setAutomationRun({
+                  status: 'success',
+                  mode: pendingRunMode,
+                  startedAt: res.startedAt ?? startedAt,
+                  finishedAt: res.finishedAt ?? new Date().toISOString(),
+                  runId,
+                  summary,
+                  payload,
+                });
+                setConfirmationOpen(false);
+                setConfirmationKind(null);
+                await reloadState();
+                return;
+              }
+
+              if (confirmationKind.type === 'PUBLISH_NOW') {
+                if (!selectedItem) return;
+                await adminPublishNow(selectedItem.id);
+                setReviewOpen(false);
+                setConfirmationOpen(false);
+                setConfirmationKind(null);
+                await reloadState();
+                return;
+              }
+
+              if (confirmationKind.type === 'EMERGENCY_STOP' && typed !== 'LOCKDOWN') {
+                return;
+              }
+
+              const nextStatus: PipelineStatus =
+                confirmationKind.type === 'PAUSE'
+                  ? 'PAUSED'
+                  : confirmationKind.type === 'RESUME'
+                    ? 'NOMINAL'
+                    : 'EMERGENCY_STOP';
+
+              await adminSetPipelineStatus(nextStatus);
               setConfirmationOpen(false);
               setConfirmationKind(null);
-              return;
+              await reloadState();
+            } catch (error) {
+              if (confirmationKind.type === 'RUN_AUTOMATION_NOW') {
+                setAutomationRun((prev) => ({
+                  status: 'failure',
+                  mode: prev?.mode ?? pendingRunMode,
+                  startedAt: prev?.startedAt ?? new Date().toISOString(),
+                  finishedAt: new Date().toISOString(),
+                  runId: prev?.runId,
+                  payload: prev?.payload,
+                  error: error instanceof Error ? error.message : 'Failed to run automation',
+                }));
+              }
+              await reloadState();
+              throw error;
             }
-
-            if (confirmationKind.type === 'EMERGENCY_STOP') {
-              if (typed !== 'LOCKDOWN') return;
-            }
-
-            const nextStatus: PipelineStatus =
-              confirmationKind.type === 'PAUSE'
-                ? 'PAUSED'
-                : confirmationKind.type === 'RESUME'
-                  ? 'NOMINAL'
-                  : 'EMERGENCY_STOP';
-
-            const next = { ...state, pipelineStatus: nextStatus };
-            setAndLog(next, {
-              timestamp: new Date().toISOString(),
-              action:
-                confirmationKind.type === 'PAUSE'
-                  ? 'Pipeline Paused'
-                  : confirmationKind.type === 'RESUME'
-                    ? 'Pipeline Resumed'
-                    : 'Emergency Stop Activated',
-              origin: 'admin',
-              status: confirmationKind.type === 'EMERGENCY_STOP' ? 'WARN' : 'INFO',
-            });
-
-            setConfirmationOpen(false);
-            setConfirmationKind(null);
           }}
+        />
+      ) : null}
+
+      {runDetailsOpen && automationRun ? (
+        <RunDetailsModal
+          run={automationRun}
+          onClose={() => setRunDetailsOpen(false)}
         />
       ) : null}
 

@@ -182,6 +182,9 @@ const AdminSidebar: React.FC<{ activePage?: string }> = ({ activePage = 'Dashboa
           <div className="pl-6 space-y-1">
             <NavItem icon={<FileTextIcon />} title="All Posts" isActive={false} onClick={() => { window.location.href = '/admin/blog'; }} isCollapsed={false} />
             <NavItem icon={<FileTextIcon />} title="Create Post" isActive={false} onClick={() => { window.location.href = '/admin/blog/new'; }} isCollapsed={false} />
+            <NavItem icon={<FileTextIcon />} title="Content Manager" isActive={false} onClick={() => { window.location.href = '/admin/blog/content-manager'; }} isCollapsed={false} />
+            <NavItem icon={<FileTextIcon />} title="Media Library" isActive={false} onClick={() => { window.location.href = '/admin/blog/media'; }} isCollapsed={false} />
+            <NavItem icon={<FileTextIcon />} title="Comments" isActive={false} onClick={() => { window.location.href = '/admin/blog/comments'; }} isCollapsed={false} />
             <NavItem icon={<FileTextIcon />} title="Categories" isActive={false} onClick={() => { window.location.href = '/admin/blog/categories'; }} isCollapsed={false} />
             <NavItem icon={<FileTextIcon />} title="Tags" isActive={false} onClick={() => { window.location.href = '/admin/blog/tags'; }} isCollapsed={false} />
           </div>

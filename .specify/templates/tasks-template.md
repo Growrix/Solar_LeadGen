@@ -139,9 +139,27 @@ Examples of foundational tasks (adjust based on your project):
 
 ---
 
+
 [Add more user story phases as needed, following the same pattern]
 
 ---
+
+## Audit & Correction Loop (Mandatory After Each Major Implementation)
+
+**Purpose**: Ensure all planned, built, and enhanced features are complete, correct, and fully functional before moving forward. This phase is required after each major implementation (frontend, backend, or full feature).
+
+- [ ] TXXX Run deep audit using the relevant audit prompt (e.g., comprehensive-feature-implementation-audit-prompt.md)
+- [ ] TXXX Run all available automated/manual tests and scripts
+- [ ] TXXX Compare actual implementation vs. plan/SOT vs. prototype
+- [ ] TXXX Log every gap, bug, or missing feature as new tasks in this file
+- [ ] TXXX Complete all correction/enhancement tasks found during audit
+- [ ] TXXX Repeat audit and testing until all issues are resolved and tests pass ("green signal")
+- [ ] TXXX Only proceed to the next phase when the audit is green and all critical issues are closed
+
+**Note:** This loop may repeat multiple times. If the audit phase repeats excessively without resolving all issues, escalate for human review.
+
+---
+
 
 ## Phase N: Polish & Cross-Cutting Concerns
 

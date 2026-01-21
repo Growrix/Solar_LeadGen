@@ -4737,3 +4737,944 @@ All steps reference the prototype, workflow README, and migration playbook.
 SOT/README and index files are updated post-migration.
 Verification results are documented.
 No redundant or conflicting instructions remain in the guidelines.
+
+---------------------------------------------------------------------------------------
+
+
+  I want you to prepare a detailed backend plan for the News Engine feature based on the final UI UX flow that we have now. The plan should be created in D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\BACKEND PLAN folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ -------------------------------------------------------------------------------------
+
+ ***BACKEND***
+ ### Step 1 : Planning Prompt
+***Feature Name : News Engine***
+
+  ### Your Job :
+ - I want you to follow the template
+   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\Backend_Planning_Prompt_Template_E2E_Audit_First.md and prepare the backend plan prompt in the
+   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\BACKEND PLAN folder . This prompt will be used to prepare the backend plan in the next step. 
+
+----------------------------------------------------------------------------------------
+
+The backend plan is done but I need you to validate the overall plan deeply. your job is to audit back the backend plan vs the final UI UX flow that we have now. Identify any missing endpoints or any illogical endpoints in the plan. AFter that you have to enhance the backend plan files accordingly including tasks.md. e.g if you noticed an UI modal is needed to add in the final UI UX flow but that is missing in the backend plan, you have to add the necessary endpoints in the backend plan accordingly. Or if you noticed any illogical endpoints in the backend plan that is not needed as per the final UI UX flow, you have to remove those endpoints from the backend plan accordingly. here is the plan D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\BACKEND PLAN . 
+
+### Also anwer my questions : 
+
+- What I will see in reult after the backend implimenttion is done?
+- Give me a checklist what to check and test after it is done.
+- What about the AI model API key? Are you going to use the API key already in the .env file for AI related taks to accomplish?
+- I need a summary of what the functionality I will get in the end. 
+
+--------------------------------------------------------------------------------------
+
+I am bit confused about the end result of this feature. Feeling like there are still more things to impliment . Understand my goal : Want to have the e2e feature as per planned at the very beginning which is DOC\FEATURES\NEWS ENGINE\Plan\CHatGPT.md . So far we have done the frontend based on the initial plan but during building a lot /few things updated or changed or enhanced on the go > after that we have built the backend plan based on the final UI UX flow that we have now. > but in the end we must get what we planned. Now I have no clear vision what I will get in the end after the backend is done. 
+
+I do not want any partial implimentations on both part frontend and backend, and later struggle it partial working feature and figure out what is working and what is not or may be reqire further builts of UI UX and backend. I want you to think just as like me from the begining to the end. And come up with idea or solution how we will achieve this goal.
+
+--------------------------------------------------------------------------------------
+I have tested visually and here is the issues I have found so far : 
+- The Scheduling is not working. I have scheduled a news post but , it iwas not posted as per the schedule. And also when I check back the schedule modal, it was not showing the exactly scheduled date and time that was set by me. the is a bad UX.And also the scheduled Item was not posted accordingly. Need to improve it and work accordingly. 
+
+- Confirm Live Publication modal enhancement : I do not want this modal to write "PUBLISH" in the field and then it allows to publish. Instead I want just Yes NO button for the confirmation before publishing. The current process is not user friendly. 
+- The share modal enhancement : I want you to add more social media such as : whatsapp etc . and Make sure that the sharing option works e2e. so that anyone can share on social media without having issues. currently it is more like static and no trigger or functions that works on social media . 
+
+***Instructions*** 
+Check the screenshots for better understandings. Audit and identify the issues as per explained and fix/enhance it accordingly. 
+Create a phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md file for these issues and fix them accordingly.
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ ***Questions to Answer*** 
+ - What about the AI and automation functioality?
+ - What about the AI API usage and AI generated news?
+ - What about the RSS based research and auto post functionality. 
+ - Is it already planned in the tasks.md or what? 
+ - As you mentioned all news engive backend and UI implimentations are done, so I am confused about the full functionality. explain why you have dome only maual part and why not the Automation part as well.
+
+ ---------------------------------------------------------
+
+ Now I want you to create the AI and Automation backend e2e plan followed by this DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\Backend_Planning_Prompt_Template_E2E_Audit_First.md . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared.
+
+-------------------------------------------------
+
+Answers of your questions : 
+- You should use the OpenAI API keys that are already in the .env . The gemini is just a legacy from the prototype , so update it with openAI . 
+- Yes I want Auto-publish when the Operational state is selected Automatic .
+- I want you to make all the available UI UX functional as per the final UI UX flow that we have now. So that the RSS, Trend , web research all should work accordingly. 
+
+*** Make sure that all the UI UX that we have now, all should be fully functional e2e. 
+
+***Additionally***
+I  need you to add one ore column for "Rejected" posts. After rejection I want it the show there instead of soft delete. the delete should be done when I delet from the rejection. The rejected posts should have the functionality that I can regenerate the post, fix issues and re-schedule or publish again or keep in the draft. 
+
+- Audit this functionality and plan it accordingly. 
+
+After that create a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md.
+---------------------------------------------------------------------------------------
+
+
+***Phase 1 : Building SOT***
+  - Here is my Initial Plan : 
+   DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md
+  - Prepare the 6 phase SOT folder files in 
+  DOC\FEATURES\BLOG as per the 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md file . 
+
+
+  ***Phase 2 : Frontend Planning***
+- Here is the front end plan based on 6 phase SOT : 
+  DOC\FEATURES\BLOG\SOT\FEATURE-SOT.md
+- Based on this frontend plan , Prepare the frontend UI UX prompts in
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts
+  folder by following the :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\AI Prompting Guideline.md Instructions. 
+- The Outcome should be followed by This : 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\Template_Comprehensive_UI UX.md
+
+
+  ------------------------------------------------------------------------------------------
+
+  I think you we need to update our initial plan then. Becuase I need the Blog feature has the similar kind of AI and Automation functionality that we have in the News Engine feature. So I want you to update the initial plan accordingly in the DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md file . After that will confirm you to prepare the 6 phase SOT folder files accordingly based on the updated initial plan. Read the D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOC\FEATURES\NEWS ENGINE\SOT for better understanding of the AI and Automation functionality that I want in the Blog feature as well. 
+
+  ------------------------------------------------------------------------------------------
+
+  As the files were alreayd generated , All you need is to update all the files as per the update initial plan. here is the main file of this feature DOC\FEATURES\BLOG . check out all the documentation and update everything accordingly. but one thing to mention is that, As I ahve built partial UI UX for blog in the DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX by using 11 prompts from the DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-plan-admin-v1-2026-01-10.md file , you need to make sure that the UI UX is aligned with the updated initial plan. So you need to audit back the built prototype vs the updated initial plan and update the prototype accordingly if needed. After that update the frontend plan in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder accordingly.
+
+  -----------------------------------------------------------------------------------------------
+
+  - Here is the updated prototype after implimented 28 prompts D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\Strapi\DOC\FEATURES\BLOG\GoogleAIStudio UI UX\solarmatch-blog (2) from the DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-plan-admin-v1-2026-01-10.md file . 
+
+  - Now I want you to analyze the prototype vs the updated initail plan 
+  * DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md 
+  * DOC\FEATURES\BLOG\SOT 
+  - Deeply audit back the prototype vs the updated initial plan and the SOT 
+  file and identify what is missing or not accurate as per the updated plan & SOT. After that prepare another frontend enhancement plan in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder if you found anything missing or not accurate as per your analysis. If everything is fine then just give me a green signal to move forward. 
+  - Make sure to update all the relevant files accordingly to reflect these changes, check for the instructions on the top of the DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md file for that. 
+
+  -------------------------------------------------------------------------------------
+
+  I am wonderd that you have given green signal. because there are a lot of missing modals and triggers. First you need to enure the Audit instruction covered everything DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md . 
+
+  ### My visual testing found these issues :
+
+  1. Content Manger > Categories > + Add Category button does not open any modal.
+  2. Content Manger > Tags > + Add Tag button does not open any modal.
+  3. Content Manger > Blog Posts > Bulk Actions > There is no bulk selection option to select multiple posts and also no options to bulk delete.
+  4. Media Library > New Folder button does not open any modal.
+  5. Media Library > grid view and list view toggle is not working.
+  6. Comments > Bulk Actions > There is no bulk selection option to select multiple comments and also no options to bulk delete or approve/reject.
+  7. Engine Hub> Setting page is empty and there is no settings UI UX were planned for this feature. 
+  8. Engine Hub > There are lot of buttons that does not open any modal or no triggers or actions. just remained static. 
+
+  You need to perfrom the Audit again but before that You need to update the Audit prompt DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md  to cover all the e2e pin point issues. do not need to mention exact issues in the audit instructions. but make the instruction vast enough so that it will cover all the e2e issues. After that perform the audit again and prepare the frontend enhancement plan accordingly in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder.
+
+  ----------------------------------------------------------------------------------
+
+  I want you to rechek the audit instructions again. I have changed my prompts a bit . Now I do not want the AI deeply focus on editing all the SOT files in this enhancement phase. All I need is the audit should be based on my new prompt , where I am more focused on enancing frontend . fist focus on finding issues and unfnished, no endpoints, no triggeres etc e2e UI UX in the prototype . 2nd ly compare vs SOT to find any missing gaps. but do not focus on updating the SOT files in this phase. here is my new prompt : 
+
+  ***step 1 : Audit**
+ - Here is the updated prototype after implementing all the UI UX building prompts : 
+  DOC\FEATURES\BLOG\GoogleAIStudio UI UX
+  
+  - Deeply audit the prototype as per audit Instructions :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+
+- After that Prepare the audit report in the :
+  DOC\FEATURES\BLOG\Audit Report folder 
+
+***step 2 : Analyze & Enhance Instructions***  
+   - After the Audit Findings, Come up with the Enhancement plan if needed. plan the for all the missing gaps and inaccuraies that you have found during the audit. Also make sure to add more prompts by keeping everything existing as it is. The goal is the final prototype should have the e2e flows , triggners, functionslities as per the updated enhancement plans & SOT 100%.
+   - After that add more frontend enhancement steps in the following : 
+   DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system -plan-blog-2026-01-05.md .
+   Keep the existing prompts as it is and just add the new ones after the existing ones so that we can keep track of all the changes. 
+ 
+   ***Strickt Rules***
+  - Here is the audit Instruction you have to follow :
+   DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+  
+  - All of your new prompts should be addede in the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md 
+  after the existing prompts. so that we can keep track of all the changes.
+
+  - End of my prompt
+
+  ***Instructions*** 
+  Now I want you to update the audit instruction file accordingly based on my new prompt instructions mentioned above. 
+
+
+  -------------------------------------------------------------------------------------------
+
+  **The Scenario :***
+  - In the phase 1 we have built the SOT as per the initial plan.
+  - In the phase 2 we have prepared the frontend UI UX prompts based on the SOT.
+  - In the phase 3 we have built the prototype based on the frontend UI UX prompts and performed audits and enhancements and updated the prompts accordingly. Also updated the frontened on the go based on the audit findings. And did not update any SOT files in this phase. becuase we had to focus more on the frontend enahcnements with multiple versions of the prototype.
+  
+  ***Phase 4 : Audt the current state and update the SOT only*** 
+  - Need you to prepare an universal audit instruction file for this phase only, make sure it is resuable for any frontend feature audit in future as well. keep it generic   . 
+  prepare the file in this :  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder.
+      - The audit should be based on the updated initial plan and the SOT only. this is the final audit and sync phase to update and aling all the SOT fiels as per the updated initial plan and the final prototype.
+
+
+      -----------------------------------------------------------------------------
+
+***understand the scenario : ***
+
+ ### I have been using this prompt after builder each version of the prototype :
+  ***Phase 3 : Frontend Enhancement ***
+***step 1 : Audit**
+ - Here is the updated prototype after implementing all the UI UX building prompts : 
+  DOC\FEATURES\BLOG\GoogleAIStudio UI UX
+  
+  - Deeply audit the prototype as per audit Instructions :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+
+- After that Prepare the audit report in the :
+  DOC\FEATURES\BLOG\Audit Report folder 
+
+***step 2 : Analyze & Enhance Instructions***  
+   - After the Audit Findings, Come up with the Enhancement plan if needed. plan the for all the missing gaps and inaccuraies that you have found during the audit. Also make sure to add more prompts by keeping everything existing as it is. The goal is the final prototype should have the e2e flows , triggners, functionslities as per the updated enhancement plans & SOT 100%.
+   - After that add more frontend enhancement steps in the following : 
+   DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system -plan-blog-2026-01-05.md .
+   Keep the existing prompts as it is and just add the new ones after the existing ones so that we can keep track of all the changes. 
+
+***My Observations :***
+1. Content Manger > Blog Posts > Bulk Actions > There is no bulk selection option to select multiple posts and also no options to bulk delete.
+2. Comments > Bulk Actions > There is no bulk selection option to select multiple comments and also no options to bulk delete or approve/reject.
+3. Engine Hub> Setting page is empty and there is no settings UI UX were planned for this feature. You should have the setting UI UX plan in oder to make this feature functional.
+4. Engine hub > Drafts & Reviews > the edit button is not triggering any modal for edit. 
+
+### there are a lot of issues to identify.
+
+   ***Strickt Rules***
+  - Here is the audit Instruction you have to follow :
+   DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md
+  
+  - All of your new prompts should be addede in the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md 
+  after the existing prompts. so that we can keep track of all the changes.
+      
+      
+      
+ ### But the issues I am facing :
+  - The UI UX is still has poor functionalaties e.g in the previous version 2 had no bulk actions, after I mentioned this issue > now I have bulk actions in version 3 , but there is no page were created where the deleted files move there as a soft deletion > so that I can restore or permanently delete from there. 
+
+- this means your enhacement plan is also not e2e and logically done. You are just coming up with few prompts and updating the prototype on the go. but not thinking from end to end. 
+- I have mentioned one issue with the bulk editing , but there are a lot of pages and tables that also should have bulk action functionality. 
+
+### remember My Goal is to build the Frontend e2e as per SOT but also Enhance logically e2e and build it Backend friendly. So that I will not face with any undeone/unfinished/static only UI issues while doing the backend development. This is crucial. 
+
+***Instructions*** you need to comeup with the best solutions. and also check back the audit instructions DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype Audit & Enhancement_Prompt.md . if you think , updating this will solve our issues then udate it. or let me know what should I do to solve this kind of issues 
+
+-------------------------------------------------------------------------------------------
+
+
+focusing on the AI Automation only , I want you to come up with the best ADMIN functionality for the News Engine Feature. Brainstorm and prepare the best possible e2e AI Automation functionality for the News Engine feature. I need more internal control where the Admin can control the AI and Automation functionality deeply. e.g controlling while AI model to use like , for Deep research GPT5.2, for Drafting GPTo3 mini etc. ALso need the ability to use multiple API keys for different AI models. Also need the ability to set the operational rules for AI usage e2e. 
+
+RSS , Scrapper based research etc works and can be controlled from the Admin side e2e. the AI should be able to generate AI image for the blog posts. 
+
+***Things to keep in mind***
+We already had a plan DOC\FEATURES\BLOG\SOT\FEATURE-SOT.md and also built UI protptype DOC\FEATURES\BLOG\GoogleAIStudio UI UX . But now I want you to focus more on the AI and Automation part only. So your new plan should be more focused on the AI and Automation part only. 
+
+  ***Instructions*** 
+  - First audit back the existing SOT vs the prototype vs the initial plan DOC\FEATURES\BLOG\RAW PLAN\Initial_idea.md  to identify any missing gaps or illogical UI UX in the AI and Automation part only. THe goal is to identify what is missing or illogical in the AI and Automation part only and enhance the existing SOT accordingly. the existing plans already had the basic AI and Automation functionality but now I want you to enhance it deeply.
+
+ After that prepare the enhancement plan in the DOC\FEATURES\BLOG\Fontend UI UX Prompts folder . After that will confirm you to start the implimentation phase accordingly based on the plan you prepared. 
+
+  ***Strickt Rules***
+
+  ----------------------------------------------------------------------------------------
+
+  
+  Now I can see the API is working but the AI generated content is not generated the whole content properly . check the screenshot . in all the 5 new articles there is a common body content , which is may be hard coded (Silicon-based photonics is undergoing a massive transformation as hyperscale data centers reach the limits of electrical copper interconnects. By integrating laser arrays directly onto CMOS wafers, throughput can scale to 800G and beyond without the thermal bottleneck traditional systems face.
+
+"We are seeing a convergence of optical physics and high-volume semiconductor manufacturing," says Lead Researcher Dr. Elena Vance. This development is expected to slash latency for large-scale AI training clusters by as much as 35% within the next 24 months.)
+
+- So it did not generated the content properly. you need to find the gaps and fix it accordingly. 
+- Also the SEO area was not generated properly as well. check the screenshot for better understanding.
+- also the research summary doesnt look like it has the real data. 
+
+- overall you need to check this entire review modal and all of its functionality. 
+
+---------------------------------------------------------------------------------------
+
+
+- Now I found that the Admin content and the public content has mismatch. The contents are completely different except the title. check the screenshots for better understanding. 
+- The "Request AI rewrite modal" does not work and there in no impact of the rewrite request on the content. check the screenshot for better understanding.
+- This is insane , I need you to audit back the entire AI generated content flow vs the final UI UX flow that we have now. Identify all the gaps and fix them accordingly.
+- Testing and finding issues became endless here. You must test all the AI automation functionality and test accordingly. 
+- Becuase I am also getting confued which one is working which is not, which modal is not even conneced or not, even the settings are also working or not. this is very critical part to identify as a human.
+- I suggest you to fix this mentioned issue first 
+- and then read back all the SOT vs the current state of the News Engine Feature and audit e2e all the AI automation functionality deeply. and identify the gaps and also let me know if any frontend or backend needs more updates to do. 
+- finally after done everything , do the tests and ensure everything is working perfectly. 
+
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ - prepare a new phase in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md and start implimenting accordingly
+
+ -------------------------------------------------------------------------------------------
+Focusing on the News Engine Feature, Follow this instructions strictly and perfrom the audit : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md 
+
+ - and after that prepare the report in the : DOC\FEATURES\NEWS ENGINE\Audit Reports 
+
+ --------------------------------------------
+
+focusing on the AI Automation only , I want you to come up with the best ADMIN functionality for the News Engine Feature. Brainstorm and prepare the best possible e2e AI Automation functionality for the News Engine feature. I need more internal control where the Admin can control the AI and Automation functionality deeply. e.g controlling while AI model to use like , for Deep research GPT5.2, for Drafting GPTo3 mini etc. ALso need the ability to use multiple API keys for different AI models. Also need the ability to set the operational rules for AI usage e2e. 
+
+- RSS , Scrapper based research etc works and can be controlled from the Admin side e2e. the AI should be able to generate AI image for the News posts. 
+- I want more control on RSS sources and need more functionality how the AI will generate the content based on the RSS sources. 
+- The web search control is not clear to me, I want you to come up with the best possible web search research functionality for the News Engine feature. e.g when the AI will do web search , when will do rss , which post will based on rss/web search etc. 
+- I need a live tracking system where I can see the AI is working or not, when last worked, what is in the Queue , how many posts are generated, What is upcoming , how the overall settings are working e2e. 
+- In the Automation > think from a admin user perspective and come up with the best possible Automation functionality e2e. 
+
+***Things to keep in mind***
+We already had a plan DOC\FEATURES\NEWS ENGINE\SOT and also built the frontend and backend DOC\FEATURES\NEWS ENGINE\BACKEND PLAN e2e as per SOT and the feature is almost functional. But now I want you to focus more on the AI and Automation part only. So your new plan should be more focused on the AI and Automation part only. 
+***My personal overview to conside*** 
+- The overall UX for the admin is not good, and it is like more complex to do the settings and automation, rss, auto scheduling etc. - Need you to comeup with more enhancement Idea and manage everything more easily. 
+
+***My pain points*** 
+- I am confused about how this Automation logic> Publish windows will work , becuase it has optio to set a time range but not any specific time and days or more details to control the automation deeply like I can set the time days easily.
+- Automation logic > Operational Rules section is confusing, I do not understand what it is doing actually. what is the use of it. 
+- It would be nice if I have tooltips to undertand the functionality.
+- Source > Web & trend Research is also confusing , I do not undertad how it will work and where it is connected . 
+- The overall admin functionality is like showing of a lot of things but no such clear idea and functionality how it will work e2e.
+- Master control > run automation Now button is confusing because it show always in the same state UI when clicked on it. And also not sure how this pipeline sub-system works. 
+
+- The overall openion is : we have build a lot of things but not sure we still need more things to build or not and also not sure which is for what and even it is really working or not. Now there are a lot of options here and there to control the AI automation but I have no idea how it will work e2e.
+- The AI generated post is generating but I am not sure how the AI is doing the research, from where it is doing the research, how it is using RSS, web search, trends etc. No clear picture. 
+- The public page article writing is not good as well,. The UI doesnot show any bullet points, sub-heading etc , just showing plain body texts. which is not reader friendly. 
+- 
+  ***Instructions*** 
+  Focusing on the News Engine Feature, Follow this instructions strictly and perfrom the audit : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md 
+
+ - and after that prepare the report in the : DOC\FEATURES\NEWS ENGINE\Audit Reports 
+ - In the end separately give me a new plan for enhancemnent that solves my painpoints and also come up with the best possible AI and Automation functionality for the News Engine feature from an Admin user perspective. prepare the plan in theDOC\FEATURES\NEWS ENGINE\Plan folder.
+
+
+ ---------------------------------------------------------------------------------------
+
+ the prototype is only the UI , and we are not it that stage anymore. we have done migrations , Backend impimentations. and now about to do the enhancing and expanding. if you comapre vs v6 it is completely wrong. I think you need to clarify this file the SOT in this file means the Implimentation done in our site wich is under src, prisma etc folders and not V6.  It is better to create another audit prompt file to make sure do the e2e audit as per DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md but the purpose is different , it is not to compare anything. it is about to show the accurate clear picture of the feature's frontend and backend, file structures etc. because this will be analyzed while implimenting the enhancement. create a separate audit prommpt in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT
+
+ -------------------------------------------------------------------------------------------
+
+ ***Task 1***
+ - I want you to read this DOC\GUIDELINES & SOT\README.md and also the entire DOC\GUIDELINES & SOT and identify if the readme.md file needs any update if you missed any documentation that was not included in the readme. 
+***Task 2***
+ - I want you to read these files : 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT 
+  DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND
+***Task 3***
+  - I have built them on demand as per needed to work more effectively. 
+  In order to get idea how I used them here is the folder and files to check :
+  DOC\PROMPTS\WORKFLOW
+
+***Things to keep in Mind***
+- Some files are are used more frequently e.g the audit prompts. so you need to check how I used them in the workflow folder. 
+- The readme.md file should be more comprehensive and include all the necessary documentation guidelines and SOT instructions in one place so that any AI can follow the readme.md file and work accordingly without any confusion.
+- The AI should be able to understand which files to read immidiately based on my prompts. In this case you can give me some workflow based hint words in the readme.md file so that AI can understand which files to read immidiately based on my prompts. I will mention those hint words in my prompts to make the AI understand which files to read immidiately. e.g if I mention " Audit Feature" in my prompt then the AI should understand to read the specific feature audit prompts files immidiately. becuase there are multiple audit prompt files in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder. If I mention " Backend Planning" in my prompt then the AI should understand to read the specific backend planning prompt files immidiately. becuase there are multiple backend planning prompt files in the DOC\PROMPTS\PROMPTS & TEMPLATES\BACKEND folder. If I mention " Audit Vs SOT" in my prompt then the AI should understand to read the specific audit vs SOT prompt files immidiately. becuase there are multiple audit vs SOT prompt files in the DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder.
+
+***Instructions***
+- As there are a lot of documentation guidelines and SOT readme files in the DOC folder that creates confusions sometimes, I want you to prepare a unified documentation guideline and SOT readme file that includes all the necessary documentation guidelines and SOT instructions in one place.
+- Also let me know if you found any missing documentations, or found redundant documentations in the existing readme files. 
+
+***Goal***
+- My goal is to have a unified documentation guideline and SOT readme file that includes all the necessary documentation guidelines and SOT instructions in one place. 
+
+ - Enhancing the Workflow more effectively by using the existing prompt templates more smartly and effectively. 
+
+ ***Strickt Rules***
+ - In order to perform the tasks you need to read through all the files and foldes mentioned above carefully before doing anything. 
+ 
+ - Keep in mind that, the DOC\PROMPTS\WORKFLOW folder contains all the workflow based prompts that I used on demand to work more effectively. You can get idea from it, but do not copy anything from there directly. I do not want you to overwhelm me with too much information. I want you to keep it simple and straight to the point.
+  - The final outcome should be a single readme.md file that includes all the necessary documentation guidelines and SOT instructions in one place and with all the "hint words" for better understanding. 
+  - Finally give me a report and summary on overall tasks you done. 
+
+
+  ----------------------------------------------------------------------------------------------
+
+***The secnarion is :***
+
+- I do research with AI and build the frontend UI UX based on the research. and after that do the backend planning based on the final UI UX flow that build. 
+
+- All the process I do with the AI . from the planning to the final implimentation everything is done by AI. 
+
+- So, most of the time I never have the exactly clear idea what exactly I will get in the end after the backend is done. which function is connected to which part, how the overall functionality is working e2e etc. I built with the strickt goal, also enhance/update the plan on the go while building UI UX bacnkend and again I do more enhancement as per I feel as needed. But in the end I do not have idea how the overall function will work, how do I do the setting and test it . 
+
+- After building a feature , I am always confused about what is working and what is not and just staying the UI as static , even the backend applied but maybe not working.  
+
+
+
+***What I need***
+- I Need the clear Instructions for testing and also need a feature user guideline so that I will know how to operate the feature e2e without confusion. 
+- also need tooltips as well. 
+- it is better to have in english and bengali translation both.
+- I need to understand which function is connected to which part, how the overall functionality is working e2e etc.
+- Also need a final checklist where I can verify everything is working perfectly before marking the feature as done.
+- I need a final feature documentation that includes all the above things in one place for better understanding which will be created by doing the feature audit e2e . 
+
+
+***Instructions***
+I want you to come up with the best solution to solve my painpoints. discuss more with me if needed. or suggest a process e.g Audit , create final documents with the cheklist,user guide etc 
+
+---------------------------------------------------------------- 
+
+- which audit promot can be resued for the E2E Feature Audit (Post-Implementation) as you mentioned. Can we reuse anything from the existing ? check for that in the DOC\GUIDELINES & SOT\README.md . or let me know If we need to create any new audit prompt for that post-implimentation e2e feature audit.
+
+- IF we need to create the audit prompt, then create it in the : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT folder.
+
+- Create the output template in the DOC\PROMPTS\PROMPTS & TEMPLATES\POST FEATURE . so that the AI will follow the template to prepare the expected outcome accordingly that you mentioned.
+
+- Finally update the DOC\GUIDELINES & SOT\README.md file accordingly so that any AI can follow the readme.md file and work accordingly without any confusion.
+
+
+---------------------------------------------------------------------
+
+
+- understand my workflow : DOC\PROMPTS\WORKFLOW , and suggest me how can I improve my workflow better. I am still figuring out and still developing my workflow. so I need your suggestion to improve it better.
+
+- you can separately build your recommended workflow . the goal is to build the whole saas feature by feature from the planning to the final testing and make it production ready. the whole process includes Research, Planning, implimentation , Enhancement, Finalize ,Test Post feature etc e2e. 
+
+- my preference always : Research once > Planning > Creating SOT > Build the Frondent first > Enhance if needed > then Plan the Backend based on the final fronted > Backend Implimentation > test and post feature checklist. 
+
+- I recommend you to read this DOC\GUIDELINES & SOT\README.md to get better understanding of my overall documentation guidelines and SOT process. 
+
+
+--------------------------------------------------------------------
+
+I want you to reconsider/update/add more phases to the recommended workflow based on this scenario :
+
+- your recommended 7 phases are good for , If the AI builds evertyhing perfectly without doing mistakes and does missing implementations. But in real world scenario, AI will always do mistakes, miss implementations, overlook things etc. So in order to solve these kind of issues we need to have more phases for better control and quality assurance. Or maybe we can keep the existing 7 phases but add more sub-phases in each phase for better control and quality assurance. 
+- This is where I struggle most of the time doing audit and re-check evertying vs the plan vs builts.
+- Also testing functionality becomes complicated where I have no idea the feature is actually working e2e or have missing things. 
+- It is not possible always for me to follow 7 phases sequally. becuase most of the time I need to go back and forth between the phases to fix issues, miss implementations etc. And also sometimes I need to do more enhancement on the go while building the frontend and backend. So I need more control and quality assurance in each phase to avoid going back and forth too much. this is the biggest painpoint I have right now. So, I need a wayout and a better solution to solve this issue.
+
+***Instructions*** 
+for audit templates you can checkback all by reading the DOC\GUIDELINES & SOT\README.md . 
+before even update the DOC\PROMPTS\WORKFLOW\RECOMMENDED-WORKFLOW-E2E.md discuss with me with your suggestions and recommendations
+
+--------------------------------------------------------------------------
+
+There are more scenario : 
+
+- After building the prototype or te full feature , when I do the enhancement phase , I always find new things to add or change. After doing the changes the SOT becomes backdated as well as the initial plan. I need a solution in this matter. how do I manage it on the go. Updating the SOT all time is also a pain in the ass. maybe we can make a compelte different phase that to align the current state with the SOT , No matter what we have updated. The AI must detect throgh Audit, read the enhancement pland and documentations and the main track record of all thing is the tasks.md and update all the SOT files accordingly. you think about it and let me know your recommendation.
+
+- The enhancement phase is always painful , because I need to play a loop while enhancing again and again. In that case I need a better solution to manage the enhancement phase more effectively. e.g I use this DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md file to manage the enhancement by just adding more propmts on the go. but still it is painful because I need to do the audit again and again and and get more prompts and build furhter. Even sometimes I do not even ask for enhancement prompts, I directly do the prompting in the Google AI studio itself. So I need a better solution to manage the enhancement phase more effectively.
+
+- Also there is a migration phase , where I do the frontend migration mostly google AI studio vite project files into next.js which is my system and migrate evertyhing as per my layout, themaing etc adaption system. usually this migration I do after finalizing the prototype. The migration is needed when I build the frontend separately with another AI builder. We do not need migration if we build the UI witin our project. this is a conditional phase but now most of the time I do it. 
+
+***Instructions***
+You neeed to create some additional Phases based on different events, which is not as per flow . But you decide either to create separte phases or if you have any recommendation. discuss with me first. 
+
+- read the DOC\GUIDELINES & SOT\README.md file first for better understanding of my overall documentation guidelines and SOT process. So that you can organize the phases with better documentation referrences. 
+
+-----------------------------------------------------------------------
+
+  **Instructions:**
+> "You are in Phase 6 (Test & Fix) for the feature in `DOC\FEATURES\NEWS ENGINE`.  Run project gates and E2E manual testing. Use the audit driver at `DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md`. Output audit reports to `DOC\FEATURES\NEWS ENGINE\Audit Reports`. Update `DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md` with all testing, audit, and bugfix tasks as Phase 6. **Always update `tasks.md` for every action, change, or sub-phase.**"
+
+**Sub-Phases:**
+- Functional Verification: E2E test all flows, sign-off before release.
+- Audit & Correction Loop: Audit feature, log/fix gaps, repeat until green.
+
+
+--------------------------------------------------------------------------------------
+
+let me clarify few things. First, When we crete the SOT it should not be focued on migration or prototype. our feature master plan should focus on the main plan in this stage. We need to have the strong SOT for sure. most imortant fouced SOT file is DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md , and then DOC\FEATURES\NEWS ENGINE\SOT\Frontend-Plan.md as this will lead the build phase. Now here comes the 2nd part , We will need e2e frontend building prompts based on the Frontend-plan.md file. And that prompts should have each and every single detailed and well instructioned prompt to build the frontend perfectly as per the plan. After that , I might use those prompts to build frontend within my Vs code using co-pilot or build the prototype with any other AI web builder such as  google ai studio, Claude Code etc. You need to understand here because here the workflow diverges. If I build the frontend within my system using co-pilot then there is no migration phase needed. but if I build the frontend with any other AI web builder such as  google ai studio, Claude Code etc then I will need a migration phase to migrate the built prototype into my system. So you need to understand this workflow diverge and prepare the SOT accordingly.
+
+- So in the SOT phase we will focus on the main plan only. and then in the Frontend planning phase we will prepare the detailed frontend building prompts based on the main plan SOT file. and then in the build phase we will build the frontend either within our system or with any other AI web builder. if we build with any other AI web builder then we will need a migration phase after finalizing the prototype to migrate into our system.
+
+- Now in the workflow , you need to update the recommended workflow by checking the  DOC\GUIDELINES & SOT\README.md accordingly based on this understanding. discuss with me if needed before updating the file.
+
+- I want a phase by phase workflow where the AI do not need to get confused with a lot of contexts at once. so each phase should have its own clear context and instructions. 
+
+- I want you to read my workflow DOC\PROMPTS\WORKFLOW to understand clearly how I work and what kind of prompts I use on demand to work more effectively. 
+
+- We also need to use the AI tokens effectively. so the workflow should be optimized accordingly to use the tokens effectively. e.g If you think we can build the frontend plan and also the Frontend prompts in the same phase to save tokens then we can do that. but if you think it will create confusion then we can keep them separate. so you need to decide accordingly. And discuss with me furhter recommendations. Becuase we also need to cut/ reduce some unnecessary phases if possible to save tokens.
+
+***Instructions***
+I want you to read all the necessary files carefully before doing anything. such as DOC\GUIDELINES & SOT\README.md , DOC\PROMPTS\WORKFLOW etc . After that discuss with me your recommendations and suggestions before updating the DOC\PROMPTS\WORKFLOW\RECOMMENDED-WORKFLOW-E2E.md file. 
+- prepare a audit report on my current workflow and how can I improve it better. mention your suggestions and recommendations in the report. locate all the file names and paths properly in the report for better understanding.
+ 
+***Strictly Rules***
+- Read all the files deeply , not just the file names and assume what is for what. Becuase we might need to update some templates, instructions, audit files etc. Because each and every file is the part of the workflow. So you need to understand each and every file deeply before doing anything. the Goal is to build the workflow effectively that can control any AI efficiently. 
+
+---------------------------------------------------------------------------------
+
+why all the RSS is failing to fetch the news ? I have added multiple RSS sources but all are failing. check the screenshot for better understanding. 
+----------------------------------------------------------------------------------------------
+
+- There are issues in the master control , I have selected the Live Run and clicked on the "Run Automation Now" button but nothing is happening. check the screenshot for better understanding. 
+the screen shows that it is loading for endless times. Even in the DRY RUN I am confused how it is working or not. 
+
+- I have turned on the Auto-scheduler toggle but I do not see any options to save the settings, and I am not sure the Pipuline Sub-system is working or not.
+
+- also no idea, that the Research rules setion is working in the background or not. or is it just static UI only. 
+
+
+***Instructions:**
+- I want you to audit back the entire Automation functionality e2e and identify the gaps and fix them accordingly. Also run the scripts to test the entire feature all the functionalities are working at the same time. 
+- Please Identify any UI UX that are not functional and just stayed as static only.
+- I want all answers clearly thtI have mentioned above. 
+- I want you to fix these issues accordingly. 
+ ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+ ---------------------------------------------------------------------------------------
+
+ 2. the AI will be always responsible to update and maintain the task.md file. 
+
+ ------------------------------------------------------------------------------
+
+ Here is the latest Audit report : DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-phase1-comprehensive-feature-implementation-audit-2026-01-12.md
+
+ - We have done the DOC\FEATURES\NEWS ENGINE\tasks.md . check this phase  ### Follow-up Tasks (Audit 2026-01-12) , which was done based on the previous audit report. 
+
+ - Why we still have issues and gaps as per the latest audit report ? check the report and tasks.md carefully and let me know why we still have issues and gaps as per the latest audit report.
+
+ ---------------------------------------------------------------------------------------
+
+ ### Expansion Audit & Planning Phase
+**Purpose:**
+Expand an existing feature by grounding all work in the real, current state of the system. The AI must read the referenced site audit report, identify gaps, enhancements, and what is already present, and plan the expansion using the latest expansion plan DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md. No new files may be created—update only existing, relevant files.
+
+**Sequence:**
+1. Read and analyze the referenced site audit report: DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-phase1-comprehensive-feature-implementation-audit-2026-01-12.md.
+2. Identify:
+   - Gaps (missing features or broken flows)
+   - What is already implemented and working
+   - Areas that need minor enhancement
+3. Plan the expansion using DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md as the blueprint.
+4. Output:
+   - Frontend expansion plan and prompts → update DDOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-enhancement-plan-prototype-alignment-V5.md
+   - Backend expansion plan → update DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md
+   - Update/create a new phase in DOC\FEATURES\NEWS ENGINE\tasks.md to lock the tasks for this expansion.
+5. Begin implementation as per the locked tasks.
+
+**Instructions**
+> "You are in the Expansion Audit & Planning Phase for `NEWS ENGINE`. Read the referenced site audit report, identify gaps, enhancements, and what is already present. Plan the expansion using the latest expansion plan. Update only existing, relevant files for frontend and backend plans, and update tasks.md with a new phase for this expansion. Then proceed to implementation. Do not create any new files unless explicitly instructed."
+
+------------------------------------------------------------------------------------------
+
+- here is my feature expansion plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md
+- Here is the 
+
+-------------------------------------------------------------------------------------
+
+***Phase 2 : Feature Expansion ***
+
+- Here is the current Audit report and feature state : 
+   DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-FEATURE-AUDIT-2026-01-13.md
+   & DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-POST-FEATURE-DOCS-2026-01-13.md
+
+
+- Here is the current Enhancement plan : 
+  DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md
+
+***instruction*** As we are expanding and enhancing the feature now, I want you to deeply understand the current state audit report VS the feature expansion plan. prepare the updated Frontend and Backend expansion plan only as per the final analysis. The Goal is to update the Frontend and Backend expansion plan files to reflect the current state of the feature and also the new enhancement plan. So that we can safely follow the updated Frontend and Backend expansion plan while implimenting the enhancement.
+
+- prepare the frontend enhancement prompts in : 
+  DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts 
+  folder by following the :
+  DOC\PROMPTS\AI PROMPTING\AI Prompting Guideline.md Instructions.
+
+-----------------------------------------------------------------------------------
+
+I want you to add a phase in the tasks.md file DOC\FEATURES\NEWS ENGINE\tasks.md . there will be 3 phase. 
+
+
+***phase 1*** is to build the expanded frontend followed by the prompts given in the DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts\frontend-expansion-uiux-prompts-2026-01-13.md . 
+
+***phase 2*** This is a validation bridge between phase 1 and 3 , After builing the expanded frontend, I want you to do a comprehensive feature implementation audit by following the prompt in : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md . The goal is to identify any gaps, issues, missing implementations etc in the expanded frontend build. prepare the audit report in : DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-frontend-expansion-audit-2026-01-14.md . After that move to the 3rd phase on condition. 
+- condition 1 : if there are gaps, issues, missing implementations etc found in the audit report, then you need to fix them first based on the audit report and then move to the 3rd phase.
+- condition 2 : if there are no gaps, issues, missing implementations etc found in the audit report, then you can move to the 3rd phase directly by double checking the backend plan is accurate or not as per the final frontend build. If everything is good then move to the 3rd phase directly.
+
+***phase 3***
+And the 3rd phase is to build the backend as per the updated backend expansion plan in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\BACKEND-PLAN-NEWS-ENGINE-2026-01-04.md file. 
+
+***Strickt Rules***
+
+The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. 
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+---------------------------------------------------------------------------------------------
+
+- Here is the latest audit report of the News Engine Feature : 
+  DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-post-phase13-audit-2026-01-13.md
+- Here is the post Feature Documentations : 
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
+
+- Here is the expanded plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md 
+
+***Instructions***
+- As I can see, there is not much UI UX changes after implimenting the v2 plan. So I want you to compare this main Expanding plan v2 vs the latest audit report and post feature documentations carefully and identify if there are any gaps, missing implementations etc in the frontend part. If you find any gaps, missing implementations etc in the frontend part then you need to fix them accordingly by following the plan strictly.
+
+***Strickt Rules**
+you do not need to change any codes. just compare and let me know in the chat what have you found. just let me know the gaps , that did not actually built. 
+
+--------------------------------------------------------------
+
+Let me clarify : 
+
+***While expanding/enhancing***
+- I will have audit reports of the current state e2e , So you need to read the audit report carefully first to understand the current state of the feature. No need audit here if I already have the audit report of the current state:
+ - Here is the latest audit report of the News Engine Feature : 
+  DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-post-phase13-audit-2026-01-13.md
+- Here is the post Feature Documentations : 
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
+
+- Here is the expanded plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md 
+
+***What I need*** 
+- Here I need a Instruction file for AI to follow while planning the expansion based on the v2. This is the crucial part here. 
+- And in this outcome : I need the Frontend e2e plan with the AI prompts. These prompts can be used externally or internally within vs code. 
+
+***INstructions***
+I want you to read throgh the process and understand how I am using the audit files and plans. And also comeup with the best and effective workflow to achieve my goal without getting surprised. 
+
+- also let me know when to use which files in this folder DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND
+
+- go and read back files regarding this issue DOC\GUIDELINES & SOT\README.md and let me know if you have anything to mention. 
+
+---------------------------------------------------------------
+
+***Prepare Phases In the Tasks.md***
+- I want you to add phases in the DOC\FEATURES\NEWS ENGINE\tasks.md based on the below scenario :
+
+***Phase 1***
+
+- Here is the latest audit report of the News Engine Feature : 
+  DOC\FEATURES\NEWS ENGINE\Audit Reports\news-engine-post-phase13-audit-2026-01-13.md
+- Here is the post Feature Documentations : 
+  DOC\FEATURES\NEWS ENGINE\POST FEATURE\NEWS-ENGINE-USER-GUIDE.md
+
+- Here is the expanded plan : DOC\FEATURES\NEWS ENGINE\Plan\Expanding plan V2.md 
+
+***Instructions***
+- You have to prepare a frontend + Backned plan for the expansion/enhancement by following the above mentioned files carefully :DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Expansion Instructions.md
+
+- Prepare the plan in this DOC\FEATURES\NEWS ENGINE\Plan Folder
+- And update the tasks.md Phase 1 ending with the file created in the Plan folder. So that the next phase can follow the plan accordingly without confusion.
+
+***Phase 2*** 
+- Create the frontend expansion/enhancement prompts in : 
+  DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts 
+  folder by following the :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\FRONTEND\AI Prompting Guideline.md Instructions.
+- Update the tasks.md Phase 2 ending with the file created in the Fontend UI UX Prompts folder. So that the next phase can follow the plan accordingly without confusion.
+
+***Phase 3*** 
+- Start implimenting the Frontend expansion/enhancement by following the prompts created in the Fontend UI UX Prompts folder.
+- Update the tasks.md Phase 3 ending with the completion of the Frontend expansion/enhancement. So that the next phase can follow the plan accordingly without confusion.
+- After implimentation do a audit of the frontend Implimentation done vs the plan by following the prompt in : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\comprehensive-feature-implementation-audit-prompt.md . prepare the audit report in : DOC\FEATURES\NEWS ENGINE\Audit Reports folder.
+- Update the tasks.md and add the audit report as a latest state reference in order to do the next phase 4.
+
+***Sub Phase in Phase 3***
+- condition 1 : if there are gaps, issues, missing implementations etc found in the audit report, then you need to fix them first based on the audit report and then move to the 4th phase.
+- condition 2 : if there are no gaps, issues, missing implementations etc found in the audit report, then you can move to the 4th phase directly by double checking the backend plan is accurate or not as per the final frontend build. If everything is good then move to the 4th phase directly.
+
+***Phase 4***
+- Start planning the Backend expansion/enhancement by following the updated frontend build and the plan created in the Phase 1. 
+- And create the backend expansion/enhancement plan in the DOC\FEATURES\NEWS ENGINE\BACKEND PLAN folder based on the updated frontend build and the plan created in the Phase 1.
+- The phase 3 audit report as the latest state reference In order to start implimenting the backend. But always checkback before implimentation of the backend. 
+- THe goal here is to stay aligned with the Expansion plan and the Frontend implimentations e2e. So, that the backend implimentations will not have any issues. 
+- After Implimentation you must Audit the implimentation followed by : DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\feature-implementation-inventory-mapping-audit-prompt.md and compare vs the frontend backend plan created in the Phase 1. prepare the audit report in : DOC\FEATURES\NEWS ENGINE\Audit Reports folder.
+- Update the tasks.md and add the audit report as a latest state reference in order to do the next phase 5.
+
+***Sub Phase in Phase 4***
+- condition 1 : if there are gaps, issues, missing implementations etc found in the audit report, then you need to fix them first based on the audit report and then move to the 5th phase.
+- condition 2 : if there are no gaps, issues, missing implementations etc found in the audit report, then you can move to the 5th phase directly by double checking everything is aligned e2e. If everything is good then move to the 5th phase directly.
+
+***Phase 5*** 
+- create the script in order to do the e2e testing of the entire expanded/enhanced feature and run the tests. 
+- fix any issues found during the testing.
+- Move to the next phase when all the tests are passed with green signal. 
+
+***Phase 6***
+**Post-Feature Test & Documentation Prompt**
+
+After E2E implementation and audit, follow these steps:
+
+1. Use the audit prompt at:
+	DOC/PROMPTS/PROMPTS & TEMPLATES/ADVANCED AUDIT/comprehensive-feature-implementation-audit-prompt.md
+	to perform a full post-implementation feature audit.
+
+2. Prepare the final user guide, tooltips, functionality map, and checklist using the template at:
+	DOC/PROMPTS/PROMPTS & TEMPLATES/POST FEATURE/feature-post-implementation-doc-template.md
+
+	**Documentation completeness requirement (mandatory):**
+	- Document the feature **section-by-section** for every main tab/section in the UI.
+	- For each tab/section, explain **what it does**, **why it exists**, **who uses it**, and **how it impacts the system end-to-end**.
+	- Cover the template’s key concepts (e.g., routing/automation, configuration profiles, secret/key handling, review/provenance), plus:
+	  - Typical E2E flows (input → processing → output/publish equivalent)
+	  - How to know the system is working end-to-end
+	  - Common errors/blockers and exact resolution steps
+	  - Limitations/edge cases and what to verify after each release
+
+3. Prepare the documentation in:
+	DOC\FEATURES\NEWS ENGINE\POST FEATURE
+   
+This ensures the feature is fully tested, documented, and ready for production.
+
+***Strickt Rules***
+
+The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. 
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+
+----------------------------------------------------------------
+
+
+
+
+***My Visual Findings to add in a separate section & fix*** 
+- Currently I do not have any option to edit any post. I mean there is no manual control on the content to edit such as the title and body texts and tags. And also the generated contents are mostly plain texts. The body texts are not reader friendly e.g There is no bullet points or h1,h2,h3 maintained.
+- The review modal's all the sections are not clear to me. I can see there are a lot of things in the UI showing but maybe not working in the backend. such as the SEO analysis, Readability analysis , plagiarism check etc. I am not sure which one is actually working and which one is not working.
+You need to make sure that everything is working or else remove the non working sections from the UI to avoid confusion. I prefer it to work , but if it is not possible then remove it from the UI.
+
+- The AI image generation is not working in the review modal> SEO & compliance section. And the Image url it is fetching is workng and mostly not working.
+
+- The research summary on review modal > Model profile sections seems only showing rss only. just make sure all are working there. 
+- Overall you need to check on the review modal deeply.
+
+***Instructions*** 
+As I am refining my plan and also mentioned some issues I have noticed, I want you to update this plan v2 file by adding a sparate section for my visual findings and also fix them accordingly while updating the plan v2 file.
+
+--------------------------------------------------
+***My Visual Findings to add in a separate section & fix***
+
+- The AI image generation is failed , check the screenshot. The image should be generated using Dall-E based on the news title and body. but it is not working. 
+- The image URL fetching is also not working properly. it has fetched a broken link. It should fetch a valid image URL. e.g unsplash or any other free image source. but make sure it seacrh the relevant image based on the news title and body.
+- The OG Preview is not working and not loading the image as I have given another image url to it. 
+- Make sure all the images will be generated by Dall-E or fetched from any free image source such as unsplash based on the news title and body, Should be saved on the aws3 bucket and the URL should be saved in the database properly. 
+- After approving the the OG Image in the review modal, it should reflect in the public news detail page as well as in the news listing page as well. But In the public page , it is not showing up. 
+- I have off the toggle for the required approval before publishing, but the system is still blocking me to publish without approval. it should allow me to publish directly without approval when the toggle is off.
+- THe article generated by AI is so poor visually. the body texts are plain. There is no heading, no bullet points , no bold , no italic etc. just plain texts. it is not reader friendly at all. you need to improve the article body visually by adding proper formattings such as heading, bullet points, bold, italic etc.
+
+- I have edited the tags before publishing , but after publishing the tags are not reflecting in the public news detail page. it is still showing the old tags. you need to fix it. 
+- I want each and every single area should be editable that is generated by AI. you should deeply check the review modal e2e and identify those what I even could not mention. 
+- There is no option to editback the published post and re-publish. mush have this option , so that I can update and change if seems anything wrong. 
+
+- I am confused about the "Web & Trend Research
+Control AI exploration beyond static RSS feeds." section in the Research Rules. I do not understand how it is working or not. or is it just static UI only. you need to clarify it and make sure it is working as per the plan. 
+
+- There is no closing button in the "Update Model Profile
+Used by the AI Router defaults." modal. so I am stuck there. you need to add a closing button in the modal. 
+- There is no options to delete/bulk delete the Modal profiles. you need to add those options as well.
+- 
+***Red Alert*** The the AI is copying the titles of rss links exactly. and the article quality is poor. come up with the best solution for it by adding a section in the audit report. 
+
+***Highly concerning*** 
+After implimenting the phase 14, I do not see any signle changes in the frontend. everything is just same as before except few backend functionality. the V3 implimentation is not reflected in the frontend at all. So I do not know about the backend what expanded. this is frustrating. 
+
+***Instructions***
+- first, Address all my visual findings mentioned above by fixing them accordingly.
+- Read all the latest audit reports carefull from the tasks.md : **Phase 6 checkpoint**:
+- Final audit report: `DOC/FEATURES/NEWS ENGINE/Audit Reports/news-engine-expansion-phase14-phase6-post-feature-audit-2026-01-15.md`
+- Final documentation bundle: `DOC/FEATURES/NEWS ENGINE/POST FEATURE/Enhancement/news-engine-phase14-expansion-post-feature-docs-2026-01-15.md`
+- Read the entire phase 14 and understand what was really applied and why it did not meet my expectation and the v3. 
+
+***Strickt Rules***
+- create an new phase 15 in the tasks.md and lets continue tasking from there. 
+- The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. Always refer to the tasks.md file before starting any new phase or sub-phase. Always update/Add with the executional tasks before any action. 
+- Always work based on the bridge which is the last phase audit report and post feature documentations menioned in the tasks.md file for initial reference. But read the entire last phase if needed to understand what was done while tasking. 
+**Task Planning Required:**
+> - Before starting implementation, enumerate and lock all actionable tasks for this phase below, following `.specify/templates/tasks-template.md`.
+> - Add subtasks for each UI, logic, and audit step as needed.
+> - Do not begin until all tasks are planned and checked in.
+**Note**
+- Add this section "ask Planning Required" in each phase in the tasks.md file of the News Engine Feature where ever applicable.
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+
+------------------------------------------------
+***Visual check***
+- The AI is not generating image. and also there is no og preview even with the link I have entered. And it is showing we used dummy API, I want you to setup the real API as I already has the Open AI API Key in the .env file. 
+
+- The published post editing and reposting is not actually showing the updated texts. The republishing option is there but not the functionality as per mentioned in the phase 15. There is no reflection of editing anything in the review modal even after republish. 
+
+- The public page doesnt show the images. 
+
+- Overall it is hard to explain each issues from the phase 15. Now some are working some are not, this is so pathetic and painful to explain the same issue again and again. 
+- I have doublt on your script and tests. It really did not solve my issues. 
+
+***Instructions***
+lets go back the the phase 15 and check back all the issues once again. And fix these what are not done in real. and also focus on what I mentioned. 
+
+
+
+***Strickt Rules***
+- create an new phase 16 in the tasks.md and lets continue tasking from there. 
+- The tasks.md is the only master track record of all the tasks. so you need to update the tasks.md file accordingly for every action, change, sub-phase etc. Always refer to the tasks.md file before starting any new phase or sub-phase. Always update/Add with the executional tasks before any action. 
+- Always work based on the bridge which is the last phase audit report and post feature documentations menioned in the tasks.md file for initial reference. But read the entire last phase if needed to understand what was done while tasking. 
+**Task Planning Required:**
+> - Before starting implementation, enumerate and lock all actionable tasks for this phase below, following `.specify/templates/tasks-template.md`.
+> - Add subtasks for each UI, logic, and audit step as needed.
+> - Do not begin until all tasks are planned and checked in.
+**Note**
+- Add this section "ask Planning Required" in each phase in the tasks.md file of the News Engine Feature where ever applicable.
+
+***For Anykind of Supporting Docs to aviod hallucination*** follow this : DOC\GUIDELINES & SOT\README.md
+
+-----------------------------------------------
+
+- The AI image generation is failed due to access of dall-e-3. 
+- The AI is not generating the appropriate image url from the free sources. 
+- The Url only shows OG preview when I click on the Save to S3. The initial url should be auto saved to s3. And the overriding function should still remain as it is. 
+- When I clicked on Approve Image> it is showing error that Image URL is invalid and blocking the approval while the image preview is also showing up. So, The publishing also getting blocked by this same issue. need to address and fix it. There should be no blocking when the preview is showing up in the auto publish function. But It should not block while doing it manually. there might be one reason i think, the image url is getting changed when I clicked on save to s3 button. 
+- In order to use open AI gpt modals, I want you to enable and do all the necessary setting to use all the modals . e.g gpt5.2, 4 , Dall-e-3 , etc I want you to make sure all the models can be used. 
+- 
+--------------------------------------------------------------------------------------
+
+
+I want to create prompts where The AI create its own workflow phases based on the feature requirements and complexity. so that the AI can manage the entire feature development lifecycle more effectively without my constant supervision. What I want AI to do : 
+
+- I will share my plan/issues/Requirements etc with the AI.
+- I want AI to follow a Task management approach to create the workflow phases based on the requirements/plan/issues shared by me. But the framework will be given by me. 
+- The framework should be built by you based on the best practices the folloewd in the industry
+
+-----------------------------------------
+
+***Prepare Phases In the Tasks.md***
+- Add a new phase and sub-phases as required in `DOC/FEATURES/[FEATURE]/tasks.md` based on the scenario below.
+- At the beginning of the created phase, copy and paste all issues exactly as written by the user into tasks.md for tracking. This ensures all issues are preserved and visible in one place.
+
+***Phase 1: User Story Creation***
+- Create user stories using the template: `DOC/.specify/templates/spec-template.md` based on the issues listed below.
+- Save the user story file(s) in: DOC/FEATURES/[FEATURE]/POST FEATURE/FIXING ISSUES
+
+***Issues to solve***
+`News Engine Settings Page issues`
+
+# Section : AI router 
+- Model Prfofile > The bulk delete option is not working in the Model Profile section. I have selected multiple model profiles but when I click on the bulk delete button, it is deleting temporary not permanently from the DB.You need to check if there is anything hardcoded there and make it functional.  You need to fix it so that the bulk delete option works properly.
+
+# Section : AI Personalization
+- The news engine > Settings > Daily limit is not working as expected in the News Engine Settings section. I have set 5 as the daily limit but the AI is generating 10 Drafts when enabled the Live Run with Run Automation Now button . You need to fix it so that the daily limit works properly as per I set the limit. 
+
+-  
+
+***Phase 2: Test Script Creation***
+- Create all test scripts following: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`, strictly based on the user stories from Phase 1.
+- Review the last phase user stories to understand the pain points and issues to solve.
+
+***Phase 3: Issue Fixing***
+- Prepare a step-by-step task list to fix each issue above, one by one.
+- For each issue:
+  - Start with a short analysis of the issue and why it is happening.
+  - Identify the root cause and fix it.
+  - After each fix, perform visual testing and confirm resolution.
+  - Update tasks.md with each action and result.
+- Do not batch fixes; address and verify each issue sequentially.
+
+***Phase 4: Post-Fix Testing***
+- Run the scripts and perform testing as per: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`.
+- Only move to the next phase if all tests pass as per the user stories.
+- If any test fails, fix the code and re-test before proceeding.
+
+***Instructions***
+- Address all findings and issues listed above by fixing them accordingly.
+- Reference the latest audit reports and documentation from tasks.md and related files as needed.
+- Always update tasks.md for every action, change, and sub-phase.
+- Do not begin work until all tasks for the phase are planned and checked in tasks.md.
+- For supporting documentation and to avoid hallucination, always refer to: `DOC/GUIDELINES & SOT/README.md`
+
+***Task Planning Required***
+> - Before starting implementation, enumerate and lock all actionable tasks for this phase below, following `.specify/templates/tasks-template.md`.
+> - Add subtasks for each UI, logic, and audit step as needed.
+> - Do not begin until all tasks are planned and checked in.
+
+**Note**
+- Add this section "Task Planning Required" in each phase in the tasks.md file of the relevant feature where applicable.
+
+---------------------------------------
+
+***Issues to fix***
+# Section : AI router 
+- Model Prfofile > The bulk delete option is not working in the Model Profile section. I have selected multiple model profiles but when I click on the bulk delete button, it is deleting temporary not permanently from the DB.You need to check if there is anything hardcoded there and make it functional.  You need to fix it so that the bulk delete option works properly.
+- Make sure that the editing modal works properly and the changes are reflected in the DB permanently.
+- Also Add Model Profile > should be same as the editing modal. so that the user can add new model profile from the same modal design. 
+- Make sure this eitre function has logical and real connections. no partial functionlity is allowed here and there. 
+- remove all the mock data. only real backend and frontend is allowed in order to make it production ready. 
+
+- The setting of the AI models for different tasks does not work properly. e.g I have selected the Google Gemini 2.0 flash for the Research_deep , but after refreshing the pag the settings are gone. check all the frontend and backend functionality is accrutely working. Make it production ready. 
+ # Section : AI Personalization
+- The news engine > Settings > Daily limit is not working as expected in the News Engine Settings section. I have set 5 as the daily limit but the AI is generating 10 Drafts when enabled the Live Run with Run Automation Now button . You need to fix it so that the daily limit works properly as per I set the limit. 
+- I want you to add to input prompt section in the News Engine Settings > AI Personalization section. so that the user can add custom input prompt for the AI to generate the news articles.
+MAke sure the backend functionality works as well. do not make it static only. it must be functional and fully interated with the AI functionality. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+
+---------------------------------------------
+
+-  The current settings here some there some is very confusing. e.g the AI rotuer should have only the AI model related settings. THe AI Personalization should be the only one place where the user will do all the AI settings such as the settings in AI router : Research_deep,Research_fast, etc options to chose models . 
+
+- as we have udpated the AI personalization section > Now we have double setting for Image_generate and AI image generation model
+- I want all the AI model settings to be in the AI Personalization section only. so please move all the model settings from the AI router section to the AI Personalization section.
+- Make sure all the settings are working properly after moving. I need the real functionality to work. you must check all the connectivity and wiring and make sure it is wired properly. 
+- also update the the files accordingly to reflect changes you will do. 
+
+
+- Key Vault : I have added another API from deepSeek , but this does not reflects in the `Add model profile` modal in the AI router section. you said, Any API keys will work accrodingly and reflect. BUt we need to do all the coding for that. 
+- why it is not reflecting here ? and why I need to work on codebase each time when I add new API keys? you said the backend is already that friendly and reflectable but which is not. 
+
+----------------------------------------------
+
+- IT still did not generate any draft. Identify the blocking /failing issue. Is it the API or the system ? 
+- The AI personalization > settings are not stable and I think there is no real backend functionality. I have tested it and after refreshing the page all the settings in the section is gone. 
+- Add model Profile > why Model listing is available for OpenAI and Gemini. Other providers use manual Model ID entry. I said earlier not to keep any filed to type. make sure all the model has their modal ID in the dropdown. ANd make sure they will be functional. not just the UI selection that has no real impact. 
+- in the AI router the 3 profile of openAI is automatically created when I enabled the new openAI API key. BUt in the Add model profile shows OpenAI models list falied. There are a lot of confusion and issues to check and solve. 
+
+***Instructions*** Audit the entire Settings Frontend and backend section by sections. I need to know each ui e2e . how it is working or it is really not working and just fake UI with fake functionality. becuse the entire AI keyvalut and AI router , AI personalization everything is confusing and not sure what is really working and what is not. create a comprehensive audit report in the DOC\FEATURES\NEWS ENGINE\Audit Reports
+
+------------------------------------------------
+
+- Now we have the AI gnerated content in the news engine but I want a compelte manual functionality in order to create post, draft, schedule, publishing options. 
+
+- As we already have the content publishing system and pipeline with AI , We just need to add manual functionality to it.
+- Additionally, I want the manual editor to have rich formatting options such as heading, bullet points, bold, italic, links etc. so that the content will be more reader friendly. Just add a button "Create News" for the manual post creation > That will trigger "Create Post" modal > The user create post and that can be drafted, scedule, Publish, removed draft etc. The published posts should be re-editable, deletable, unpublishable. 
+- Both the AI and Manual functionality should work accordingly without any issues. 
+
+***Instructions*** Analyze the curernt frontend and backend e2e and plan the expansion accordingly. prepare the plan in the DOC\FEATURES\NEWS ENGINE\Plan folder. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+
+-------------------------------------------
+
+Right now I do not have any functionality to give access of the admin backend for the authors/moderators etc.
+
+-------------------------------------
+
+Based on the current codebase, here is a list of the key UI/UX modules missing to make this a fully functional CMS:
+Authentication & Onboarding Flow
+Login, Register, Forgot Password, and Reset Password screens.
+Initial setup wizard (Site Name, First Admin creation).
+"My Profile" / Account Settings
+A page for the currently logged-in user to update their own password, email, and avatar (separate from the "Authors" management list).
+General Site Settings
+A configuration screen for global site variables: Site Title, Tagline, Logo upload, Favicon, Timezone, and Date Format settings.
+Navigation / Menu Builder
+A drag-and-drop interface to construct the public-facing Header and Footer menus (linking pages, categories, or custom URLs).
+Static Pages Management
+Separate from "Blog Posts". A section to manage static content like "About Us", "Contact", "Privacy Policy", or "Terms of Service".
+Revision History
+A UI within the Post Editor to view previous saves, compare changes, and restore older versions of content.
+Theme / Appearance Customizer
+Basic controls to set the public site's primary colors, fonts, and layout options (e.g., Grid vs. List view for the blog index).
+Webhooks & Integrations
+A settings page to manage external connections (e.g., Google Analytics ID, Mailchimp API keys, or Webhooks to trigger static site builds).

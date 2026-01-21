@@ -3,9 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
-import { loadNewsEngineState, type NewsItem } from '@/lib/ui-stubs/news-engine';
+import { fetchPublicNewsList, type PublicNewsListItem } from '@/lib/news-engine/client';
 
-function formatDate(iso?: string): string {
+function formatDate(iso?: string | null): string {
   if (!iso) return '—';
   try {
     return new Date(iso).toLocaleDateString();
@@ -52,43 +52,34 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
-function getPublishedNewsItems(stateItems: NewsItem[]): NewsItem[] {
-  return stateItems
-    .filter((it) => it.status === 'PUBLISHED' && Boolean(it.slug))
-    .sort((a, b) => {
-      const aTime = a.publishedAt ? Date.parse(a.publishedAt) : Date.parse(a.createdAt);
-      const bTime = b.publishedAt ? Date.parse(b.publishedAt) : Date.parse(b.createdAt);
-      return bTime - aTime;
-    });
-}
-
 export default function PublicNewsListingPage() {
 
-  const [items, setItems] = React.useState<NewsItem[]>([]);
+  const [items, setItems] = React.useState<PublicNewsListItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeCategory, setActiveCategory] = React.useState('All');
 
   React.useEffect(() => {
-    setIsLoading(true);
-    try {
-      const state = loadNewsEngineState();
-      setItems(getPublishedNewsItems(state.items));
-    } catch {
-      setItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-    const onStorage = () => {
+    let alive = true;
+
+    (async () => {
+      setIsLoading(true);
       try {
-        const next = loadNewsEngineState();
-        setItems(getPublishedNewsItems(next.items));
+        const list = await fetchPublicNewsList();
+        if (!alive) return;
+        setItems(list);
       } catch {
+        if (!alive) return;
         setItems([]);
+      } finally {
+        if (!alive) return;
+        setIsLoading(false);
       }
+    })();
+
+    return () => {
+      alive = false;
     };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   const publishedNews = React.useMemo(() => items, [items]);
@@ -174,7 +165,16 @@ export default function PublicNewsListingPage() {
             {activeCategory === 'All' && searchQuery === '' && (
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center group cursor-pointer">
                 <div className="relative aspect-[16/10] rounded-3xl overflow-hidden shadow-neu-outset">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-accent/60 transition-transform duration-1000 group-hover:scale-105" />
+                  {filteredItems[0].ogImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={filteredItems[0].ogImageUrl}
+                      alt={filteredItems[0].title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-accent/60 transition-transform duration-1000 group-hover:scale-105" />
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center text-background/10 pointer-events-none">
                     <svg width="120" height="60" viewBox="0 0 120 60" fill="none"><rect x="0" y="0" width="120" height="60" rx="8" fill="currentColor" className="text-accent/30"/><path d="M10 50 L40 30 L70 40 L110 10" stroke="#fff" strokeWidth="3" fill="none"/></svg>
                   </div>
@@ -194,6 +194,15 @@ export default function PublicNewsListingPage() {
                   <p className="text-body-large text-muted-foreground leading-relaxed line-clamp-3">
                     {filteredItems[0].summary}
                   </p>
+                  {filteredItems[0].tags?.length ? (
+                    <div className="flex flex-wrap gap-2 text-caption uppercase tracking-widest text-muted-foreground">
+                      {filteredItems[0].tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="px-2 py-1 bg-surface border border-border rounded-full">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                   <a href={`/news/${filteredItems[0].slug}`} className="flex items-center gap-2 text-primary text-caption uppercase tracking-widest group/btn">
                     Read Intelligence Report
                     <ArrowRightIcon />
@@ -206,7 +215,16 @@ export default function PublicNewsListingPage() {
               {(activeCategory === 'All' && searchQuery === '' ? filteredItems.slice(1) : filteredItems).map(item => (
                 <a key={item.id} href={`/news/${item.slug}`} className="group flex flex-col cursor-pointer transition-transform hover:-translate-y-1">
                   <div className="aspect-[16/10] rounded-3xl bg-surface relative mb-6 overflow-hidden shadow-neu-outset group-hover:shadow-neu-inset transition-colors duration-500">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/20 opacity-80 group-hover:scale-110 transition-transform duration-1000" />
+                    {item.ogImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.ogImageUrl}
+                        alt={item.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/20 opacity-80 group-hover:scale-110 transition-transform duration-1000" />
+                    )}
                     <div className="absolute bottom-5 left-5">
                       <span className="px-3 py-1.5 bg-background/95 backdrop-blur-md rounded-xl text-caption uppercase tracking-widest text-primary border border-border">
                         {item.category}
@@ -223,6 +241,15 @@ export default function PublicNewsListingPage() {
                     <p className="text-body text-muted-foreground leading-relaxed line-clamp-2">
                       {item.summary}
                     </p>
+                    {item.tags?.length ? (
+                      <div className="flex flex-wrap gap-2 text-caption uppercase tracking-widest text-muted-foreground">
+                        {item.tags.slice(0, 2).map((tag) => (
+                          <span key={tag} className="px-2 py-1 bg-surface border border-border rounded-full">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </a>
               ))}

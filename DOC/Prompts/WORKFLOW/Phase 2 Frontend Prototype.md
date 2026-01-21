@@ -1,0 +1,55 @@
+
+***Phase 2 : Frontend Planning***
+- Here is the front end plan based on 6 phase SOT : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md
+- Based on this frontend plan , Prepare the frontend UI UX prompts in
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\Fontend UI UX Prompts folder by following the :
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\AI Prompting Guideline.md Instructions. 
+- The Outcome should be followed by This : 
+  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\PROMPTS\AI PROMPTING\Template_Comprehensive_UI UX.md
+
+--------------------------------------------------------------------------------------------------
+***Phase 3 : Frontend Enhancement ***
+***step 1 : Audit**
+ - Here is the updated prototype after implementing all the UI UX building prompts : 
+  DOC\FEATURES\BLOG\GoogleAIStudio UI UX
+  
+  - Deeply audit the prototype as per audit Instructions :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype Audit & Enhancement_Prompt.md
+
+- After that Prepare the audit report in the :
+  DOC\FEATURES\BLOG\Audit Report folder 
+
+***step 2 : Analyze & Enhance Instructions***  
+   - After the Audit Findings, Come up with the Enhancement plan if needed. plan the for all the missing gaps and inaccuraies that you have found during the audit. Also make sure to add more prompts by keeping everything existing as it is. The goal is the final prototype should have the e2e flows , triggners, functionslities as per the updated enhancement plans & SOT 100%.
+   - IMPORTANT OUTPUT RULE (to avoid partial enhancements):
+     - The enhancement output MUST include two sections:
+       A) "New prompts to append" (only for gaps not already covered by the existing steps)
+       B) "Existing steps not yet implemented" (list the exact step numbers already in the system plan that are still missing in the prototype)
+     - If a gap is already covered by an existing step, do NOT create a new prompt for it; instead, list it under section (B).
+   - After that add more frontend enhancement steps in the following : 
+   DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system -plan-blog-2026-01-05.md .
+   Keep the existing prompts as it is and just add the new ones after the existing ones so that we can keep track of all the changes. 
+
+   ***Strickt Rules***
+  - Here is the audit Instruction you have to follow :
+  DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype Audit & Enhancement_Prompt.md
+  
+  - All of your new prompts should be addede in the 
+  DOC\FEATURES\BLOG\Fontend UI UX Prompts\frontend-uiux-system-plan-blog-2026-01-05.md 
+  after the existing prompts. so that we can keep track of all the changes.
+  
+
+--------------------------------------------------------------------------------------------------
+  ***Phase 4 : Frontend Prototype vs SOT Sync Audit***
+
+  ***step 2 : Analyze*** 
+  - I want you to perfrom another audit following this instruction : 
+    DOC\PROMPTS\PROMPTS & TEMPLATES\ADVANCED AUDIT\SOT Sync Audit_Prompt.md
+  - And after that prepare the audit report in the :
+    DOC\FEATURES\BLOG\Audit Report folder
+  - After that I want you to update all the SOT files only as per the final protoype Sync Audit.
+
+
+  ------------------------------------------------------------------------------------------------
+

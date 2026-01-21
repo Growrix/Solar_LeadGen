@@ -13,7 +13,7 @@ This playbook is designed to be reused for **every future feature** that starts 
 1) `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md`
 2) `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md`
 3) `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md`
-4) `specs/007-migration-and-build/plan.md`
+4) `DOC\GUIDELINES & SOT\IMPLEMENTATION SOT\Migration_plan.md`
 
 If any conflict exists, higher authority wins.
 

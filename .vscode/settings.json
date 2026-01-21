@@ -12,5 +12,60 @@
     },
     "css.lint.unknownAtRules": "ignore",
     "scss.lint.unknownAtRules": "ignore",
-    "less.lint.unknownAtRules": "ignore"
+    "less.lint.unknownAtRules": "ignore",
+
+    // ── Performance improvements for large projects ───────────────────────────────
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.next": true,
+        "**/coverage": true,
+        "**/*.log": true,
+        // "DOC/": true,
+        "backup/": true,
+        "prisma/migrations/": true,
+        "public/fonts/": true,
+        ".husky/": true,
+        "tests/e2e/.auth/": true,
+        "prisma_migrate_*.txt": true,
+        "next-build.code.txt": true,
+        "tsc-noemit.code.txt": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.next": true,
+        "**/coverage": true,
+        // "DOC/": true,
+        "backup/": true,
+        "prisma/migrations/": true,
+        "public/fonts/": true,
+        ".specify/": true,
+        ".husky/": true,
+        "tests/e2e/.auth/": true,
+        "prisma_migrate_*.txt": true,
+        "next-build.code.txt": true,
+        "tsc-noemit.code.txt": true
+    },
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/.next/**": true,
+        "DOC/**": true,
+        "backup/**": true,
+        "prisma/migrations/**": true,
+        "public/fonts/**": true,
+        ".specify/**": true,
+        ".husky/**": true,
+        "tests/e2e/.auth/**": true,
+        "prisma_migrate_*.txt": true,
+        "next-build.code.txt": true,
+        "tsc-noemit.code.txt": true
+    }
 }

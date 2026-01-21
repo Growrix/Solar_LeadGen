@@ -2,9 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { loadNewsEngineState, type NewsItem } from '@/lib/ui-stubs/news-engine';
+import { fetchPublicNewsList, type PublicNewsListItem } from '@/lib/news-engine/client';
 
-function safeDateLabel(iso?: string): string {
+function safeDateLabel(iso?: string | null): string {
   if (!iso) return '—';
   try {
     return new Date(iso).toLocaleDateString();
@@ -69,31 +69,27 @@ const CalendarIcon = () => (
   </svg>
 );
 
-function getPublishedItems(stateItems: NewsItem[]): NewsItem[] {
-  return stateItems
-    .filter((it) => it.status === 'PUBLISHED' && Boolean(it.slug))
-    .sort((a, b) => {
-      const aTime = a.publishedAt ? Date.parse(a.publishedAt) : Date.parse(a.createdAt);
-      const bTime = b.publishedAt ? Date.parse(b.publishedAt) : Date.parse(b.createdAt);
-      return bTime - aTime;
-    });
-}
-
 export default function NewsSection() {
-  const [items, setItems] = React.useState<NewsItem[]>([]);
+  const [items, setItems] = React.useState<PublicNewsListItem[]>([]);
 
 
   React.useEffect(() => {
-    const state = loadNewsEngineState();
-    setItems(getPublishedItems(state.items));
+    let alive = true;
 
-    const onStorage = () => {
-      const next = loadNewsEngineState();
-      setItems(getPublishedItems(next.items));
+    (async () => {
+      try {
+        const list = await fetchPublicNewsList();
+        if (!alive) return;
+        setItems(list);
+      } catch {
+        if (!alive) return;
+        setItems([]);
+      }
+    })();
+
+    return () => {
+      alive = false;
     };
-
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   // Always show 3 cards in a single row, matching BlogSection

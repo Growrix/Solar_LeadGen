@@ -61,6 +61,34 @@ export const s3Client = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET || '';
 
+function encodeKeyPath(key: string): string {
+  return key
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+}
+
+/**
+ * Get a public URL for an object key.
+ * Uses AWS_S3_PUBLIC_BASE_URL when provided (e.g., CloudFront).
+ */
+export function getPublicUrlForKey(key: string): string {
+  if (!BUCKET_NAME) {
+    throw new Error('AWS_S3_BUCKET environment variable is required');
+  }
+
+  const publicBase = (process.env.AWS_S3_PUBLIC_BASE_URL || '').trim();
+  const encodedKey = encodeKeyPath(key);
+
+  if (publicBase) {
+    return `${publicBase.replace(/\/+$/, '')}/${encodedKey}`;
+  }
+
+  // Default to a public proxy route so buckets can remain private.
+  // Return a relative URL so it stays valid across environments.
+  return `/api/public/news-engine/s3/${encodedKey}`;
+}
+
 /**
  * Upload a file to S3
  * 

@@ -25,6 +25,7 @@ module.exports = {
         surface: 'rgb(var(--color-surface) / <alpha-value>)',
         'surface-dark': 'rgb(var(--color-surface) / <alpha-value>)',
         'surface-hover': 'rgb(var(--color-surface-hover) / <alpha-value>)',
+        overlay: 'rgb(var(--color-overlay) / <alpha-value>)',
         
         // Text colors - 3-level hierarchy (Google AI Studio aligned)
         foreground: 'rgb(var(--color-foreground) / <alpha-value>)',

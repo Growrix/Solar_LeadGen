@@ -16,7 +16,7 @@ Conflicts are resolved by higher authority. Follow this order strictly:
 4. AI Implementation Guidelines — IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
 5. Design System SOT — IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md
 6. UI/UX Layout & Routing Standards — IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md
-7. Feature Specs & Tasks — specs/** (feature-specific plans and phases)
+7. Feature Folders & Tasks — DOC/FEATURES/** (feature-specific plans, SOT, and tasks)
 8. Technical Docs — TECHNICAL DOCUMENTATIONS/** (architecture, devops, security, testing, theming)
 9. Audit Reports — DOC/AUDIT-REPORTS/** (issue-specific analysis and outcomes)
 
@@ -35,7 +35,7 @@ Read in this order before any task:
   - Security/Access: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md, TECHNICAL DOCUMENTATIONS/security/**
   - Testing/E2E: TECHNICAL DOCUMENTATIONS/testing/**, IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md
   - Theming: TECHNICAL DOCUMENTATIONS/theming/**, IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md
-- Finally: Locate feature-specific materials in specs/** and any related DOC/AUDIT-REPORTS/** entries.
+- Finally: Locate feature-specific materials in DOC/FEATURES/** and any related DOC/AUDIT-REPORTS/** entries.
 
 ---
 
@@ -49,8 +49,8 @@ Goal: prevent AI context loss by locking documentation before coding, and by mak
 - When the plan is approved, explicitly set SOT status to: `Locked (Approved)`
 
 2) **Execute (Phase-by-phase Tasks)**
-- Create/maintain execution tasks at: `specs/<feature>/tasks.md`
-- Tasks must follow `.specify/templates/tasks-template.md`.
+- Create/maintain execution tasks at: `DOC/FEATURES/<Feature Name>/tasks.md`
+- Tasks must follow `DOC/.specify/templates/tasks-template.md`.
 - Tasks must include testing checkpoints and stop rules.
 
 3) **Execution Style (When you want Frontend-first)**
@@ -60,7 +60,7 @@ Goal: prevent AI context loss by locking documentation before coding, and by mak
   - Implement backend to match the locked contract
   - Swap mock provider → real backend (no UI rewrite)
 
-Rule: If execution order changes, it must be documented in the feature SOT and reflected in `specs/<feature>/tasks.md`.
+Rule: If execution order changes, it must be documented in the feature SOT and reflected in `DOC/FEATURES/<Feature Name>/tasks.md`.
 
 Token discipline:
 - Load only the minimum set of documents required for the current task.
@@ -77,7 +77,7 @@ Assumption policy:
 
 - Architecture decisions: SYSTEM DESIGN/SYSTEM_CONSTITUTION.md, SYSTEM DESIGN/Blueprint.md, TECHNICAL DOCUMENTATIONS/architecture/**
 - **Database operations**: TECHNICAL DOCUMENTATIONS/operations/database-operations-standard.md (MANDATORY for all schema changes, backups, migrations)
-- Feature implementation rules: IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md, specs/**
+- Feature implementation rules: IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md, DOC/FEATURES/**
 - Auditing & debugging: SYSTEM DESIGN/UNIVERSAL SAAS SYSTEM AUDIT PROMPT.md, DOC/AUDIT-REPORTS/**
 - Refactoring: SYSTEM DESIGN/Blueprint.md (boundaries), IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md (workflow)
 - UI/UX decisions: IMPLEMENTATION SOT/DESIGN-SYSTEM-SOT.md, IMPLEMENTATION SOT/UI-UX-Layout-and-Routing-Standards.md

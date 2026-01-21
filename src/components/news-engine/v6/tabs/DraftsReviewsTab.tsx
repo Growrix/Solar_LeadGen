@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, Filter, MoreVertical, Plus, Search, Zap } from 'lucide-react';
+import { Clock, Plus, Search, Zap } from 'lucide-react';
 import type { NewsItem } from '@/lib/ui-stubs/news-engine';
 import { formatRelativeTime } from '../shared';
 
@@ -17,7 +17,8 @@ type Props = {
   draftsBoardColumns: DraftsBoardColumn[];
   draftsFilteredItems: NewsItem[];
   openReviewForItem: (itemId: string) => void;
-  openManualDraft: () => void;
+  openCreateNews: () => void;
+  openGenerateAiDraft: () => void;
 };
 
 export function DraftsReviewsTabV6({
@@ -26,7 +27,8 @@ export function DraftsReviewsTabV6({
   draftsBoardColumns,
   draftsFilteredItems,
   openReviewForItem,
-  openManualDraft,
+  openCreateNews,
+  openGenerateAiDraft,
 }: Props) {
   return (
     <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-500">
@@ -42,33 +44,30 @@ export function DraftsReviewsTabV6({
               className="w-full pl-9 pr-4 py-1.5 text-body bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/20 text-foreground placeholder:text-muted-foreground shadow-neu-inset"
             />
           </div>
-          <button
-            type="button"
-            className="flex items-center gap-2 px-3 py-1.5 text-body text-muted-foreground bg-background border border-border rounded-lg hover:bg-surface"
-          >
-            <Filter size={14} />
-            View Options
-          </button>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex -space-x-2">
-            {['U1', 'U2', 'U3'].map((label) => (
-              <div
-                key={label}
-                className="w-8 h-8 rounded-full border-2 border-background bg-surface flex items-center justify-center text-body-small text-muted-foreground"
-              >
-                {label}
-              </div>
-            ))}
-          </div>
+        <div className="flex items-center gap-4 flex-wrap justify-end">
+          <span
+            className="text-body-small uppercase tracking-widest text-muted-foreground bg-surface px-3 py-1 rounded-full border border-border shadow-neu-inset"
+            aria-label="Actor identity is not available"
+          >
+            Actor: —
+          </span>
           <button
             type="button"
-            onClick={openManualDraft}
+            onClick={openCreateNews}
             className="bg-accent text-background px-4 py-1.5 rounded-lg text-body-small hover:bg-accent-hover shadow-neu-outset transition-colors uppercase tracking-widest"
-            aria-label="Create Manual Draft"
+            aria-label="Create News"
           >
-            Create Manual Draft
+            Create News
+          </button>
+          <button
+            type="button"
+            onClick={openGenerateAiDraft}
+            className="bg-surface text-foreground px-4 py-1.5 rounded-lg text-body-small hover:bg-surface-hover shadow-neu-outset transition-colors uppercase tracking-widest border border-border"
+            aria-label="Generate AI Draft"
+          >
+            Generate AI Draft
           </button>
         </div>
       </div>
@@ -93,10 +92,10 @@ export function DraftsReviewsTabV6({
                   </div>
                   <button
                     type="button"
-                    onClick={openManualDraft}
+                    onClick={openCreateNews}
                     className="text-muted-foreground hover:text-brand-accent p-1 rounded-md hover:bg-background transition-colors"
-                    title="Create Manual Draft"
-                    aria-label={`Create Manual Draft in ${col.label} column`}
+                    title="Create News"
+                    aria-label={`Create News in ${col.label} column`}
                   >
                     <Plus size={16} />
                   </button>
@@ -114,9 +113,6 @@ export function DraftsReviewsTabV6({
                         <div className="flex items-start justify-between mb-2">
                           <span className="text-body-small uppercase tracking-wider text-muted-foreground bg-surface px-1.5 py-0.5 rounded">
                             {draft.category}
-                          </span>
-                          <span className="text-muted-foreground group-hover:text-foreground" aria-label="More options">
-                            <MoreVertical size={14} />
                           </span>
                         </div>
 
