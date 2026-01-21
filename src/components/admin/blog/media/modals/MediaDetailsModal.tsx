@@ -1,21 +1,14 @@
 'use client';
 
 import React from 'react';
+import Button from '@/components/Button';
 import type { MediaItem, MediaType } from '@/components/admin/blog/shared/blogPrototypeStore';
 
-function cn(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ');
-}
-
-const buttonBase =
-  'inline-flex items-center justify-center rounded-xl px-4 py-2 text-label focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50';
-const buttonSecondary = cn(buttonBase, 'border border-border bg-card text-foreground hover:bg-muted');
-const buttonPrimary = cn(buttonBase, 'bg-primary text-primary-foreground hover:opacity-90');
-
-function TypeIcon({ type }: { type: MediaType }) {
-  if (type === 'image') return <span className="text-body-small">IMG</span>;
-  if (type === 'video') return <span className="text-body-small">VID</span>;
-  return <span className="text-body-small">DOC</span>;
+function TypeBadge({ type }: { type: MediaType }) {
+  const baseClass = 'inline-flex items-center justify-center px-3 py-1 rounded-full text-label font-medium';
+  if (type === 'image') return <span className={`${baseClass} bg-primary/10 text-primary`}>Image</span>;
+  if (type === 'video') return <span className={`${baseClass} bg-secondary/10 text-secondary`}>Video</span>;
+  return <span className={`${baseClass} bg-surface text-muted-foreground`}>Document</span>;
 }
 
 export default function MediaDetailsModal(props: {
@@ -60,51 +53,60 @@ export default function MediaDetailsModal(props: {
     .map((t) => t.trim())
     .filter(Boolean);
 
+  const inputClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4 py-8" onClick={onClose}>
-      <div className="w-full max-w-4xl rounded-2xl border border-border bg-card p-6" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm px-4 py-8" onClick={onClose}>
+      <div
+        className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-surface shadow-neu-outset p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-heading-3 text-foreground">Media Details</h2>
-            <p className="text-body-small text-muted-foreground">Edit metadata, rename, replace, and copy URL.</p>
+            <h2 className="text-heading-2 text-foreground mb-1">Media Details</h2>
+            <p className="text-body-small text-muted-foreground">Edit metadata, rename, or replace this file.</p>
           </div>
-          <button type="button" className={buttonSecondary} onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} className="px-4 py-2">
             Close
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-border bg-background p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-body-small text-muted-foreground">Preview</div>
-              <div className="text-muted-foreground"><TypeIcon type={item.type} /></div>
+          <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-body text-foreground font-medium">Preview</div>
+              <TypeBadge type={item.type} />
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="overflow-hidden rounded-2xl bg-surface shadow-neu-outset">
               {item.type === 'image' ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.url} alt={item.altText ?? item.name} className="w-full h-auto" />
               ) : item.type === 'video' ? (
                 <video src={item.url} controls className="w-full h-auto" />
               ) : (
-                <div className="p-10 text-center text-muted-foreground">Document</div>
+                <div className="p-12 text-center text-muted-foreground">
+                  <span className="text-heading-3">Document</span>
+                </div>
               )}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className={buttonSecondary}
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button
+                variant="secondary"
                 onClick={() => {
                   void navigator.clipboard.writeText(item.url);
                 }}
               >
                 Copy URL
-              </button>
-              <button type="button" className={buttonSecondary} onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}>
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
+              >
                 Open
-              </button>
-              <label className="inline-flex">
+              </Button>
+              <label className="inline-flex cursor-pointer">
                 <span className="sr-only">Replace file</span>
                 <input
                   type="file"
@@ -115,25 +117,35 @@ export default function MediaDetailsModal(props: {
                     onReplace(item.id, file);
                   }}
                 />
-                <span className="inline-flex items-center">
-                  <span className={buttonSecondary}>Replace</span>
+                <span className="inline-flex items-center justify-center gap-3 px-8 py-4 text-body-small tracking-wider rounded-full transition-colors duration-200 bg-surface text-foreground shadow-neu-outset hover:shadow-neu-inset active:scale-[0.98] cursor-pointer">
+                  Replace
                 </span>
               </label>
             </div>
 
-            <div className="mt-4 text-body-small text-muted-foreground">
-              <div>Name: {item.name}</div>
-              <div>Size: {item.size}</div>
-              <div>Uploaded: {item.uploadedAt}</div>
-              {item.dimensions ? <div>Dimensions: {item.dimensions}</div> : null}
+            <div className="mt-5 rounded-xl bg-surface shadow-neu-outset p-4 space-y-2">
+              <div className="text-body-small text-muted-foreground">
+                <span className="text-foreground font-medium">Name:</span> {item.name}
+              </div>
+              <div className="text-body-small text-muted-foreground">
+                <span className="text-foreground font-medium">Size:</span> {item.size}
+              </div>
+              <div className="text-body-small text-muted-foreground">
+                <span className="text-foreground font-medium">Uploaded:</span> {item.uploadedAt}
+              </div>
+              {item.dimensions && (
+                <div className="text-body-small text-muted-foreground">
+                  <span className="text-foreground font-medium">Dimensions:</span> {item.dimensions}
+                </div>
+              )}
             </div>
 
             {item.references?.length ? (
-              <div className="mt-4">
-                <div className="text-body-small text-muted-foreground mb-2">Referenced by</div>
+              <div className="mt-5">
+                <div className="text-body text-foreground font-medium mb-3">Referenced by</div>
                 <div className="space-y-2">
                   {item.references.map((r) => (
-                    <div key={`${r.type}_${r.id}`} className="rounded-xl border border-border bg-card px-3 py-2">
+                    <div key={`${r.type}_${r.id}`} className="rounded-xl bg-surface shadow-neu-outset px-4 py-3">
                       <div className="text-body text-foreground">{r.title}</div>
                       <div className="text-body-small text-muted-foreground">/{r.slug}</div>
                     </div>
@@ -143,45 +155,62 @@ export default function MediaDetailsModal(props: {
             ) : null}
           </div>
 
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Filename</label>
+          <div className="space-y-5">
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Filename</label>
               <div className="flex gap-3">
-                <input className="form-input flex-1" value={name} onChange={(e) => setName(e.target.value)} />
-                <button
-                  type="button"
-                  className={buttonSecondary}
+                <input
+                  className={`${inputClass} flex-1`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Button
+                  variant="secondary"
                   disabled={!name.trim() || name.trim() === item.name}
                   onClick={() => onRename(item.id, name.trim())}
                 >
                   Rename
-                </button>
+                </Button>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Alt Text</label>
-              <input className="form-input w-full" value={altText} onChange={(e) => setAltText(e.target.value)} />
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Alt Text</label>
+              <input
+                className={inputClass}
+                value={altText}
+                onChange={(e) => setAltText(e.target.value)}
+                placeholder="Describe the image for accessibility..."
+              />
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Caption</label>
-              <input className="form-input w-full" value={caption} onChange={(e) => setCaption(e.target.value)} />
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Caption</label>
+              <input
+                className={inputClass}
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Optional caption text..."
+              />
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Tags</label>
-              <input className="form-input w-full" value={tags} onChange={(e) => setTags(e.target.value)} />
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Tags</label>
+              <input
+                className={inputClass}
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="tag1, tag2, tag3"
+              />
               <div className="mt-2 text-body-small text-muted-foreground">Comma-separated.</div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-              <button type="button" className={buttonSecondary} onClick={onClose}>
+              <Button variant="secondary" onClick={onClose}>
                 Cancel
-              </button>
-              <button
-                type="button"
-                className={buttonPrimary}
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() => {
                   onSave(item.id, {
                     altText: altText.trim() || undefined,
@@ -192,7 +221,7 @@ export default function MediaDetailsModal(props: {
                 }}
               >
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         </div>

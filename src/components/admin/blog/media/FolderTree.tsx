@@ -4,6 +4,10 @@ import React from 'react';
 import Button from '@/components/Button';
 import type { MediaFolder } from '@/components/admin/blog/shared/blogPrototypeStore';
 
+function cn(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(' ');
+}
+
 function buildTree(folders: MediaFolder[]) {
   const byParent = new Map<string | null, MediaFolder[]>();
   for (const folder of folders) {
@@ -35,7 +39,7 @@ export default function FolderTree(props: {
   const renderNodes = (parentId: string | null, depth: number) => {
     const nodes = byParent.get(parentId) ?? [];
     return (
-      <div className={depth === 0 ? 'space-y-1' : 'space-y-1'}>
+      <div className="space-y-1">
         {nodes.map((f) => {
           const active = currentFolderId === f.id;
           return (
@@ -43,10 +47,13 @@ export default function FolderTree(props: {
               <button
                 type="button"
                 onClick={() => onSelectFolder(f.id)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-body-small transition-colors ${
-                  active ? 'bg-background text-foreground shadow-neu-inset' : 'text-muted-foreground hover:text-foreground'
-                }`}
-                style={{ paddingLeft: `${12 + depth * 14}px` }}
+                className={cn(
+                  'w-full text-left px-4 py-2.5 rounded-xl text-body-small transition-all duration-200',
+                  active
+                    ? 'bg-background text-foreground shadow-neu-inset font-medium'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                )}
+                style={{ paddingLeft: `${16 + depth * 16}px` }}
               >
                 {f.name}
               </button>
@@ -58,25 +65,31 @@ export default function FolderTree(props: {
     );
   };
 
+  const inputClass = 'flex-1 px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
+
   return (
-    <div className="bg-surface rounded-2xl shadow-neu-outset p-4">
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="text-heading-6 text-foreground">Folders</div>
-        <Button variant="secondary" className="px-3 py-2" onClick={() => onSelectFolder(null)}>
+    <div className="bg-surface rounded-2xl shadow-neu-outset p-5">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="text-heading-4 text-foreground font-medium">Folders</div>
+        <button
+          type="button"
+          onClick={() => onSelectFolder(null)}
+          className="px-3 py-1.5 rounded-lg text-body-small text-primary hover:text-primary/80 transition-colors"
+        >
           Root
-        </Button>
+        </button>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-3 mb-5">
         <input
           value={newFolderName}
           onChange={(e) => setNewFolderName(e.target.value)}
-          placeholder="New folder…"
-          className="form-input flex-1 px-3 py-2"
+          placeholder="New folder..."
+          className={inputClass}
         />
         <Button
           variant="secondary"
-          className="px-3 py-2"
+          className="px-4 py-2"
           disabled={!newFolderName.trim()}
           onClick={() => {
             onAddFolder(newFolderName.trim(), currentFolderId);
@@ -91,11 +104,12 @@ export default function FolderTree(props: {
         <button
           type="button"
           onClick={() => onSelectFolder(null)}
-          className={`w-full text-left px-3 py-2 rounded-xl text-body-small transition-colors ${
+          className={cn(
+            'w-full text-left px-4 py-2.5 rounded-xl text-body-small transition-all duration-200',
             currentFolderId === null
-              ? 'bg-background text-foreground shadow-neu-inset'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
+              ? 'bg-background text-foreground shadow-neu-inset font-medium'
+              : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+          )}
         >
           All Media
         </button>

@@ -1,7 +1,7 @@
 'use client';
 
-
 import React from 'react';
+import Button from '@/components/Button';
 import FolderTree from '@/components/admin/blog/media/FolderTree';
 import UploadMediaModal from '@/components/admin/blog/media/modals/UploadMediaModal';
 import MoveMediaModal from '@/components/admin/blog/media/modals/MoveMediaModal';
@@ -24,16 +24,15 @@ function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
 }
 
-
 function formatDate(date: Date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
+
 function normalizeDayValue(value: string) {
   if (!value) return '';
-  // value already in yyyy-mm-dd from <input type="date" />
   return value;
 }
 
@@ -44,10 +43,9 @@ function thumbClass(size: ThumbSize) {
 }
 
 function typePill(type: MediaType) {
-  // Prototype uses colored pills; keep semantic (no hardcoded palette)
-  if (type === 'image') return 'bg-primary/12 text-primary';
-  if (type === 'video') return 'bg-accent/12 text-accent';
-  return 'bg-muted text-muted-foreground';
+  if (type === 'image') return 'bg-primary/10 text-primary';
+  if (type === 'video') return 'bg-secondary/10 text-secondary';
+  return 'bg-surface text-muted-foreground';
 }
 
 function typeLabel(type: MediaType) {
@@ -57,7 +55,6 @@ function typeLabel(type: MediaType) {
 }
 
 export default function MediaLibrary() {
-
   const store = useBlogPrototypeStore();
   const { media, trashedMedia, folders } = store;
   const [currentFolderId, setCurrentFolderId] = React.useState<string | null>(null);
@@ -186,118 +183,119 @@ export default function MediaLibrary() {
     return filteredItems.slice(start, start + itemsPerPage);
   }, [currentPage, filteredItems]);
 
-  const topBarButton =
-    'inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-label text-foreground hover:bg-muted';
-  const topBarButtonPrimary =
-    'inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-label text-primary-foreground hover:opacity-90';
-  const chipBase = 'inline-flex items-center rounded-xl border border-border bg-card px-3 py-1.5 text-label text-foreground';
+  const inputClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
+  const selectClass = 'px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small appearance-none cursor-pointer';
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-heading-2 text-foreground">Media Library</h1>
-          <p className="text-body text-muted-foreground">Organize and manage all your media files.</p>
+          <h1 className="text-heading-1 text-foreground mb-2">Media Library</h1>
+          <p className="text-heading-4 text-muted-foreground">Organize and manage all your media files.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className={topBarButtonPrimary} onClick={() => setIsUploadOpen(true)}>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="primary" onClick={() => setIsUploadOpen(true)}>
             Upload
-          </button>
-          <button
-            type="button"
-            className={topBarButton}
+          </Button>
+          <Button
+            variant="secondary"
             onClick={() => {
               store.addFolder('New Folder', null);
             }}
           >
             New Folder
-          </button>
-          {activeTab === 'trash' ? (
-            <button
-              type="button"
-              className={topBarButton}
-              disabled={trashedMedia.length === 0}
+          </Button>
+          {activeTab === 'trash' && trashedMedia.length > 0 && (
+            <Button
+              variant="secondary"
               onClick={() => {
                 trashedMedia.forEach((item) => store.permanentlyDeleteMedia(item.id));
                 clearSelection();
               }}
             >
               Empty Trash
-            </button>
-          ) : null}
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <aside className="lg:col-span-3">
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="mb-3 text-heading-6 text-foreground">Folders</div>
-            <FolderTree
-              folders={folders}
-              currentFolderId={currentFolderId}
-              onSelectFolder={(id) => {
-                setActiveTab('library');
-                setCurrentFolderId(id);
-              }}
-              onAddFolder={(name, parentId) => store.addFolder(name, parentId)}
-            />
-          </div>
+          <FolderTree
+            folders={folders}
+            currentFolderId={currentFolderId}
+            onSelectFolder={(id) => {
+              setActiveTab('library');
+              setCurrentFolderId(id);
+            }}
+            onAddFolder={(name, parentId) => store.addFolder(name, parentId)}
+          />
         </aside>
 
         <section className="lg:col-span-9">
-          <div className="rounded-2xl border border-border bg-card">
-            <div className="border-b border-border p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap items-center gap-2">
+          <div className="bg-surface rounded-2xl shadow-neu-outset">
+            <div className="p-6 border-b border-border/30">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
+                    onClick={() => setActiveTab('library')}
                     className={cn(
-                      chipBase,
-                      activeTab === 'library' ? 'bg-muted text-foreground' : ''
+                      'px-4 py-2 rounded-full text-body-small transition-all duration-200',
+                      activeTab === 'library'
+                        ? 'bg-background text-foreground shadow-neu-inset'
+                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
                     )}
-                    onClick={() => {
-                      setActiveTab('library');
-                    }}
                   >
                     Library
                   </button>
                   <button
                     type="button"
+                    onClick={() => setActiveTab('trash')}
                     className={cn(
-                      chipBase,
-                      activeTab === 'trash' ? 'bg-muted text-foreground' : ''
+                      'px-4 py-2 rounded-full text-body-small transition-all duration-200',
+                      activeTab === 'trash'
+                        ? 'bg-background text-foreground shadow-neu-inset'
+                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
                     )}
-                    onClick={() => {
-                      setActiveTab('trash');
-                    }}
                   >
                     Trash
                   </button>
 
-                  <div className="ml-0 sm:ml-2 text-body-small text-muted-foreground">
+                  <div className="ml-2 text-body-small text-muted-foreground">
                     {activeTab === 'trash' ? 'Trash' : currentFolderName} • {filteredItems.length} items
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
-                    className={cn(chipBase, viewMode === 'grid' ? 'bg-muted' : '')}
                     onClick={() => setViewMode('grid')}
+                    className={cn(
+                      'px-3 py-2 rounded-xl text-body-small transition-all duration-200',
+                      viewMode === 'grid'
+                        ? 'bg-background text-foreground shadow-neu-inset'
+                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
+                    )}
                   >
                     Grid
                   </button>
                   <button
                     type="button"
-                    className={cn(chipBase, viewMode === 'list' ? 'bg-muted' : '')}
                     onClick={() => setViewMode('list')}
+                    className={cn(
+                      'px-3 py-2 rounded-xl text-body-small transition-all duration-200',
+                      viewMode === 'list'
+                        ? 'bg-background text-foreground shadow-neu-inset'
+                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
+                    )}
                   >
                     List
                   </button>
 
                   <select
-                    className="form-input h-10 rounded-xl"
+                    className={cn(selectClass, 'w-28')}
                     value={thumbnailSize}
                     onChange={(e) => setThumbnailSize(e.target.value as ThumbSize)}
                     aria-label="Thumbnail size"
@@ -309,10 +307,10 @@ export default function MediaLibrary() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-12">
+              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-12">
                 <div className="md:col-span-4">
                   <input
-                    className="form-input w-full rounded-xl"
+                    className={inputClass}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search files..."
@@ -320,7 +318,7 @@ export default function MediaLibrary() {
                 </div>
                 <div className="md:col-span-2">
                   <select
-                    className="form-input w-full rounded-xl"
+                    className={cn(selectClass, 'w-full')}
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value as MediaType | 'all')}
                   >
@@ -331,20 +329,28 @@ export default function MediaLibrary() {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <select className="form-input w-full rounded-xl" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+                  <select
+                    className={cn(selectClass, 'w-full')}
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortBy)}
+                  >
                     <option value="date">Sort: Date</option>
                     <option value="name">Sort: Name</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <select className="form-input w-full rounded-xl" value={sortDir} onChange={(e) => setSortDir(e.target.value as SortDir)}>
+                  <select
+                    className={cn(selectClass, 'w-full')}
+                    value={sortDir}
+                    onChange={(e) => setSortDir(e.target.value as SortDir)}
+                  >
                     <option value="desc">Newest</option>
                     <option value="asc">Oldest</option>
                   </select>
                 </div>
                 <div className="md:col-span-2 flex items-center gap-2">
                   <input
-                    className="form-input w-full rounded-xl"
+                    className={inputClass}
                     type="date"
                     max={today}
                     value={dateFrom}
@@ -352,7 +358,7 @@ export default function MediaLibrary() {
                     aria-label="From date"
                   />
                   <input
-                    className="form-input w-full rounded-xl"
+                    className={inputClass}
                     type="date"
                     max={today}
                     value={dateTo}
@@ -362,80 +368,89 @@ export default function MediaLibrary() {
                 </div>
               </div>
 
-              {selectedCount > 0 ? (
-                <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-body-small text-foreground">Selected: {selectedCount}</div>
-                  <div className="flex flex-wrap items-center gap-2">
+              {selectedCount > 0 && (
+                <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-background shadow-neu-inset p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-body text-foreground font-medium">
+                    {selectedCount} item{selectedCount > 1 ? 's' : ''} selected
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
                     {activeTab === 'trash' ? (
                       <>
-                        <button type="button" className={topBarButton} onClick={bulkRestore}>
+                        <Button variant="secondary" onClick={bulkRestore}>
                           Restore
-                        </button>
-                        <button type="button" className={topBarButton + ' text-destructive'} onClick={bulkTrashOrDelete}>
+                        </Button>
+                        <Button variant="secondary" onClick={bulkTrashOrDelete}>
                           Delete Forever
-                        </button>
+                        </Button>
                       </>
                     ) : (
                       <>
-                        <button type="button" className={topBarButton} onClick={() => setIsMoveOpen(true)}>
+                        <Button variant="secondary" onClick={() => setIsMoveOpen(true)}>
                           Move
-                        </button>
-                        <button type="button" className={topBarButton} onClick={() => setIsBulkOpen(true)}>
+                        </Button>
+                        <Button variant="secondary" onClick={() => setIsBulkOpen(true)}>
                           Bulk Edit
-                        </button>
-                        <button type="button" className={topBarButton + ' text-destructive'} onClick={bulkTrashOrDelete}>
+                        </Button>
+                        <Button variant="secondary" onClick={bulkTrashOrDelete}>
                           Move to Trash
-                        </button>
+                        </Button>
                       </>
                     )}
-                    <button type="button" className={topBarButton} onClick={clearSelection}>
+                    <Button variant="secondary" onClick={clearSelection}>
                       Clear
-                    </button>
+                    </Button>
                   </div>
                 </div>
-              ) : null}
+              )}
             </div>
 
-            <div className="p-4">
+            <div className="p-6">
               {filteredItems.length === 0 ? (
-                <div className="rounded-2xl border border-border bg-background p-10 text-center text-muted-foreground">
+                <div className="rounded-2xl bg-background shadow-neu-inset p-12 text-center text-muted-foreground">
                   No media found.
                 </div>
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4">
                   {pagedItems.map((item) => (
                     <div
                       key={item.id}
-                      className="group overflow-hidden rounded-2xl border border-border bg-background"
+                      className="group overflow-hidden rounded-2xl bg-background shadow-neu-outset transition-all duration-200 hover:shadow-neu-inset"
                     >
-                      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
-                        <label className="inline-flex items-center gap-2">
+                      <div className="flex items-center justify-between gap-3 border-b border-border/20 px-4 py-3">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={selectedIds.has(item.id)}
                             onChange={() => toggleSelect(item.id)}
+                            className="w-4 h-4 rounded accent-primary cursor-pointer"
                           />
                           <span className="sr-only">Select</span>
                         </label>
-                        <span className={['rounded-full px-3 py-1 text-label', typePill(item.type)].join(' ')}>{typeLabel(item.type)}</span>
+                        <span className={cn('rounded-full px-3 py-1 text-label', typePill(item.type))}>
+                          {typeLabel(item.type)}
+                        </span>
                       </div>
 
                       <button type="button" className="block w-full text-left" onClick={() => setDetailId(item.id)}>
-                        <div className={['w-full bg-card p-2', thumbClass(thumbnailSize)].join(' ')}>
-                          <div className="h-full w-full overflow-hidden rounded-xl border border-border bg-background">
+                        <div className={cn('w-full bg-surface p-3', thumbClass(thumbnailSize))}>
+                          <div className="h-full w-full overflow-hidden rounded-xl bg-background shadow-neu-inset">
                             {item.type === 'image' ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={item.url} alt={item.altText ?? item.name} className="h-full w-full object-cover" />
                             ) : item.type === 'video' ? (
-                              <div className="flex h-full items-center justify-center text-muted-foreground">Video</div>
+                              <div className="flex h-full items-center justify-center text-muted-foreground">
+                                <span className="text-heading-4">Video</span>
+                              </div>
                             ) : (
-                              <div className="flex h-full items-center justify-center text-muted-foreground">Document</div>
+                              <div className="flex h-full items-center justify-center text-muted-foreground">
+                                <span className="text-heading-4">Document</span>
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        <div className="space-y-1 px-3 py-3">
-                          <div className="truncate text-body text-foreground">{item.name}</div>
+                        <div className="space-y-1 px-4 py-4">
+                          <div className="truncate text-body text-foreground font-medium">{item.name}</div>
                           <div className="flex items-center justify-between text-body-small text-muted-foreground">
                             <span>{item.size}</span>
                             <span>{item.uploadedAt}</span>
@@ -446,61 +461,70 @@ export default function MediaLibrary() {
                   ))}
                 </div>
               ) : (
-                <div className="overflow-hidden rounded-2xl border border-border bg-background">
-                  <div className="grid grid-cols-12 gap-2 border-b border-border px-4 py-3 text-body-small text-muted-foreground">
+                <div className="overflow-hidden rounded-2xl bg-background shadow-neu-outset">
+                  <div className="grid grid-cols-12 gap-3 border-b border-border/20 px-5 py-4 text-body-small text-muted-foreground font-medium">
                     <div className="col-span-1">
-                      <button type="button" className="underline" onClick={isAllSelected ? clearSelection : selectAll}>
+                      <button
+                        type="button"
+                        className="underline hover:text-foreground transition-colors"
+                        onClick={isAllSelected ? clearSelection : selectAll}
+                      >
                         {isAllSelected ? 'None' : 'All'}
                       </button>
                     </div>
-                    <div className="col-span-6">Name</div>
+                    <div className="col-span-5">Name</div>
                     <div className="col-span-2">Type</div>
                     <div className="col-span-2">Size</div>
-                    <div className="col-span-1">Date</div>
+                    <div className="col-span-2">Date</div>
                   </div>
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-border/10">
                     {pagedItems.map((item) => (
                       <div
                         key={item.id}
-                        className="grid cursor-pointer grid-cols-12 gap-2 px-4 py-3 hover:bg-muted/40"
+                        className="grid cursor-pointer grid-cols-12 gap-3 px-5 py-4 hover:bg-surface/50 transition-colors"
                         onClick={() => setDetailId(item.id)}
                       >
                         <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
-                          <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleSelect(item.id)} />
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(item.id)}
+                            onChange={() => toggleSelect(item.id)}
+                            className="w-4 h-4 rounded accent-primary cursor-pointer"
+                          />
                         </div>
-                        <div className="col-span-6 truncate text-body text-foreground">{item.name}</div>
+                        <div className="col-span-5 truncate text-body text-foreground">{item.name}</div>
                         <div className="col-span-2">
-                          <span className={['rounded-full px-3 py-1 text-label', typePill(item.type)].join(' ')}>{typeLabel(item.type)}</span>
+                          <span className={cn('rounded-full px-3 py-1 text-label', typePill(item.type))}>
+                            {typeLabel(item.type)}
+                          </span>
                         </div>
                         <div className="col-span-2 text-body-small text-muted-foreground">{item.size}</div>
-                        <div className="col-span-1 text-body-small text-muted-foreground">{item.uploadedAt}</div>
+                        <div className="col-span-2 text-body-small text-muted-foreground">{item.uploadedAt}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-body-small text-muted-foreground">
                   Page {currentPage} of {totalPages}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className={topBarButton}
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="secondary"
                     disabled={currentPage <= 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   >
                     Previous
-                  </button>
-                  <button
-                    type="button"
-                    className={topBarButton}
+                  </Button>
+                  <Button
+                    variant="secondary"
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

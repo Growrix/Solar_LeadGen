@@ -1,16 +1,8 @@
 'use client';
 
 import React from 'react';
+import Button from '@/components/Button';
 import type { MediaFolder, MediaItem, MediaType } from '@/components/admin/blog/shared/blogPrototypeStore';
-
-function cn(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ');
-}
-
-const buttonBase =
-  'inline-flex items-center justify-center rounded-xl px-4 py-2 text-label focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50';
-const buttonSecondary = cn(buttonBase, 'border border-border bg-card text-foreground hover:bg-muted');
-const buttonPrimary = cn(buttonBase, 'bg-primary text-primary-foreground hover:opacity-90');
 
 function inferType(file: File): MediaType {
   if (file.type.startsWith('image')) return 'image';
@@ -84,38 +76,46 @@ export default function UploadMediaModal(props: {
     onClose();
   };
 
+  const inputClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
+  const selectClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small appearance-none cursor-pointer';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4 py-8" onClick={onClose}>
-      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm px-4 py-8" onClick={onClose}>
+      <div
+        className="w-full max-w-2xl rounded-2xl bg-surface shadow-neu-outset p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-heading-3 text-foreground">Upload Media</h2>
-            <p className="text-body-small text-muted-foreground">UI-only upload; stored locally for prototype parity.</p>
+            <h2 className="text-heading-2 text-foreground mb-1">Upload Media</h2>
+            <p className="text-body-small text-muted-foreground">Upload files to your media library.</p>
           </div>
-          <button type="button" className={buttonSecondary} onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} className="px-4 py-2">
             Close
-          </button>
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          <div className="rounded-2xl border border-border bg-background p-4">
-            <label className="block text-body-small text-muted-foreground mb-2">Files</label>
+        <div className="grid grid-cols-1 gap-5">
+          <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+            <label className="block text-body-small text-muted-foreground mb-3">Files</label>
             <input
               type="file"
               multiple
               onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-              className="form-input w-full"
+              className={inputClass}
             />
-            {files.length ? (
-              <div className="mt-3 text-body-small text-muted-foreground">Selected: {files.length} file(s)</div>
-            ) : null}
+            {files.length > 0 && (
+              <div className="mt-3 text-body-small text-primary font-medium">
+                Selected: {files.length} file(s)
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Folder</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Folder</label>
               <select
-                className="form-input w-full"
+                className={selectClass}
                 value={folderId ?? ''}
                 onChange={(e) => setFolderId(e.target.value ? e.target.value : null)}
               >
@@ -128,31 +128,46 @@ export default function UploadMediaModal(props: {
               </select>
             </div>
 
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Tags (comma-separated)</label>
-              <input className="form-input w-full" value={tags} onChange={(e) => setTags(e.target.value)} />
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Tags (comma-separated)</label>
+              <input
+                className={inputClass}
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="tag1, tag2, tag3"
+              />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Alt text</label>
-              <input className="form-input w-full" value={altText} onChange={(e) => setAltText(e.target.value)} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Alt text</label>
+              <input
+                className={inputClass}
+                value={altText}
+                onChange={(e) => setAltText(e.target.value)}
+                placeholder="Describe the image..."
+              />
             </div>
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <label className="block text-body-small text-muted-foreground mb-2">Caption</label>
-              <input className="form-input w-full" value={caption} onChange={(e) => setCaption(e.target.value)} />
+            <div className="rounded-2xl bg-background shadow-neu-inset p-5">
+              <label className="block text-body-small text-muted-foreground mb-3">Caption</label>
+              <input
+                className={inputClass}
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Optional caption..."
+              />
             </div>
           </div>
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <button type="button" className={buttonSecondary} onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button type="button" className={buttonPrimary} disabled={files.length === 0} onClick={handleSubmit}>
+          </Button>
+          <Button variant="primary" disabled={files.length === 0} onClick={handleSubmit}>
             Upload
-          </button>
+          </Button>
         </div>
       </div>
     </div>
