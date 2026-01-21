@@ -1,7 +1,18 @@
 'use client';
 
 import React from 'react';
-import Button from '@/components/Button';
+import {
+  AdminButton,
+  AdminInput,
+  AdminSelect,
+  AdminCard,
+  AdminBadge,
+  AdminTabs,
+  AdminPagination,
+  AdminEmptyState,
+  AdminToolbar,
+  AdminCheckbox,
+} from '@/components/admin/ui';
 import FolderTree from '@/components/admin/blog/media/FolderTree';
 import UploadMediaModal from '@/components/admin/blog/media/modals/UploadMediaModal';
 import MoveMediaModal from '@/components/admin/blog/media/modals/MoveMediaModal';
@@ -9,7 +20,6 @@ import MediaDetailsModal from '@/components/admin/blog/media/modals/MediaDetails
 import BulkEditMediaModal from '@/components/admin/blog/media/modals/BulkEditMediaModal';
 import {
   useBlogPrototypeStore,
-  type MediaFolder,
   type MediaItem,
   type MediaType,
 } from '@/components/admin/blog/shared/blogPrototypeStore';
@@ -19,10 +29,6 @@ type ViewMode = 'grid' | 'list';
 type ThumbSize = 'small' | 'medium' | 'large';
 type SortBy = 'date' | 'name';
 type SortDir = 'desc' | 'asc';
-
-function cn(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ');
-}
 
 function formatDate(date: Date) {
   const y = date.getFullYear();
@@ -42,10 +48,10 @@ function thumbClass(size: ThumbSize) {
   return 'h-32';
 }
 
-function typePill(type: MediaType) {
-  if (type === 'image') return 'bg-primary/10 text-primary';
-  if (type === 'video') return 'bg-secondary/10 text-secondary';
-  return 'bg-surface text-muted-foreground';
+function getTypeBadgeVariant(type: MediaType): 'primary' | 'success' | 'secondary' {
+  if (type === 'image') return 'primary';
+  if (type === 'video') return 'success';
+  return 'secondary';
 }
 
 function typeLabel(type: MediaType) {
@@ -183,39 +189,68 @@ export default function MediaLibrary() {
     return filteredItems.slice(start, start + itemsPerPage);
   }, [currentPage, filteredItems]);
 
-  const inputClass = 'w-full px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small';
-  const selectClass = 'px-4 py-3 rounded-xl bg-background text-foreground shadow-neu-inset focus:outline-none focus:ring-2 focus:ring-primary/30 text-body-small appearance-none cursor-pointer';
+  const tabs = [
+    { id: 'library', label: 'Library', count: media.length },
+    { id: 'trash', label: 'Trash', count: trashedMedia.length },
+  ];
+
+  const typeOptions = [
+    { value: 'all', label: 'All Types' },
+    { value: 'image', label: 'Images' },
+    { value: 'video', label: 'Videos' },
+    { value: 'document', label: 'Documents' },
+  ];
+
+  const sortOptions = [
+    { value: 'date', label: 'Sort: Date' },
+    { value: 'name', label: 'Sort: Name' },
+  ];
+
+  const sortDirOptions = [
+    { value: 'desc', label: 'Newest First' },
+    { value: 'asc', label: 'Oldest First' },
+  ];
+
+  const sizeOptions = [
+    { value: 'small', label: 'Small' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'large', label: 'Large' },
+  ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 lg:p-8 bg-[var(--admin-bg-base)] min-h-screen">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-heading-1 text-foreground mb-2">Media Library</h1>
-          <p className="text-heading-4 text-muted-foreground">Organize and manage all your media files.</p>
+          <h1 className="text-2xl font-bold text-[var(--admin-fg-primary)] mb-1">Media Library</h1>
+          <p className="text-sm text-[var(--admin-fg-secondary)]">Organize and manage all your media files.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="primary" onClick={() => setIsUploadOpen(true)}>
+          <AdminButton variant="primary" onClick={() => setIsUploadOpen(true)}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mr-1.5">
+              <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
             Upload
-          </Button>
-          <Button
+          </AdminButton>
+          <AdminButton
             variant="secondary"
-            onClick={() => {
-              store.addFolder('New Folder', null);
-            }}
+            onClick={() => store.addFolder('New Folder', null)}
           >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mr-1.5">
+              <path d="M2 4C2 3.44772 2.44772 3 3 3H6L7.5 5H13C13.5523 5 14 5.44772 14 6V12C14 12.5523 13.5523 13 13 13H3C2.44772 13 2 12.5523 2 12V4Z" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
             New Folder
-          </Button>
+          </AdminButton>
           {activeTab === 'trash' && trashedMedia.length > 0 && (
-            <Button
-              variant="secondary"
+            <AdminButton
+              variant="destructive"
               onClick={() => {
                 trashedMedia.forEach((item) => store.permanentlyDeleteMedia(item.id));
                 clearSelection();
               }}
             >
               Empty Trash
-            </Button>
+            </AdminButton>
           )}
         </div>
       </div>
@@ -234,123 +269,95 @@ export default function MediaLibrary() {
         </aside>
 
         <section className="lg:col-span-9">
-          <div className="bg-surface rounded-2xl shadow-neu-outset">
-            <div className="p-6 border-b border-border/30">
+          <AdminCard variant="elevated" padding="none">
+            <div className="p-5 border-b border-[var(--admin-border)]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('library')}
-                    className={cn(
-                      'px-4 py-2 rounded-full text-body-small transition-all duration-200',
-                      activeTab === 'library'
-                        ? 'bg-background text-foreground shadow-neu-inset'
-                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
-                    )}
-                  >
-                    Library
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('trash')}
-                    className={cn(
-                      'px-4 py-2 rounded-full text-body-small transition-all duration-200',
-                      activeTab === 'trash'
-                        ? 'bg-background text-foreground shadow-neu-inset'
-                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
-                    )}
-                  >
-                    Trash
-                  </button>
-
-                  <div className="ml-2 text-body-small text-muted-foreground">
+                <div className="flex items-center gap-4">
+                  <AdminTabs
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={(id: string) => setActiveTab(id as Tab)}
+                    variant="default"
+                    size="sm"
+                  />
+                  <span className="text-sm text-[var(--admin-fg-muted)]">
                     {activeTab === 'trash' ? 'Trash' : currentFolderName} • {filteredItems.length} items
-                  </div>
+                  </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('grid')}
-                    className={cn(
-                      'px-3 py-2 rounded-xl text-body-small transition-all duration-200',
-                      viewMode === 'grid'
-                        ? 'bg-background text-foreground shadow-neu-inset'
-                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
-                    )}
-                  >
-                    Grid
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('list')}
-                    className={cn(
-                      'px-3 py-2 rounded-xl text-body-small transition-all duration-200',
-                      viewMode === 'list'
-                        ? 'bg-background text-foreground shadow-neu-inset'
-                        : 'bg-surface text-muted-foreground shadow-neu-outset hover:text-foreground'
-                    )}
-                  >
-                    List
-                  </button>
-
-                  <select
-                    className={cn(selectClass, 'w-28')}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center border border-[var(--admin-border)] rounded-[var(--admin-radius)]">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-[var(--admin-primary)] text-[var(--admin-primary-fg)]' : 'text-[var(--admin-fg-muted)] hover:text-[var(--admin-fg-primary)]'} rounded-l-[var(--admin-radius)]`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                        <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                        <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                        <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-[var(--admin-primary)] text-[var(--admin-primary-fg)]' : 'text-[var(--admin-fg-muted)] hover:text-[var(--admin-fg-primary)]'} rounded-r-[var(--admin-radius)]`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <AdminSelect
+                    options={sizeOptions}
                     value={thumbnailSize}
-                    onChange={(e) => setThumbnailSize(e.target.value as ThumbSize)}
-                    aria-label="Thumbnail size"
-                  >
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
-                  </select>
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setThumbnailSize(e.target.value as ThumbSize)}
+                    size="sm"
+                  />
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-12">
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-12">
                 <div className="md:col-span-4">
-                  <input
-                    className={inputClass}
+                  <AdminInput
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                     placeholder="Search files..."
+                    size="sm"
+                    leftIcon={
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    }
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <select
-                    className={cn(selectClass, 'w-full')}
+                  <AdminSelect
+                    options={typeOptions}
                     value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value as MediaType | 'all')}
-                  >
-                    <option value="all">All Types</option>
-                    <option value="image">Images</option>
-                    <option value="video">Videos</option>
-                    <option value="document">Documents</option>
-                  </select>
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTypeFilter(e.target.value as MediaType | 'all')}
+                    size="sm"
+                  />
                 </div>
                 <div className="md:col-span-2">
-                  <select
-                    className={cn(selectClass, 'w-full')}
+                  <AdminSelect
+                    options={sortOptions}
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortBy)}
-                  >
-                    <option value="date">Sort: Date</option>
-                    <option value="name">Sort: Name</option>
-                  </select>
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value as SortBy)}
+                    size="sm"
+                  />
                 </div>
                 <div className="md:col-span-2">
-                  <select
-                    className={cn(selectClass, 'w-full')}
+                  <AdminSelect
+                    options={sortDirOptions}
                     value={sortDir}
-                    onChange={(e) => setSortDir(e.target.value as SortDir)}
-                  >
-                    <option value="desc">Newest</option>
-                    <option value="asc">Oldest</option>
-                  </select>
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortDir(e.target.value as SortDir)}
+                    size="sm"
+                  />
                 </div>
                 <div className="md:col-span-2 flex items-center gap-2">
                   <input
-                    className={inputClass}
+                    className="flex-1 h-8 px-2 text-xs rounded-[var(--admin-radius)] bg-[var(--admin-bg-base)] text-[var(--admin-fg-primary)] border border-[var(--admin-border)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-ring)]"
                     type="date"
                     max={today}
                     value={dateFrom}
@@ -358,7 +365,7 @@ export default function MediaLibrary() {
                     aria-label="From date"
                   />
                   <input
-                    className={inputClass}
+                    className="flex-1 h-8 px-2 text-xs rounded-[var(--admin-radius)] bg-[var(--admin-bg-base)] text-[var(--admin-fg-primary)] border border-[var(--admin-border)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-ring)]"
                     type="date"
                     max={today}
                     value={dateTo}
@@ -369,89 +376,100 @@ export default function MediaLibrary() {
               </div>
 
               {selectedCount > 0 && (
-                <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-background shadow-neu-inset p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-body text-foreground font-medium">
-                    {selectedCount} item{selectedCount > 1 ? 's' : ''} selected
+                <AdminToolbar className="mt-4 bg-[var(--admin-primary-muted)]">
+                  <div className="flex flex-col gap-3 w-full sm:flex-row sm:items-center sm:justify-between">
+                    <span className="text-sm font-medium text-[var(--admin-fg-primary)]">
+                      {selectedCount} item{selectedCount > 1 ? 's' : ''} selected
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {activeTab === 'trash' ? (
+                        <>
+                          <AdminButton variant="secondary" size="sm" onClick={bulkRestore}>
+                            Restore
+                          </AdminButton>
+                          <AdminButton variant="destructive" size="sm" onClick={bulkTrashOrDelete}>
+                            Delete Forever
+                          </AdminButton>
+                        </>
+                      ) : (
+                        <>
+                          <AdminButton variant="secondary" size="sm" onClick={() => setIsMoveOpen(true)}>
+                            Move
+                          </AdminButton>
+                          <AdminButton variant="secondary" size="sm" onClick={() => setIsBulkOpen(true)}>
+                            Bulk Edit
+                          </AdminButton>
+                          <AdminButton variant="destructive" size="sm" onClick={bulkTrashOrDelete}>
+                            Move to Trash
+                          </AdminButton>
+                        </>
+                      )}
+                      <AdminButton variant="ghost" size="sm" onClick={clearSelection}>
+                        Clear
+                      </AdminButton>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    {activeTab === 'trash' ? (
-                      <>
-                        <Button variant="secondary" onClick={bulkRestore}>
-                          Restore
-                        </Button>
-                        <Button variant="secondary" onClick={bulkTrashOrDelete}>
-                          Delete Forever
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button variant="secondary" onClick={() => setIsMoveOpen(true)}>
-                          Move
-                        </Button>
-                        <Button variant="secondary" onClick={() => setIsBulkOpen(true)}>
-                          Bulk Edit
-                        </Button>
-                        <Button variant="secondary" onClick={bulkTrashOrDelete}>
-                          Move to Trash
-                        </Button>
-                      </>
-                    )}
-                    <Button variant="secondary" onClick={clearSelection}>
-                      Clear
-                    </Button>
-                  </div>
-                </div>
+                </AdminToolbar>
               )}
             </div>
 
-            <div className="p-6">
+            <div className="p-5">
               {filteredItems.length === 0 ? (
-                <div className="rounded-2xl bg-background shadow-neu-inset p-12 text-center text-muted-foreground">
-                  No media found.
-                </div>
+                <AdminEmptyState
+                  title="No media found"
+                  description="Upload some files or adjust your filters to see media here."
+                  action={{
+                    label: 'Upload Files',
+                    onClick: () => setIsUploadOpen(true),
+                  }}
+                />
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
                   {pagedItems.map((item) => (
                     <div
                       key={item.id}
-                      className="group overflow-hidden rounded-2xl bg-background shadow-neu-outset transition-all duration-200 hover:shadow-neu-inset"
+                      className={`group overflow-hidden rounded-[var(--admin-radius-lg)] border transition-all duration-200 ${
+                        selectedIds.has(item.id)
+                          ? 'border-[var(--admin-primary)] bg-[var(--admin-primary-muted)]'
+                          : 'border-[var(--admin-border)] bg-[var(--admin-bg-elevated)] hover:border-[var(--admin-border-strong)] hover:shadow-[var(--admin-shadow-2)]'
+                      }`}
                     >
-                      <div className="flex items-center justify-between gap-3 border-b border-border/20 px-4 py-3">
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(item.id)}
-                            onChange={() => toggleSelect(item.id)}
-                            className="w-4 h-4 rounded accent-primary cursor-pointer"
-                          />
-                          <span className="sr-only">Select</span>
-                        </label>
-                        <span className={cn('rounded-full px-3 py-1 text-label', typePill(item.type))}>
+                      <div className="flex items-center justify-between gap-3 border-b border-[var(--admin-border-muted)] px-3 py-2">
+                        <AdminCheckbox
+                          checked={selectedIds.has(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                        />
+                        <AdminBadge variant={getTypeBadgeVariant(item.type)} size="sm">
                           {typeLabel(item.type)}
-                        </span>
+                        </AdminBadge>
                       </div>
 
                       <button type="button" className="block w-full text-left" onClick={() => setDetailId(item.id)}>
-                        <div className={cn('w-full bg-surface p-3', thumbClass(thumbnailSize))}>
-                          <div className="h-full w-full overflow-hidden rounded-xl bg-background shadow-neu-inset">
+                        <div className={`w-full bg-[var(--admin-bg-base)] p-2 ${thumbClass(thumbnailSize)}`}>
+                          <div className="h-full w-full overflow-hidden rounded-[var(--admin-radius-md)] bg-[var(--admin-secondary)]">
                             {item.type === 'image' ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={item.url} alt={item.altText ?? item.name} className="h-full w-full object-cover" />
                             ) : item.type === 'video' ? (
-                              <div className="flex h-full items-center justify-center text-muted-foreground">
-                                <span className="text-heading-4">Video</span>
+                              <div className="flex h-full items-center justify-center text-[var(--admin-fg-muted)]">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                  <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
+                                </svg>
                               </div>
                             ) : (
-                              <div className="flex h-full items-center justify-center text-muted-foreground">
-                                <span className="text-heading-4">Document</span>
+                              <div className="flex h-full items-center justify-center text-[var(--admin-fg-muted)]">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                  <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <div className="space-y-1 px-4 py-4">
-                          <div className="truncate text-body text-foreground font-medium">{item.name}</div>
-                          <div className="flex items-center justify-between text-body-small text-muted-foreground">
+                        <div className="space-y-1 px-3 py-3">
+                          <div className="truncate text-sm font-medium text-[var(--admin-fg-primary)]">{item.name}</div>
+                          <div className="flex items-center justify-between text-xs text-[var(--admin-fg-muted)]">
                             <span>{item.size}</span>
                             <span>{item.uploadedAt}</span>
                           </div>
@@ -461,12 +479,12 @@ export default function MediaLibrary() {
                   ))}
                 </div>
               ) : (
-                <div className="overflow-hidden rounded-2xl bg-background shadow-neu-outset">
-                  <div className="grid grid-cols-12 gap-3 border-b border-border/20 px-5 py-4 text-body-small text-muted-foreground font-medium">
+                <div className="overflow-hidden rounded-[var(--admin-radius-lg)] border border-[var(--admin-border)]">
+                  <div className="grid grid-cols-12 gap-3 border-b border-[var(--admin-border)] bg-[var(--admin-bg-base)] px-4 py-3 text-xs font-semibold text-[var(--admin-fg-muted)] uppercase tracking-wider">
                     <div className="col-span-1">
                       <button
                         type="button"
-                        className="underline hover:text-foreground transition-colors"
+                        className="underline hover:text-[var(--admin-fg-primary)] transition-colors"
                         onClick={isAllSelected ? clearSelection : selectAll}
                       >
                         {isAllSelected ? 'None' : 'All'}
@@ -477,58 +495,48 @@ export default function MediaLibrary() {
                     <div className="col-span-2">Size</div>
                     <div className="col-span-2">Date</div>
                   </div>
-                  <div className="divide-y divide-border/10">
+                  <div className="divide-y divide-[var(--admin-border-muted)]">
                     {pagedItems.map((item) => (
                       <div
                         key={item.id}
-                        className="grid cursor-pointer grid-cols-12 gap-3 px-5 py-4 hover:bg-surface/50 transition-colors"
+                        className={`grid cursor-pointer grid-cols-12 gap-3 px-4 py-3 transition-colors ${
+                          selectedIds.has(item.id)
+                            ? 'bg-[var(--admin-primary-muted)]'
+                            : 'hover:bg-[var(--admin-bg-hover)]'
+                        }`}
                         onClick={() => setDetailId(item.id)}
                       >
                         <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
+                          <AdminCheckbox
                             checked={selectedIds.has(item.id)}
                             onChange={() => toggleSelect(item.id)}
-                            className="w-4 h-4 rounded accent-primary cursor-pointer"
                           />
                         </div>
-                        <div className="col-span-5 truncate text-body text-foreground">{item.name}</div>
+                        <div className="col-span-5 truncate text-sm text-[var(--admin-fg-primary)]">{item.name}</div>
                         <div className="col-span-2">
-                          <span className={cn('rounded-full px-3 py-1 text-label', typePill(item.type))}>
+                          <AdminBadge variant={getTypeBadgeVariant(item.type)} size="sm">
                             {typeLabel(item.type)}
-                          </span>
+                          </AdminBadge>
                         </div>
-                        <div className="col-span-2 text-body-small text-muted-foreground">{item.size}</div>
-                        <div className="col-span-2 text-body-small text-muted-foreground">{item.uploadedAt}</div>
+                        <div className="col-span-2 text-sm text-[var(--admin-fg-muted)]">{item.size}</div>
+                        <div className="col-span-2 text-sm text-[var(--admin-fg-muted)]">{item.uploadedAt}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-body-small text-muted-foreground">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="secondary"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
+              {filteredItems.length > 0 && (
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={filteredItems.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setCurrentPage}
+                />
+              )}
             </div>
-          </div>
+          </AdminCard>
         </section>
       </div>
 
@@ -548,18 +556,8 @@ export default function MediaLibrary() {
         defaultFolderId={currentFolderId}
         count={selectedCount}
         onClose={() => setIsMoveOpen(false)}
-        onMove={(folderId) => {
-          store.moveMediaToFolder(Array.from(selectedIds), folderId);
-          clearSelection();
-        }}
-      />
-
-      <BulkEditMediaModal
-        isOpen={isBulkOpen}
-        count={selectedCount}
-        onClose={() => setIsBulkOpen(false)}
-        onConfirm={(updates) => {
-          store.bulkUpdateMedia(Array.from(selectedIds), updates);
+        onMove={(destFolderId: string | null) => {
+          store.moveMediaToFolder(Array.from(selectedIds), destFolderId);
           clearSelection();
         }}
       />
@@ -568,9 +566,19 @@ export default function MediaLibrary() {
         isOpen={Boolean(detailId)}
         item={currentItem}
         onClose={() => setDetailId(null)}
-        onSave={(id, updates) => store.updateMedia(id, updates)}
-        onRename={(id, name) => store.renameMedia(id, name)}
-        onReplace={(id, file) => store.replaceMedia(id, file)}
+        onSave={(id: string, updates: { altText?: string; caption?: string; tags?: string[] }) => store.updateMedia(id, updates)}
+        onRename={(id: string, name: string) => store.renameMedia(id, name)}
+        onReplace={(id: string, newFile: File) => store.replaceMedia(id, newFile)}
+      />
+
+      <BulkEditMediaModal
+        isOpen={isBulkOpen}
+        count={selectedCount}
+        onClose={() => setIsBulkOpen(false)}
+        onConfirm={(updates: { altText?: string; caption?: string; tags?: string[] }) => {
+          selectedIds.forEach((id: string) => store.updateMedia(id, updates));
+          clearSelection();
+        }}
       />
     </div>
   );
