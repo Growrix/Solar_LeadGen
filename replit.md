@@ -20,6 +20,35 @@ Preferred communication style: Simple, everyday language.
 - **Real-time**: Pusher.js for live notifications and messaging
 - **Forms**: React Hook Form with Zod validation
 
+### Admin Design System (New)
+The admin dashboard uses a dedicated design system separate from public pages:
+
+**Design Tokens** (`src/design-tokens/admin/`):
+- `colors.ts`: Modern color palette (blue primary, teal accent, semantic status colors)
+- `elevation.ts`: 4-level shadow system replacing neumorphic effects
+- `spacing.ts`, `typography.ts`, `radius.ts`: Consistent spacing and typography scales
+
+**CSS Variables** (in `globals.css`):
+- All admin tokens use `--admin-*` prefix (e.g., `--admin-primary`, `--admin-bg-base`)
+- Supports light/dark theme variations
+
+**Component Library** (`src/components/admin/ui/`):
+- `AdminButton`: Primary, secondary, ghost, destructive variants
+- `AdminInput`: Text input with label, hint, error states
+- `AdminSelect`: Dropdown with consistent styling
+- `AdminCard`: Container with elevation variants
+- `AdminBadge`: Status indicators (primary, success, warning, destructive)
+- `AdminModal`: Dialog with header, body, footer sections
+- `AdminTable`: Data table with sorting and selection
+- `AdminToolbar`: Action bar for bulk operations
+- `AdminPagination`: Page navigation controls
+- `AdminTabs`: Tab navigation component
+- `AdminCheckbox`: Styled checkbox input
+- `AdminFileUploader`: Drag-and-drop file upload zone
+- `AdminEmptyState`: Placeholder for empty data states
+
+All components use semantic tokens via CSS custom properties for theme flexibility.
+
 ### Backend Architecture
 - **API Layer**: Next.js API Routes (App Router)
 - **Authentication**: NextAuth.js with Prisma adapter, role-based access control
