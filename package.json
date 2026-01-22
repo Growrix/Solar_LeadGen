@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 5000",
     "dev:e2e": "node scripts/dev-e2e.js",
     "prebuild": "node scripts/clean-next.js",
     "build": "next build",
