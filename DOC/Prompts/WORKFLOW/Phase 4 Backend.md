@@ -1,5 +1,23 @@
 
 
+***Phase 1 : Audit***
+- Audit the currnet state of the `Blog Feature` e2e and prepare the audit report in : `DOC\Features\BLOG\Backend`.
+
+***Phase 2 : Backend Planning***
+- Based on the Audit report prepared in the Phase 1, create the Backend planning following the 
+
+
+
+
+
+
+
+
+
+
+
+
+
 - hint word "Backend Planning"
 - Lets do the Backend Planning for the News Engine feature. Based on the final UI/UX flow and all current documentation, prepare a detailed, end-to-end backend plan for the News Engine feature. The plan must be created in: DOC\FEATURES\NEWS ENGINE\BACKEND PLAN
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, Link as LinkIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import { BlogPost, ViewState } from '../types';
@@ -110,9 +111,14 @@ const BlogPostDetail: React.FC<BlogPostDetailProps> = ({ slug, initialPost, onBa
           <span className="inline-block px-3 py-1 text-xs font-semibold tracking-wide text-solar-700 bg-solar-100 rounded-full mb-4">
             {post.category}
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-4">
             {post.title}
           </h1>
+          {post.subtitle && (
+            <p className="text-xl md:text-2xl text-slate-600 mb-6 font-light leading-relaxed">
+              {post.subtitle}
+            </p>
+          )}
           
           {/* Meta Row */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-6 border-y border-slate-100">

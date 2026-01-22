@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { AdminPost, TrashedPost, Comment, PostStatus, CommentStatus } from '../types';
-import { MOCK_ADMIN_POSTS, MOCK_TRASHED_POSTS, MOCK_COMMENTS } from '../constants';
+import { AdminPost, TrashedPost, Comment, PostStatus, CommentStatus, AuthorProfile } from '../types';
+import { MOCK_ADMIN_POSTS, MOCK_TRASHED_POSTS, MOCK_COMMENTS, MOCK_AUTHORS } from '../constants';
 
 export interface Folder {
   id: string;
@@ -113,6 +113,7 @@ interface BlogContextType {
   trashedMedia: TrashedMediaItem[];
   comments: Comment[];
   folders: Folder[];
+  authors: AuthorProfile[];
   addPost: (post: AdminPost) => void;
   updatePost: (id: string, updates: Partial<AdminPost>) => void;
   movePostToTrash: (id: string) => void;
@@ -133,6 +134,9 @@ interface BlogContextType {
   deleteFolder: (id: string) => void;
   renameFolder: (id: string, name: string) => void;
   moveMediaToFolder: (mediaIds: string[], folderId: string | null) => void;
+  addAuthor: (author: AuthorProfile) => void;
+  updateAuthor: (id: string, updates: Partial<AuthorProfile>) => void;
+  deleteAuthor: (id: string) => void;
 }
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
@@ -150,6 +154,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [trashedMedia, setTrashedMedia] = useState<TrashedMediaItem[]>(MOCK_TRASHED_MEDIA);
   const [comments, setComments] = useState<Comment[]>(MOCK_COMMENTS);
   const [folders, setFolders] = useState<Folder[]>(MOCK_FOLDERS);
+  const [authors, setAuthors] = useState<AuthorProfile[]>(MOCK_AUTHORS);
 
   const addPost = (post: AdminPost) => {
     setPosts(prev => [post, ...prev]);
@@ -305,6 +310,19 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setMedia(prev => prev.map(m => mediaIds.includes(m.id) ? { ...m, folderId } : m));
   };
 
+  // Author Logic
+  const addAuthor = (author: AuthorProfile) => {
+    setAuthors(prev => [author, ...prev]);
+  };
+
+  const updateAuthor = (id: string, updates: Partial<AuthorProfile>) => {
+    setAuthors(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+  };
+
+  const deleteAuthor = (id: string) => {
+    setAuthors(prev => prev.filter(a => a.id !== id));
+  };
+
   return (
     <BlogContext.Provider value={{
       posts,
@@ -313,6 +331,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       trashedMedia,
       comments,
       folders,
+      authors,
       addPost,
       updatePost,
       movePostToTrash,
@@ -332,7 +351,10 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addFolder,
       deleteFolder,
       renameFolder,
-      moveMediaToFolder
+      moveMediaToFolder,
+      addAuthor,
+      updateAuthor,
+      deleteAuthor
     }}>
       {children}
     </BlogContext.Provider>

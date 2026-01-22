@@ -10,7 +10,8 @@ import {
   Image,
   MessageSquare,
   X,
-  BarChart3
+  BarChart3,
+  Users
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -25,9 +26,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentRoute, isOpen, onClo
 
   const menuItems = [
     { label: 'Overview', icon: BarChart3, route: '#/admin/overview' },
-    { label: 'Content Manager', icon: LayoutDashboard, route: '#/admin/blog' },
+    { label: 'Blog Manager', icon: LayoutDashboard, route: '#/admin/blog' },
     { label: 'Media Library', icon: Image, route: '#/admin/blog/media' },
-    { label: 'Comments', icon: MessageSquare, route: '#/admin/blog/comments' },
     { label: 'Engine Hub', icon: Zap, route: '#/admin/blog/engine' },
   ];
 
@@ -53,11 +53,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentRoute, isOpen, onClo
       return currentRoute === '#/admin' || currentRoute === '#/admin/overview';
     }
     
-    // Exact match for Content Manager base route to avoid "Content Manager" staying active for sub-routes that are distinct features
+    // Exact match for Blog Manager base route to avoid it staying active for sub-routes that are distinct features
     if (itemRoute === '#/admin/blog') {
+       // Blog Manager now handles posts, categories, tags, comments, and authors
        return currentRoute === '#/admin/blog' || 
               currentRoute.startsWith('#/admin/blog/new') || 
-              (currentRoute.startsWith('#/admin/blog/') && !['media', 'engine', 'comments'].some(p => currentRoute.includes(p)));
+              (currentRoute.startsWith('#/admin/blog/') && !['media', 'engine'].some(p => currentRoute.includes(p)));
     }
     return currentRoute.startsWith(itemRoute);
   };

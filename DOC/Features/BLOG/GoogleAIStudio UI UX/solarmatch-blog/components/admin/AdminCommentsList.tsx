@@ -19,7 +19,11 @@ import ModerateCommentModal from './ModerateCommentModal';
 import ConfirmationModal from './ConfirmationModal';
 import BulkModerateModal from './BulkModerateModal';
 
-const AdminCommentsList: React.FC = () => {
+interface AdminCommentsListProps {
+  isTabbed?: boolean;
+}
+
+const AdminCommentsList: React.FC<AdminCommentsListProps> = ({ isTabbed = false }) => {
   const { comments, updateCommentStatus, deleteComment } = useBlog();
   const [viewState, setViewState] = useState<ViewState>('loading');
   const [searchQuery, setSearchQuery] = useState('');
@@ -231,7 +235,7 @@ const AdminCommentsList: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 relative">
+    <div className={`min-h-screen bg-slate-50 font-sans text-slate-900 relative ${isTabbed ? '' : 'pt-0'}`}>
       {/* Modals */}
       <ModerateCommentModal 
         isOpen={isModerateModalOpen}
@@ -317,16 +321,18 @@ const AdminCommentsList: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Comments</h1>
-            <p className="text-slate-500 text-sm mt-1">Moderate user discussions and manage community engagement.</p>
+      {!isTabbed && (
+        <div className="bg-white border-b border-slate-200 px-6 py-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Comments</h1>
+              <p className="text-slate-500 text-sm mt-1">Moderate user discussions and manage community engagement.</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-7xl mx-auto px-6 py-8 pb-32">
+      <div className={`${isTabbed ? 'max-w-7xl' : 'max-w-7xl'} mx-auto px-6 py-8 pb-32`}>
         
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-2 rounded-xl border border-slate-200 shadow-sm">

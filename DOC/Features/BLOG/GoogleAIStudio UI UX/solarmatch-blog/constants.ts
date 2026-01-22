@@ -1,5 +1,5 @@
 
-import { BlogPost, AdminPost, Category, Tag, Comment, PostStatus, TrashedPost } from './types';
+import { BlogPost, AdminPost, Category, Tag, Comment, PostStatus, TrashedPost, AuthorProfile } from './types';
 
 const SAMPLE_CONTENT = `
   <p class="lead text-xl text-slate-600 mb-8 leading-relaxed">
@@ -30,6 +30,45 @@ const SAMPLE_CONTENT = `
   </p>
 `;
 
+export const MOCK_AUTHORS: AuthorProfile[] = [
+  {
+    id: '1',
+    name: 'Sarah Jenkins',
+    email: 'sarah.j@solarmatch.com',
+    avatar: 'https://picsum.photos/seed/user1/100/100',
+    role: 'editor',
+    status: 'active',
+    joinedAt: 'Jan 15, 2023'
+  },
+  {
+    id: '2',
+    name: 'David Chen',
+    email: 'david.c@solarmatch.com',
+    avatar: 'https://picsum.photos/seed/user2/100/100',
+    role: 'contributor',
+    status: 'active',
+    joinedAt: 'Mar 10, 2023'
+  },
+  {
+    id: '3',
+    name: 'Emily Ross',
+    email: 'emily.r@solarmatch.com',
+    avatar: 'https://picsum.photos/seed/user3/100/100',
+    role: 'contributor',
+    status: 'inactive',
+    joinedAt: 'Apr 05, 2023'
+  },
+  {
+    id: 'admin',
+    name: 'Admin User',
+    email: 'admin@solarmatch.com',
+    avatar: 'https://picsum.photos/seed/user_admin/100/100',
+    role: 'admin',
+    status: 'active',
+    joinedAt: 'Jan 01, 2023'
+  }
+];
+
 export const MOCK_POSTS: BlogPost[] = [
   {
     id: '1',
@@ -39,10 +78,8 @@ export const MOCK_POSTS: BlogPost[] = [
     content: SAMPLE_CONTENT,
     coverImage: 'https://picsum.photos/seed/solar1/800/600',
     category: 'Industry News',
-    author: {
-      name: 'Sarah Jenkins',
-      avatar: 'https://picsum.photos/seed/user1/100/100',
-    },
+    author: { name: 'Sarah Jenkins', avatar: 'https://picsum.photos/seed/user1/100/100' },
+    authorId: '1',
     publishedAt: 'Oct 12, 2023',
     readTime: '5 min read',
   },
@@ -54,10 +91,8 @@ export const MOCK_POSTS: BlogPost[] = [
     content: SAMPLE_CONTENT,
     coverImage: 'https://picsum.photos/seed/solar2/800/600',
     category: 'Guides',
-    author: {
-      name: 'David Chen',
-      avatar: 'https://picsum.photos/seed/user2/100/100',
-    },
+    author: { name: 'David Chen', avatar: 'https://picsum.photos/seed/user2/100/100' },
+    authorId: '2',
     publishedAt: 'Oct 08, 2023',
     readTime: '8 min read',
   },
@@ -69,10 +104,8 @@ export const MOCK_POSTS: BlogPost[] = [
     content: SAMPLE_CONTENT,
     coverImage: 'https://picsum.photos/seed/solar3/800/600',
     category: 'Finance',
-    author: {
-      name: 'Emily Ross',
-      avatar: 'https://picsum.photos/seed/user3/100/100',
-    },
+    author: { name: 'Emily Ross', avatar: 'https://picsum.photos/seed/user3/100/100' },
+    authorId: '3',
     publishedAt: 'Sep 29, 2023',
     readTime: '6 min read',
   },
@@ -84,10 +117,7 @@ export const MOCK_POSTS: BlogPost[] = [
     content: SAMPLE_CONTENT,
     coverImage: 'https://picsum.photos/seed/solar4/800/600',
     category: 'Case Studies',
-    author: {
-      name: 'Michael Wright',
-      avatar: 'https://picsum.photos/seed/user4/100/100',
-    },
+    author: { name: 'Michael Wright', avatar: 'https://picsum.photos/seed/user4/100/100' },
     publishedAt: 'Sep 15, 2023',
     readTime: '4 min read',
   },
@@ -99,10 +129,8 @@ export const MOCK_POSTS: BlogPost[] = [
     content: SAMPLE_CONTENT,
     coverImage: 'https://picsum.photos/seed/solar5/800/600',
     category: 'Policy',
-    author: {
-      name: 'Sarah Jenkins',
-      avatar: 'https://picsum.photos/seed/user1/100/100',
-    },
+    author: { name: 'Sarah Jenkins', avatar: 'https://picsum.photos/seed/user1/100/100' },
+    authorId: '1',
     publishedAt: 'Sep 10, 2023',
     readTime: '7 min read',
   },
@@ -114,10 +142,7 @@ export const MOCK_POSTS: BlogPost[] = [
     content: SAMPLE_CONTENT,
     coverImage: 'https://picsum.photos/seed/solar6/800/600',
     category: 'Technology',
-    author: {
-      name: 'Alex Johnson',
-      avatar: 'https://picsum.photos/seed/user5/100/100',
-    },
+    author: { name: 'Alex Johnson', avatar: 'https://picsum.photos/seed/user5/100/100' },
     publishedAt: 'Sep 01, 2023',
     readTime: '10 min read',
   },

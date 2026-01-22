@@ -80,6 +80,13 @@ const FileTextIcon = () => (
     <polyline points="10 9 9 9 8 9" />
   </svg>
 );
+const ImageIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+    <circle cx="9" cy="9" r="2" />
+    <path d="m21 15-5-5L5 21" />
+  </svg>
+);
 const LayersIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
     <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -160,32 +167,10 @@ const AdminSidebar: React.FC<{ activePage?: string }> = ({ activePage = 'Dashboa
         <NavItem icon={<ClipboardListIcon />} title="Leads" isActive={activePage === 'Leads'} onClick={() => { window.location.href = '/admin/leads'; }} isCollapsed={isCollapsed} />
       <NavItem icon={<FileTextIcon />} title="News Engine" isActive={activePage === 'News Engine'} onClick={() => { window.location.href = '/admin/news-engine'; }} isCollapsed={isCollapsed} />
 
-        {!isCollapsed ? (
-          <button
-            onClick={() => setBlogOpen((prev) => !prev)}
-            className={`dashboard-nav-item dashboard-nav-item--expanded ${activePage === 'Blog' ? 'dashboard-nav-item--active' : ''}`}
-            type="button"
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center space-x-3">
-                <span className="dashboard-nav-item__icon"><FileTextIcon /></span>
-                <span className="dashboard-nav-item__text">Blog</span>
-              </div>
-              <ChevronDownIcon open={blogOpen} />
-            </div>
-          </button>
-        ) : (
-          <NavItem icon={<FileTextIcon />} title="Blog" isActive={activePage === 'Blog'} onClick={() => { window.location.href = '/admin/blog'; }} isCollapsed={isCollapsed} />
-        )}
+        <NavItem icon={<FileTextIcon />} title="Blog: Content Manager" isActive={activePage === 'Blog: Content Manager'} onClick={() => { window.location.href = '/admin/blog/content-manager'; }} isCollapsed={isCollapsed} />
+        <NavItem icon={<ImageIcon />} title="Blog: Media Library" isActive={activePage === 'Blog: Media Library'} onClick={() => { window.location.href = '/admin/blog/media'; }} isCollapsed={isCollapsed} />
 
-        {!isCollapsed && blogOpen ? (
-          <div className="pl-6 space-y-1">
-            <NavItem icon={<FileTextIcon />} title="All Posts" isActive={false} onClick={() => { window.location.href = '/admin/blog'; }} isCollapsed={false} />
-            <NavItem icon={<FileTextIcon />} title="Create Post" isActive={false} onClick={() => { window.location.href = '/admin/blog/new'; }} isCollapsed={false} />
-            <NavItem icon={<FileTextIcon />} title="Categories" isActive={false} onClick={() => { window.location.href = '/admin/blog/categories'; }} isCollapsed={false} />
-            <NavItem icon={<FileTextIcon />} title="Tags" isActive={false} onClick={() => { window.location.href = '/admin/blog/tags'; }} isCollapsed={false} />
-          </div>
-        ) : null}
+
 
         <NavItem icon={<LayersIcon />} title="Components" isActive={activePage === 'Components'} onClick={() => { window.location.href = '/admin/components'; }} isCollapsed={isCollapsed} />
         <NavItem icon={<MailIcon />} title="Newsletter" isActive={activePage === 'Newsletter'} onClick={() => { window.location.href = '/admin/newsletter'; }} isCollapsed={isCollapsed} />

@@ -8,6 +8,7 @@ import BlogEngineHub from './BlogEngineHub';
 import AdminMediaLibrary from './AdminMediaLibrary';
 import AdminCommentsList from './AdminCommentsList';
 import AdminOverview from './AdminOverview';
+import AdminAuthorList from './AdminAuthorList';
 
 interface AdminDashboardProps {
   currentRoute: string;
@@ -30,8 +31,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentRoute }) => {
   
   // Edit Existing Post
   const editorMatch = currentRoute.match(/^#\/admin\/blog\/([^/]+)$/);
-  // Ensure we don't treat 'categories', 'tags', 'engine', 'media', 'comments', 'trash' as a post ID
-  if (editorMatch && !['categories', 'tags', 'engine', 'media', 'comments', 'trash'].includes(editorMatch[1])) {
+  // Ensure we don't treat reserved keywords as a post ID
+  const reservedRoutes = ['categories', 'tags', 'comments', 'engine', 'media', 'authors', 'trash'];
+  if (editorMatch && !reservedRoutes.includes(editorMatch[1])) {
      const possibleId = editorMatch[1];
      if (possibleId) {
        return <AdminEditor id={possibleId} onBack={() => window.location.hash = '#/admin/blog'} />;
@@ -56,17 +58,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentRoute }) => {
     );
   }
 
-  // 5. Comments
-  if (currentRoute === '#/admin/blog/comments') {
-    return (
-      <AdminLayout currentRoute={currentRoute}>
-        <AdminCommentsList />
-      </AdminLayout>
-    );
-  }
-
-  // 6. Blog Engine (Tabbed Views for Content Lists)
-  // Matches #/admin/blog, #/admin/blog/categories, #/admin/blog/tags, #/admin/blog/trash
+  // 5. Blog Engine (Tabbed Views for Blog Manager: Posts, Categories, Tags, Comments, Authors)
+  // Matches #/admin/blog, #/admin/blog/categories, #/admin/blog/tags, #/admin/blog/comments, #/admin/blog/authors
   if (currentRoute.startsWith('#/admin/blog')) {
     return (
       <AdminLayout currentRoute={currentRoute}>
@@ -75,7 +68,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentRoute }) => {
     );
   }
 
-  // 7. Dashboard Overview (Default fallback for /admin)
+  // 6. Dashboard Overview (Default fallback for /admin)
   return (
     <AdminLayout currentRoute={currentRoute}>
       <AdminOverview />

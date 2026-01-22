@@ -5553,9 +5553,15 @@ I want to create prompts where The AI create its own workflow phases based on th
 - Save the user story file(s) in: DOC/FEATURES/[FEATURE]/POST FEATURE/FIXING ISSUES
 
 ***Issues to solve***
+`News Engine Settings Page issues`
 
-- Image fetch failed and giving 503 error. Identify the root cause and fix it.
-- 
+# Section : AI router 
+- Model Prfofile > The bulk delete option is not working in the Model Profile section. I have selected multiple model profiles but when I click on the bulk delete button, it is deleting temporary not permanently from the DB.You need to check if there is anything hardcoded there and make it functional.  You need to fix it so that the bulk delete option works properly.
+
+# Section : AI Personalization
+- The news engine > Settings > Daily limit is not working as expected in the News Engine Settings section. I have set 5 as the daily limit but the AI is generating 10 Drafts when enabled the Live Run with Run Automation Now button . You need to fix it so that the daily limit works properly as per I set the limit. 
+
+-  
 
 ***Phase 2: Test Script Creation***
 - Create all test scripts following: `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-implementation-testing-guidelines.md`, strictly based on the user stories from Phase 1.
@@ -5589,3 +5595,86 @@ I want to create prompts where The AI create its own workflow phases based on th
 
 **Note**
 - Add this section "Task Planning Required" in each phase in the tasks.md file of the relevant feature where applicable.
+
+---------------------------------------
+
+***Issues to fix***
+# Section : AI router 
+- Model Prfofile > The bulk delete option is not working in the Model Profile section. I have selected multiple model profiles but when I click on the bulk delete button, it is deleting temporary not permanently from the DB.You need to check if there is anything hardcoded there and make it functional.  You need to fix it so that the bulk delete option works properly.
+- Make sure that the editing modal works properly and the changes are reflected in the DB permanently.
+- Also Add Model Profile > should be same as the editing modal. so that the user can add new model profile from the same modal design. 
+- Make sure this eitre function has logical and real connections. no partial functionlity is allowed here and there. 
+- remove all the mock data. only real backend and frontend is allowed in order to make it production ready. 
+
+- The setting of the AI models for different tasks does not work properly. e.g I have selected the Google Gemini 2.0 flash for the Research_deep , but after refreshing the pag the settings are gone. check all the frontend and backend functionality is accrutely working. Make it production ready. 
+ # Section : AI Personalization
+- The news engine > Settings > Daily limit is not working as expected in the News Engine Settings section. I have set 5 as the daily limit but the AI is generating 10 Drafts when enabled the Live Run with Run Automation Now button . You need to fix it so that the daily limit works properly as per I set the limit. 
+- I want you to add to input prompt section in the News Engine Settings > AI Personalization section. so that the user can add custom input prompt for the AI to generate the news articles.
+MAke sure the backend functionality works as well. do not make it static only. it must be functional and fully interated with the AI functionality. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+
+---------------------------------------------
+
+-  The current settings here some there some is very confusing. e.g the AI rotuer should have only the AI model related settings. THe AI Personalization should be the only one place where the user will do all the AI settings such as the settings in AI router : Research_deep,Research_fast, etc options to chose models . 
+
+- as we have udpated the AI personalization section > Now we have double setting for Image_generate and AI image generation model
+- I want all the AI model settings to be in the AI Personalization section only. so please move all the model settings from the AI router section to the AI Personalization section.
+- Make sure all the settings are working properly after moving. I need the real functionality to work. you must check all the connectivity and wiring and make sure it is wired properly. 
+- also update the the files accordingly to reflect changes you will do. 
+
+
+- Key Vault : I have added another API from deepSeek , but this does not reflects in the `Add model profile` modal in the AI router section. you said, Any API keys will work accrodingly and reflect. BUt we need to do all the coding for that. 
+- why it is not reflecting here ? and why I need to work on codebase each time when I add new API keys? you said the backend is already that friendly and reflectable but which is not. 
+
+----------------------------------------------
+
+- IT still did not generate any draft. Identify the blocking /failing issue. Is it the API or the system ? 
+- The AI personalization > settings are not stable and I think there is no real backend functionality. I have tested it and after refreshing the page all the settings in the section is gone. 
+- Add model Profile > why Model listing is available for OpenAI and Gemini. Other providers use manual Model ID entry. I said earlier not to keep any filed to type. make sure all the model has their modal ID in the dropdown. ANd make sure they will be functional. not just the UI selection that has no real impact. 
+- in the AI router the 3 profile of openAI is automatically created when I enabled the new openAI API key. BUt in the Add model profile shows OpenAI models list falied. There are a lot of confusion and issues to check and solve. 
+
+***Instructions*** Audit the entire Settings Frontend and backend section by sections. I need to know each ui e2e . how it is working or it is really not working and just fake UI with fake functionality. becuse the entire AI keyvalut and AI router , AI personalization everything is confusing and not sure what is really working and what is not. create a comprehensive audit report in the DOC\FEATURES\NEWS ENGINE\Audit Reports
+
+------------------------------------------------
+
+- Now we have the AI gnerated content in the news engine but I want a compelte manual functionality in order to create post, draft, schedule, publishing options. 
+
+- As we already have the content publishing system and pipeline with AI , We just need to add manual functionality to it.
+- Additionally, I want the manual editor to have rich formatting options such as heading, bullet points, bold, italic, links etc. so that the content will be more reader friendly. Just add a button "Create News" for the manual post creation > That will trigger "Create Post" modal > The user create post and that can be drafted, scedule, Publish, removed draft etc. The published posts should be re-editable, deletable, unpublishable. 
+- Both the AI and Manual functionality should work accordingly without any issues. 
+
+***Instructions*** Analyze the curernt frontend and backend e2e and plan the expansion accordingly. prepare the plan in the DOC\FEATURES\NEWS ENGINE\Plan folder. 
+
+  ***Strickt Rules***
+### Follow the Guidelines:
+ from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md 
+
+
+-------------------------------------------
+
+Right now I do not have any functionality to give access of the admin backend for the authors/moderators etc.
+
+-------------------------------------
+
+Based on the current codebase, here is a list of the key UI/UX modules missing to make this a fully functional CMS:
+Authentication & Onboarding Flow
+Login, Register, Forgot Password, and Reset Password screens.
+Initial setup wizard (Site Name, First Admin creation).
+"My Profile" / Account Settings
+A page for the currently logged-in user to update their own password, email, and avatar (separate from the "Authors" management list).
+General Site Settings
+A configuration screen for global site variables: Site Title, Tagline, Logo upload, Favicon, Timezone, and Date Format settings.
+Navigation / Menu Builder
+A drag-and-drop interface to construct the public-facing Header and Footer menus (linking pages, categories, or custom URLs).
+Static Pages Management
+Separate from "Blog Posts". A section to manage static content like "About Us", "Contact", "Privacy Policy", or "Terms of Service".
+Revision History
+A UI within the Post Editor to view previous saves, compare changes, and restore older versions of content.
+Theme / Appearance Customizer
+Basic controls to set the public site's primary colors, fonts, and layout options (e.g., Grid vs. List view for the blog index).
+Webhooks & Integrations
+A settings page to manage external connections (e.g., Google Analytics ID, Mailchimp API keys, or Webhooks to trigger static site builds).

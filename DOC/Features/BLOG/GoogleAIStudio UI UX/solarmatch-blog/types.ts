@@ -4,16 +4,29 @@ export interface Author {
   avatar: string;
 }
 
+export interface AuthorProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: 'admin' | 'editor' | 'contributor' | 'guest';
+  status: 'active' | 'inactive';
+  bio?: string;
+  joinedAt: string;
+}
+
 export interface BlogPost {
   id: string;
   slug: string;
   title: string;
+  subtitle?: string;
   excerpt: string;
   content: string;
   coverImage: string;
   category: string;
   tags?: string[];
-  author: Author;
+  author: Author; // Kept for display compatibility
+  authorId?: string; // Link to AuthorProfile
   publishedAt: string;
   readTime: string;
 }

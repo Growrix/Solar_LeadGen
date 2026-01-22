@@ -1,24 +1,30 @@
 ***Frontend Migration Workflow***
   - Here is the prototype we built with google ai studio :
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\GoogleAIStudio UI UX\ai-news-engine-admin- V6
+  `DOC\FEATURES\BLOG\GoogleAIStudio UI UX`
  
   - Follow the file instructions strictly while preparing the migration plan
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\FRONTEND-PROTOTYPE-WORKFLOW\README.md .
+ `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\PROTOTYPE-TO-NEXTJS-PIXEL-PERFECT-MIGRATION.md`
 
-   - Create the Migration plan in the :
-  D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\MIGRATION.
-
+  - Create the Migration plan in the :
+  `DOC\FEATURES\BLOG\Migration`
+`
   - Based on the Migration plan that you have created, update the single root tasks file for the feature (do NOT create any additional tasks.md files):
-  `DOC/FEATURES/NEWS ENGINE/tasks.md`
+  `DOC\FEATURES\BLOG\tasks.md`
   - Use the canonical template rules at:
-  `DOC/.specify/templates/tasks-template.md`
+  `.specify\templates\tasks-template.md`
 
   ***Instructions*** 
-  I only need to migrate the news frontend pages and its realted modals. 
-  - News Page
-  - News Details Page
-  - Share Modal.
+  I only need to migrate as follows :
+  - Content Manager 
+  - Media Library
+ 
+  Note: these migrated pages should be added in my existing admin dashboard. 
 
+  ***Strickt Rules***
+  Before starting implimentation work, make sure to audit the existing structure and necessary files to avoid duplication of any code or missimplimentations. Get the clear picture of the existing codebase and its structure. Then start executing the migration work.
+  
+
+-----------------------------------------------------------------------------------------------------
 
 ### EXECUTION-GRADE AI PROMPT
 
