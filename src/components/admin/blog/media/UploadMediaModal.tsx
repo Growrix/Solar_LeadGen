@@ -152,21 +152,21 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div 
-        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity" 
         onClick={!isUploading ? onClose : undefined}
       />
       
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
         
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <UploadCloud className="w-5 h-5 text-solar-600" />
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-background-alt">
+          <h3 className="text-heading-4 text-foreground flex items-center gap-2">
+            <UploadCloud className="w-5 h-5 text-primary" />
             Upload Media
           </h3>
           {!isUploading && (
             <button 
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -182,10 +182,10 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`
-                border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all
+                border-2 border-dashed rounded-card p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors transition-shadow transition-transform
                 ${isDragging 
-                  ? 'border-solar-500 bg-solar-50' 
-                  : 'border-slate-300 hover:border-solar-400 hover:bg-slate-50'}
+                  ? 'border-primary/50 bg-primary/5' 
+                  : 'border-border hover:border-primary/40 hover:bg-background-alt'}
               `}
             >
               <input 
@@ -196,28 +196,28 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
                 multiple 
                 accept="image/*,video/*,application/pdf"
               />
-              <div className={`p-4 rounded-full mb-3 ${isDragging ? 'bg-solar-100 text-solar-600' : 'bg-slate-100 text-slate-400'}`}>
+              <div className={`p-4 rounded-full mb-3 ${isDragging ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}>
                 <UploadCloud className="w-8 h-8" />
               </div>
-              <h4 className="text-sm font-semibold text-slate-900">
+              <h4 className="text-heading-5 text-foreground">
                 {isDragging ? 'Drop files here' : 'Click to upload or drag and drop'}
               </h4>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-body-small text-muted-foreground mt-1">
                 Automatic compression & WebP conversion enabled
               </p>
             </div>
           )}
 
           {!isUploading && (
-            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                <Folder className="w-4 h-4 text-slate-400" /> Upload to
+            <div className="flex items-center gap-3 bg-background-alt border border-border rounded-card p-4">
+              <div className="flex items-center gap-2 text-body-small text-foreground">
+                <Folder className="w-4 h-4 text-muted-foreground" /> Upload to
               </div>
               <div className="flex-1">
                 <select
                   value={targetFolderId ?? 'root'}
                   onChange={(e) => setTargetFolderId(e.target.value === 'root' ? null : e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none"
+                  className="w-full px-3 py-2 bg-background border border-input rounded-input text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
                   <option value="root">🏠 Root</option>
                   {renderFolderOptions(null)}
@@ -227,7 +227,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
           )}
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive text-body-small rounded-card border border-destructive/20">
               <AlertCircle className="w-4 h-4" />
               {error}
             </div>
@@ -235,16 +235,16 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
 
           {isUploading && (
             <div className="py-12 flex flex-col items-center justify-center text-center">
-               <div className="w-full max-w-sm bg-slate-200 rounded-full h-2.5 mb-4 overflow-hidden">
+               <div className="w-full max-w-sm bg-muted rounded-full h-2.5 mb-4 overflow-hidden">
                  <div 
-                   className="bg-solar-600 h-2.5 rounded-full transition-all duration-300 ease-out" 
+                   className="bg-primary h-2.5 rounded-full transition-colors duration-300 ease-out" 
                    style={{ width: `${uploadProgress}%` }}
                  ></div>
                </div>
-               <h4 className="text-lg font-semibold text-slate-900 mb-1">
+               <h4 className="text-heading-4 text-foreground mb-1">
                  Uploading {files.length} file{files.length !== 1 ? 's' : ''}...
                </h4>
-               <p className="text-slate-500 text-sm">
+               <p className="text-body text-muted-foreground">
                  {uploadProgress < 100 ? 'Optimizing and compressing images...' : 'Finalizing...'}
                </p>
             </div>
@@ -253,10 +253,10 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
           {!isUploading && files.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-slate-700">Selected Files ({files.length})</h4>
+                <h4 className="text-heading-5 text-foreground">Selected Files ({files.length})</h4>
                 <button 
                   onClick={() => setFiles([])} 
-                  className="text-xs text-red-600 hover:text-red-700 hover:underline"
+                  className="text-body-small text-destructive hover:underline"
                 >
                   Clear all
                 </button>
@@ -264,15 +264,15 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
               
               <div className="space-y-3">
                 {files.map((fileItem) => (
-                  <div key={fileItem.id} className="flex gap-4 p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
-                    <div className="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-200 relative">
+                  <div key={fileItem.id} className="flex gap-4 p-3 bg-surface border border-border rounded-card shadow-sm">
+                    <div className="w-16 h-16 bg-muted rounded-card flex-shrink-0 overflow-hidden flex items-center justify-center border border-border relative">
                       {fileItem.preview ? (
                         <img src={fileItem.preview} alt="preview" className="w-full h-full object-cover" />
                       ) : (
-                        <FileIcon className="w-8 h-8 text-slate-400" />
+                        <FileIcon className="w-8 h-8 text-muted-foreground" />
                       )}
                       {fileItem.isOptimized && (
-                        <div className="absolute bottom-0 inset-x-0 bg-green-500/90 text-[9px] text-white text-center font-medium py-0.5">
+                        <div className="absolute bottom-0 inset-x-0 bg-success/90 text-caption text-background text-center py-0.5">
                           WebP
                         </div>
                       )}
@@ -281,15 +281,15 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex justify-between items-start">
                          <div className="flex flex-col">
-                           <p className="text-sm font-medium text-slate-900 truncate pr-2" title={fileItem.file.name}>
+                           <p className="text-body text-foreground truncate pr-2" title={fileItem.file.name}>
                              {fileItem.file.name}
                            </p>
-                           <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                           <div className="flex items-center gap-1.5 text-body-small text-muted-foreground mt-0.5">
                              <span>{fileItem.originalSize}</span>
                              {fileItem.isOptimized && (
                                <>
-                                 <ArrowRight className="w-3 h-3 text-slate-300" />
-                                 <span className="text-green-600 font-medium flex items-center gap-1">
+                                 <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                                 <span className="text-success flex items-center gap-1">
                                    <Zap className="w-3 h-3 fill-current" />
                                    {fileItem.optimizedSize}
                                  </span>
@@ -299,7 +299,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
                          </div>
                          <button 
                            onClick={() => removeFile(fileItem.id)}
-                           className="text-slate-400 hover:text-red-500 transition-colors"
+                           className="text-muted-foreground hover:text-destructive transition-colors"
                          >
                            <Trash2 className="w-4 h-4" />
                          </button>
@@ -311,14 +311,14 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
                           placeholder="Alt text (SEO)"
                           value={fileItem.altText}
                           onChange={(e) => updateMeta(fileItem.id, 'altText', e.target.value)}
-                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-solar-500 outline-none transition-colors"
+                          className="w-full px-2 py-1.5 text-body-small border border-input rounded-input bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors"
                         />
                         <input
                           type="text"
                           placeholder="Caption (Optional)"
                           value={fileItem.caption}
                           onChange={(e) => updateMeta(fileItem.id, 'caption', e.target.value)}
-                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-solar-500 outline-none transition-colors"
+                          className="w-full px-2 py-1.5 text-body-small border border-input rounded-input bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors"
                         />
                       </div>
                     </div>
@@ -329,18 +329,18 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
           )}
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-background-alt border-t border-border flex justify-end gap-3">
           <button 
             onClick={onClose}
             disabled={isUploading}
-            className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-surface border border-border rounded-button text-button text-foreground hover:bg-surface-hover transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button 
             onClick={handleUploadClick}
             disabled={isUploading}
-            className="px-4 py-2 bg-solar-600 text-white rounded-lg font-medium hover:bg-solar-700 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+            className="px-4 py-2 bg-primary hover:bg-primary-hover text-background rounded-button text-button transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
           >
             {isUploading ? (
               <>

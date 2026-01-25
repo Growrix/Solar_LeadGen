@@ -41,33 +41,33 @@ export function BulkTagModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
-        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity"
         onClick={!isProcessing ? onClose : undefined}
       />
 
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Tag className="w-5 h-5 text-solar-600" />
+      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-md overflow-hidden animate-fade-in-up">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-background-alt">
+          <h3 className="text-heading-4 text-foreground flex items-center gap-2">
+            <Tag className="icon-sm text-accent" />
             Bulk Assign Tags
           </h3>
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           >
-            <X className="w-5 h-5" />
+            <X className="icon-sm" />
           </button>
         </div>
 
         <div className="p-6">
-          <p className="text-sm text-slate-500 mb-4">
+          <p className="text-body-small text-foreground-muted mb-4">
             Add tags to <strong>{selectedCount}</strong> selected posts. Existing tags will be
             preserved.
           </p>
 
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <label className="block text-label text-foreground uppercase tracking-wider">
               Tags (Comma separated)
             </label>
             <input
@@ -75,26 +75,26 @@ export function BulkTagModal({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g. Solar, Innovation, 2024"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-solar-500 focus:outline-none"
+              className="w-full px-3 py-2 border border-border rounded-input text-body-small text-foreground bg-background-alt focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               autoFocus
             />
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-background-alt border-t border-border flex justify-end gap-3">
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-surface border border-border rounded-button text-button text-foreground hover:bg-surface-hover transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={isProcessing || !tagsInput.trim()}
-            className="px-4 py-2 bg-solar-600 text-white rounded-lg font-medium hover:bg-solar-700 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+            className="px-4 py-2 bg-primary hover:bg-primary-hover text-background rounded-button text-button transition-colors shadow-button disabled:opacity-70 flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           >
-            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            {isProcessing ? <Loader2 className="icon-sm animate-spin" /> : <Plus className="icon-sm" />}
             Add Tags
           </button>
         </div>

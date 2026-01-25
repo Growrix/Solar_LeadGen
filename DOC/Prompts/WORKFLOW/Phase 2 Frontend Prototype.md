@@ -1,16 +1,60 @@
 
-***Phase 1 : Frontend Initial Planning ***
+***Phase 1: Frontend Planning***
 - Here is the Initial Plan : `DOC\Features\BLOG\RAW PLAN\Initial_idea.md`
 
 - Based on this initial plan prepare the Frontend plan strictly following the instruction : 
 `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Spec-Instructions.md`
 
-- Prepare the frontend plan in : `DOC\Features\BLOG\Fontend UI UX Prompts`
-
-----------------------------------------------
+- Prepare the frontend plan in : `DOC\Features\BLOG\Fontend UI UX`
 
 
+------------------------------------------------
 
+***phase 2 : Frontend Plan into Atomic Tasks***
+- Here is the front end plan based on initial plan : `DOC\Features\BLOG\Fontend UI UX`
+
+- Prepare the Atomic UI UX building tasks strictly following the instruction : `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Atomic-Task-Breakdown-Instructions.md`
+
+- Prepare the atomic tasks in : `DOC\Features\BLOG\Fontend UI UX`
+
+-----------------------------------------------------------------------------------
+
+
+***Phase 3: Frontend Development***
+
+- For each atomic `UI/UX task in ~DOC\Features\BLOG\Fontend UI UX`:
+
+- Build the component/page/flow strictly following:
+The project design system: `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Design-System.md`
+- Industry standards and best practices: `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Industry-Standards-Best-Practices.md`
+
+- Ensure all code, layout, and interactions:
+Use only tokens, components, and patterns from the design system
+Meet accessibility, responsiveness, and code quality standards from the industry best practices file.
+- Test all outputs at all breakpoints, especially mobile and laptop
+Document any deviations or required updates to the design system or standards
+Save all completed UI/UX code and documentation in the appropriate project folders.
+
+------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+***phase 3 : Frontend Development***
+
+- Industry Standards `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Industry-Standards-Best-Practices.md`
+
+-Shows how a filled-in design system looks and can be used as a starting point or reference. `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Design-System.md`
+
+- a blank, customizable template for your project’s design system. `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Design-System.md`
 
 
 

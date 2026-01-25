@@ -34,19 +34,19 @@ export function ModerateCommentModal({ isOpen, onClose, comment, onAction }: Mod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-slate-500" />
+      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-lg overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-background-alt">
+          <h3 className="text-heading-4 text-foreground flex items-center gap-2">
+            <MessageSquare className="icon-sm text-muted-foreground" />
             Moderate Comment
           </h3>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           >
-            <X className="w-5 h-5" />
+            <X className="icon-sm" />
           </button>
         </div>
 
@@ -58,24 +58,24 @@ export function ModerateCommentModal({ isOpen, onClose, comment, onAction }: Mod
               width={48}
               height={48}
               sizes="48px"
-              className="w-12 h-12 rounded-full border border-slate-200 bg-slate-100 object-cover flex-shrink-0"
+              className="w-12 h-12 rounded-full border border-border bg-background-alt object-cover flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-bold text-slate-900">{comment.authorName}</h4>
-              <p className="text-xs text-slate-500 mb-1">{comment.authorEmail}</p>
-              <div className="flex items-center gap-3 text-xs text-slate-400">
+              <h4 className="text-label text-foreground">{comment.authorName}</h4>
+              <p className="text-caption text-foreground-muted mb-1">{comment.authorEmail}</p>
+              <div className="flex items-center gap-3 text-caption text-foreground-muted">
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {comment.submittedAt}
+                  <Clock className="icon-xs" /> {comment.submittedAt}
                 </span>
                 <span
                   className={`capitalize px-1.5 py-0.5 rounded border ${
                     comment.status === 'approved'
-                      ? 'bg-green-50 border-green-100 text-green-700'
+                      ? 'bg-success/15 border-success/20 text-success'
                       : comment.status === 'spam'
-                        ? 'bg-red-50 border-red-100 text-red-700'
+                        ? 'bg-error/15 border-error/20 text-error'
                         : comment.status === 'hidden'
-                          ? 'bg-slate-100 border-slate-200 text-slate-600'
-                          : 'bg-amber-50 border-amber-100 text-amber-700'
+                          ? 'bg-muted border-border text-foreground-muted'
+                          : 'bg-warning/15 border-warning/20 text-warning'
                   }`}
                 >
                   {comment.status}
@@ -84,75 +84,78 @@ export function ModerateCommentModal({ isOpen, onClose, comment, onAction }: Mod
             </div>
           </div>
 
-          <div className="mb-6 p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between group">
-            <div className="flex items-center gap-2 text-sm text-slate-600 truncate">
-              <FileText className="w-4 h-4 text-slate-400" />
+          <div className="mb-6 p-3 bg-background-alt rounded-card border border-border flex items-center justify-between group">
+            <div className="flex items-center gap-2 text-body-small text-foreground-muted truncate">
+              <FileText className="icon-sm text-muted-foreground" />
               <span className="truncate">
-                On: <span className="font-medium text-slate-900">{comment.postTitle}</span>
+                On: <span className="text-foreground">{comment.postTitle}</span>
               </span>
             </div>
             <a
               href={`/blog/${comment.postSlug}`}
               target="_blank"
               rel="noreferrer"
-              className="text-slate-400 hover:text-solar-600 p-1"
+              className="text-muted-foreground hover:text-accent p-1"
               title="View Post"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="icon-sm" />
             </a>
           </div>
 
           <div className="mb-6">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+            <label className="block text-label text-foreground uppercase tracking-wider mb-2">
               Comment Content
             </label>
-            <div className="bg-white border border-slate-200 rounded-lg p-4 text-slate-800 text-sm leading-relaxed shadow-sm">
+            <div className="bg-surface border border-border rounded-card p-4 text-body-small text-foreground shadow-card">
               {comment.content}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Internal Note <span className="font-normal normal-case text-slate-400">(Optional)</span>
+            <label className="block text-label text-foreground uppercase tracking-wider mb-2">
+              Internal Note <span className="normal-case text-foreground-muted">(Optional)</span>
             </label>
             <textarea
               rows={2}
               value={internalNote}
               onChange={(e) => setInternalNote(e.target.value)}
               placeholder="Add a reason for your decision..."
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none transition-colors"
+              className="w-full px-3 py-2 text-body-small border border-border rounded-input bg-background-alt text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors"
             />
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row justify-between items-center gap-3">
-          <button onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-slate-600 font-medium hover:text-slate-900 transition-colors text-sm">
+        <div className="px-6 py-4 bg-background-alt border-t border-border flex flex-col-reverse sm:flex-row justify-between items-center gap-3">
+          <button
+            onClick={onClose}
+            className="w-full sm:w-auto px-4 py-2 text-button text-foreground-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+          >
             Cancel
           </button>
 
           <div className="w-full sm:w-auto flex gap-2">
             <button
               onClick={() => handleAction('spam')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white border border-red-200 text-red-700 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-surface border border-error/30 text-error hover:bg-error/10 rounded-button text-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               title="Mark as Spam"
             >
-              <ShieldAlert className="w-4 h-4" />
+              <ShieldAlert className="icon-sm" />
               <span className="sm:hidden">Spam</span>
             </button>
 
             <button
               onClick={() => handleAction('hidden')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-sm font-medium transition-colors"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-surface border border-border text-foreground hover:bg-surface-hover rounded-button text-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
             >
-              <EyeOff className="w-4 h-4" />
+              <EyeOff className="icon-sm" />
               Hide
             </button>
 
             <button
               onClick={() => handleAction('approved')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg text-sm font-medium shadow-sm transition-colors"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-button text-button shadow-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
             >
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="icon-sm" />
               Approve
             </button>
           </div>

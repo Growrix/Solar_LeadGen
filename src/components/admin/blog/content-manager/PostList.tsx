@@ -94,15 +94,15 @@ const STATUS_LABELS: Record<AdminBlogStatus, string> = {
 };
 
 const STATUS_PILL_STYLE: Record<AdminBlogStatus, { bg: string; text: string; border: string; icon?: React.ReactNode }> = {
-  PUBLISHED: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
-  DRAFT: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
+  PUBLISHED: { bg: 'bg-success/15', text: 'text-success', border: 'border-success/20' },
+  DRAFT: { bg: 'bg-muted', text: 'text-foreground-muted', border: 'border-border' },
   SCHEDULED: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    border: 'border-blue-200',
-    icon: <Clock className="w-3 h-3 mr-1" />,
+    bg: 'bg-info/15',
+    text: 'text-info',
+    border: 'border-info/20',
+    icon: <Clock className="icon-xs mr-1" />,
   },
-  ARCHIVED: { bg: 'bg-stone-100', text: 'text-stone-600', border: 'border-stone-200', icon: <Archive className="w-3 h-3 mr-1" /> },
+  ARCHIVED: { bg: 'bg-muted', text: 'text-foreground-muted', border: 'border-border', icon: <Archive className="icon-xs mr-1" /> },
 };
 
 function StatusPill({ status }: { status: AdminBlogStatus }) {
@@ -110,7 +110,7 @@ function StatusPill({ status }: { status: AdminBlogStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border} capitalize`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-caption border ${config.bg} ${config.text} ${config.border} capitalize`}
     >
       {config.icon}
       {STATUS_LABELS[status]}
@@ -498,12 +498,12 @@ export function PostList({ isTabbed = false }: PostListProps) {
   }, [confirmAction, pendingActionIds.length]);
 
   return (
-    <div className={`min-h-screen bg-slate-50 font-sans text-slate-900 relative ${isTabbed ? '' : 'pt-0'}`}>
+    <div className={`min-h-screen bg-background text-foreground relative ${isTabbed ? '' : 'pt-0'}`}>
       {notification && (
         <div className="fixed top-24 right-6 z-50 animate-fade-in-up">
-          <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
-             <CheckCircle className="w-5 h-5 text-green-400" />
-             <span className="text-sm font-medium">{notification.message}</span>
+          <div className="bg-foreground text-background px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 border border-border">
+             <CheckCircle className="w-5 h-5 text-success" />
+             <span className="text-caption">{notification.message}</span>
           </div>
         </div>
       )}
@@ -527,15 +527,15 @@ export function PostList({ isTabbed = false }: PostListProps) {
       />
 
       {!isTabbed && (
-        <div className="bg-white border-b border-slate-200 px-6 py-8">
+        <div className="bg-surface border-b border-border px-6 py-8">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Posts</h1>
-              <p className="text-slate-500 text-sm mt-1">Manage and organize your blog content.</p>
+              <h1 className="text-heading-2">Posts</h1>
+              <p className="text-body text-muted-foreground mt-1">Manage and organize your blog content.</p>
             </div>
             <Link
               href="/admin/blog/new"
-              className="inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-solar-100"
+              className="inline-flex items-center justify-center px-4 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <Plus className="w-4 h-4 mr-2" /> Add New
             </Link>
@@ -546,34 +546,34 @@ export function PostList({ isTabbed = false }: PostListProps) {
       <div className={`${isTabbed ? 'max-w-7xl' : 'max-w-6xl'} mx-auto px-6 py-8 pb-32`}>
         {/* Stats Ribbon */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Posts</span>
-            <span className="text-2xl font-bold text-slate-900">{stats.total}</span>
+          <div className="bg-surface p-4 rounded-xl border border-border shadow-sm flex flex-col">
+            <span className="text-label text-muted-foreground uppercase tracking-wider mb-1">Total Posts</span>
+            <span className="text-heading-2">{stats.total}</span>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-green-100 shadow-sm flex flex-col relative overflow-hidden">
+          <div className="bg-success/5 p-4 rounded-xl border border-success/20 shadow-sm flex flex-col relative overflow-hidden">
             <div className="absolute right-0 top-0 p-3 opacity-10">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-success" />
             </div>
-            <span className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-1">Published</span>
-            <span className="text-2xl font-bold text-slate-900">{stats.published}</span>
+            <span className="text-label text-success uppercase tracking-wider mb-1">Published</span>
+            <span className="text-heading-2">{stats.published}</span>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm flex flex-col relative overflow-hidden">
+          <div className="bg-info/5 p-4 rounded-xl border border-info/20 shadow-sm flex flex-col relative overflow-hidden">
             <div className="absolute right-0 top-0 p-3 opacity-10">
-              <Clock className="w-8 h-8 text-blue-600" />
+              <Clock className="w-8 h-8 text-info" />
             </div>
-            <span className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">Scheduled</span>
-            <span className="text-2xl font-bold text-slate-900">{stats.scheduled}</span>
+            <span className="text-label text-info uppercase tracking-wider mb-1">Scheduled</span>
+            <span className="text-heading-2">{stats.scheduled}</span>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-amber-100 shadow-sm flex flex-col relative overflow-hidden">
+          <div className="bg-warning/5 p-4 rounded-xl border border-warning/20 shadow-sm flex flex-col relative overflow-hidden">
             <div className="absolute right-0 top-0 p-3 opacity-10">
-              <AlertCircle className="w-8 h-8 text-amber-600" />
+              <AlertCircle className="w-8 h-8 text-warning" />
             </div>
-            <span className="text-xs text-amber-600 font-semibold uppercase tracking-wider mb-1">In Review</span>
-            <span className="text-2xl font-bold text-slate-900">{stats.inReview}</span>
+            <span className="text-label text-warning uppercase tracking-wider mb-1">In Review</span>
+            <span className="text-heading-2">{stats.inReview}</span>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Drafts</span>
-            <span className="text-2xl font-bold text-slate-900">{stats.drafts}</span>
+          <div className="bg-surface p-4 rounded-xl border border-border shadow-sm flex flex-col">
+            <span className="text-label text-muted-foreground uppercase tracking-wider mb-1">Drafts</span>
+            <span className="text-heading-2">{stats.drafts}</span>
           </div>
         </div>
 
@@ -581,7 +581,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
         <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center">
           <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto no-scrollbar pb-2 md:pb-0">
             {viewMode === 'list' && (
-              <div className="flex p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+              <div className="flex p-1 bg-surface border border-border rounded-lg shadow-sm">
                 {tabItems.map((tab) => (
                   <button
                     key={tab.key}
@@ -589,10 +589,10 @@ export function PostList({ isTabbed = false }: PostListProps) {
                       setStatusFilter(tab.key);
                       setSelectedIds(new Set());
                     }}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-button rounded-md transition-colors transition-shadow transition-transform whitespace-nowrap ${
                       statusFilter === tab.key
-                        ? 'bg-slate-100 text-slate-900 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                        ? 'bg-muted text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                     } capitalize`}
                   >
                     {tab.label}
@@ -602,12 +602,12 @@ export function PostList({ isTabbed = false }: PostListProps) {
             )}
 
             {statusFilter !== 'TRASH' && (
-              <div className="flex p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+              <div className="flex p-1 bg-surface border border-border rounded-lg shadow-sm">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-all ${
-                    viewMode === 'list' ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'
+                  className={`p-1.5 rounded-md transition-colors transition-shadow transition-transform ${
+                    viewMode === 'list' ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="List View"
                 >
@@ -616,8 +616,8 @@ export function PostList({ isTabbed = false }: PostListProps) {
                 <button
                   type="button"
                   onClick={() => setViewMode('board')}
-                  className={`p-1.5 rounded-md transition-all ${
-                    viewMode === 'board' ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'
+                  className={`p-1.5 rounded-md transition-colors transition-shadow transition-transform ${
+                    viewMode === 'board' ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="Board View"
                 >
@@ -634,7 +634,9 @@ export function PostList({ isTabbed = false }: PostListProps) {
                 type="button"
                 onClick={() => setShowViewOptions(!showViewOptions)}
                 className={`p-2 rounded-lg border transition-colors ${
-                  showViewOptions ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
+                  showViewOptions
+                    ? 'bg-muted border-border text-foreground'
+                    : 'bg-surface border-border text-muted-foreground hover:text-foreground'
                 }`}
                 title="Customize View"
               >
@@ -644,14 +646,14 @@ export function PostList({ isTabbed = false }: PostListProps) {
               {showViewOptions && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowViewOptions(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden animate-fade-in-up">
-                    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-xl z-20 overflow-hidden animate-fade-in-up">
+                    <div className="px-4 py-3 border-b border-border bg-background-alt flex justify-between items-center">
+                      <h4 className="text-label text-muted-foreground uppercase tracking-wider">
                         {viewMode === 'list' ? 'Columns' : 'Card Fields'}
                       </h4>
                       <button
                         onClick={() => setShowViewOptions(false)}
-                        className="text-slate-400 hover:text-slate-600"
+                        className="text-muted-foreground hover:text-foreground"
                         aria-label="Close view options"
                       >
                         <Settings className="w-3 h-3" />
@@ -661,28 +663,28 @@ export function PostList({ isTabbed = false }: PostListProps) {
                       {viewMode === 'list' ? (
                         <>
                           {LIST_COLUMNS.map((col) => (
-                            <label key={col} className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer">
+                            <label key={col} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50 rounded-lg cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={visibleColumns.has(col)}
                                 onChange={() => toggleColumn(col)}
-                                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                                className="w-4 h-4 rounded border-input text-accent focus:ring-ring"
                               />
-                              <span className="text-sm text-slate-700 capitalize">{col}</span>
+                              <span className="text-body text-muted-foreground capitalize">{col}</span>
                             </label>
                           ))}
                         </>
                       ) : (
                         <>
                           {BOARD_FIELDS.map((field) => (
-                            <label key={field} className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer">
+                            <label key={field} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50 rounded-lg cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={visibleBoardFields.has(field)}
                                 onChange={() => toggleBoardField(field)}
-                                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                                className="w-4 h-4 rounded border-input text-accent focus:ring-ring"
                               />
-                              <span className="text-sm text-slate-700 capitalize">
+                              <span className="text-body text-muted-foreground capitalize">
                                 {field.replace(/([A-Z])/g, ' $1').trim()}
                               </span>
                             </label>
@@ -697,21 +699,21 @@ export function PostList({ isTabbed = false }: PostListProps) {
 
             <div className="relative flex-grow md:flex-grow-0 md:w-72">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-slate-400" />
+                <Search className="h-4 w-4 text-muted-foreground" />
               </div>
               <input
                 type="text"
                 placeholder={statusFilter === 'TRASH' ? 'Search trash...' : 'Search posts...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:ring-1 focus:ring-solar-500 focus:border-solar-500 sm:text-sm transition-shadow"
+                className="block w-full pl-10 pr-3 py-2 border border-input rounded-lg leading-5 bg-background text-body placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-shadow"
               />
             </div>
 
             {isTabbed && statusFilter !== 'TRASH' && (
               <Link
                 href="/admin/blog/new"
-                className="inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-solar-100 whitespace-nowrap"
+                className="inline-flex items-center justify-center px-4 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Post
@@ -723,24 +725,27 @@ export function PostList({ isTabbed = false }: PostListProps) {
         {viewState === 'loading' && <SkeletonAdminTable />}
 
         {viewState === 'error' && (
-          <div className="bg-white rounded-lg border border-red-100 p-8 flex flex-col items-center justify-center text-center">
-            <div className="bg-red-50 p-3 rounded-full mb-3">
-              <AlertCircle className="w-6 h-6 text-red-500" />
+          <div className="bg-surface rounded-lg border border-border p-8 flex flex-col items-center justify-center text-center">
+            <div className="bg-destructive/10 p-3 rounded-full mb-3 border border-destructive/20">
+              <AlertCircle className="w-6 h-6 text-destructive" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">Could not load posts</h3>
-            <button onClick={() => fetchData()} className="text-sm font-medium text-slate-600 hover:text-slate-900 underline flex items-center">
+            <h3 className="text-heading-4 mb-2">Could not load posts</h3>
+            <button
+              onClick={() => fetchData()}
+              className="text-button text-muted-foreground hover:text-foreground underline flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            >
               <RefreshCw className="w-3 h-3 mr-1" /> Retry
             </button>
           </div>
         )}
 
         {viewState === 'success' && filteredItems.length === 0 && (
-          <div className="bg-white rounded-lg border border-dashed border-slate-300 p-12 flex flex-col items-center justify-center text-center">
-            <div className="bg-slate-50 p-4 rounded-full mb-4">
-              {statusFilter === 'TRASH' ? <Trash2 className="w-8 h-8 text-slate-400" /> : <FileText className="w-8 h-8 text-slate-400" />}
+          <div className="bg-surface rounded-lg border border-dashed border-border p-12 flex flex-col items-center justify-center text-center">
+            <div className="bg-muted p-4 rounded-full mb-4 border border-border">
+              {statusFilter === 'TRASH' ? <Trash2 className="w-8 h-8 text-muted-foreground" /> : <FileText className="w-8 h-8 text-muted-foreground" />}
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-1">{statusFilter === 'TRASH' ? 'Trash is empty' : 'No posts found'}</h3>
-            <p className="text-slate-500 text-sm mb-6">
+            <h3 className="text-heading-4 mb-1">{statusFilter === 'TRASH' ? 'Trash is empty' : 'No posts found'}</h3>
+            <p className="text-body text-muted-foreground mb-6">
               {statusFilter === 'TRASH'
                 ? 'Deleted posts will appear here.'
                 : `No ${statusFilter === 'ALL' ? '' : statusFilter.toLowerCase().replace(/_/g, ' ')} posts found.`}
@@ -748,7 +753,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
             {statusFilter !== 'TRASH' && (
               <Link
                 href="/admin/blog/new"
-                className="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 bg-background border border-input text-foreground rounded-lg hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Create Post
               </Link>
@@ -758,48 +763,48 @@ export function PostList({ isTabbed = false }: PostListProps) {
 
         {/* List */}
         {viewState === 'success' && viewMode === 'list' && filteredItems.length > 0 && (
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-background-alt">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left w-12">
                       <input
                         ref={headerCheckboxRef}
                         type="checkbox"
                         onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500 cursor-pointer"
+                        className="w-4 h-4 rounded border-input text-accent focus:ring-ring cursor-pointer"
                       />
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-label text-muted-foreground uppercase tracking-wider">
                       Title
                     </th>
                     {visibleColumns.has('status') && (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">
+                      <th scope="col" className="px-6 py-3 text-left text-label text-muted-foreground uppercase tracking-wider w-36">
                         Status
                       </th>
                     )}
                     {visibleColumns.has('category') && (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
+                      <th scope="col" className="px-6 py-3 text-left text-label text-muted-foreground uppercase tracking-wider w-40">
                         Category
                       </th>
                     )}
                     {visibleColumns.has('author') && (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
+                      <th scope="col" className="px-6 py-3 text-left text-label text-muted-foreground uppercase tracking-wider w-40">
                         Author
                       </th>
                     )}
                     {visibleColumns.has('date') && (
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
+                      <th scope="col" className="px-6 py-3 text-left text-label text-muted-foreground uppercase tracking-wider w-40">
                         Updated
                       </th>
                     )}
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider w-32">
+                    <th scope="col" className="px-6 py-3 text-right text-label text-muted-foreground uppercase tracking-wider w-32">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-200">
+                <tbody className="bg-surface divide-y divide-border">
                   {filteredItems.map((post) => {
                     const issues = getPostIssues(post);
                     const hasIssues = issues.length > 0;
@@ -809,26 +814,26 @@ export function PostList({ isTabbed = false }: PostListProps) {
                     return (
                       <tr
                         key={post.id}
-                        className={`transition-colors group ${isSelected ? 'bg-solar-50/50 hover:bg-solar-50' : 'hover:bg-slate-50'}`}
+                        className={`transition-colors group ${isSelected ? 'bg-accent/10 hover:bg-accent/15' : 'hover:bg-muted/40'}`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleSelectRow(post.id)}
-                            className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500 cursor-pointer"
+                            className="w-4 h-4 rounded border-input text-accent focus:ring-ring cursor-pointer"
                           />
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
                             <div className="flex-1 flex flex-col">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-slate-900 line-clamp-1">{post.title || '(Untitled)'}</span>
+                                <span className="text-body text-foreground line-clamp-1">{post.title || '(Untitled)'}</span>
                                 {hasIssues && (
                                   <div className="relative group/tooltip">
-                                    <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-slate-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-30">
-                                      <div className="font-semibold mb-2">Attention Needed:</div>
+                                    <AlertTriangle className="w-4 h-4 text-warning" />
+                                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-foreground text-background text-caption rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-colors transition-shadow transition-transform z-30 border border-border">
+                                      <div className="text-label mb-2">Attention Needed:</div>
                                       <ul className="space-y-1">
                                         {issues.map((issue) => (
                                           <li key={issue} className="flex items-start gap-2">
@@ -841,7 +846,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                   </div>
                                 )}
                                 {isNeedsReview && (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-caption bg-warning/15 text-warning border border-warning/20">
                                     Needs Review
                                   </span>
                                 )}
@@ -854,8 +859,8 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                 onClick={() => handleToggleNeedsReview(post.id)}
                                 className={`p-1.5 rounded-lg border transition-colors ${
                                   isNeedsReview
-                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                    : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                                    ? 'bg-warning/10 border-warning/20 text-warning'
+                                    : 'bg-background border-input text-muted-foreground hover:text-foreground hover:bg-muted/50'
                                 }`}
                                 title={isNeedsReview ? 'Remove Needs Review' : 'Mark as Needs Review'}
                               >
@@ -876,7 +881,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                   void saveStatusEdit(post.id, next);
                                 }}
                                 onBlur={() => setEditingStatusId(null)}
-                                className="text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white focus:ring-1 focus:ring-solar-500 focus:border-solar-500"
+                                className="text-body border border-input rounded-lg px-2 py-1 bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <option value="DRAFT">Draft</option>
                                 <option value="SCHEDULED">Scheduled</option>
@@ -897,28 +902,28 @@ export function PostList({ isTabbed = false }: PostListProps) {
                         )}
 
                         {visibleColumns.has('category') && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{post.category || '—'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-body text-muted-foreground">{post.category || '—'}</td>
                         )}
                         {visibleColumns.has('author') && (
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
-                              <User className="w-4 h-4 text-slate-400" />
+                            <span className="inline-flex items-center gap-2 text-body text-muted-foreground">
+                              <User className="w-4 h-4 text-muted-foreground" />
                               Admin
                             </span>
                           </td>
                         )}
                         {visibleColumns.has('date') && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(post.updatedAt)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-body text-muted-foreground">{formatDate(post.updatedAt)}</td>
                         )}
 
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-button">
                           <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                             {statusFilter === 'TRASH' ? (
                               <>
                                 <button
                                   type="button"
                                   onClick={() => openConfirm('restore', [post.id])}
-                                  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                                  className="p-1.5 text-muted-foreground hover:text-success hover:bg-success/10 rounded transition-colors"
                                   title="Restore"
                                 >
                                   <RotateCcw className="w-4 h-4" />
@@ -926,7 +931,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                 <button
                                   type="button"
                                   onClick={() => openConfirm('permanentDelete', [post.id])}
-                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
                                   title="Delete Forever"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -936,14 +941,14 @@ export function PostList({ isTabbed = false }: PostListProps) {
                               <>
                                 <Link
                                   href={`/admin/blog/${encodeURIComponent(post.id)}/preview`}
-                                  className="p-1.5 text-slate-400 hover:text-solar-600 hover:bg-solar-50 rounded transition-colors"
+                                  className="p-1.5 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded transition-colors"
                                   title="Preview"
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Link>
                                 <Link
                                   href={`/admin/blog/${encodeURIComponent(post.id)}`}
-                                  className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  className="p-1.5 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded transition-colors"
                                   title="Edit"
                                 >
                                   <Edit2 className="w-4 h-4" />
@@ -951,7 +956,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                 <button
                                   type="button"
                                   onClick={() => openConfirm('trash', [post.id])}
-                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
                                   title="Trash"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -968,20 +973,20 @@ export function PostList({ isTabbed = false }: PostListProps) {
             </div>
 
             {/* Pagination Placeholder */}
-            <div className="border-t border-slate-200 bg-white px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="text-sm text-slate-500">Showing {filteredItems.length} items</div>
+            <div className="border-t border-border bg-surface px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="text-body text-muted-foreground">Showing {filteredItems.length} items</div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   disabled
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed"
+                  className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground bg-muted cursor-not-allowed text-button"
                 >
                   Previous
                 </button>
                 <button
                   type="button"
                   disabled
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed"
+                  className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground bg-muted cursor-not-allowed text-button"
                 >
                   Next
                 </button>
@@ -993,7 +998,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
         {/* Board */}
         {viewState === 'success' && viewMode === 'board' && statusFilter !== 'TRASH' && (
           <div>
-            <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-2">
+            <div className="mb-4 text-body text-warning bg-warning/10 border border-warning/20 rounded-xl px-4 py-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               Drag-and-drop is a prototype placeholder.
             </div>
@@ -1015,25 +1020,25 @@ export function PostList({ isTabbed = false }: PostListProps) {
 
                 const headerTone =
                   col.tone === 'amber'
-                    ? { border: 'border-amber-100', bg: 'bg-amber-50', text: 'text-amber-900', count: 'text-amber-700' }
+                    ? { border: 'border-warning/20', bg: 'bg-warning/10', text: 'text-warning', count: 'text-warning' }
                     : col.tone === 'blue'
-                      ? { border: 'border-blue-100', bg: 'bg-blue-50', text: 'text-blue-900', count: 'text-blue-700' }
+                      ? { border: 'border-info/20', bg: 'bg-info/10', text: 'text-info', count: 'text-info' }
                       : col.tone === 'green'
-                        ? { border: 'border-green-100', bg: 'bg-green-50', text: 'text-green-900', count: 'text-green-700' }
-                        : { border: 'border-slate-100', bg: 'bg-slate-50', text: 'text-slate-900', count: 'text-slate-500' };
+                        ? { border: 'border-success/20', bg: 'bg-success/10', text: 'text-success', count: 'text-success' }
+                        : { border: 'border-border', bg: 'bg-background-alt', text: 'text-foreground', count: 'text-muted-foreground' };
 
                 return (
-                  <div key={col.key} className="min-w-[320px] w-[320px] shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div key={col.key} className="min-w-[320px] w-[320px] shrink-0 bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
                     <div className={`px-4 py-3 border-b ${headerTone.border} ${headerTone.bg} flex items-center justify-between`}>
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-semibold ${headerTone.text}`}>{col.title}</span>
-                        <span className={`text-xs ${headerTone.count}`}>({columnItems.length})</span>
+                        <span className={`text-button ${headerTone.text}`}>{col.title}</span>
+                        <span className={`text-caption ${headerTone.count}`}>({columnItems.length})</span>
                       </div>
                     </div>
 
                     <div className="p-3 space-y-3">
                       {columnItems.length === 0 && (
-                        <div className="text-sm text-slate-500 px-3 py-6 text-center">No posts</div>
+                        <div className="text-body text-muted-foreground px-3 py-6 text-center">No posts</div>
                       )}
                       {columnItems.map((post) => {
                         const issues = getPostIssues(post);
@@ -1043,19 +1048,19 @@ export function PostList({ isTabbed = false }: PostListProps) {
                         const isSelected = selectedIds.has(post.id);
 
                         return (
-                          <div key={post.id} className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                          <div key={post.id} className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
                             {showCover && (
-                              <div className="relative h-32 bg-slate-100">
+                              <div className="relative h-32 bg-muted">
                                 {post.coverImageUrl ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img src={post.coverImageUrl} alt="" className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                     <FileText className="w-8 h-8" />
                                   </div>
                                 )}
                                 {!post.coverImageUrl && hasIssues && (
-                                  <div className="absolute top-2 right-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg px-2 py-1 text-xs font-semibold flex items-center gap-1">
+                                  <div className="absolute top-2 right-2 bg-warning/15 text-warning border border-warning/20 rounded-lg px-2 py-1 text-caption flex items-center gap-1">
                                     <AlertTriangle className="w-3 h-3" />
                                     Issue
                                   </div>
@@ -1071,15 +1076,15 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() => handleSelectRow(post.id)}
-                                      className="h-4 w-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                                      className="h-4 w-4 rounded border-input text-accent focus:ring-ring"
                                       aria-label="Select post"
                                     />
-                                    <div className="text-sm font-semibold text-slate-900 line-clamp-2">{post.title || '(Untitled)'}</div>
+                                    <div className="text-body text-foreground line-clamp-2">{post.title || '(Untitled)'}</div>
                                     {(hasIssues && post.coverImageUrl) && (
                                       <div className="relative group/tooltip">
-                                        <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-slate-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-30">
-                                          <div className="font-semibold mb-2">Attention Needed:</div>
+                                        <AlertTriangle className="w-4 h-4 text-warning" />
+                                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-foreground text-background text-caption rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-colors transition-shadow transition-transform z-30 border border-border">
+                                          <div className="text-label mb-2">Attention Needed:</div>
                                           <ul className="space-y-1">
                                             {issues.map((issue) => (
                                               <li key={issue} className="flex items-start gap-2">
@@ -1092,34 +1097,34 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                       </div>
                                     )}
                                     {needsReview && (
-                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-caption bg-warning/15 text-warning border border-warning/20">
                                         Needs Review
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-xs text-slate-500 font-mono mt-1">/{post.slug}</div>
+                                  <div className="text-caption text-muted-foreground font-mono mt-1">/{post.slug}</div>
                                 </div>
                               </div>
 
                               <div className="mt-3 space-y-2">
                                 {visibleBoardFields.has('category') && (
-                                  <div className="text-sm text-slate-600">Category: {post.category || '—'}</div>
+                                  <div className="text-body text-muted-foreground">Category: {post.category || '—'}</div>
                                 )}
                                 {visibleBoardFields.has('author') && (
-                                  <div className="text-sm text-slate-600 flex items-center gap-2">
-                                    <User className="w-4 h-4 text-slate-400" /> Admin
+                                  <div className="text-body text-muted-foreground flex items-center gap-2">
+                                    <User className="w-4 h-4 text-muted-foreground" /> Admin
                                   </div>
                                 )}
                                 {visibleBoardFields.has('date') && (
-                                  <div className="text-sm text-slate-600">Updated: {formatDate(post.updatedAt)}</div>
+                                  <div className="text-body text-muted-foreground">Updated: {formatDate(post.updatedAt)}</div>
                                 )}
                                 {visibleBoardFields.has('excerpt') && post.excerpt && (
-                                  <div className="text-sm text-slate-500 line-clamp-3">{post.excerpt}</div>
+                                  <div className="text-body text-muted-foreground line-clamp-3">{post.excerpt}</div>
                                 )}
                                 {visibleBoardFields.has('tags') && post.tags.length > 0 && (
                                   <div className="flex flex-wrap gap-2">
                                     {post.tags.slice(0, 3).map((t) => (
-                                      <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                      <span key={t} className="text-caption px-2 py-0.5 rounded-full bg-muted text-foreground border border-border">
                                         {t}
                                       </span>
                                     ))}
@@ -1131,14 +1136,14 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                 <div className="flex items-center gap-2">
                                   <Link
                                     href={`/admin/blog/${encodeURIComponent(post.id)}`}
-                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    className="p-1.5 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded transition-colors"
                                     title="Edit"
                                   >
                                     <Edit2 className="w-4 h-4" />
                                   </Link>
                                   <Link
                                     href={`/admin/blog/${encodeURIComponent(post.id)}/preview`}
-                                    className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                                    className="p-1.5 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded transition-colors"
                                     title="Preview"
                                   >
                                     <Eye className="w-4 h-4" />
@@ -1146,7 +1151,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                   <button
                                     type="button"
                                     onClick={() => openConfirm('trash', [post.id])}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
                                     title="Move to Trash"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -1157,8 +1162,8 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                   onClick={() => handleToggleNeedsReview(post.id)}
                                   className={`p-1.5 rounded-lg border transition-colors ${
                                     needsReview
-                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                      : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                                      ? 'bg-warning/10 border-warning/20 text-warning'
+                                      : 'bg-background border-input text-muted-foreground hover:text-foreground hover:bg-muted/50'
                                   }`}
                                   title={needsReview ? 'Remove Needs Review' : 'Mark as Needs Review'}
                                 >
@@ -1180,13 +1185,13 @@ export function PostList({ isTabbed = false }: PostListProps) {
         {/* Bulk actions */}
         {selectedIds.size > 0 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-fade-in-up w-[90%] max-w-4xl">
-            <div className="bg-slate-900 text-white p-3 rounded-xl shadow-2xl flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-slate-700">
+            <div className="bg-foreground text-background p-3 rounded-xl shadow-2xl flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-border">
               <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pl-2">
-                <span className="bg-white text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">{selectedIds.size}</span>
-                <span className="text-sm font-medium whitespace-nowrap">Selected</span>
+                <span className="bg-background text-foreground text-caption px-2 py-0.5 rounded-full border border-border">{selectedIds.size}</span>
+                <span className="text-button whitespace-nowrap">Selected</span>
               </div>
 
-              <div className="h-px w-full sm:h-8 sm:w-px bg-slate-700"></div>
+              <div className="h-px w-full sm:h-8 sm:w-px bg-border"></div>
 
               <div className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto">
                 {statusFilter !== 'TRASH' ? (
@@ -1195,7 +1200,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                       type="button"
                       disabled={isBulkProcessing}
                       onClick={() => void handleBulkStatusChange('PUBLISHED')}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-success hover:bg-success/90 disabled:opacity-60 disabled:hover:bg-success text-success-foreground text-button rounded-lg transition-colors shadow-sm"
                     >
                       <Send className="w-4 h-4" /> Publish
                     </button>
@@ -1203,7 +1208,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                       type="button"
                       disabled={isBulkProcessing}
                       onClick={() => void handleBulkStatusChange('ARCHIVED')}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-60 disabled:hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-muted/80 disabled:opacity-60 disabled:hover:bg-muted text-foreground text-button rounded-lg transition-colors shadow-sm border border-border"
                     >
                       <Archive className="w-4 h-4" /> Archive
                     </button>
@@ -1211,15 +1216,15 @@ export function PostList({ isTabbed = false }: PostListProps) {
                       type="button"
                       disabled={isBulkProcessing}
                       onClick={() => setIsBulkTagModalOpen(true)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-info hover:bg-info/90 disabled:opacity-60 disabled:hover:bg-info text-info-foreground text-button rounded-lg transition-colors shadow-sm"
                     >
                       <Tag className="w-4 h-4" /> Tag
                     </button>
-                    <div className="w-px h-6 bg-slate-700 mx-1 hidden sm:block"></div>
+                    <div className="w-px h-6 bg-border mx-1 hidden sm:block"></div>
                     <button
                       type="button"
                       onClick={() => openConfirm('trash', Array.from(selectedIds))}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground text-button rounded-lg transition-colors shadow-sm"
                     >
                       <Trash2 className="w-4 h-4" /> Trash
                     </button>
@@ -1229,14 +1234,14 @@ export function PostList({ isTabbed = false }: PostListProps) {
                     <button
                       type="button"
                       onClick={() => openConfirm('restore', Array.from(selectedIds))}
-                      className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-4 py-1.5 bg-success hover:bg-success/90 text-success-foreground text-button rounded-lg transition-colors shadow-sm"
                     >
                       <RotateCcw className="w-4 h-4" /> Restore
                     </button>
                     <button
                       type="button"
                       onClick={() => openConfirm('permanentDelete', Array.from(selectedIds))}
-                      className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+                      className="flex items-center gap-2 px-4 py-1.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground text-button rounded-lg transition-colors shadow-sm"
                     >
                       <Trash2 className="w-4 h-4" /> Delete Forever
                     </button>
@@ -1246,7 +1251,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                 <button
                   type="button"
                   onClick={() => setSelectedIds(new Set())}
-                  className="px-3 py-1.5 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap ml-2"
+                  className="px-3 py-1.5 text-button text-muted-foreground hover:text-background hover:bg-background/10 rounded-lg transition-colors whitespace-nowrap ml-2"
                 >
                   Clear
                 </button>

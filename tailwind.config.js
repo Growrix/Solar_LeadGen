@@ -47,6 +47,9 @@ module.exports = {
         // Accent colors (Orange)
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
         'accent-hover': 'rgb(var(--color-accent-hover) / <alpha-value>)',
+
+        // Overlay / scrim
+        overlay: 'rgb(var(--color-overlay) / <alpha-value>)',
         
         // Status colors
         success: 'rgb(var(--color-success) / <alpha-value>)',

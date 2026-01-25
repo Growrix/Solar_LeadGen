@@ -249,10 +249,10 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
 
   const StatusPill = ({ status }: { status: CommentStatus }) => {
     const styles: Record<CommentStatus, string> = {
-      pending: 'bg-amber-100 text-amber-700 border-amber-200',
-      approved: 'bg-green-100 text-green-700 border-green-200',
-      hidden: 'bg-slate-100 text-slate-700 border-slate-200',
-      spam: 'bg-red-100 text-red-700 border-red-200',
+      pending: 'bg-warning/15 text-warning border-warning/20',
+      approved: 'bg-success/15 text-success border-success/20',
+      hidden: 'bg-muted text-foreground-muted border-border',
+      spam: 'bg-error/15 text-error border-error/20',
     };
 
     const labels: Record<CommentStatus, string> = {
@@ -263,16 +263,14 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
     };
 
     return (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status]} capitalize`}
-      >
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-caption border ${styles[status]} capitalize`}>
         {labels[status]}
       </span>
     );
   };
 
   return (
-    <div className={`min-h-screen bg-slate-50 font-sans text-slate-900 relative ${isTabbed ? '' : 'pt-0'}`}>
+    <div className={`min-h-screen bg-background font-sans text-foreground relative ${isTabbed ? '' : 'pt-0'}`}>
       <ModerateCommentModal
         isOpen={isModerateModalOpen}
         onClose={() => setIsModerateModalOpen(false)}
@@ -313,62 +311,62 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
 
       {notification && (
         <div className="fixed top-24 right-6 z-50 animate-fade-in-up">
-          <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-400" />
-            <span className="text-sm font-medium">{notification.message}</span>
+          <div className="bg-surface text-foreground px-4 py-3 rounded-card shadow-card flex items-center gap-3 border border-border">
+            <CheckCircle className="icon-sm text-success" />
+            <span className="text-body-small">{notification.message}</span>
           </div>
         </div>
       )}
 
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-fade-in-up w-[90%] max-w-3xl">
-          <div className="bg-slate-900 text-white p-3 rounded-xl shadow-2xl flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-slate-700">
+          <div className="bg-surface text-foreground p-3 rounded-card shadow-modal flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-border">
             <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pl-2">
-              <span className="bg-white text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">{selectedIds.size}</span>
-              <span className="text-sm font-medium whitespace-nowrap">Selected</span>
+              <span className="bg-background-alt text-foreground text-caption px-2 py-0.5 rounded-full border border-border">{selectedIds.size}</span>
+              <span className="text-body-small whitespace-nowrap">Selected</span>
             </div>
 
-            <div className="h-px w-full sm:h-8 sm:w-px bg-slate-700"></div>
+            <div className="h-px w-full sm:h-8 sm:w-px bg-border"></div>
 
             <div className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto">
               <button
                 onClick={() => initiateBulkStatusChange('approved')}
-                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                className="px-3 py-1.5 bg-success hover:bg-success/90 text-success-foreground text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 title="Approve Selected"
                 type="button"
               >
-                <CheckCircle className="w-4 h-4" /> <span className="hidden sm:inline">Approve</span>
+                <CheckCircle className="icon-sm" /> <span className="hidden sm:inline">Approve</span>
               </button>
               <button
                 onClick={() => initiateBulkStatusChange('hidden')}
-                className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                className="px-3 py-1.5 bg-foreground hover:bg-foreground/90 text-background text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 title="Hide Selected"
                 type="button"
               >
-                <EyeOff className="w-4 h-4" /> <span className="hidden sm:inline">Hide</span>
+                <EyeOff className="icon-sm" /> <span className="hidden sm:inline">Hide</span>
               </button>
               <button
                 onClick={() => initiateBulkStatusChange('spam')}
-                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                className="px-3 py-1.5 bg-warning hover:bg-warning/90 text-warning-foreground text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 title="Mark as Spam"
                 type="button"
               >
-                <ShieldAlert className="w-4 h-4" /> <span className="hidden sm:inline">Mark Spam</span>
+                <ShieldAlert className="icon-sm" /> <span className="hidden sm:inline">Mark Spam</span>
               </button>
               <button
                 onClick={initiateBulkDelete}
-                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                className="px-3 py-1.5 bg-error hover:bg-error/90 text-error-foreground text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 title="Delete Selected"
                 type="button"
               >
-                <Trash2 className="w-4 h-4" /> <span className="hidden sm:inline">Delete</span>
+                <Trash2 className="icon-sm" /> <span className="hidden sm:inline">Delete</span>
               </button>
 
-              <div className="w-px h-6 bg-slate-700 mx-2 hidden sm:block"></div>
+              <div className="w-px h-6 bg-border mx-2 hidden sm:block"></div>
 
               <button
                 onClick={handleClearSelection}
-                className="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap"
+                className="px-3 py-1.5 text-button text-foreground-muted hover:text-foreground hover:bg-muted rounded-button transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 type="button"
               >
                 Clear
@@ -379,25 +377,25 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
       )}
 
       {!isTabbed && (
-        <div className="bg-white border-b border-slate-200 px-6 py-8">
+        <div className="bg-surface border-b border-border px-6 py-8">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Comments</h1>
-              <p className="text-slate-500 text-sm mt-1">Moderate user discussions and manage community engagement.</p>
+              <h1 className="text-heading-2 text-foreground">Comments</h1>
+              <p className="text-body-small text-foreground-muted mt-1">Moderate user discussions and manage community engagement.</p>
             </div>
           </div>
         </div>
       )}
 
       <div className={`${isTabbed ? 'max-w-7xl' : 'max-w-7xl'} mx-auto px-6 py-8 pb-32`}>
-        <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center bg-surface p-2 rounded-card border border-border shadow-card">
           <div className="flex items-center gap-1 overflow-x-auto w-full md:w-auto p-1 no-scrollbar">
             {(['all', 'pending', 'approved', 'hidden', 'spam'] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all capitalize whitespace-nowrap ${
-                  statusFilter === status ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                className={`px-3 py-1.5 text-button rounded-button transition-colors transition-shadow transition-transform capitalize whitespace-nowrap ${
+                  statusFilter === status ? 'bg-foreground text-background shadow-button' : 'text-foreground-muted hover:bg-muted'
                 }`}
                 type="button"
               >
@@ -407,13 +405,13 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
           </div>
 
           <div className="relative w-full md:w-64 mr-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search author or content..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
             />
           </div>
         </div>
@@ -421,26 +419,26 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
         {viewState === 'loading' && <SkeletonAdminTable />}
 
         {viewState === 'error' && (
-          <div className="bg-white rounded-lg border border-red-100 p-8 flex flex-col items-center justify-center text-center">
-            <div className="bg-red-50 p-3 rounded-full mb-3">
-              <AlertCircle className="w-6 h-6 text-red-500" />
+          <div className="bg-surface rounded-card border border-error/20 p-8 flex flex-col items-center justify-center text-center">
+            <div className="bg-error/15 p-3 rounded-full mb-3">
+              <AlertCircle className="w-6 h-6 text-error" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">Could not load comments</h3>
-            <button onClick={fetchData} className="text-sm font-medium text-slate-600 hover:text-slate-900 underline flex items-center" type="button">
-              <RefreshCw className="w-3 h-3 mr-1" /> Retry
+            <h3 className="text-heading-4 text-foreground mb-2">Could not load comments</h3>
+            <button onClick={fetchData} className="text-button text-foreground-muted hover:text-foreground underline flex items-center" type="button">
+              <RefreshCw className="icon-xs mr-1" /> Retry
             </button>
           </div>
         )}
 
         {(viewState === 'empty' || (viewState === 'success' && filteredComments.length === 0)) && (
-          <div className="bg-white border border-dashed border-slate-300 rounded-xl p-12 flex flex-col items-center justify-center text-center">
-            <p className="text-slate-500">No comments found matching your filters.</p>
+          <div className="bg-surface border border-dashed border-border rounded-card p-12 flex flex-col items-center justify-center text-center">
+            <p className="text-body-small text-foreground-muted">No comments found matching your filters.</p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setStatusFilter('all');
               }}
-              className="mt-2 text-solar-600 font-medium text-sm hover:underline"
+              className="mt-2 text-accent text-button hover:underline"
               type="button"
             >
               Clear filters
@@ -449,88 +447,86 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
         )}
 
         {viewState === 'success' && filteredComments.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface border border-border rounded-card shadow-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-background-alt">
                   <tr>
                     <th scope="col" className="w-12 px-6 py-4 text-left">
                       <input
                         ref={headerCheckboxRef}
                         type="checkbox"
                         onChange={handleSelectAll}
-                        className="rounded border-slate-300 text-solar-600 focus:ring-solar-500 w-4 h-4 cursor-pointer"
+                        className="rounded border-border text-accent w-4 h-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                       />
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-1/4"
+                      className="px-6 py-4 text-left text-label text-foreground uppercase tracking-wider w-1/4"
                     >
                       Author
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-1/3"
+                      className="px-6 py-4 text-left text-label text-foreground uppercase tracking-wider w-1/3"
                     >
                       Comment
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-left text-label text-foreground uppercase tracking-wider"
                     >
                       Status
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-left text-label text-foreground uppercase tracking-wider"
                     >
                       Submitted
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                      className="px-6 py-4 text-right text-label text-foreground uppercase tracking-wider"
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-200">
+                <tbody className="bg-surface divide-y divide-border">
                   {filteredComments.map((comment) => {
                     const isSelected = selectedIds.has(comment.id);
                     return (
                       <tr
                         key={comment.id}
-                        className={`transition-colors group ${
-                          isSelected ? 'bg-solar-50/50 hover:bg-solar-50' : 'hover:bg-slate-50'
-                        }`}
+                        className={`transition-colors group ${isSelected ? 'bg-accent/10 hover:bg-accent/15' : 'hover:bg-muted'}`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleSelectRow(comment.id)}
-                            className="rounded border-slate-300 text-solar-600 focus:ring-solar-500 w-4 h-4 cursor-pointer"
+                            className="rounded border-border text-accent w-4 h-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                           />
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
-                            <img src={comment.authorAvatar} alt="" className="w-8 h-8 rounded-full bg-slate-200" />
+                            <img src={comment.authorAvatar} alt="" className="w-8 h-8 rounded-full bg-background-alt border border-border" />
                             <div>
-                              <div className="text-sm font-medium text-slate-900">{comment.authorName}</div>
-                              <div className="text-xs text-slate-500">{comment.authorEmail}</div>
+                              <div className="text-body-small text-foreground">{comment.authorName}</div>
+                              <div className="text-caption text-foreground-muted">{comment.authorEmail}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
-                            <p className="text-sm text-slate-700 line-clamp-2" title={comment.content}>
+                            <p className="text-body-small text-foreground-muted line-clamp-2" title={comment.content}>
                               {comment.content}
                             </p>
                             <a
                               href={`/blog/${comment.postSlug}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs text-slate-400 hover:text-solar-600 hover:underline mt-1 truncate max-w-xs block"
+                              className="text-caption text-foreground-muted hover:text-accent hover:underline mt-1 truncate max-w-xs block"
                             >
                               On: {comment.postTitle}
                             </a>
@@ -539,55 +535,55 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <StatusPill status={comment.status} />
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{comment.submittedAt}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-body-small text-foreground-muted">{comment.submittedAt}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="flex items-center justify-end gap-2">
                             {comment.status === 'pending' && (
                               <>
                                 <button
                                   onClick={() => handleUpdateStatus(comment.id, 'approved')}
-                                  className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
+                                  className="p-1.5 text-success hover:bg-success/10 rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                                   title="Approve"
                                   type="button"
                                 >
-                                  <CheckCircle className="w-4 h-4" />
+                                  <CheckCircle className="icon-sm" />
                                 </button>
                                 <button
                                   onClick={() => handleUpdateStatus(comment.id, 'spam')}
-                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  className="p-1.5 text-error hover:bg-error/10 rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                                   title="Mark as Spam"
                                   type="button"
                                 >
-                                  <ShieldAlert className="w-4 h-4" />
+                                  <ShieldAlert className="icon-sm" />
                                 </button>
                               </>
                             )}
                             {comment.status === 'approved' && (
                               <button
                                 onClick={() => handleUpdateStatus(comment.id, 'hidden')}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
+                                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                                 title="Hide"
                                 type="button"
                               >
-                                <EyeOff className="w-4 h-4" />
+                                <EyeOff className="icon-sm" />
                               </button>
                             )}
-                            <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                            <div className="w-px h-4 bg-border mx-1"></div>
                             <button
                               onClick={() => handleModerateClick(comment.id)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              className="p-1.5 text-muted-foreground hover:text-accent hover:bg-muted rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                               title="Moderate / Edit"
                               type="button"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              <Edit2 className="icon-sm" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(comment.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="p-1.5 text-muted-foreground hover:text-error hover:bg-error/10 rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                               title="Delete"
                               type="button"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="icon-sm" />
                             </button>
                           </div>
                         </td>

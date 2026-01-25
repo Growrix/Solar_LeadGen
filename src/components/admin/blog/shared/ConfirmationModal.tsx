@@ -31,22 +31,26 @@ export function ConfirmationModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div 
-        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity" 
         onClick={!isLoading ? onClose : undefined}
       />
 
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
+      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-md overflow-hidden transform transition-colors transition-shadow transition-transform scale-100 opacity-100">
         <div className="p-6">
           <div className="flex items-start gap-4">
-            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${isDestructive ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-              <AlertTriangle className="w-5 h-5" />
+            <div
+              className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                isDestructive ? 'bg-error/15 text-error' : 'bg-warning/15 text-warning'
+              }`}
+            >
+              <AlertTriangle className="icon-sm" />
             </div>
 
             <div className="flex-1 pt-0.5">
-              <h3 className="text-lg font-bold text-slate-900 leading-6 mb-2">
+              <h3 className="text-heading-4 text-foreground mb-2">
                 {title}
               </h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
+              <p className="text-body-small text-foreground-muted">
                 {message}
               </p>
             </div>
@@ -54,20 +58,20 @@ export function ConfirmationModal({
             {!isLoading && (
               <button 
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-500 transition-colors -mt-1 -mr-2 p-2 rounded-full hover:bg-slate-50"
+                className="text-muted-foreground hover:text-foreground transition-colors -mt-1 -mr-2 p-2 rounded-full hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               >
-                <X className="w-5 h-5" />
+                <X className="icon-sm" />
               </button>
             )}
           </div>
         </div>
 
-        <div className="bg-slate-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-slate-100">
+        <div className="bg-background-alt px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 border-t border-border">
           <button
             type="button"
             disabled={isLoading}
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 focus:ring-2 focus:ring-slate-200 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-4 py-2 bg-surface border border-border rounded-button text-button text-foreground hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelLabel}
           </button>
@@ -75,13 +79,13 @@ export function ConfirmationModal({
             type="button"
             disabled={isLoading}
             onClick={onConfirm}
-            className={`w-full sm:w-auto px-4 py-2 rounded-lg text-white font-medium flex items-center justify-center gap-2 focus:ring-2 focus:ring-offset-1 transition-all disabled:opacity-70 disabled:cursor-not-allowed ${
-              isDestructive 
-                ? 'bg-red-600 hover:bg-red-700 focus:ring-red-200' 
-                : 'bg-solar-600 hover:bg-solar-700 focus:ring-solar-200'
+            className={`w-full sm:w-auto px-4 py-2 rounded-button text-button flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform disabled:opacity-70 disabled:cursor-not-allowed ${
+              isDestructive
+                ? 'bg-error hover:bg-error/90 text-error-foreground'
+                : 'bg-primary hover:bg-primary-hover text-background'
             }`}
           >
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isLoading && <Loader2 className="icon-sm animate-spin" />}
             {confirmLabel}
           </button>
         </div>

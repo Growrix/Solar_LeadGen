@@ -146,13 +146,13 @@ const parseDate = (dateStr: string): number => {
 const FileIcon = ({ type, className = 'w-8 h-8' }: { type: string; className?: string }) => {
   switch (type) {
     case 'image':
-      return <ImageIcon className={`${className} text-purple-500`} />;
+      return <ImageIcon className={`${className} text-accent`} />;
     case 'video':
-      return <Film className={`${className} text-red-500`} />;
+      return <Film className={`${className} text-warning`} />;
     case 'document':
-      return <FileText className={`${className} text-blue-500`} />;
+      return <FileText className={`${className} text-info`} />;
     default:
-      return <FileText className={`${className} text-slate-500`} />;
+      return <FileText className={`${className} text-muted-foreground`} />;
   }
 };
 
@@ -306,7 +306,7 @@ export function MediaLibrary() {
 
     if (idsToDrag.length > 1) {
       const dragPreview = document.createElement('div');
-      dragPreview.className = 'bg-slate-900 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-xl absolute -top-96';
+      dragPreview.className = 'bg-surface text-foreground px-3 py-1.5 rounded-button text-body-small shadow-modal border border-border absolute -top-96';
       dragPreview.textContent = `Moving ${idsToDrag.length} items`;
       document.body.appendChild(dragPreview);
       e.dataTransfer.setDragImage(dragPreview, 0, 0);
@@ -599,7 +599,7 @@ export function MediaLibrary() {
   const moveFoldersForModal: MoveMediaFolder[] = folders.map(f => ({ id: f.id, name: f.name, parentId: f.parentId }));
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Hidden Modals */}
       <UploadMediaModal
         isOpen={isUploadModalOpen}
@@ -669,15 +669,18 @@ export function MediaLibrary() {
       {/* Simple Folder Form Modal */}
       {isFolderModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsFolderModalOpen(false)} />
-          <div className="relative bg-white rounded-xl shadow-lg p-6 w-full max-w-sm animate-fade-in-up">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">
+          <div
+            className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsFolderModalOpen(false)}
+          />
+          <div className="relative bg-surface rounded-modal shadow-modal p-6 w-full max-w-sm animate-fade-in-up border border-border">
+            <h3 className="text-heading-4 text-foreground mb-4">
               {folderModalMode === 'create' ? 'New Folder' : 'Rename Folder'}
             </h3>
             <input
               ref={folderNameInputRef}
               type="text"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mb-4 focus:ring-2 focus:ring-solar-500 outline-none"
+              className="w-full border border-border rounded-input px-3 py-2 text-body-small mb-4 bg-background-alt text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               placeholder="Folder Name"
               value={folderNameInput}
               onChange={e => setFolderNameInput(e.target.value)}
@@ -686,14 +689,14 @@ export function MediaLibrary() {
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsFolderModalOpen(false)}
-                className="px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium"
+                className="px-4 py-2 bg-surface border border-border rounded-button text-button text-foreground hover:bg-surface-hover transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={submitFolderForm}
                 disabled={!folderNameInput.trim()}
-                className="px-4 py-2 bg-solar-600 text-white rounded-lg text-sm font-medium hover:bg-solar-700 disabled:opacity-50"
+                className="px-4 py-2 bg-primary hover:bg-primary-hover text-background rounded-button text-button transition-colors disabled:opacity-50"
               >
                 {folderModalMode === 'create' ? 'Create' : 'Rename'}
               </button>
@@ -704,57 +707,66 @@ export function MediaLibrary() {
 
       {notification && (
         <div className="fixed top-24 right-6 z-50 animate-fade-in-up">
-          <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-400" />
-            <span className="text-sm font-medium">{notification.message}</span>
+          <div className="bg-surface text-foreground px-4 py-3 rounded-card shadow-card flex items-center gap-3 border border-border">
+            <CheckCircle className={`icon-sm ${notification.type === 'success' ? 'text-success' : 'text-error'}`} />
+            <span className="text-body-small">{notification.message}</span>
           </div>
         </div>
       )}
 
       {/* Floating Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-fade-in-up">
-          <div className="bg-slate-900 text-white pl-6 pr-4 py-3 rounded-full shadow-2xl flex items-center gap-6 border border-slate-700">
-            <div className="flex items-center gap-3">
-              <span className="bg-white text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">{selectedIds.size}</span>
-              <span className="text-sm font-medium">Selected</span>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-fade-in-up w-[90%] max-w-3xl">
+          <div className="bg-surface text-foreground p-3 rounded-card shadow-modal flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-border">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pl-2">
+              <span className="bg-background-alt text-foreground text-caption px-2 py-0.5 rounded-full border border-border">{selectedIds.size}</span>
+              <span className="text-body-small whitespace-nowrap">Selected</span>
             </div>
-            <div className="h-4 w-px bg-slate-700" />
-            <div className="flex items-center gap-2">
+
+            <div className="h-px w-full sm:h-8 sm:w-px bg-border"></div>
+
+            <div className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto">
               <button
                 onClick={clearSelection}
-                className="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                className="px-3 py-1.5 bg-surface border border-border text-button text-foreground rounded-button transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                type="button"
               >
                 Clear
               </button>
+
               {activeTab === 'trash' ? (
                 <button
                   onClick={initiateBulkRestore}
-                  className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm"
+                  className="px-3 py-1.5 bg-success hover:bg-success/90 text-success-foreground text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                  type="button"
                 >
-                  <RotateCcw className="w-4 h-4" /> Restore
+                  <RotateCcw className="icon-sm" /> Restore
                 </button>
               ) : (
                 <>
                   <button
                     onClick={initiateBulkEdit}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold rounded-full transition-colors shadow-sm"
+                    className="px-3 py-1.5 bg-foreground hover:bg-foreground/90 text-background text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                    type="button"
                   >
-                    <Edit2 className="w-4 h-4" /> Edit
+                    <Edit2 className="icon-sm" /> Edit
                   </button>
                   <button
                     onClick={initiateBulkMove}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm"
+                    className="px-3 py-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                    type="button"
                   >
-                    <FolderInput className="w-4 h-4" /> Move
+                    <FolderInput className="icon-sm" /> Move
                   </button>
                 </>
               )}
+
               <button
                 onClick={initiateBulkDelete}
-                className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-full transition-colors shadow-sm"
+                className="px-3 py-1.5 bg-error hover:bg-error/90 text-error-foreground text-button rounded-button transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                type="button"
               >
-                <Trash2 className="w-4 h-4" /> {activeTab === 'library' ? 'Trash' : 'Delete'}
+                <Trash2 className="icon-sm" /> {activeTab === 'library' ? 'Trash' : 'Delete'}
               </button>
             </div>
           </div>
@@ -762,35 +774,35 @@ export function MediaLibrary() {
       )}
 
       {/* Main Header Area */}
-      <div className="bg-white border-b border-slate-200 px-6 py-6 sticky top-0 z-20">
+      <div className="bg-surface border-b border-border px-6 py-6 sticky top-0 z-20">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col gap-2">
-              <nav className="flex items-center text-sm font-medium text-slate-500 overflow-x-auto no-scrollbar whitespace-nowrap">
+              <nav className="flex items-center text-body-small text-muted-foreground overflow-x-auto no-scrollbar whitespace-nowrap">
                 {activeTab === 'library' ? (
                   breadcrumbs.map((crumb, index) => (
                     <React.Fragment key={crumb.id || 'root'}>
-                      {index > 0 && <ChevronRight className="w-4 h-4 mx-1 text-slate-300 flex-shrink-0" />}
+                      {index > 0 && <ChevronRight className="icon-sm mx-1 text-muted-foreground flex-shrink-0" />}
                       <button
                         onClick={() => setCurrentFolderId(crumb.id)}
-                        className={`hover:text-solar-600 transition-colors flex items-center gap-1.5 ${
-                          index === breadcrumbs.length - 1 ? 'text-slate-900 font-bold' : ''
+                        className={`hover:text-accent transition-colors flex items-center gap-1.5 ${
+                          index === breadcrumbs.length - 1 ? 'text-foreground' : ''
                         }`}
                       >
-                        {index === 0 && <Home className="w-4 h-4" />}
+                        {index === 0 && <Home className="icon-sm" />}
                         {crumb.name}
                       </button>
                     </React.Fragment>
                   ))
                 ) : (
-                  <span className="flex items-center gap-2 text-slate-900 font-bold">
-                    <Trash2 className="w-4 h-4" /> Trash
+                  <span className="flex items-center gap-2 text-foreground">
+                    <Trash2 className="icon-sm" /> Trash
                   </span>
                 )}
               </nav>
 
               {activeTab === 'library' && !searchQuery && (
-                <p className="text-xs text-slate-400">
+                <p className="text-caption text-muted-foreground">
                   {currentSubfolders.length} folders, {filteredMedia.length} files
                 </p>
               )}
@@ -800,54 +812,56 @@ export function MediaLibrary() {
               <div className="flex gap-2">
                 <button
                   onClick={handleCreateFolder}
-                  className="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium rounded-lg transition-colors text-sm"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-surface border border-border text-foreground hover:bg-surface-hover rounded-button transition-colors text-button"
                 >
-                  <FolderInput className="w-4 h-4 mr-2" />
+                  <FolderInput className="icon-sm mr-2" />
                   New Folder
                 </button>
                 <button
                   onClick={() => setIsUploadModalOpen(true)}
-                  className="inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors text-sm"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary-hover text-background rounded-button shadow-button transition-colors text-button"
                 >
-                  <Upload className="w-4 h-4 mr-2" />
+                  <Upload className="icon-sm mr-2" />
                   Upload
                 </button>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-background-alt p-2 rounded-card border border-border">
             <div className="flex gap-4 w-full md:w-auto overflow-x-auto no-scrollbar">
-              <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+              <div className="flex bg-surface rounded-input p-1 border border-border shadow-card">
                 <button
                   onClick={() => setActiveTab('library')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    activeTab === 'library' ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:text-slate-700'
+                  className={`px-3 py-1.5 rounded-button text-button transition-colors transition-shadow transition-transform ${
+                    activeTab === 'library' ? 'bg-background-alt text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Library
                 </button>
                 <button
                   onClick={() => setActiveTab('trash')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    activeTab === 'trash' ? 'bg-red-50 text-red-600' : 'text-slate-500 hover:text-slate-700'
+                  className={`px-3 py-1.5 rounded-button text-button transition-colors transition-shadow transition-transform ${
+                    activeTab === 'trash'
+                      ? 'bg-error/10 text-error border border-error/20'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   Trash
                 </button>
               </div>
 
-              <div className="w-px h-8 bg-slate-200 hidden md:block" />
+              <div className="w-px h-8 bg-border hidden md:block" />
 
               <div className="flex items-center gap-1">
                 {(['all', 'image', 'video', 'document'] as const).map(type => (
                   <button
                     key={type}
                     onClick={() => setTypeFilter(type)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all capitalize whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-button rounded-button transition-colors transition-shadow transition-transform capitalize whitespace-nowrap ${
                       typeFilter === type
-                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                        : 'text-slate-500 hover:bg-white/50'
+                        ? 'bg-surface text-foreground shadow-button border border-border'
+                        : 'text-muted-foreground hover:bg-surface/50'
                     }`}
                   >
                     {type === 'all' ? 'All' : `${type}s`}
@@ -858,13 +872,13 @@ export function MediaLibrary() {
 
             <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
               <div className="relative flex-grow md:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-xs text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none transition-all"
+                  className="w-full pl-9 pr-3 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
                 />
               </div>
 
@@ -875,17 +889,17 @@ export function MediaLibrary() {
                     type="date"
                     value={dateFrom}
                     onChange={e => setDateFrom(e.target.value)}
-                    className="px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none"
+                    className="px-3 py-2 border border-border rounded-input text-body-small bg-background-alt text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                     placeholder="From"
                     aria-label="Date from"
                     style={{ minWidth: 120 }}
                   />
-                  <span className="text-slate-400 text-xs">to</span>
+                  <span className="text-muted-foreground text-caption">to</span>
                   <input
                     type="date"
                     value={dateTo}
                     onChange={e => setDateTo(e.target.value)}
-                    className="px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none"
+                    className="px-3 py-2 border border-border rounded-input text-body-small bg-background-alt text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                     placeholder="To"
                     aria-label="Date to"
                     style={{ minWidth: 120 }}
@@ -894,7 +908,7 @@ export function MediaLibrary() {
                     <button
                       type="button"
                       onClick={() => { setDateFrom(''); setDateTo(''); }}
-                      className="ml-1 px-2 py-1 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 rounded-lg"
+                      className="ml-1 px-3 py-2 text-button text-muted-foreground hover:text-foreground bg-surface border border-border rounded-button transition-colors"
                     >
                       Clear
                     </button>
@@ -904,7 +918,7 @@ export function MediaLibrary() {
 
               {viewMode === 'grid' && (
                 <div className="hidden lg:flex items-center gap-2 px-2">
-                  <ZoomOut className="w-3 h-3 text-slate-400" />
+                  <ZoomOut className="icon-xs text-muted-foreground" />
                   <input
                     type="range"
                     min="120"
@@ -912,25 +926,25 @@ export function MediaLibrary() {
                     step="10"
                     value={thumbnailSize}
                     onChange={e => setThumbnailSize(parseInt(e.target.value))}
-                    className="w-16 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-solar-600"
+                    className="w-16 h-1 bg-border rounded-full appearance-none cursor-pointer accent-accent"
                   />
-                  <ZoomIn className="w-3 h-3 text-slate-400" />
+                  <ZoomIn className="icon-xs text-muted-foreground" />
                 </div>
               )}
 
-              <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+              <div className="flex bg-surface p-1 rounded-input border border-border shadow-card">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded transition-all ${
-                    viewMode === 'grid' ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-900'
+                  className={`p-1.5 rounded transition-colors transition-shadow transition-transform ${
+                    viewMode === 'grid' ? 'bg-background-alt text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Grid className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded transition-all ${
-                    viewMode === 'list' ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-900'
+                  className={`p-1.5 rounded transition-colors transition-shadow transition-transform ${
+                    viewMode === 'list' ? 'bg-background-alt text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <List className="w-3.5 h-3.5" />
@@ -946,19 +960,19 @@ export function MediaLibrary() {
         {viewState === 'loading' && <SkeletonMediaGrid />}
 
         {viewState === 'success' && filteredMedia.length === 0 && currentSubfolders.length === 0 && (
-          <div className="h-64 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-            <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-              <FolderOpen className="w-8 h-8 text-slate-300" />
+          <div className="h-64 flex flex-col items-center justify-center text-center border-2 border-dashed border-border rounded-card bg-background-alt">
+            <div className="bg-surface p-4 rounded-full shadow-card mb-4 border border-border">
+              <FolderOpen className="icon-xl text-muted-foreground" />
             </div>
-            <h3 className="text-sm font-medium text-slate-900">Empty Folder</h3>
-            <p className="text-xs text-slate-500 mt-1 mb-4">Drag files here or start by creating a new folder.</p>
+            <h3 className="text-heading-5 text-foreground">Empty Folder</h3>
+            <p className="text-body-small text-muted-foreground mt-1 mb-4">Drag files here or start by creating a new folder.</p>
             {activeTab === 'library' && (
               <div className="flex gap-3">
-                <button onClick={handleCreateFolder} className="text-xs font-medium text-solar-600 hover:underline">
+                <button onClick={handleCreateFolder} className="text-button text-accent hover:underline">
                   Create Folder
                 </button>
-                <span className="text-slate-300">|</span>
-                <button onClick={() => setIsUploadModalOpen(true)} className="text-xs font-medium text-solar-600 hover:underline">
+                <span className="text-muted-foreground">|</span>
+                <button onClick={() => setIsUploadModalOpen(true)} className="text-button text-accent hover:underline">
                   Upload File
                 </button>
               </div>
@@ -970,7 +984,7 @@ export function MediaLibrary() {
           <>
             {activeTab === 'library' && currentSubfolders.length > 0 && !searchQuery && (
               <div className="mb-8">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-1">Folders</h4>
+                <h4 className="text-label text-muted-foreground uppercase tracking-wider mb-4 px-1">Folders</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                   {currentSubfolders.map(folder => (
                     <div
@@ -979,37 +993,39 @@ export function MediaLibrary() {
                       onDragOver={e => handleFolderDragOver(e, folder.id)}
                       onDragLeave={handleFolderDragLeave}
                       onDrop={e => handleFolderDrop(e, folder.id)}
-                      className={`group relative flex flex-col p-4 bg-white border rounded-xl cursor-pointer transition-all hover:shadow-md ${
+                      className={`group relative flex flex-col p-4 bg-surface border rounded-card cursor-pointer transition-colors transition-shadow transition-transform hover:shadow-card ${
                         dragOverFolderId === folder.id
-                          ? 'border-blue-500 ring-2 ring-blue-200 bg-blue-50'
-                          : 'border-slate-200 hover:border-solar-300'
+                          ? 'border-accent ring-2 ring-accent/30 bg-accent/10'
+                          : 'border-border hover:border-accent/40'
                       }`}
                     >
                       <div className="flex justify-between items-start">
                         <FolderIcon
                           className={`w-8 h-8 mb-3 ${
-                            dragOverFolderId === folder.id ? 'text-blue-500 fill-blue-100' : 'text-yellow-400 fill-yellow-50'
+                            dragOverFolderId === folder.id
+                              ? 'text-accent fill-accent/20'
+                              : 'text-warning fill-warning/10'
                           }`}
                         />
 
                         <div className="relative" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => setOpenMenuId(openMenuId === folder.id ? null : folder.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-button transition-opacity"
                           >
                             <MoreHorizontal className="w-4 h-4" />
                           </button>
                           {openMenuId === folder.id && (
-                            <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-20 overflow-hidden text-xs py-1">
+                            <div className="absolute right-0 top-full mt-1 w-32 bg-surface border border-border rounded-card shadow-dropdown z-20 overflow-hidden text-caption py-1">
                               <button
                                 onClick={() => handleRenameFolder(folder)}
-                                className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700"
+                                className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 text-foreground"
                               >
                                 <Edit2 className="w-3 h-3" /> Rename
                               </button>
                               <button
                                 onClick={() => handleDeleteFolder(folder.id)}
-                                className="w-full text-left px-3 py-2 hover:bg-red-50 flex items-center gap-2 text-red-600"
+                                className="w-full text-left px-3 py-2 hover:bg-error/10 flex items-center gap-2 text-error"
                               >
                                 <Trash2 className="w-3 h-3" /> Delete
                               </button>
@@ -1017,10 +1033,10 @@ export function MediaLibrary() {
                           )}
                         </div>
                       </div>
-                      <span className="text-sm font-medium text-slate-700 truncate" title={folder.name}>
+                      <span className="text-body-small text-foreground truncate" title={folder.name}>
                         {folder.name}
                       </span>
-                      <span className="text-[10px] text-slate-400 mt-1">{media.filter(m => m.folderId === folder.id).length} items</span>
+                      <span className="text-caption text-muted-foreground mt-1">{media.filter(m => m.folderId === folder.id).length} items</span>
                     </div>
                   ))}
                 </div>
@@ -1029,11 +1045,11 @@ export function MediaLibrary() {
 
             {filteredMedia.length > 0 && (
               <div>
-                {currentSubfolders.length > 0 && <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-1">Files</h4>}
+                {currentSubfolders.length > 0 && <h4 className="text-label text-muted-foreground uppercase tracking-wider mb-4 px-1">Files</h4>}
 
                 {viewMode === 'grid' && (
                   <div className="mb-4 flex items-center px-1">
-                    <label className="flex items-center gap-2 text-xs text-slate-500 font-medium cursor-pointer hover:text-slate-700 select-none">
+                    <label className="flex items-center gap-2 text-body-small text-muted-foreground cursor-pointer hover:text-foreground select-none">
                       <input
                         type="checkbox"
                         checked={filteredMedia.length > 0 && selectedIds.size === filteredMedia.length}
@@ -1041,7 +1057,7 @@ export function MediaLibrary() {
                           if (input) input.indeterminate = selectedIds.size > 0 && selectedIds.size < filteredMedia.length;
                         }}
                         onChange={handleSelectAll}
-                        className="rounded border-slate-300 text-solar-600 focus:ring-solar-500 w-3.5 h-3.5 cursor-pointer"
+                        className="rounded border-border text-accent w-4 h-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                       />
                       {selectedIds.size > 0 ? `${selectedIds.size} Selected` : 'Select All Files'}
                     </label>
@@ -1059,8 +1075,8 @@ export function MediaLibrary() {
                       return (
                         <div
                           key={item.id}
-                          className={`group relative bg-white border rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col ${
-                            isSelected ? 'ring-2 ring-solar-500 border-solar-500' : 'border-slate-200'
+                          className={`group relative bg-surface border rounded-card shadow-card hover:shadow-modal transition-colors transition-shadow transition-transform cursor-pointer flex flex-col ${
+                            isSelected ? 'ring-2 ring-accent/40 border-accent/40' : 'border-border'
                           }`}
                           onClick={() => handleItemClick(item as MediaItem)}
                           draggable={isLibrary}
@@ -1076,11 +1092,11 @@ export function MediaLibrary() {
                               onChange={e => {
                                 handleSelectOne(item.id, e as any);
                               }}
-                              className="w-5 h-5 rounded border-slate-300 text-solar-600 focus:ring-solar-500 cursor-pointer shadow-sm"
+                              className="w-5 h-5 rounded border-border text-accent cursor-pointer shadow-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                             />
                           </div>
 
-                          <div className="aspect-square bg-slate-50 relative overflow-hidden flex items-center justify-center rounded-t-xl">
+                          <div className="aspect-square bg-background-alt relative overflow-hidden flex items-center justify-center rounded-t-card">
                             {item.type === 'image' ? (
                               <img
                                 src={item.url}
@@ -1103,13 +1119,13 @@ export function MediaLibrary() {
                               <FileIcon type={item.type} />
                             )}
 
-                            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center gap-2 backdrop-blur-[1px]">
+                            <div className="absolute inset-0 bg-overlay/40 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center gap-2 backdrop-blur-[1px]">
                               <button
                                 onClick={e => {
                                   e.stopPropagation();
                                   handleCopyUrl(item.url);
                                 }}
-                                className="p-2 bg-white/90 hover:bg-white text-slate-700 rounded-full shadow-sm transition-transform hover:scale-110"
+                                className="p-2 bg-surface/90 hover:bg-surface text-foreground rounded-full shadow-button transition-transform hover:scale-110"
                                 title="Copy URL"
                               >
                                 <Copy className="w-4 h-4" />
@@ -1119,8 +1135,8 @@ export function MediaLibrary() {
                                   e.stopPropagation();
                                   isLibrary ? initiateDelete(item.id) : initiateRestore(item.id);
                                 }}
-                                className={`p-2 bg-white/90 hover:bg-white rounded-full shadow-sm transition-transform hover:scale-110 ${
-                                  isLibrary ? 'text-red-600' : 'text-green-600'
+                                className={`p-2 bg-surface/90 hover:bg-surface rounded-full shadow-button transition-transform hover:scale-110 ${
+                                  isLibrary ? 'text-error' : 'text-success'
                                 }`}
                                 title={isLibrary ? 'Trash' : 'Restore'}
                               >
@@ -1128,11 +1144,11 @@ export function MediaLibrary() {
                               </button>
                             </div>
                           </div>
-                          <div className="p-3 border-t border-slate-100 relative rounded-b-xl flex-grow">
-                            <h4 className="text-sm font-medium text-slate-700 truncate w-full" title={item.name}>
+                          <div className="p-3 border-t border-border relative rounded-b-card flex-grow">
+                            <h4 className="text-body-small text-foreground truncate w-full" title={item.name}>
                               {item.name}
                             </h4>
-                            <div className="flex items-center justify-between mt-1 text-xs text-slate-400">
+                            <div className="flex items-center justify-between mt-1 text-caption text-muted-foreground">
                               <span className="uppercase">{item.type}</span>
                               <span>{item.size}</span>
                             </div>
@@ -1142,9 +1158,9 @@ export function MediaLibrary() {
                     })}
                   </div>
                 ) : (
-                  <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden animate-fade-in pb-20">
-                    <table className="min-w-full divide-y divide-slate-200">
-                      <thead className="bg-slate-50">
+                  <div className="bg-surface border border-border rounded-card shadow-card overflow-hidden animate-fade-in pb-20">
+                    <table className="min-w-full divide-y divide-border">
+                      <thead className="bg-background-alt">
                         <tr>
                           <th scope="col" className="w-12 px-6 py-3 text-left">
                             <input
@@ -1154,34 +1170,34 @@ export function MediaLibrary() {
                                 if (input) input.indeterminate = selectedIds.size > 0 && selectedIds.size < filteredMedia.length;
                               }}
                               onChange={handleSelectAll}
-                              className="rounded border-slate-300 text-solar-600 focus:ring-solar-500 w-4 h-4 cursor-pointer"
+                              className="rounded border-border text-accent w-4 h-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                             />
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-label text-foreground uppercase tracking-wider">
                             File
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-label text-foreground uppercase tracking-wider">
                             Type
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-label text-foreground uppercase tracking-wider">
                             Size
                           </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-left text-label text-foreground uppercase tracking-wider">
                             Date
                           </th>
-                          <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          <th scope="col" className="px-6 py-3 text-right text-label text-foreground uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-slate-200">
+                      <tbody className="bg-surface divide-y divide-border">
                         {filteredMedia.map(item => {
                           const isSelected = selectedIds.has(item.id);
                           const isLibrary = activeTab === 'library';
                           return (
                             <tr
                               key={item.id}
-                              className={`transition-colors group hover:bg-slate-50 ${isSelected ? 'bg-solar-50/30' : ''} cursor-pointer`}
+                              className={`transition-colors group hover:bg-muted ${isSelected ? 'bg-accent/10' : ''} cursor-pointer`}
                               onClick={() => handleItemClick(item as MediaItem)}
                               draggable={isLibrary}
                               onDragStart={e => isLibrary && handleDragStart(e, item as MediaItem)}
@@ -1193,47 +1209,49 @@ export function MediaLibrary() {
                                   onChange={e => {
                                     handleSelectOne(item.id, e as any);
                                   }}
-                                  className="rounded border-slate-300 text-solar-600 focus:ring-solar-500 w-4 h-4 cursor-pointer"
+                                  className="rounded border-border text-accent w-4 h-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                                 />
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
-                                  <div className="h-10 w-10 flex-shrink-0 mr-4 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200">
+                                  <div className="h-10 w-10 flex-shrink-0 mr-4 bg-background-alt rounded-input flex items-center justify-center overflow-hidden border border-border">
                                     {item.type === 'image' ? (
                                       <img className="h-full w-full object-cover" src={item.url} alt="" />
                                     ) : (
                                       <FileIcon type={item.type} className="w-5 h-5" />
                                     )}
                                   </div>
-                                  <div className="text-sm font-medium text-slate-900 truncate max-w-xs" title={item.name}>
+                                  <div className="text-body-small text-foreground truncate max-w-xs" title={item.name}>
                                     {item.name}
                                   </div>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 capitalize">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-badge text-caption bg-muted text-foreground capitalize border border-border">
                                   {item.type}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{item.size}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-body-small text-muted-foreground">{item.size}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-body-small text-muted-foreground">
                                 {isLibrary ? item.uploadedAt : (item as TrashedMediaItem).trashedAt}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={e => e.stopPropagation()}>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-body-small" onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center justify-end gap-2">
                                   <button
                                     onClick={() => handleCopyUrl(item.url)}
-                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    className="p-1.5 text-muted-foreground hover:text-accent hover:bg-accent/10 rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                                    type="button"
                                   >
                                     <Copy className="w-4 h-4" />
                                   </button>
                                   <button
                                     onClick={() => (isLibrary ? initiateDelete(item.id) : initiateRestore(item.id))}
-                                    className={`p-1.5 rounded transition-colors ${
+                                    className={`p-1.5 rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
                                       isLibrary
-                                        ? 'text-slate-400 hover:text-red-600 hover:bg-red-50'
-                                        : 'text-slate-400 hover:text-green-600 hover:bg-green-50'
+                                        ? 'text-muted-foreground hover:text-error hover:bg-error/10'
+                                        : 'text-muted-foreground hover:text-success hover:bg-success/10'
                                     }`}
+                                    type="button"
                                   >
                                     {isLibrary ? <Trash2 className="w-4 h-4" /> : <RotateCcw className="w-4 h-4" />}
                                   </button>

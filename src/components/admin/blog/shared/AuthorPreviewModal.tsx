@@ -16,15 +16,15 @@ export function AuthorPreviewModal({ isOpen, onClose, author }: AuthorPreviewMod
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
-        <div className="h-32 bg-gradient-to-r from-solar-500 to-orange-600 relative">
+      <div className="relative bg-surface rounded-card shadow-modal w-full max-w-md overflow-hidden animate-fade-in-up border border-border">
+        <div className="h-32 bg-accent/15 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/30 text-white rounded-full transition-colors backdrop-blur-sm"
+            className="absolute top-4 right-4 p-2 bg-surface/70 hover:bg-surface text-foreground rounded-full transition-colors backdrop-blur-sm border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
           >
-            <X className="w-5 h-5" />
+            <X className="icon-sm" />
           </button>
         </div>
 
@@ -36,13 +36,13 @@ export function AuthorPreviewModal({ isOpen, onClose, author }: AuthorPreviewMod
               width={96}
               height={96}
               sizes="96px"
-              className="w-24 h-24 rounded-full border-4 border-white bg-slate-100 object-cover shadow-md"
+              className="w-24 h-24 rounded-full border-4 border-border bg-background-alt object-cover shadow-card"
             />
             <span
-              className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border shadow-sm mb-2 ${
+              className={`px-3 py-1 rounded-full text-label uppercase tracking-wide border shadow-button mb-2 ${
                 author.status === 'active'
-                  ? 'bg-green-50 text-green-700 border-green-200'
-                  : 'bg-slate-100 text-slate-600 border-slate-200'
+                  ? 'bg-success/15 text-success border-success/20'
+                  : 'bg-muted text-foreground-muted border-border'
               }`}
             >
               {author.status}
@@ -50,43 +50,45 @@ export function AuthorPreviewModal({ isOpen, onClose, author }: AuthorPreviewMod
           </div>
 
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">{author.name}</h2>
+            <h2 className="text-heading-2 text-foreground">{author.name}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium capitalize border ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-caption capitalize border ${
                   author.role === 'admin'
-                    ? 'bg-purple-100 text-purple-700 border-purple-200'
+                    ? 'bg-accent/15 text-accent border-accent/20'
                     : author.role === 'editor'
-                      ? 'bg-blue-100 text-blue-700 border-blue-200'
-                      : 'bg-slate-100 text-slate-700 border-slate-200'
+                      ? 'bg-info/15 text-info border-info/20'
+                      : author.role === 'contributor'
+                        ? 'bg-success/15 text-success border-success/20'
+                        : 'bg-muted text-foreground-muted border-border'
                 }`}
               >
-                <Shield className="w-3 h-3" />
+                <Shield className="icon-xs" />
                 {author.role}
               </span>
             </div>
           </div>
 
           <div className="space-y-4 mb-8">
-            <div className="flex items-center gap-3 text-sm text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                <Mail className="w-4 h-4" />
+            <div className="flex items-center gap-3 text-body-small text-foreground-muted">
+              <div className="w-8 h-8 rounded-full bg-background-alt border border-border flex items-center justify-center text-muted-foreground">
+                <Mail className="icon-sm" />
               </div>
-              <a href={`mailto:${author.email}`} className="hover:text-solar-600 transition-colors">
+              <a href={`mailto:${author.email}`} className="hover:text-accent transition-colors">
                 {author.email}
               </a>
             </div>
-            <div className="flex items-center gap-3 text-sm text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                <Calendar className="w-4 h-4" />
+            <div className="flex items-center gap-3 text-body-small text-foreground-muted">
+              <div className="w-8 h-8 rounded-full bg-background-alt border border-border flex items-center justify-center text-muted-foreground">
+                <Calendar className="icon-sm" />
               </div>
               <span>Joined {author.joinedAt}</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">About</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">{author.bio || 'No bio provided yet.'}</p>
+          <div className="bg-background-alt rounded-card p-4 border border-border">
+            <h3 className="text-label text-foreground uppercase tracking-wider mb-2">About</h3>
+            <p className="text-body-small text-foreground-muted leading-relaxed">{author.bio || 'No bio provided yet.'}</p>
           </div>
         </div>
       </div>

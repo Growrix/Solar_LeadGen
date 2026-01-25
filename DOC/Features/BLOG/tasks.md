@@ -144,7 +144,7 @@ description: "Task list for BLOG pixel-perfect prototype migration"
 - [x] T091d [US1] Remove non-prototype Refresh action from Authors list (keep search + optional Add Author only): `src/components/admin/blog/content-manager/AuthorList.tsx`
 - [x] T091e [US1] Align Authors table row visuals to prototype (avatar `<img>`, status dot + Active/Inactive labels, action icon padding/hover colors): `src/components/admin/blog/content-manager/AuthorList.tsx`
 - [ ] T092 Fix gaps and repeat audit until green
-- [ ] T096 [US2] Add Media Library date range filter controls + wiring (prototype parity)
+- [x] T096 [US2] Add Media Library date range filter controls + wiring (prototype parity)
 	- Prototype reference: `DOC/FEATURES/BLOG/GoogleAIStudio UI UX/solarmatch-blog/components/admin/AdminMediaLibrary.tsx` (dateRange filtering + missing UI trigger)
 	- Implementation target: `src/components/admin/blog/media/MediaLibrary.tsx`
 
@@ -163,4 +163,95 @@ description: "Task list for BLOG pixel-perfect prototype migration"
 - [x] T100 Run `npx tsc --noEmit` (passed 2026-01-25)
 - [x] T101 Run `npm run build` (passed 2026-01-25)
 - [ ] T102 Capture evidence (side-by-side or screenshots) for Media Library parity and record locations under `DOC/FEATURES/BLOG/Audit Report/`
+
+---
+
+## Phase 8: Frontend Adaptation to Theme System (BLOG Admin) 🎨
+
+**Purpose**: Bring BLOG admin UI into the global multi-theme design system (Dark/Light/Purple) using semantic tokens (no hardcoded colors/typography).
+
+**Reference Instructions**:
+- System audit: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/Frontend-System-Audit-Instruction-2026.md`
+- Migration workflow: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/Frontend-Migration-Instruction-2026.md`
+
+**Scope (this phase)**:
+- BLOG admin routes and components under `src/app/admin/blog/**` and `src/components/admin/blog/**`
+- Use existing theme tokens/classes (e.g., `bg-background`, `bg-surface`, `text-foreground`, `border-border`, `text-heading-*`, `text-body-*`, neumorphic shadows)
+
+**Non-goals**:
+- No behavior changes, API changes, state/validation changes, or feature additions (theme-only adaptation)
+
+### Phase 8.A: Audit (Required)
+
+- [x] T200 [P] Create theme system audit report (current system SOT): `DOC/Features/BLOG/Audit Report/blog-frontend-theme-system-audit-2026-01-25.md`
+- [x] T201 [P] Create BLOG admin theme adaptation plan: `DOC/Features/BLOG/Migration/blog-admin-theme-adaptation-plan-2026-01-25.md`
+
+**Checkpoint**: Audit report + adaptation plan exist and are reviewed before implementation.
+
+### Phase 8.B: Implementation Tasks (Theme-only)
+
+**Acceptance Criteria (MANDATORY for each component tree):**
+- All 6 verification commands return 0 matches for the component AND all child components it renders.
+- No `dark:` classes.
+- No `bg-white`, `text-white`, `bg-black`, `text-black`, `text-gray-*`, `text-slate-*`, `bg-slate-*`, `border-slate-*`.
+- No raw typography utilities: `text-sm`, `text-lg`, `font-bold`, etc. (use semantic typography tokens).
+
+- [x] T210 [US1] Migrate Content Manager hub + tabs to semantic tokens (no hardcoded styles): `src/components/admin/blog/content-manager/ContentManagerHub.tsx`
+- [x] T211 [US1] Migrate Posts list surface to semantic tokens (includes status pills, badges, bulk tray): `src/components/admin/blog/content-manager/PostList.tsx`
+- [x] T212 [US1] Migrate Categories list UI to semantic tokens: `src/components/admin/blog/content-manager/CategoryList.tsx`
+- [x] T213 [US1] Migrate Tags list UI to semantic tokens: `src/components/admin/blog/content-manager/TagList.tsx`
+
+- [x] T214 [US1] Migrate Comments list UI + modals to semantic tokens:
+	- `src/components/admin/blog/content-manager/CommentsList.tsx`
+	- `src/components/admin/blog/shared/ModerateCommentModal.tsx`
+	- `src/components/admin/blog/shared/BulkModerateModal.tsx`
+	- [x] `src/components/admin/blog/content-manager/CommentsList.tsx`
+	- [x] `src/components/admin/blog/shared/ModerateCommentModal.tsx`
+	- [x] `src/components/admin/blog/shared/BulkModerateModal.tsx`
+
+- [x] T215 [US1] Migrate Authors list UI + modals to semantic tokens:
+	- `src/components/admin/blog/content-manager/AuthorList.tsx`
+	- `src/components/admin/blog/shared/ManageAuthorModal.tsx`
+	- `src/components/admin/blog/shared/AuthorPreviewModal.tsx`
+	- [x] `src/components/admin/blog/content-manager/AuthorList.tsx`
+	- [x] `src/components/admin/blog/shared/ManageAuthorModal.tsx`
+	- [x] `src/components/admin/blog/shared/AuthorPreviewModal.tsx`
+
+- [x] T220 [US1] Migrate shared taxonomy + confirmation modals to semantic tokens:
+	- `src/components/admin/blog/shared/ManageTaxonomyModal.tsx`
+	- `src/components/admin/blog/shared/BulkTagModal.tsx`
+	- `src/components/admin/blog/shared/ConfirmationModal.tsx`
+	- [x] `src/components/admin/blog/shared/ManageTaxonomyModal.tsx`
+	- [x] `src/components/admin/blog/shared/BulkTagModal.tsx`
+	- [x] `src/components/admin/blog/shared/ConfirmationModal.tsx`
+
+- [x] T230 [US1] Migrate Admin Editor + Preview surfaces to semantic tokens:
+	- `src/components/admin/blog/editor/AdminPostEditorClient.tsx`
+	- `src/components/admin/blog/editor/AdminPostPreviewClient.tsx`
+
+- [x] T240 [US2] Migrate Media Library + all media modals to semantic tokens:
+	- `src/components/admin/blog/media/MediaLibrary.tsx`
+	- `src/components/admin/blog/media/MediaDetailsModal.tsx`
+	- `src/components/admin/blog/media/UploadMediaModal.tsx`
+	- `src/components/admin/blog/media/MoveMediaModal.tsx`
+	- `src/components/admin/blog/media/BulkEditMediaModal.tsx`
+	- `src/components/admin/blog/shared/MediaPickerModal.tsx`
+	- `src/components/admin/blog/media/SkeletonMediaGrid.tsx`
+	- `src/components/admin/blog/shared/SkeletonAdminTable.tsx`
+	- [x] `src/components/admin/blog/media/MediaLibrary.tsx`
+	- [x] `src/components/admin/blog/media/MediaDetailsModal.tsx`
+	- [x] `src/components/admin/blog/media/UploadMediaModal.tsx`
+	- [x] `src/components/admin/blog/media/MoveMediaModal.tsx`
+	- [x] `src/components/admin/blog/media/BulkEditMediaModal.tsx`
+	- [x] `src/components/admin/blog/shared/MediaPickerModal.tsx`
+	- [x] `src/components/admin/blog/media/SkeletonMediaGrid.tsx`
+	- [x] `src/components/admin/blog/shared/SkeletonAdminTable.tsx`
+
+### Phase 8.C: Verification (Required)
+
+- [x] T290 Run typecheck: `npx tsc --noEmit`
+- [x] T291 Run build: `npm run build`
+- [ ] T292 Theme smoke test: verify Dark/Light/Purple for BLOG admin routes
+- [ ] T293 Responsive smoke test: 320 / 375 / 768 / 1024 / 1440
+- [ ] T294 Accessibility smoke test: focus states, keyboard nav for modals, contrast sanity
 

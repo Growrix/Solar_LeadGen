@@ -39,9 +39,9 @@ export function ContentManagerHub() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 pt-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Blog Manager</h1>
+    <div className="bg-background min-h-screen">
+      <div className="bg-surface border-b border-border sticky top-0 z-30 px-6 pt-6">
+        <h1 className="text-heading-2 text-foreground mb-6">Blog Manager</h1>
         <div className="flex space-x-6 overflow-x-auto no-scrollbar">
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
@@ -51,13 +51,13 @@ export function ContentManagerHub() {
                 key={tab.id}
                 onClick={() => setTab(tab.id)}
                 className={`
-                  flex items-center gap-2 pb-3 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap
+                  flex items-center gap-2 pb-3 px-1 border-b-2 text-button transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40
                   ${isActive 
-                      ? 'border-solar-500 text-solar-600' 
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}
+                      ? 'border-accent text-accent' 
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'}
                 `}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="icon-sm" />
                 {tab.label}
               </button>
             );

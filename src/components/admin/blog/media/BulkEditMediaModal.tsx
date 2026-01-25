@@ -54,40 +54,40 @@ export function BulkEditMediaModal({ isOpen, onClose, selectedCount, onConfirm }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
-        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-overlay/60 backdrop-blur-sm transition-opacity"
         onClick={!isProcessing ? onClose : undefined}
       />
 
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-lg overflow-hidden animate-fade-in-up">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-background-alt">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Bulk Edit Metadata</h3>
-            <p className="text-sm text-slate-500">Editing {selectedCount} items</p>
+            <h3 className="text-heading-4 text-foreground">Bulk Edit Metadata</h3>
+            <p className="text-body-small text-muted-foreground">Editing {selectedCount} items</p>
           </div>
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors disabled:opacity-50"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          <p className="text-xs text-slate-500 bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
+          <p className="text-body-small text-muted-foreground bg-info/10 p-3 rounded-card border border-info/20 mb-4">
             Select the fields you want to update. Only checked fields will be overwritten for all selected items.
           </p>
 
-          <div className={`space-y-2 p-4 border rounded-lg transition-colors ${updateAlt ? 'border-solar-500 bg-solar-50/10' : 'border-slate-200'}`}>
+          <div className={`space-y-2 p-4 border rounded-card transition-colors ${updateAlt ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={updateAlt}
                 onChange={(e) => setUpdateAlt(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                className="w-4 h-4 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               />
-              <span className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Type className="w-4 h-4 text-slate-400" /> Alt Text (SEO)
+              <span className="text-body-small text-foreground flex items-center gap-2">
+                <Type className="w-4 h-4 text-muted-foreground" /> Alt Text (SEO)
               </span>
             </label>
             <input
@@ -96,20 +96,20 @@ export function BulkEditMediaModal({ isOpen, onClose, selectedCount, onConfirm }
               onChange={(e) => setAltText(e.target.value)}
               disabled={!updateAlt}
               placeholder="Descriptive text for screen readers..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-solar-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full px-3 py-2 border border-input rounded-input bg-background text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:bg-muted/20 disabled:text-muted-foreground"
             />
           </div>
 
-          <div className={`space-y-2 p-4 border rounded-lg transition-colors ${updateCaption ? 'border-solar-500 bg-solar-50/10' : 'border-slate-200'}`}>
+          <div className={`space-y-2 p-4 border rounded-card transition-colors ${updateCaption ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={updateCaption}
                 onChange={(e) => setUpdateCaption(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                className="w-4 h-4 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               />
-              <span className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <AlignLeft className="w-4 h-4 text-slate-400" /> Caption
+              <span className="text-body-small text-foreground flex items-center gap-2">
+                <AlignLeft className="w-4 h-4 text-muted-foreground" /> Caption
               </span>
             </label>
             <textarea
@@ -118,20 +118,20 @@ export function BulkEditMediaModal({ isOpen, onClose, selectedCount, onConfirm }
               onChange={(e) => setCaption(e.target.value)}
               disabled={!updateCaption}
               placeholder="Display caption..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-solar-500 focus:outline-none resize-none disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full px-3 py-2 border border-input rounded-input bg-background text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 resize-none disabled:bg-muted/20 disabled:text-muted-foreground"
             />
           </div>
 
-          <div className={`space-y-2 p-4 border rounded-lg transition-colors ${updateTags ? 'border-solar-500 bg-solar-50/10' : 'border-slate-200'}`}>
+          <div className={`space-y-2 p-4 border rounded-card transition-colors ${updateTags ? 'border-primary/40 bg-primary/5' : 'border-border'}`}>
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={updateTags}
                 onChange={(e) => setUpdateTags(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                className="w-4 h-4 rounded border-border text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               />
-              <span className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-slate-400" /> Tags
+              <span className="text-body-small text-foreground flex items-center gap-2">
+                <Tag className="w-4 h-4 text-muted-foreground" /> Tags
               </span>
             </label>
             <input
@@ -140,24 +140,24 @@ export function BulkEditMediaModal({ isOpen, onClose, selectedCount, onConfirm }
               onChange={(e) => setTags(e.target.value)}
               disabled={!updateTags}
               placeholder="e.g. solar, outdoor, installation (comma separated)"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-solar-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
+              className="w-full px-3 py-2 border border-input rounded-input bg-background text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:bg-muted/20 disabled:text-muted-foreground"
             />
-            <p className="text-xs text-slate-400 pl-6">Replaces existing tags on selected items.</p>
+            <p className="text-body-small text-muted-foreground pl-6">Replaces existing tags on selected items.</p>
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-background-alt border-t border-border flex justify-end gap-3">
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-surface border border-border rounded-button text-button text-foreground hover:bg-surface-hover transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={isProcessing || !hasUpdates}
-            className="px-4 py-2 bg-solar-600 text-white rounded-lg font-medium hover:bg-solar-700 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+            className="px-4 py-2 bg-primary hover:bg-primary-hover text-background rounded-button text-button transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
           >
             {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             Update {selectedCount} Items
