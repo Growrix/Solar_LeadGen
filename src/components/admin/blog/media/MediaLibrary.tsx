@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { format, parse } from 'date-fns';
 import {
   CheckCircle,
   ChevronRight,
@@ -169,6 +170,10 @@ export function MediaLibrary() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [thumbnailSize, setThumbnailSize] = useState(200);
 
+  // Date filter state
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -237,7 +242,30 @@ export function MediaLibrary() {
       matchesFolder = item.folderId === currentFolderId || (currentFolderId === null && !item.folderId);
     }
 
-    return matchesSearch && matchesType && matchesFolder;
+    // Date filter logic (only for library tab)
+    let matchesDate = true;
+    if (activeTab === 'library' && (dateFrom || dateTo)) {
+      // Try to parse item.uploadedAt as MM/dd/yyyy or fallback to Date.parse
+      let itemDate: Date | null = null;
+      try {
+        itemDate = parse(item.uploadedAt, 'MMM d, yyyy', new Date());
+        if (isNaN(itemDate.getTime())) itemDate = new Date(Date.parse(item.uploadedAt));
+      } catch {
+        itemDate = new Date(Date.parse(item.uploadedAt));
+      }
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        if (itemDate < fromDate) matchesDate = false;
+      }
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        // Set toDate to end of day
+        toDate.setHours(23,59,59,999);
+        if (itemDate > toDate) matchesDate = false;
+      }
+    }
+
+    return matchesSearch && matchesType && matchesFolder && matchesDate;
   });
 
   const getBreadcrumbs = () => {
@@ -828,7 +856,7 @@ export function MediaLibrary() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
               <div className="relative flex-grow md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                 <input
@@ -839,6 +867,40 @@ export function MediaLibrary() {
                   className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none transition-all"
                 />
               </div>
+
+              {/* Date Range Filter */}
+              {activeTab === 'library' && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={e => setDateFrom(e.target.value)}
+                    className="px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none"
+                    placeholder="From"
+                    aria-label="Date from"
+                    style={{ minWidth: 120 }}
+                  />
+                  <span className="text-slate-400 text-xs">to</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={e => setDateTo(e.target.value)}
+                    className="px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none"
+                    placeholder="To"
+                    aria-label="Date to"
+                    style={{ minWidth: 120 }}
+                  />
+                  {(dateFrom || dateTo) && (
+                    <button
+                      type="button"
+                      onClick={() => { setDateFrom(''); setDateTo(''); }}
+                      className="ml-1 px-2 py-1 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 rounded-lg"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              )}
 
               {viewMode === 'grid' && (
                 <div className="hidden lg:flex items-center gap-2 px-2">

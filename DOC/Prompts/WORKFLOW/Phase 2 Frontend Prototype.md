@@ -1,4 +1,20 @@
 
+***Phase 1 : Frontend Initial Planning ***
+- Here is the Initial Plan : `DOC\Features\BLOG\RAW PLAN\Initial_idea.md`
+
+- Based on this initial plan prepare the Frontend plan strictly following the instruction : 
+`DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Spec-Instructions.md`
+
+- Prepare the frontend plan in : `DOC\Features\BLOG\Fontend UI UX Prompts`
+
+----------------------------------------------
+
+
+
+
+
+
+
 ***Phase 2 : Frontend Planning***
 - Here is the front end plan based on 6 phase SOT : 
   D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\FEATURES\NEWS ENGINE\SOT\FEATURE-SOT.md

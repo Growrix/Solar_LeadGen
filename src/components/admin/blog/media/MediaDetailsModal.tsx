@@ -27,6 +27,8 @@ import {
   X,
 } from 'lucide-react';
 
+import Button from '@/components/ui/button';
+
 import type { MediaItem } from './MediaLibrary';
 
 interface MediaDetailsModalProps {
@@ -208,7 +210,6 @@ export function MediaDetailsModal({
                   }}
                   disabled={isProcessingEdit}
                   variant="secondary"
-                  size="sm"
                   className="px-3 py-1.5"
                 >
                   Cancel
@@ -217,7 +218,6 @@ export function MediaDetailsModal({
                   onClick={saveEdits}
                   disabled={isProcessingEdit}
                   variant="primary"
-                  size="sm"
                   className="px-3 py-1.5 flex items-center gap-1.5"
                 >
                   {isProcessingEdit ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
@@ -347,7 +347,6 @@ export function MediaDetailsModal({
                     key={ratio}
                     onClick={() => setAspectRatio(ratio)}
                     variant={aspectRatio === ratio ? 'secondary' : 'ghost'}
-                    size="sm"
                     className={`px-2 py-1 text-xs font-medium rounded ${aspectRatio === ratio ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
                   >
                     {ratio === 'original' ? 'Orig' : ratio}
@@ -391,7 +390,7 @@ export function MediaDetailsModal({
                       }
                     }}
                   />
-                  <Button onClick={handleRenameSubmit} variant="primary" size="icon" className="p-1 text-green-600 hover:bg-green-50 rounded" title="Save">
+                  <Button onClick={handleRenameSubmit} variant="primary" className="p-1 text-green-600 hover:bg-green-50 rounded" title="Save">
                     <Check className="w-4 h-4" />
                   </Button>
                   <Button
@@ -400,7 +399,6 @@ export function MediaDetailsModal({
                       setRenameValue(mediaItem.name);
                     }}
                     variant="secondary"
-                    size="icon"
                     className="p-1 text-red-600 hover:bg-red-50 rounded"
                     title="Cancel"
                   >
@@ -422,7 +420,6 @@ export function MediaDetailsModal({
                       setRenameValue(mediaItem.name);
                     }}
                     variant="ghost"
-                    size="icon"
                     className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded"
                     title="Rename"
                   >
@@ -433,7 +430,7 @@ export function MediaDetailsModal({
               <p className="text-sm text-slate-500 capitalize mt-1">{mediaItem.type}</p>
             </div>
 
-            <Button onClick={onClose} variant="ghost" size="icon" className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded-full hidden md:block">
+            <Button onClick={onClose} variant="ghost" className="text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded-full hidden md:block">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -473,8 +470,7 @@ export function MediaDetailsModal({
                 />
                 <Button
                   onClick={handleCopyUrl}
-                  variant={isCopied ? 'success' : 'ghost'}
-                  size="icon"
+                  variant="ghost"
                   className={`p-2 rounded-lg border transition-all ${isCopied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   title="Copy URL"
                 >

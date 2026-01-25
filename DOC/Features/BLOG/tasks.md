@@ -136,14 +136,17 @@ description: "Task list for BLOG pixel-perfect prototype migration"
 **Purpose**: Ensure pixel-perfect prototype parity and no missing flows.
 
 - [x] T089 [US1] Create prototype vs Next.js audit report scaffold: `DOC/Features/BLOG/Audit Report/content-manager-prototype-vs-nextjs-audit-2026-01-24.md`
-- [ ] T090 Compare Next.js UI vs prototype for Content Manager (visual parity + interactions + modals)
-- [ ] T091 Log every remaining gap as tasks in this file
+- [x] T090 Compare Next.js UI vs prototype for Content Manager (visual parity + interactions + modals)
+- [x] T091 Log every remaining gap as tasks in this file
 - [x] T091a [US1] Sync Content Manager tab selection to URL (`?tab=`) for prototype-like navigation: `src/components/admin/blog/content-manager/ContentManagerHub.tsx`
 - [x] T091b [US1] Match prototype non-tabbed headers for Categories/Tags (back button + title/subtitle + add button; action-row add button tabbed-only): `src/components/admin/blog/content-manager/CategoryList.tsx`, `src/components/admin/blog/content-manager/TagList.tsx`
 - [x] T091c [US1] Align Comments list UI to prototype (header, filter bar styling/placeholder, fixed bulk tray, table columns/actions): `src/components/admin/blog/content-manager/CommentsList.tsx`
 - [x] T091d [US1] Remove non-prototype Refresh action from Authors list (keep search + optional Add Author only): `src/components/admin/blog/content-manager/AuthorList.tsx`
 - [x] T091e [US1] Align Authors table row visuals to prototype (avatar `<img>`, status dot + Active/Inactive labels, action icon padding/hover colors): `src/components/admin/blog/content-manager/AuthorList.tsx`
 - [ ] T092 Fix gaps and repeat audit until green
+- [ ] T096 [US2] Add Media Library date range filter controls + wiring (prototype parity)
+	- Prototype reference: `DOC/FEATURES/BLOG/GoogleAIStudio UI UX/solarmatch-blog/components/admin/AdminMediaLibrary.tsx` (dateRange filtering + missing UI trigger)
+	- Implementation target: `src/components/admin/blog/media/MediaLibrary.tsx`
 
 ### Sub-Phase: Fix Unintended Deviations (No-Assumptions)
 

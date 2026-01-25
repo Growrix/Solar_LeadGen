@@ -55,6 +55,8 @@
 
 ---------------------------------------------
 ***Phase 3: Frontend Adaption to Theme system***
+createa a phase in the DOC\Features\BLOG\tasks.md , based on the below scenario and after that start executing. :
+
 
 # Audit 
 - Understand the entire theaming system and the frontend Globally applied themes by auditing followed by this : `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-System-Audit-Instruction-2026.md`
