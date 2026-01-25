@@ -8,11 +8,12 @@ import {
   Loader2, 
   Trash2, 
   AlertCircle,
+  Folder,
   Zap,
   ArrowRight
 } from 'lucide-react';
 
-interface FileWithMeta {
+export interface FileWithMeta {
   file: File;
   id: string;
   preview: string;
@@ -26,14 +27,17 @@ interface FileWithMeta {
 interface UploadMediaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (files: FileWithMeta[]) => void;
+  onUpload: (files: FileWithMeta[], targetFolderId: string | null) => void;
+  folders: Array<{ id: string; name: string; parentId?: string | null }>;
+  defaultFolderId: string | null;
 }
 
-export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModalProps) {
+export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFolderId }: UploadMediaModalProps) {
   const [files, setFiles] = useState<FileWithMeta[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [targetFolderId, setTargetFolderId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,8 +48,9 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
       setIsUploading(false);
       setUploadProgress(0);
       setError(null);
+      setTargetFolderId(defaultFolderId);
     }
-  }, [isOpen]);
+  }, [isOpen, defaultFolderId]);
 
   if (!isOpen) return null;
 
@@ -125,11 +130,23 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
       if (progress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
-          onUpload(files);
+          onUpload(files, targetFolderId);
           onClose();
         }, 500);
       }
     }, 50);
+  };
+
+  const renderFolderOptions = (parentId: string | null = null, depth = 0): React.ReactNode => {
+    const children = folders.filter(f => (f.parentId ?? null) === parentId);
+    if (children.length === 0) return null;
+
+    return children.map(folder => (
+      <React.Fragment key={folder.id}>
+        <option value={folder.id}>{'\u00A0\u00A0'.repeat(depth)} 📁 {folder.name}</option>
+        {renderFolderOptions(folder.id, depth + 1)}
+      </React.Fragment>
+    ));
   };
 
   return (
@@ -143,7 +160,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
         
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <UploadCloud className="w-5 h-5 text-orange-500" />
+            <UploadCloud className="w-5 h-5 text-solar-600" />
             Upload Media
           </h3>
           {!isUploading && (
@@ -167,8 +184,8 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
               className={`
                 border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all
                 ${isDragging 
-                  ? 'border-orange-500 bg-orange-50' 
-                  : 'border-slate-300 hover:border-orange-400 hover:bg-slate-50'}
+                  ? 'border-solar-500 bg-solar-50' 
+                  : 'border-slate-300 hover:border-solar-400 hover:bg-slate-50'}
               `}
             >
               <input 
@@ -179,7 +196,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
                 multiple 
                 accept="image/*,video/*,application/pdf"
               />
-              <div className={`p-4 rounded-full mb-3 ${isDragging ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>
+              <div className={`p-4 rounded-full mb-3 ${isDragging ? 'bg-solar-100 text-solar-600' : 'bg-slate-100 text-slate-400'}`}>
                 <UploadCloud className="w-8 h-8" />
               </div>
               <h4 className="text-sm font-semibold text-slate-900">
@@ -188,6 +205,24 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
               <p className="text-xs text-slate-500 mt-1">
                 Automatic compression & WebP conversion enabled
               </p>
+            </div>
+          )}
+
+          {!isUploading && (
+            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <Folder className="w-4 h-4 text-slate-400" /> Upload to
+              </div>
+              <div className="flex-1">
+                <select
+                  value={targetFolderId ?? 'root'}
+                  onChange={(e) => setTargetFolderId(e.target.value === 'root' ? null : e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none"
+                >
+                  <option value="root">🏠 Root</option>
+                  {renderFolderOptions(null)}
+                </select>
+              </div>
             </div>
           )}
 
@@ -202,7 +237,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
             <div className="py-12 flex flex-col items-center justify-center text-center">
                <div className="w-full max-w-sm bg-slate-200 rounded-full h-2.5 mb-4 overflow-hidden">
                  <div 
-                   className="bg-orange-500 h-2.5 rounded-full transition-all duration-300 ease-out" 
+                   className="bg-solar-600 h-2.5 rounded-full transition-all duration-300 ease-out" 
                    style={{ width: `${uploadProgress}%` }}
                  ></div>
                </div>
@@ -276,14 +311,14 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
                           placeholder="Alt text (SEO)"
                           value={fileItem.altText}
                           onChange={(e) => updateMeta(fileItem.id, 'altText', e.target.value)}
-                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-orange-500 outline-none transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-solar-500 outline-none transition-colors"
                         />
                         <input
                           type="text"
                           placeholder="Caption (Optional)"
                           value={fileItem.caption}
                           onChange={(e) => updateMeta(fileItem.id, 'caption', e.target.value)}
-                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-orange-500 outline-none transition-colors"
+                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-solar-500 outline-none transition-colors"
                         />
                       </div>
                     </div>
@@ -305,7 +340,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload }: UploadMediaModal
           <button 
             onClick={handleUploadClick}
             disabled={isUploading}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+            className="px-4 py-2 bg-solar-600 text-white rounded-lg font-medium hover:bg-solar-700 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
           >
             {isUploading ? (
               <>

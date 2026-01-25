@@ -6,6 +6,7 @@ This file is the single, authoritative instruction for all prototype-to-Next.js 
 ---
 
 
+
 ## How to Use This File
 
 **For any migration from a prototype (e.g., Vite, Google AI Studio) to Next.js:**
@@ -13,6 +14,7 @@ This file is the single, authoritative instruction for all prototype-to-Next.js 
 - Before starting, audit the current Next.js codebase structure and check for any existing files, components, or partial implementations that can be reused. Always prefer reusing or extending existing files over creating new ones to avoid duplication.
 - The goal is to achieve a pixel-perfect, 1:1 mirroring of the prototype’s UI, structure, triggers, flows, and modals in the Next.js codebase.
 - The prototype is the sole source of truth for visuals, layout, and behavior.
+- **STRICT ANTI-DEVIATION RULE:** Never introduce, assume, or apply any UI/UX pattern, visual state, behavior, or accessibility feature that is not explicitly present in the prototype or in the written migration instructions. This includes (but is not limited to): disabling/fading buttons, adding tooltips, changing focus/hover/active states, altering modal flows, or applying standard design system conventions. If the prototype shows a button as visible and enabled, it must be visible and enabled in the migration, regardless of typical UI conventions. If a visual or behavioral detail is not present in the prototype, do NOT add it. Only implement what is explicitly shown or described.
 - Do NOT adapt, refactor, or convert styles to semantic tokens, theming, or design system classes unless explicitly requested after mirroring is complete.
 - All triggers, flows, modals, and UI details must be preserved exactly as in the prototype. No changes, improvements, or design-system adaptation are required unless specifically requested.
 - Hardcoded styles, custom classes, and non-semantic values are allowed and expected for this migration type.
@@ -25,6 +27,33 @@ This file is the single, authoritative instruction for all prototype-to-Next.js 
 1. Mirror the prototype’s UI, layout, triggers, flows, and styles exactly in the Next.js structure.
 2. Do not adapt or refactor to semantic/theming tokens during this phase.
 3. Only after pixel-perfect mirroring is complete, optionally proceed to semantic adaptation if explicitly requested.
+
+---
+
+## Correction Protocol (Fix Unintended Deviations)
+
+Use this protocol whenever any “visibility issue”, “behavior mismatch”, or “extra UX pattern” is discovered during Phase 4 verification (side-by-side comparison/screenshots).
+
+**Rule**: When fixing, you must delete/revert the deviation. Do not invent new logic or “improve UX”. The output must converge to the prototype.
+
+1. **Identify the exact mismatch** (one component at a time):
+	- What element differs? (button, modal footer, input, label, spacing, opacity, hover, disabled state)
+	- What is the prototype behavior/visual? Capture it as a short statement.
+2. **Locate the source** in code:
+	- Find the exact component/file where the mismatch is introduced.
+	- Identify whether it’s caused by: `disabled` logic, conditional rendering, CSS classes (`opacity-*`, `hidden`, `invisible`), global styles, or state/validation.
+3. **Revert to prototype**:
+	- Remove any conditional rendering that hides UI not hidden in the prototype.
+	- Remove any state/validation/disabled/focus/hover behavior not shown in the prototype.
+	- Ensure all controls that are visible in the prototype remain visible in the implementation (even if disabled).
+4. **Verify visually**:
+	- Re-check the specific screen/modal side-by-side.
+	- Confirm the mismatch is gone and nothing else changed.
+5. **Gates**:
+	- Run `npx tsc --noEmit` and `npm run build`.
+6. **Task hygiene**:
+	- Record each mismatch as a task in the single root tasks file for the feature.
+	- Do not close the phase until all mismatches are resolved and verification is green.
 
 ---
 

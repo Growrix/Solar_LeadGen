@@ -78,7 +78,7 @@ export function ConfirmationModal({
             className={`w-full sm:w-auto px-4 py-2 rounded-lg text-white font-medium flex items-center justify-center gap-2 focus:ring-2 focus:ring-offset-1 transition-all disabled:opacity-70 disabled:cursor-not-allowed ${
               isDestructive 
                 ? 'bg-red-600 hover:bg-red-700 focus:ring-red-200' 
-                : 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-200'
+                : 'bg-solar-600 hover:bg-solar-700 focus:ring-solar-200'
             }`}
           >
             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}

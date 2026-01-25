@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, Trash2, AlertCircle, RefreshCw, Folder, CheckCircle, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, RefreshCw, Folder, CheckCircle, Search, ArrowLeft } from 'lucide-react';
 import { SkeletonAdminTable } from '@/components/admin/blog/shared/SkeletonAdminTable';
 import { ConfirmationModal } from '@/components/admin/blog/shared/ConfirmationModal';
 import { ManageTaxonomyModal } from '@/components/admin/blog/shared/ManageTaxonomyModal';
@@ -67,6 +67,10 @@ export function CategoryList({ isTabbed = false }: CategoryListProps) {
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     c.slug.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleBackToPosts = () => {
+    window.location.href = '/admin/blog/content-manager?tab=posts';
+  };
 
   const handleAddNew = () => {
     setEditingItem(null);
@@ -154,6 +158,35 @@ export function CategoryList({ isTabbed = false }: CategoryListProps) {
         isLoading={isSaving}
       />
 
+      {!isTabbed && (
+        <div className="bg-white border-b border-slate-200 px-6 py-8">
+          <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleBackToPosts}
+                className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                title="Back to Posts"
+                type="button"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Categories</h1>
+                <p className="text-slate-500 text-sm mt-1">Organize your posts with categories.</p>
+              </div>
+            </div>
+            <button
+              onClick={handleAddNew}
+              className="inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-solar-100"
+              type="button"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Category
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={`${isTabbed ? 'max-w-7xl' : 'max-w-4xl'} mx-auto px-6 py-8`}>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div className="relative w-full sm:w-72">
@@ -165,17 +198,20 @@ export function CategoryList({ isTabbed = false }: CategoryListProps) {
               placeholder="Search categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-shadow"
+              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:ring-1 focus:ring-solar-500 focus:border-solar-500 sm:text-sm transition-shadow"
             />
           </div>
 
-          <button 
-            onClick={handleAddNew}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-orange-100"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Category
-          </button>
+          {isTabbed && (
+            <button
+              onClick={handleAddNew}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-solar-100"
+              type="button"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Category
+            </button>
+          )}
         </div>
 
         {viewState === 'loading' && <SkeletonAdminTable />}
@@ -210,10 +246,10 @@ export function CategoryList({ isTabbed = false }: CategoryListProps) {
 
         {viewState === 'success' && filteredCategories.length === 0 && searchQuery && (
           <div className="bg-white rounded-lg border border-dashed border-slate-300 p-12 flex flex-col items-center justify-center text-center">
-            <p className="text-slate-500">No categories found matching "{searchQuery}"</p>
+            <p className="text-slate-500">No categories found matching &quot;{searchQuery}&quot;</p>
             <button 
               onClick={() => setSearchQuery('')} 
-              className="mt-2 text-orange-600 font-medium text-sm hover:underline"
+              className="mt-2 text-solar-600 font-medium text-sm hover:underline"
             >
               Clear search
             </button>
@@ -247,7 +283,7 @@ export function CategoryList({ isTabbed = false }: CategoryListProps) {
                         <span className="text-sm font-medium text-slate-900">{category.name}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded text-xs">{category.slug}</span>
+                        <span className="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded">{category.slug}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">

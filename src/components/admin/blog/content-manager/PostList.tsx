@@ -1,89 +1,236 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { 
-  Plus, Search, Edit2, Eye, Trash2, AlertCircle, 
-  RefreshCw, FileText, CheckCircle, RotateCcw, 
-  Clock, Archive, LayoutGrid, List, MoreVertical
+import {
+  AlertCircle,
+  AlertTriangle,
+  Archive,
+  CheckCircle,
+  Clock,
+  Edit2,
+  Eye,
+  FileText,
+  LayoutGrid,
+  List,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Settings,
+  SlidersHorizontal,
+  Send,
+  Tag,
+  Trash2,
+  User,
 } from 'lucide-react';
-import { SkeletonAdminTable } from '@/components/admin/blog/shared/SkeletonAdminTable';
+
 import { ConfirmationModal } from '@/components/admin/blog/shared/ConfirmationModal';
-import type { AdminBlogStatus, AdminBlogPost } from '@/lib/blog/adminApiClient';
-import { listAdminBlogPostsWithMeta, deleteAdminBlogPost } from '@/lib/blog/adminApiClient';
+import { BulkTagModal } from '@/components/admin/blog/shared/BulkTagModal';
+import { SkeletonAdminTable } from '@/components/admin/blog/shared/SkeletonAdminTable';
+import type { AdminBlogPost, AdminBlogStatus } from '@/lib/blog/adminApiClient';
+import { deleteAdminBlogPost, listAdminBlogPostsWithMeta, updateAdminBlogPost } from '@/lib/blog/adminApiClient';
 
 interface PostListProps {
   isTabbed?: boolean;
 }
 
 type ViewState = 'loading' | 'success' | 'error' | 'empty';
-type StatusFilter = AdminBlogStatus | 'ALL';
+type StatusFilter = AdminBlogStatus | 'ALL' | 'NEEDS_REVIEW' | 'TRASH';
+
+const STORAGE_KEYS = {
+  viewMode: 'adminPostViewMode',
+  visibleColumns: 'adminPostVisibleColumns',
+  visibleBoardFields: 'adminPostVisibleBoardFields',
+  trashedIds: 'adminPostTrashedIds',
+  needsReviewIds: 'adminPostNeedsReviewIds',
+} as const;
+
+const LIST_COLUMNS = ['status', 'category', 'author', 'date'] as const;
+const BOARD_FIELDS = ['coverImage', 'category', 'author', 'date', 'excerpt', 'tags'] as const;
+
+function safeParseJsonArray(value: string | null): string[] | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!Array.isArray(parsed)) return null;
+    return parsed.filter((v): v is string => typeof v === 'string');
+  } catch {
+    return null;
+  }
+}
+
+function sanitizeSet(value: string[] | null, allowed: readonly string[], fallback: Set<string>): Set<string> {
+  if (!value) return new Set(fallback);
+  const allowedSet = new Set(allowed);
+  const next = new Set(value.filter((v) => allowedSet.has(v)));
+  return next.size > 0 ? next : new Set(fallback);
+}
 
 function formatDate(value: string): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
-const StatusPill: React.FC<{ status: AdminBlogStatus }> = ({ status }) => {
-  const statusConfig: Record<AdminBlogStatus, { bg: string; text: string; border: string; icon?: React.ReactNode }> = {
-    PUBLISHED: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
-    DRAFT: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
-    SCHEDULED: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', icon: <Clock className="w-3 h-3 mr-1" /> },
-    ARCHIVED: { bg: 'bg-stone-100', text: 'text-stone-600', border: 'border-stone-200', icon: <Archive className="w-3 h-3 mr-1" /> },
-  };
+function getPostIssues(post: AdminBlogPost): string[] {
+  const issues: string[] = [];
+  if (!post.coverImageUrl) issues.push('Missing cover image');
+  if (!post.excerpt) issues.push('Missing excerpt');
+  if (!post.category) issues.push('Missing category');
+  return issues;
+}
 
-  const config = statusConfig[status] || statusConfig['DRAFT'];
-    
+const STATUS_LABELS: Record<AdminBlogStatus, string> = {
+  DRAFT: 'draft',
+  SCHEDULED: 'scheduled',
+  PUBLISHED: 'published',
+  ARCHIVED: 'archived',
+};
+
+const STATUS_PILL_STYLE: Record<AdminBlogStatus, { bg: string; text: string; border: string; icon?: React.ReactNode }> = {
+  PUBLISHED: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' },
+  DRAFT: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
+  SCHEDULED: {
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    border: 'border-blue-200',
+    icon: <Clock className="w-3 h-3 mr-1" />,
+  },
+  ARCHIVED: { bg: 'bg-stone-100', text: 'text-stone-600', border: 'border-stone-200', icon: <Archive className="w-3 h-3 mr-1" /> },
+};
+
+function StatusPill({ status }: { status: AdminBlogStatus }) {
+  const config = STATUS_PILL_STYLE[status];
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border} capitalize`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border} capitalize`}
+    >
       {config.icon}
-      {status.toLowerCase()}
+      {STATUS_LABELS[status]}
     </span>
   );
-};
+}
 
 export function PostList({ isTabbed = false }: PostListProps) {
   const [viewState, setViewState] = useState<ViewState>('loading');
   const [posts, setPosts] = useState<AdminBlogPost[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
-  const [counts, setCounts] = useState<{ all: number; published: number; drafts: number } | null>(null);
-  
+
+  const [viewMode, setViewMode] = useState<'list' | 'board'>(() => {
+    if (typeof window === 'undefined') return 'list';
+    const saved = window.localStorage.getItem(STORAGE_KEYS.viewMode);
+    return saved === 'board' || saved === 'list' ? saved : 'list';
+  });
+
+  const [showViewOptions, setShowViewOptions] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set(LIST_COLUMNS);
+    const parsed = safeParseJsonArray(window.localStorage.getItem(STORAGE_KEYS.visibleColumns));
+    return sanitizeSet(parsed, LIST_COLUMNS, new Set(LIST_COLUMNS));
+  });
+  const [visibleBoardFields, setVisibleBoardFields] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set(['coverImage', 'author', 'date']);
+    const parsed = safeParseJsonArray(window.localStorage.getItem(STORAGE_KEYS.visibleBoardFields));
+    return sanitizeSet(parsed, BOARD_FIELDS, new Set(['coverImage', 'author', 'date']));
+  });
+
+  const [trashedIds, setTrashedIds] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    const parsed = safeParseJsonArray(window.localStorage.getItem(STORAGE_KEYS.trashedIds));
+    return new Set(parsed ?? []);
+  });
+  const [needsReviewIds, setNeedsReviewIds] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    const parsed = safeParseJsonArray(window.localStorage.getItem(STORAGE_KEYS.needsReviewIds));
+    return new Set(parsed ?? []);
+  });
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const [notification, setNotification] = useState<{message: string; type: 'success' | 'error'} | null>(null);
-  
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
+  const viewOptionsButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [editingStatusId, setEditingStatusId] = useState<string | null>(null);
+  const [tempStatusValue, setTempStatusValue] = useState<AdminBlogStatus>('DRAFT');
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'trash' | 'restore' | 'permanentDelete' | null>(null);
+  const [pendingActionIds, setPendingActionIds] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const [isBulkTagModalOpen, setIsBulkTagModalOpen] = useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
   const fetchData = useCallback(async () => {
     setViewState('loading');
     try {
-      const result = await listAdminBlogPostsWithMeta({ 
-        status: statusFilter === 'ALL' ? undefined : statusFilter, 
-        q: searchQuery.trim() || undefined 
+      const result = await listAdminBlogPostsWithMeta({
+        status: 'ALL',
+        q: searchQuery.trim() || undefined,
       });
       setPosts(result.posts);
-      setCounts(result.counts);
       setViewState(result.posts.length === 0 ? 'empty' : 'success');
     } catch {
       setViewState('error');
     }
-  }, [statusFilter, searchQuery]);
+  }, [searchQuery]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(STORAGE_KEYS.viewMode, viewMode);
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(STORAGE_KEYS.visibleColumns, JSON.stringify(Array.from(visibleColumns)));
+  }, [visibleColumns]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(STORAGE_KEYS.visibleBoardFields, JSON.stringify(Array.from(visibleBoardFields)));
+  }, [visibleBoardFields]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(STORAGE_KEYS.trashedIds, JSON.stringify(Array.from(trashedIds)));
+  }, [trashedIds]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(STORAGE_KEYS.needsReviewIds, JSON.stringify(Array.from(needsReviewIds)));
+  }, [needsReviewIds]);
+
+  useEffect(() => {
+    if (statusFilter === 'TRASH') setViewMode('list');
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (viewMode === 'board' && statusFilter !== 'TRASH') setStatusFilter('ALL');
+  }, [viewMode, statusFilter]);
+
+  useEffect(() => {
+    function onPointerDown(e: MouseEvent) {
+      if (!showViewOptions) return;
+      const target = e.target as Node;
+      if (viewOptionsButtonRef.current?.contains(target)) return;
+      setShowViewOptions(false);
+    }
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [showViewOptions]);
 
   useEffect(() => {
     if (notification) {
@@ -92,19 +239,47 @@ export function PostList({ isTabbed = false }: PostListProps) {
     }
   }, [notification]);
 
+  const activePosts = useMemo(() => posts.filter((p) => !trashedIds.has(p.id)), [posts, trashedIds]);
+  const trashedPosts = useMemo(() => posts.filter((p) => trashedIds.has(p.id)), [posts, trashedIds]);
+
+  const filteredItems = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    const list = statusFilter === 'TRASH' ? trashedPosts : activePosts;
+
+    return list.filter((p) => {
+      const matchesSearch = !query || (p.title || '').toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+
+      if (statusFilter === 'NEEDS_REVIEW') return needsReviewIds.has(p.id);
+      if (statusFilter === 'TRASH') return true;
+      if (statusFilter === 'ALL') return true;
+      return p.status === statusFilter;
+    });
+  }, [activePosts, needsReviewIds, searchQuery, statusFilter, trashedPosts]);
+
+  const stats = useMemo(() => {
+    const inReview = activePosts.filter((p) => needsReviewIds.has(p.id)).length;
+    return {
+      total: activePosts.length,
+      published: activePosts.filter((p) => p.status === 'PUBLISHED').length,
+      scheduled: activePosts.filter((p) => p.status === 'SCHEDULED').length,
+      inReview,
+      drafts: activePosts.filter((p) => p.status === 'DRAFT').length,
+    };
+  }, [activePosts, needsReviewIds]);
+
   useEffect(() => {
-    if (headerCheckboxRef.current) {
-      const visibleSelectedCount = posts.filter(i => selectedIds.has(i.id)).length;
-      const allSelected = posts.length > 0 && visibleSelectedCount === posts.length;
-      const someSelected = visibleSelectedCount > 0 && visibleSelectedCount < posts.length;
-      headerCheckboxRef.current.indeterminate = someSelected;
-      headerCheckboxRef.current.checked = allSelected;
-    }
-  }, [selectedIds, posts]);
+    if (!headerCheckboxRef.current) return;
+    const visibleSelectedCount = filteredItems.filter((i) => selectedIds.has(i.id)).length;
+    const allSelected = filteredItems.length > 0 && visibleSelectedCount === filteredItems.length;
+    const someSelected = visibleSelectedCount > 0 && visibleSelectedCount < filteredItems.length;
+    headerCheckboxRef.current.indeterminate = someSelected;
+    headerCheckboxRef.current.checked = allSelected;
+  }, [filteredItems, selectedIds]);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(new Set(posts.map(p => p.id)));
+      setSelectedIds(new Set(filteredItems.map((p) => p.id)));
     } else {
       setSelectedIds(new Set());
     }
@@ -120,35 +295,207 @@ export function PostList({ isTabbed = false }: PostListProps) {
     setSelectedIds(newSelected);
   };
 
-  const initiateDelete = (id: string) => {
-    setItemToDelete(id);
-    setIsDeleteModalOpen(true);
+  const openConfirm = (action: 'trash' | 'restore' | 'permanentDelete', ids: string[]) => {
+    setConfirmAction(action);
+    setPendingActionIds(ids);
+    setConfirmModalOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-    
-    setIsDeleting(true);
+  const closeConfirm = () => {
+    if (isProcessing) return;
+    setConfirmModalOpen(false);
+    setConfirmAction(null);
+    setPendingActionIds([]);
+  };
+
+  const confirmActionHandler = async () => {
+    if (!confirmAction || pendingActionIds.length === 0) return;
+    setIsProcessing(true);
     try {
-      await deleteAdminBlogPost(itemToDelete);
-      setNotification({ message: 'Post deleted successfully.', type: 'success' });
-      void fetchData();
+      if (confirmAction === 'trash') {
+        setTrashedIds((prev) => {
+          const next = new Set(prev);
+          pendingActionIds.forEach((id) => next.add(id));
+          return next;
+        });
+        setSelectedIds(new Set());
+        setNotification({ message: `Moved ${pendingActionIds.length} post(s) to trash.`, type: 'success' });
+      }
+
+      if (confirmAction === 'restore') {
+        setTrashedIds((prev) => {
+          const next = new Set(prev);
+          pendingActionIds.forEach((id) => next.delete(id));
+          return next;
+        });
+        setSelectedIds(new Set());
+        setNotification({ message: `Restored ${pendingActionIds.length} post(s).`, type: 'success' });
+      }
+
+      if (confirmAction === 'permanentDelete') {
+        for (const id of pendingActionIds) {
+          // This is a real delete (server-side). Keep it only in Trash.
+          // eslint-disable-next-line no-await-in-loop
+          await deleteAdminBlogPost(id);
+        }
+        setTrashedIds((prev) => {
+          const next = new Set(prev);
+          pendingActionIds.forEach((id) => next.delete(id));
+          return next;
+        });
+        setSelectedIds(new Set());
+        setNotification({ message: `Deleted ${pendingActionIds.length} post(s) permanently.`, type: 'success' });
+        await fetchData();
+      }
     } catch {
-      setNotification({ message: 'Failed to delete post.', type: 'error' });
+      setNotification({ message: 'Action failed. Please try again.', type: 'error' });
     } finally {
-      setIsDeleting(false);
-      setIsDeleteModalOpen(false);
-      setItemToDelete(null);
+      setIsProcessing(false);
+      closeConfirm();
+    }
+  };
+
+  const handleBulkStatusChange = async (nextStatus: AdminBlogStatus) => {
+    if (selectedIds.size === 0) return;
+    setIsBulkProcessing(true);
+    try {
+      for (const id of selectedIds) {
+        // eslint-disable-next-line no-await-in-loop
+        await updateAdminBlogPost(id, { status: nextStatus });
+      }
+      setNotification({
+        message:
+          nextStatus === 'PUBLISHED'
+            ? `${selectedIds.size} post(s) published.`
+            : nextStatus === 'ARCHIVED'
+              ? `${selectedIds.size} post(s) archived.`
+              : `${selectedIds.size} post(s) updated.`,
+        type: 'success',
+      });
+      setSelectedIds(new Set());
+      await fetchData();
+    } catch {
+      setNotification({ message: 'Bulk update failed. Please try again.', type: 'error' });
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
+
+  const handleBulkAddTags = async (newTags: string[]) => {
+    if (selectedIds.size === 0 || newTags.length === 0) return;
+    setIsBulkProcessing(true);
+    try {
+      for (const id of selectedIds) {
+        const post = posts.find((p) => p.id === id);
+        const existingTags = post?.tags ?? [];
+        const mergedTags = Array.from(new Set([...existingTags, ...newTags]));
+        // eslint-disable-next-line no-await-in-loop
+        await updateAdminBlogPost(id, { tags: mergedTags });
+      }
+      setNotification({ message: `Tags added to ${selectedIds.size} post(s).`, type: 'success' });
+      setSelectedIds(new Set());
+      await fetchData();
+    } catch {
+      setNotification({ message: 'Bulk tagging failed. Please try again.', type: 'error' });
+    } finally {
+      setIsBulkProcessing(false);
     }
   };
 
   const tabItems: Array<{ key: StatusFilter; label: string }> = [
-    { key: 'ALL', label: 'All' },
-    { key: 'PUBLISHED', label: 'Published' },
-    { key: 'DRAFT', label: 'Draft' },
-    { key: 'SCHEDULED', label: 'Scheduled' },
-    { key: 'ARCHIVED', label: 'Archived' },
+    { key: 'ALL', label: 'all' },
+    { key: 'PUBLISHED', label: 'published' },
+    { key: 'DRAFT', label: 'draft' },
+    { key: 'SCHEDULED', label: 'scheduled' },
+    { key: 'ARCHIVED', label: 'archived' },
+    { key: 'NEEDS_REVIEW', label: 'needs review' },
+    { key: 'TRASH', label: 'trash' },
   ];
+
+  const toggleColumn = (col: string) => {
+    setVisibleColumns((prev) => {
+      const next = new Set(prev);
+      if (next.has(col)) next.delete(col);
+      else next.add(col);
+      return next;
+    });
+  };
+
+  const toggleBoardField = (field: string) => {
+    setVisibleBoardFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(field)) next.delete(field);
+      else next.add(field);
+      return next;
+    });
+  };
+
+  const handleToggleNeedsReview = (id: string) => {
+    setNeedsReviewIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const startStatusEdit = (post: AdminBlogPost) => {
+    if (statusFilter === 'TRASH') return;
+    setEditingStatusId(post.id);
+    setTempStatusValue(post.status);
+  };
+
+  const saveStatusEdit = async (postId: string, nextStatus: AdminBlogStatus) => {
+    try {
+      await updateAdminBlogPost(postId, { status: nextStatus });
+      setNotification({ message: 'Status updated.', type: 'success' });
+      await fetchData();
+    } catch {
+      setNotification({ message: 'Failed to update status.', type: 'error' });
+    } finally {
+      setEditingStatusId(null);
+    }
+  };
+
+  const confirmCopy = useMemo(() => {
+    const count = pendingActionIds.length;
+    if (confirmAction === 'trash') {
+      return {
+        title: 'Move to Trash?',
+        message:
+          count === 1
+            ? 'Are you sure you want to move this post to trash?'
+            : `Are you sure you want to trash ${count} items?`,
+        confirmLabel: 'Move to Trash',
+        isDestructive: false,
+      };
+    }
+    if (confirmAction === 'restore') {
+      return {
+        title: count === 1 ? 'Restore post?' : 'Restore selected posts?',
+        message: count === 1 ? 'Are you sure you want to restore this post?' : `Are you sure you want to restore ${count} posts?`,
+        confirmLabel: 'Restore',
+        isDestructive: false,
+      };
+    }
+    if (confirmAction === 'permanentDelete') {
+      return {
+        title: 'Delete Permanently?',
+        message:
+          count === 1
+            ? 'Are you sure you want to permanently delete this post? This action cannot be undone.'
+            : `Are you sure you want to permanently delete ${count} items?`,
+        confirmLabel: 'Delete Forever',
+        isDestructive: true,
+      };
+    }
+    return {
+      title: 'Confirm',
+      message: 'Are you sure?',
+      confirmLabel: 'Confirm',
+      isDestructive: false,
+    };
+  }, [confirmAction, pendingActionIds.length]);
 
   return (
     <div className={`min-h-screen bg-slate-50 font-sans text-slate-900 relative ${isTabbed ? '' : 'pt-0'}`}>
@@ -161,75 +508,216 @@ export function PostList({ isTabbed = false }: PostListProps) {
         </div>
       )}
 
-      <ConfirmationModal 
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        isLoading={isDeleting}
-        title="Delete Post?"
-        message="Are you sure you want to delete this post? This action cannot be undone."
-        confirmLabel="Delete Post"
-        isDestructive={true}
+      <ConfirmationModal
+        isOpen={confirmModalOpen}
+        onClose={closeConfirm}
+        onConfirm={confirmActionHandler}
+        isLoading={isProcessing}
+        title={confirmCopy.title}
+        message={confirmCopy.message}
+        confirmLabel={confirmCopy.confirmLabel}
+        isDestructive={confirmCopy.isDestructive}
       />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div className="flex items-center gap-4 flex-wrap">
-            {tabItems.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setStatusFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  statusFilter === tab.key
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                {tab.label}
-                {counts && tab.key === 'ALL' && <span className="ml-1.5 text-slate-400">({counts.all})</span>}
-              </button>
-            ))}
-          </div>
+      <BulkTagModal
+        isOpen={isBulkTagModalOpen}
+        onClose={() => setIsBulkTagModalOpen(false)}
+        selectedCount={selectedIds.size}
+        onConfirm={handleBulkAddTags}
+      />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode(viewMode === 'list' ? 'board' : 'list')}
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-              title={viewMode === 'list' ? 'Board view' : 'List view'}
-            >
-              {viewMode === 'list' ? <LayoutGrid className="w-4 h-4" /> : <List className="w-4 h-4" />}
-            </button>
+      {!isTabbed && (
+        <div className="bg-white border-b border-slate-200 px-6 py-8">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Posts</h1>
+              <p className="text-slate-500 text-sm mt-1">Manage and organize your blog content.</p>
+            </div>
             <Link
               href="/admin/blog/new"
-              className="inline-flex items-center justify-center px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-orange-100"
+              className="inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-solar-100"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              New Post
+              <Plus className="w-4 h-4 mr-2" /> Add New
             </Link>
           </div>
         </div>
+      )}
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-          <div className="relative w-full sm:w-72">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-slate-400" />
+      <div className={`${isTabbed ? 'max-w-7xl' : 'max-w-6xl'} mx-auto px-6 py-8 pb-32`}>
+        {/* Stats Ribbon */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Posts</span>
+            <span className="text-2xl font-bold text-slate-900">{stats.total}</span>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-green-100 shadow-sm flex flex-col relative overflow-hidden">
+            <div className="absolute right-0 top-0 p-3 opacity-10">
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <input
-              type="text"
-              placeholder="Search posts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm transition-shadow"
-            />
+            <span className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-1">Published</span>
+            <span className="text-2xl font-bold text-slate-900">{stats.published}</span>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm flex flex-col relative overflow-hidden">
+            <div className="absolute right-0 top-0 p-3 opacity-10">
+              <Clock className="w-8 h-8 text-blue-600" />
+            </div>
+            <span className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">Scheduled</span>
+            <span className="text-2xl font-bold text-slate-900">{stats.scheduled}</span>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-amber-100 shadow-sm flex flex-col relative overflow-hidden">
+            <div className="absolute right-0 top-0 p-3 opacity-10">
+              <AlertCircle className="w-8 h-8 text-amber-600" />
+            </div>
+            <span className="text-xs text-amber-600 font-semibold uppercase tracking-wider mb-1">In Review</span>
+            <span className="text-2xl font-bold text-slate-900">{stats.inReview}</span>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Drafts</span>
+            <span className="text-2xl font-bold text-slate-900">{stats.drafts}</span>
+          </div>
+        </div>
+
+        {/* Header / Controls */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center">
+          <div className="flex items-center gap-4 w-full md:w-auto overflow-x-auto no-scrollbar pb-2 md:pb-0">
+            {viewMode === 'list' && (
+              <div className="flex p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+                {tabItems.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setStatusFilter(tab.key);
+                      setSelectedIds(new Set());
+                    }}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+                      statusFilter === tab.key
+                        ? 'bg-slate-100 text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                    } capitalize`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {statusFilter !== 'TRASH' && (
+              <div className="flex p-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-md transition-all ${
+                    viewMode === 'list' ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'
+                  }`}
+                  title="List View"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('board')}
+                  className={`p-1.5 rounded-md transition-all ${
+                    viewMode === 'board' ? 'bg-slate-100 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'
+                  }`}
+                  title="Board View"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
-          <button
-            onClick={() => fetchData()}
-            className="inline-flex items-center gap-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="relative">
+              <button
+                ref={viewOptionsButtonRef}
+                type="button"
+                onClick={() => setShowViewOptions(!showViewOptions)}
+                className={`p-2 rounded-lg border transition-colors ${
+                  showViewOptions ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
+                }`}
+                title="Customize View"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+
+              {showViewOptions && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowViewOptions(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden animate-fade-in-up">
+                    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                      <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        {viewMode === 'list' ? 'Columns' : 'Card Fields'}
+                      </h4>
+                      <button
+                        onClick={() => setShowViewOptions(false)}
+                        className="text-slate-400 hover:text-slate-600"
+                        aria-label="Close view options"
+                      >
+                        <Settings className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div className="p-2 space-y-1">
+                      {viewMode === 'list' ? (
+                        <>
+                          {LIST_COLUMNS.map((col) => (
+                            <label key={col} className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={visibleColumns.has(col)}
+                                onChange={() => toggleColumn(col)}
+                                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                              />
+                              <span className="text-sm text-slate-700 capitalize">{col}</span>
+                            </label>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          {BOARD_FIELDS.map((field) => (
+                            <label key={field} className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-lg cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={visibleBoardFields.has(field)}
+                                onChange={() => toggleBoardField(field)}
+                                className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                              />
+                              <span className="text-sm text-slate-700 capitalize">
+                                {field.replace(/([A-Z])/g, ' $1').trim()}
+                              </span>
+                            </label>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="relative flex-grow md:flex-grow-0 md:w-72">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                type="text"
+                placeholder={statusFilter === 'TRASH' ? 'Search trash...' : 'Search posts...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg leading-5 bg-white placeholder-slate-400 focus:outline-none focus:placeholder-slate-500 focus:ring-1 focus:ring-solar-500 focus:border-solar-500 sm:text-sm transition-shadow"
+              />
+            </div>
+
+            {isTabbed && statusFilter !== 'TRASH' && (
+              <Link
+                href="/admin/blog/new"
+                className="inline-flex items-center justify-center px-4 py-2 bg-solar-600 hover:bg-solar-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:ring-4 focus:ring-solar-100 whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Post
+              </Link>
+            )}
+          </div>
         </div>
 
         {viewState === 'loading' && <SkeletonAdminTable />}
@@ -246,23 +734,30 @@ export function PostList({ isTabbed = false }: PostListProps) {
           </div>
         )}
 
-        {viewState === 'empty' && (
-          <div className="bg-white rounded-lg border border-slate-200 p-12 flex flex-col items-center justify-center text-center">
+        {viewState === 'success' && filteredItems.length === 0 && (
+          <div className="bg-white rounded-lg border border-dashed border-slate-300 p-12 flex flex-col items-center justify-center text-center">
             <div className="bg-slate-50 p-4 rounded-full mb-4">
-              <FileText className="w-8 h-8 text-slate-400" />
+              {statusFilter === 'TRASH' ? <Trash2 className="w-8 h-8 text-slate-400" /> : <FileText className="w-8 h-8 text-slate-400" />}
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-1">No posts found</h3>
-            <p className="text-slate-500 text-sm mb-6">Create your first post to get started.</p>
-            <Link
-              href="/admin/blog/new"
-              className="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Create Post
-            </Link>
+            <h3 className="text-lg font-medium text-slate-900 mb-1">{statusFilter === 'TRASH' ? 'Trash is empty' : 'No posts found'}</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              {statusFilter === 'TRASH'
+                ? 'Deleted posts will appear here.'
+                : `No ${statusFilter === 'ALL' ? '' : statusFilter.toLowerCase().replace(/_/g, ' ')} posts found.`}
+            </p>
+            {statusFilter !== 'TRASH' && (
+              <Link
+                href="/admin/blog/new"
+                className="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                Create Post
+              </Link>
+            )}
           </div>
         )}
 
-        {viewState === 'success' && posts.length > 0 && (
+        {/* List */}
+        {viewState === 'success' && viewMode === 'list' && filteredItems.length > 0 && (
           <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200">
@@ -273,75 +768,489 @@ export function PostList({ isTabbed = false }: PostListProps) {
                         ref={headerCheckboxRef}
                         type="checkbox"
                         onChange={handleSelectAll}
-                        className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                        className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500 cursor-pointer"
                       />
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       Title
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-28">
-                      Status
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
-                      Updated
-                    </th>
+                    {visibleColumns.has('status') && (
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-36">
+                        Status
+                      </th>
+                    )}
+                    {visibleColumns.has('category') && (
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
+                        Category
+                      </th>
+                    )}
+                    {visibleColumns.has('author') && (
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
+                        Author
+                      </th>
+                    )}
+                    {visibleColumns.has('date') && (
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-40">
+                        Updated
+                      </th>
+                    )}
                     <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider w-32">
                       Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
-                  {posts.map((post) => (
-                    <tr key={post.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(post.id)}
-                          onChange={() => handleSelectRow(post.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-slate-900 line-clamp-1">{post.title || '(Untitled)'}</span>
-                          <span className="text-xs text-slate-500 font-mono">/{post.slug}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusPill status={post.status} />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                        {formatDate(post.updatedAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                          <Link
-                            href={`/admin/blog/${encodeURIComponent(post.id)}`}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Link>
-                          <Link
-                            href={`/admin/blog/${encodeURIComponent(post.id)}/preview`}
-                            className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                            title="Preview"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Link>
-                          <button 
-                            onClick={() => initiateDelete(post.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredItems.map((post) => {
+                    const issues = getPostIssues(post);
+                    const hasIssues = issues.length > 0;
+                    const isNeedsReview = needsReviewIds.has(post.id);
+                    const isSelected = selectedIds.has(post.id);
+
+                    return (
+                      <tr
+                        key={post.id}
+                        className={`transition-colors group ${isSelected ? 'bg-solar-50/50 hover:bg-solar-50' : 'hover:bg-slate-50'}`}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(post.id)}
+                            className="w-4 h-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500 cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-1 flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-slate-900 line-clamp-1">{post.title || '(Untitled)'}</span>
+                                {hasIssues && (
+                                  <div className="relative group/tooltip">
+                                    <AlertTriangle className="w-4 h-4 text-amber-500" />
+                                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-slate-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-30">
+                                      <div className="font-semibold mb-2">Attention Needed:</div>
+                                      <ul className="space-y-1">
+                                        {issues.map((issue) => (
+                                          <li key={issue} className="flex items-start gap-2">
+                                            <span className="mt-0.5">•</span>
+                                            <span>{issue}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  </div>
+                                )}
+                                {isNeedsReview && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                    Needs Review
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {statusFilter !== 'TRASH' && (
+                              <button
+                                type="button"
+                                onClick={() => handleToggleNeedsReview(post.id)}
+                                className={`p-1.5 rounded-lg border transition-colors ${
+                                  isNeedsReview
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                    : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                                }`}
+                                title={isNeedsReview ? 'Remove Needs Review' : 'Mark as Needs Review'}
+                              >
+                                <AlertTriangle className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                        {visibleColumns.has('status') && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {editingStatusId === post.id ? (
+                              <select
+                                value={tempStatusValue}
+                                onChange={(e) => {
+                                  const next = e.target.value as AdminBlogStatus;
+                                  setTempStatusValue(next);
+                                  void saveStatusEdit(post.id, next);
+                                }}
+                                onBlur={() => setEditingStatusId(null)}
+                                className="text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white focus:ring-1 focus:ring-solar-500 focus:border-solar-500"
+                              >
+                                <option value="DRAFT">Draft</option>
+                                <option value="SCHEDULED">Scheduled</option>
+                                <option value="PUBLISHED">Published</option>
+                                <option value="ARCHIVED">Archived</option>
+                              </select>
+                            ) : (
+                              <button
+                                type="button"
+                                onDoubleClick={() => startStatusEdit(post)}
+                                className="cursor-default"
+                                title={statusFilter === 'TRASH' ? undefined : 'Double-click to edit'}
+                              >
+                                <StatusPill status={post.status} />
+                              </button>
+                            )}
+                          </td>
+                        )}
+
+                        {visibleColumns.has('category') && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{post.category || '—'}</td>
+                        )}
+                        {visibleColumns.has('author') && (
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-2 text-sm text-slate-600">
+                              <User className="w-4 h-4 text-slate-400" />
+                              Admin
+                            </span>
+                          </td>
+                        )}
+                        {visibleColumns.has('date') && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{formatDate(post.updatedAt)}</td>
+                        )}
+
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                            {statusFilter === 'TRASH' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => openConfirm('restore', [post.id])}
+                                  className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                                  title="Restore"
+                                >
+                                  <RotateCcw className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => openConfirm('permanentDelete', [post.id])}
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Delete Forever"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <Link
+                                  href={`/admin/blog/${encodeURIComponent(post.id)}/preview`}
+                                  className="p-1.5 text-slate-400 hover:text-solar-600 hover:bg-solar-50 rounded transition-colors"
+                                  title="Preview"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Link>
+                                <Link
+                                  href={`/admin/blog/${encodeURIComponent(post.id)}`}
+                                  className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  title="Edit"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => openConfirm('trash', [post.id])}
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Trash"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Placeholder */}
+            <div className="border-t border-slate-200 bg-white px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="text-sm text-slate-500">Showing {filteredItems.length} items</div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Board */}
+        {viewState === 'success' && viewMode === 'board' && statusFilter !== 'TRASH' && (
+          <div>
+            <div className="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Drag-and-drop is a prototype placeholder.
+            </div>
+            <div className="flex gap-6 overflow-x-auto pb-2 no-scrollbar">
+              {(
+                [
+                  { key: 'DRAFT', title: 'Drafts', tone: 'slate' },
+                  { key: 'NEEDS_REVIEW', title: 'Needs Review', tone: 'amber' },
+                  { key: 'SCHEDULED', title: 'Scheduled', tone: 'blue' },
+                  { key: 'PUBLISHED', title: 'Published', tone: 'green' },
+                ] as const
+              ).map((col) => {
+                const boardItems = filteredItems.filter((p) => p.status !== 'ARCHIVED');
+
+                const columnItems =
+                  col.key === 'NEEDS_REVIEW'
+                    ? boardItems.filter((p) => needsReviewIds.has(p.id))
+                    : boardItems.filter((p) => !needsReviewIds.has(p.id) && p.status === col.key);
+
+                const headerTone =
+                  col.tone === 'amber'
+                    ? { border: 'border-amber-100', bg: 'bg-amber-50', text: 'text-amber-900', count: 'text-amber-700' }
+                    : col.tone === 'blue'
+                      ? { border: 'border-blue-100', bg: 'bg-blue-50', text: 'text-blue-900', count: 'text-blue-700' }
+                      : col.tone === 'green'
+                        ? { border: 'border-green-100', bg: 'bg-green-50', text: 'text-green-900', count: 'text-green-700' }
+                        : { border: 'border-slate-100', bg: 'bg-slate-50', text: 'text-slate-900', count: 'text-slate-500' };
+
+                return (
+                  <div key={col.key} className="min-w-[320px] w-[320px] shrink-0 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className={`px-4 py-3 border-b ${headerTone.border} ${headerTone.bg} flex items-center justify-between`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-semibold ${headerTone.text}`}>{col.title}</span>
+                        <span className={`text-xs ${headerTone.count}`}>({columnItems.length})</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 space-y-3">
+                      {columnItems.length === 0 && (
+                        <div className="text-sm text-slate-500 px-3 py-6 text-center">No posts</div>
+                      )}
+                      {columnItems.map((post) => {
+                        const issues = getPostIssues(post);
+                        const hasIssues = issues.length > 0;
+                        const needsReview = needsReviewIds.has(post.id);
+                        const showCover = visibleBoardFields.has('coverImage');
+                        const isSelected = selectedIds.has(post.id);
+
+                        return (
+                          <div key={post.id} className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                            {showCover && (
+                              <div className="relative h-32 bg-slate-100">
+                                {post.coverImageUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={post.coverImageUrl} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                    <FileText className="w-8 h-8" />
+                                  </div>
+                                )}
+                                {!post.coverImageUrl && hasIssues && (
+                                  <div className="absolute top-2 right-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg px-2 py-1 text-xs font-semibold flex items-center gap-1">
+                                    <AlertTriangle className="w-3 h-3" />
+                                    Issue
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => handleSelectRow(post.id)}
+                                      className="h-4 w-4 rounded border-slate-300 text-solar-600 focus:ring-solar-500"
+                                      aria-label="Select post"
+                                    />
+                                    <div className="text-sm font-semibold text-slate-900 line-clamp-2">{post.title || '(Untitled)'}</div>
+                                    {(hasIssues && post.coverImageUrl) && (
+                                      <div className="relative group/tooltip">
+                                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-slate-900 text-white text-xs rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-30">
+                                          <div className="font-semibold mb-2">Attention Needed:</div>
+                                          <ul className="space-y-1">
+                                            {issues.map((issue) => (
+                                              <li key={issue} className="flex items-start gap-2">
+                                                <span className="mt-0.5">•</span>
+                                                <span>{issue}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    )}
+                                    {needsReview && (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                        Needs Review
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-slate-500 font-mono mt-1">/{post.slug}</div>
+                                </div>
+                              </div>
+
+                              <div className="mt-3 space-y-2">
+                                {visibleBoardFields.has('category') && (
+                                  <div className="text-sm text-slate-600">Category: {post.category || '—'}</div>
+                                )}
+                                {visibleBoardFields.has('author') && (
+                                  <div className="text-sm text-slate-600 flex items-center gap-2">
+                                    <User className="w-4 h-4 text-slate-400" /> Admin
+                                  </div>
+                                )}
+                                {visibleBoardFields.has('date') && (
+                                  <div className="text-sm text-slate-600">Updated: {formatDate(post.updatedAt)}</div>
+                                )}
+                                {visibleBoardFields.has('excerpt') && post.excerpt && (
+                                  <div className="text-sm text-slate-500 line-clamp-3">{post.excerpt}</div>
+                                )}
+                                {visibleBoardFields.has('tags') && post.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {post.tags.slice(0, 3).map((t) => (
+                                      <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                        {t}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Link
+                                    href={`/admin/blog/${encodeURIComponent(post.id)}`}
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    title="Edit"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </Link>
+                                  <Link
+                                    href={`/admin/blog/${encodeURIComponent(post.id)}/preview`}
+                                    className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                                    title="Preview"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() => openConfirm('trash', [post.id])}
+                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title="Move to Trash"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleNeedsReview(post.id)}
+                                  className={`p-1.5 rounded-lg border transition-colors ${
+                                    needsReview
+                                      ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                      : 'bg-white border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50'
+                                  }`}
+                                  title={needsReview ? 'Remove Needs Review' : 'Mark as Needs Review'}
+                                >
+                                  <AlertTriangle className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Bulk actions */}
+        {selectedIds.size > 0 && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-fade-in-up w-[90%] max-w-4xl">
+            <div className="bg-slate-900 text-white p-3 rounded-xl shadow-2xl flex flex-col sm:flex-row items-center gap-4 sm:gap-6 border border-slate-700">
+              <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pl-2">
+                <span className="bg-white text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">{selectedIds.size}</span>
+                <span className="text-sm font-medium whitespace-nowrap">Selected</span>
+              </div>
+
+              <div className="h-px w-full sm:h-8 sm:w-px bg-slate-700"></div>
+
+              <div className="flex items-center gap-2 flex-wrap justify-center w-full sm:w-auto">
+                {statusFilter !== 'TRASH' ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isBulkProcessing}
+                      onClick={() => void handleBulkStatusChange('PUBLISHED')}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                    >
+                      <Send className="w-4 h-4" /> Publish
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isBulkProcessing}
+                      onClick={() => void handleBulkStatusChange('ARCHIVED')}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-60 disabled:hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                    >
+                      <Archive className="w-4 h-4" /> Archive
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isBulkProcessing}
+                      onClick={() => setIsBulkTagModalOpen(true)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                    >
+                      <Tag className="w-4 h-4" /> Tag
+                    </button>
+                    <div className="w-px h-6 bg-slate-700 mx-1 hidden sm:block"></div>
+                    <button
+                      type="button"
+                      onClick={() => openConfirm('trash', Array.from(selectedIds))}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                    >
+                      <Trash2 className="w-4 h-4" /> Trash
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => openConfirm('restore', Array.from(selectedIds))}
+                      className="flex items-center gap-2 px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+                    >
+                      <RotateCcw className="w-4 h-4" /> Restore
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openConfirm('permanentDelete', Array.from(selectedIds))}
+                      className="flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete Forever
+                    </button>
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="px-3 py-1.5 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors whitespace-nowrap ml-2"
+                >
+                  Clear
+                </button>
+              </div>
             </div>
           </div>
         )}

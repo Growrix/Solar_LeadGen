@@ -1,21 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
-import { FileText, FolderOpen, Tag } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FileText, FolderOpen, MessageSquare, Tag, Users } from 'lucide-react';
 import { PostList } from './PostList';
 import { CategoryList } from './CategoryList';
 import { TagList } from './TagList';
+import { CommentsList } from './CommentsList';
+import { AuthorList } from './AuthorList';
 
-type TabKey = 'posts' | 'categories' | 'tags';
+type TabKey = 'posts' | 'categories' | 'tags' | 'comments' | 'authors';
+
+function isTabKey(value: string | null): value is TabKey {
+  return value === 'posts' || value === 'categories' || value === 'tags' || value === 'comments' || value === 'authors';
+}
 
 export function ContentManagerHub() {
-  const [activeTab, setActiveTab] = useState<TabKey>('posts');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const activeTab = useMemo<TabKey>(() => {
+    const tabParam = searchParams?.get('tab') ?? null;
+    return isTabKey(tabParam) ? tabParam : 'posts';
+  }, [searchParams]);
 
   const tabs: Array<{ id: TabKey; label: string; icon: React.ElementType }> = [
     { id: 'posts', label: 'Posts', icon: FileText },
     { id: 'categories', label: 'Categories', icon: FolderOpen },
     { id: 'tags', label: 'Tags', icon: Tag },
+    { id: 'comments', label: 'Comments', icon: MessageSquare },
+    { id: 'authors', label: 'Authors', icon: Users },
   ];
+
+  const setTab = (tab: TabKey) => {
+    const next = new URLSearchParams(searchParams?.toString() ?? '');
+    next.set('tab', tab);
+    router.replace(`?${next.toString()}`);
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -28,11 +49,11 @@ export function ContentManagerHub() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setTab(tab.id)}
                 className={`
                   flex items-center gap-2 pb-3 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap
                   ${isActive 
-                    ? 'border-orange-500 text-orange-600' 
+                      ? 'border-solar-500 text-solar-600' 
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}
                 `}
               >
@@ -48,6 +69,8 @@ export function ContentManagerHub() {
         {activeTab === 'posts' && <PostList isTabbed={true} />}
         {activeTab === 'categories' && <CategoryList isTabbed={true} />}
         {activeTab === 'tags' && <TagList isTabbed={true} />}
+        {activeTab === 'comments' && <CommentsList isTabbed={true} />}
+        {activeTab === 'authors' && <AuthorList isTabbed={true} />}
       </div>
     </div>
   );

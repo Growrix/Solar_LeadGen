@@ -1,8 +1,81 @@
+
+***Phase 1: Vite to next.js Migration***
+
+***Frontend Migration Workflow***
+
+- Here is the prototype we built with Google AI Studio:
+  `DOC\FEATURES\BLOG\GoogleAIStudio UI UX`
+
+**Step 1: Audit**
+- Follow the audit instructions from `DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype Audit & Enhancement_Prompt.md` (use the full prototype-first audit methodology).
+- Prepare the audit report in `DOC\Features\BLOG\Audit Report`.
+- Do not proceed until the audit report is complete and all findings are documented.
+
+**Step 2: Migration Planning**
+- Strictly follow the instructions in `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\PROTOTYPE-TO-NEXTJS-PIXEL-PERFECT-MIGRATION.md` when preparing the migration plan, based on the audit report.
+- Create the migration plan in: `DOC\FEATURES\BLOG\Migration`
+
+**Step 3: Implementation**
+- Based on the migration plan, update the single root tasks file for the feature (do NOT create any additional tasks.md files):
+  `DOC\FEATURES\BLOG\tasks.md`
+- Use the canonical template rules at:
+  `.specify\templates\tasks-template.md`
+
+- Migrate only the following:
+  - Media Library
+ 
+
+**Step 4: Verification**
+- After migration, verify that the migrated pages are pixel-perfect and functionally identical to the prototype, using side-by-side comparison or screenshots.
+
+***Strict Rules***
+- Ensure a clear understanding of the current codebase before executing migration work.
+- Do not adapt, refactor, or improve the UI/UX beyond what is in the prototype unless explicitly requested after mirroring is complete.
+- Do not delete, remove, or hide any files unless I explicitly request it.
+- Only focus migration work on the specified scope; do not modify, clean up, or remove files outside the scope.
+
+------------------------------------------------------------------------------------------------
+
+***Phase 2: Prototype to Nextjs Migration Audit, Validation,Fixing and Green Signal***
+
+***Validation : Prototype to Nextjs Migration Audit & Enhancement***
+
+- Audit following this : `DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs Implimentation Audit_Prompt.md`
+- Prepare the audit report in the `DOC\Features\BLOG\Audit Report`. And after that
+
+# Focus area : 
+ - Content Manager 
+ - Media Library 
+
+- If the Audit report has any gaps, create enhancement tasks in the `DOC\FEATURES\BLOG\tasks.md` file based on the audit report and start implementing those tasks.
+- After the implementation is done, re-run the audit to ensure all gaps are fixed.
+
+- If no gaps are found, Then stop here and give me a green signal.
+
+
+---------------------------------------------
+***Phase 3: Frontend Adaption to Theme system***
+
+# Audit 
+- Understand the entire theaming system and the frontend Globally applied themes by auditing followed by this : `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-System-Audit-Instruction-2026.md`
+- Prepare the audit report in the : `DOC\Features\BLOG\Audit Report`.
+
+# Plan
+- Based on the audit report, create the adaption plan in the : `DOC\Features\BLOG\Migration` stricktly followed by this : `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Migration-Instruction-2026.md`
+- And create update the tasks.md file accordingly with the adaption tasks.
+
+
+------------------------------------------
+
 ***Frontend Migration Workflow***
   - Here is the prototype we built with google ai studio :
   `DOC\FEATURES\BLOG\GoogleAIStudio UI UX`
+
+ - Follow the audit instructions from `DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype Audit & Enhancement_Prompt.md` and
  
-  - Follow the file instructions strictly while preparing the migration plan
+- prepare the audit report in the `DOC\Features\BLOG\Audit Report`. And after that 
+
+  - Follow the file instructions strictly while preparing the migration plan based on the Audit report you created. 
  `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\PROTOTYPE-TO-NEXTJS-PIXEL-PERFECT-MIGRATION.md`
 
   - Create the Migration plan in the :
@@ -10,6 +83,7 @@
 `
   - Based on the Migration plan that you have created, update the single root tasks file for the feature (do NOT create any additional tasks.md files):
   `DOC\FEATURES\BLOG\tasks.md`
+
   - Use the canonical template rules at:
   `.specify\templates\tasks-template.md`
 
@@ -25,6 +99,15 @@
   
 
 -----------------------------------------------------------------------------------------------------
+
+***Fixing missing gaps after the migration of Prototype to Nextjs codebase :***
+- Now focus on the Content Manager page and follow instructions below :
+- Follow the audit instructions from `DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\Prototype vs SOT Audit_Prompt.md` and
+- prepare the audit report in the `DOC\Features\BLOG\Audit Report`. And after that 
+- create a new phaese in the `DOC\Features\BLOG\tasks.md` and then start implimenting. 
+
+----------------------------------------------------------------------------------------------
+
 
 ### EXECUTION-GRADE AI PROMPT
 

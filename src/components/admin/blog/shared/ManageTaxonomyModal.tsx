@@ -86,9 +86,9 @@ export function ManageTaxonomyModal({
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
             {type === 'Category' ? (
-              <Folder className="w-5 h-5 text-orange-500" />
+              <Folder className="w-5 h-5 text-solar-600" />
             ) : (
-              <Tag className="w-5 h-5 text-orange-500" />
+              <Tag className="w-5 h-5 text-solar-600" />
             )}
             {initialData ? `Edit ${type}` : `Add ${type}`}
           </h3>
@@ -118,7 +118,7 @@ export function ManageTaxonomyModal({
               value={name}
               onChange={handleNameChange}
               placeholder={`e.g. ${type === 'Category' ? 'Industry News' : 'Solar'}`}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none transition-all"
               autoFocus
             />
           </div>
@@ -134,7 +134,7 @@ export function ManageTaxonomyModal({
                 value={slug}
                 onChange={handleSlugChange}
                 placeholder="url-friendly-slug"
-                className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all bg-slate-50 font-mono text-sm text-slate-600"
+                className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-solar-500 focus:border-solar-500 outline-none transition-all bg-slate-50 font-mono text-sm text-slate-600"
               />
             </div>
             <p className="mt-1 text-xs text-slate-400">
@@ -155,7 +155,7 @@ export function ManageTaxonomyModal({
           <button 
             onClick={handleSubmit}
             disabled={isLoading}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
+            className="px-4 py-2 bg-solar-600 text-white rounded-lg font-medium hover:bg-solar-700 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
           >
             {isLoading ? (
               <>

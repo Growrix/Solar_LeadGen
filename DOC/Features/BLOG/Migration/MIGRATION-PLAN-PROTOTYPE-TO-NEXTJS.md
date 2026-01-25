@@ -1,9 +1,9 @@
-# BLOG — Prototype → Next.js Migration Plan (Admin: Content Manager, Media Library)
+# BLOG — Prototype → Next.js Migration Plan (Admin: Content Manager)
 
 **Status**: Draft (Plan)
 **Created At**: 2026-01-22
 
-Purpose: migrate the Google AI Studio (Vite) prototype UI into the existing Next.js admin dashboard **pixel-perfect and prototype-preserving** (structure + visuals + triggers/flows + modals), without creating duplicate files when partial Next.js structure already exists.
+Purpose: migrate the Google AI Studio (Vite) prototype **Content Manager** UI into the existing Next.js admin dashboard **pixel-perfect and prototype-preserving** (structure + visuals + triggers/flows + modals), without creating duplicate files when partial Next.js structure already exists.
 
 ---
 
@@ -31,16 +31,22 @@ Purpose: migrate the Google AI Studio (Vite) prototype UI into the existing Next
 
 ## 1) Scope Lock (This Run)
 
-### In scope (only these admin pages)
-1) **Content Manager** (prototype “Blog Engine” tabbed lists)
-2) **Media Library**
+### In scope (only these admin pages/flows)
+1) **Content Manager** (prototype “Blog Manager” / content management surface), including all prototype tabs and subflows:
+  - Posts
+  - Categories
+  - Tags
+  - Comments
+  - Authors
+  - New/Edit post editor
+  - Preview
+  - Posts Trash surface + restore/permanent delete
 
 ### Out of scope (explicit)
 - Migrating the prototype’s **Blog Engine Hub / AI engine** (`BlogEngineHub.tsx`, automation tabs, etc.)
-- Changing existing blog CRUD routes/pages behavior (`/admin/blog`, `/admin/blog/new`, `/admin/blog/[id]`, taxonomy pages)
 - Semantic-tokenization / multi-theme design-system adaptation (optional follow-up only, not part of this run)
-- Comments UI + any comments backend work
-- Backend build-out for Media Library (can be planned, but not required for the UI migration deliverable unless explicitly approved)
+- Media Library
+- Backend build-out for Comments/Authors (UI parity can use safe stubs where no backend exists)
 
 ### Baseline contract
 - Existing admin UI will **NOT** be lost.
@@ -71,47 +77,52 @@ Follow: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/PROTOTYPE-TO-NEXTJS-PIXEL-PERF
 
 Pages first (per workflow):
 
-### 3.1 Content Manager
+### 3.1 Content Manager Hub
 - Route: `/admin/blog/content-manager`
-- Goal: provide a **single hub** with tabs (Posts / Categories / Tags), matching prototype.
+- Goal: provide a **single hub** with tabs matching prototype: Posts / Categories / Tags / Comments / Authors.
 
-### 3.2 Media Library
-- Route: `/admin/blog/media`
-- Goal: provide the prototype media management UI (library + trash + folders + bulk actions).
+### 3.2 Editor + Preview (prototype flows required by Content Manager)
+- Route: `/admin/blog/new`
+- Route: `/admin/blog/[id]`
+- Route: `/admin/blog/[id]/preview`
+
+Goal: mirror prototype editor tabs/modals and preview flow.
 
 ---
 
 ## 4) File / Component Map (Mirror Prototype Boundaries)
 
 ### 4.1 Suggested Next.js file layout
+
 - Page routes:
   - `src/app/admin/blog/content-manager/page.tsx`
-  - `src/app/admin/blog/media/page.tsx`
+  - `src/app/admin/blog/new/page.tsx`
+  - `src/app/admin/blog/[id]/page.tsx`
+  - `src/app/admin/blog/[id]/preview/page.tsx`
 
 - Content Manager components (mirroring prototype):
-  - `src/components/admin/blog/content-manager/ContentManagerHub.tsx` (tabs header + routing state)
+  - `src/components/admin/blog/content-manager/ContentManagerHub.tsx`
   - `src/components/admin/blog/content-manager/PostList.tsx`
   - `src/components/admin/blog/content-manager/CategoryList.tsx`
   - `src/components/admin/blog/content-manager/TagList.tsx`
-  - `src/components/admin/blog/content-manager/modals/*` (confirmations, bulk actions)
+  - `src/components/admin/blog/content-manager/CommentsList.tsx` (new)
+  - `src/components/admin/blog/content-manager/AuthorList.tsx` (new)
 
-- Media Library components (mirroring prototype):
-  - `src/components/admin/blog/media/MediaLibrary.tsx`
-  - `src/components/admin/blog/media/FolderTree.tsx`
-  - `src/components/admin/blog/media/modals/*` (upload/details/move/bulk-edit/confirm)
+- Editor/Preview components (mirroring prototype):
+  - `src/components/admin/blog/content-manager/editor/*` (new)
+  - `src/components/admin/blog/content-manager/preview/*` (new)
 
 ### 4.3 Existing Next.js files already present (reuse/extend; do not duplicate)
 These files already exist and should be modified/reused as the migration targets:
 
 - Routes:
   - `src/app/admin/blog/content-manager/page.tsx`
-  - `src/app/admin/blog/media/page.tsx`
+
 - Components:
   - `src/components/admin/blog/content-manager/ContentManagerHub.tsx`
   - `src/components/admin/blog/content-manager/PostList.tsx`
   - `src/components/admin/blog/content-manager/CategoryList.tsx`
   - `src/components/admin/blog/content-manager/TagList.tsx`
-  - `src/components/admin/blog/media/MediaLibrary.tsx`
 
 ### 4.2 Navigation integration
 - Sidebar: `src/components/AdminSidebar.tsx`
@@ -125,7 +136,7 @@ Add new Blog submenu items:
 
 ## 5) Data Wiring Strategy (Practical + Low Chaos)
 
-### 5.1 Content Manager (wire to real APIs now)
+### 5.1 Content Manager (Posts/Categories/Tags wire to real APIs now)
 This repo already has Blog admin APIs and Prisma models:
 - Posts: `/api/admin/blog/posts`
 - Categories: `/api/admin/blog/categories`
@@ -135,15 +146,15 @@ Plan:
 - During structural mirror, wire these lists + basic CRUD actions to the existing endpoints.
 - Keep this page additive: it does not replace the existing `/admin/blog` pages unless explicitly approved later.
 
-### 5.2 Media Library (prototype behavior first; backend optional follow-up)
-The prototype uses an in-memory store/context. In this repo, Media Library likely needs storage + API.
+### 5.2 Comments/Authors (prototype behavior first; backend optional follow-up)
+The prototype uses an in-memory store/context for Comments and Authors.
 
 Plan for this run:
-- Mirror the Media Library UI and behaviors first (folders, filters, selection, modals, trash/restore/permanent delete), using stubbed data if necessary.
-- If the backend is not connected yet, keep the UI pixel-perfect and use safe placeholders; do not redesign.
+- Mirror Comments and Authors UI and behaviors using safe stubs if no backend exists.
+- Keep the UI pixel-perfect and do not redesign.
 
 Follow-up (separate approval):
-- Add a real storage model + upload/list/delete endpoints and replace stubs.
+- Add real persistence + admin APIs for comments/authors and replace stubs.
 
 ---
 
@@ -151,24 +162,66 @@ Follow-up (separate approval):
 
 Migrate only the modals used by the in-scope pages, mirroring prototype:
 
-### 6.1 Content Manager
-- Confirm delete/trash
-- Bulk actions (tagging / status changes), only if present in the prototype surface you are migrating
+### 6.1 Content Manager (Posts)
+- Confirm move-to-trash
+- Confirm restore
+- Confirm permanent delete
+- Bulk Tag modal
 
-### 6.2 Media Library
-- Upload modal
-- Media details modal
-- Move media modal
-- Bulk edit media modal
-- Confirmations (delete/restore/permanent delete)
+### 6.2 Content Manager (Comments/Authors)
+- Moderate Comment modal
+- Bulk Moderate modal
+- Author manage modal
+- Author preview modal
+- Confirmation modals for destructive actions
+
+---
+
+## 6.3 Remaining Gaps (Prototype-first audit — 2026-01-22)
+
+Authoritative gap list: `DOC/FEATURES/BLOG/Audit Report/content-manager-prototype-first-audit-2026-01-22.md`
+
+### Content Manager — Posts
+- Add the prototype **stats cards** row (Total / Published / Scheduled / In Review / Drafts)
+- Restructure the control row to match prototype (status tabs shown only in list view; search placement; button labels)
+- Align **View Options** with prototype:
+  - List columns: status / category / author / date
+  - Board fields: coverImage / category / author / date / excerpt / tags
+- Add missing prototype surfaces:
+  - `Needs Review` lane and status filter
+  - Inline status edit in list view (double-click status pill)
+  - Missing metadata issues tooltip (cover image / excerpt / category)
+  - Pagination placeholder footer
+
+### Documentation hygiene
+- Reconcile `DOC/FEATURES/BLOG/tasks.md` to reflect remaining work; do not mark done until verified.
+
+---
+
+## 6.4 Status Model Strategy (Prototype vs Backend)
+
+### Problem
+The prototype uses a `needs_review` state. The current backend admin status union used by the Next.js admin client is:
+`DRAFT | SCHEDULED | PUBLISHED | ARCHIVED`.
+
+### Plan (prototype-preserving, low-risk)
+- Implement `needs_review` as a **UI-only overlay state** stored client-side (e.g., localStorage set of postIds).
+- Use this overlay in:
+  - Stats card counts (“In Review”)
+  - Status filter tab (“Needs Review”)
+  - Board column (“Needs Review”)
+  - Inline status edit dropdown
+- Continue to use real backend statuses for all other transitions.
+
+This preserves prototype flows without changing backend contracts.
 
 ---
 
 ## 7) Verification / Acceptance Criteria
 
 For each migrated page (and its full component tree):
-- UI matches the prototype pixel-for-pixel (layout, spacing, typography, colors, shadows).
-- Behavior matches the prototype (tabs, actions, selection, and all modals open/close flows).
+- UI matches the prototype pixel-for-pixel (layout, spacing, typography, colors, shadows) within the page content area.
+- Behavior matches the prototype (tabs, actions, selection, modals open/close flows).
 - No duplicate/parallel implementations are introduced when an existing Next.js file already exists.
 - Responsive behavior matches the prototype.
 
