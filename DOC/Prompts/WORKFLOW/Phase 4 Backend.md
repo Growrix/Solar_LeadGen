@@ -1,70 +1,82 @@
 
+# Blog Feature Backend: Phase-Based Task Workflow (tasks.md track record)
 
-***Phase 1 : Audit***
-- Audit the currnet state of the `Blog Feature` e2e and prepare the audit report in : `DOC\Features\BLOG\Backend`.
+Use this workflow to create and maintain the Blog feature implementation track record at:
+- `DOC\Features\BLOG\tasks.md`
 
-***Phase 2 : Backend Planning***
-- Based on the Audit report prepared in the Phase 1, create the Backend planning following the 
+All phases must be executed sequentially. The `tasks.md` file is a track record of work completed and work remaining. It can be used for context on what was done, but requirements must come from the current Audit/Plan artifacts created in this workflow.
 
+**Instructions for AI (tasks.md friendly):**
+- Add each phase as a clearly separated heading.
+- Under each phase, create detailed, actionable tasks.
+- After completing a phase deliverable, update `DOC\Features\BLOG\tasks.md` with:
+	- the exact output file path(s) produced in that phase
+	- a short status note (Done / Blocked / Needs Review)
+	- any critical discoveries or open questions
+- Focus strictly on the UI/UX and areas explicitly covered by the Phase 1 audit scope. Do not expand scope unless explicitly instructed.
 
-
-
-
-
-
-
-
-
-
-
-
-- hint word "Backend Planning"
-- Lets do the Backend Planning for the News Engine feature. Based on the final UI/UX flow and all current documentation, prepare a detailed, end-to-end backend plan for the News Engine feature. The plan must be created in: DOC\FEATURES\NEWS ENGINE\BACKEND PLAN
-
-- Also create a new phase in the : DOC\FEATURES\NEWS ENGINE\BACKEND PLAN\tasks.md
-
-***Strickt Rules***
-Before starting, read and follow these guidelines strictly: DOC\GUIDELINES & SOT\README.md
+---
 
 
+***Phase 1: Audit***
+Audit the current state of the `Blog Feature` & `Media Library` end-to-end:
+- Strictly follow: `DOC\Prompts\PROMPTS & TEMPLATES\BACKEND\E2E-CURRENT-STATE-AUDIT-RULES.md`
+- **Artifact (SOT):** `DOC\Features\BLOG\Audit Report\CURRENT-STATE-E2E-AUDIT.md` (must follow required structure; every section present, even if N/A or UNKNOWN)
+
+**Audit Scope:**
+1. Blog feature end-to-end, including:
+   - Admin: Blog Content Manager page
+   - Backend
+   - Public: Blog Post page
+2. Media Library feature in the Admin (as part of the Blog feature scope). The Media Library must be implemented as a reusable, site-wide asset manager accessible from any feature (e.g., Blog, News Engine), similar to a standard website media library.
+
+---
 
 
-BACKEND PLANNING PROMPT (REUSABLE)
+***Phase 2: Backend Planning***
+Begin only after the audit report from Phase 1 is complete and reviewed:
+- Reference the audit report file created in Phase 1: `DOC\Features\BLOG\Audit Report\CURRENT-STATE-E2E-AUDIT.md`
+- Strictly follow: `DOC\Prompts\PROMPTS & TEMPLATES\BACKEND\Backend_Planning_Prompt_Template_E2E_Audit_First.md`
+- **Artifact (SOT):** `DOC\Features\BLOG\Backend\BACKEND-PLAN.md` (use this exact filename for the plan)
+- Update `DOC\Features\BLOG\tasks.md` with the backend plan file path and a short summary of what the plan covers.
 
-I want you to prepare a detailed, end-to-end backend plan for the News Engine feature based on the final UI/UX flow and all current documentation. The plan must be created in:
+---
 
-MANDATORY STEPS:
 
-Comprehensive Audit
+***Phase 3: Test Script Preparation***
+Begin only after the backend plan from Phase 2 is complete and reviewed:
+- Reference the backend plan file: `DOC\Features\BLOG\Backend\BACKEND-PLAN.md`
+- Prepare all required test scripts (unit, integration, E2E) as specified in the backend plan and audit.
+- Strictly follow: `DOC\Prompts\PROMPTS & TEMPLATES\BACKEND\testing-overview.md`
+- **Artifact (SOT):** `DOC\Features\BLOG\Backend\BACKEND-TEST-SPECS.md` (summarize all test scripts and their locations in this file; actual scripts go in `tests/`)
+- Output all test scripts to: `tests/` (use appropriate subfolders: unit, integration, e2e)
+- Update `DOC\Features\BLOG\tasks.md` with the created/updated test file paths and what each test covers. Always reference `BACKEND-TEST-SPECS.md` as the SOT for test coverage.
 
-Start with a deep, e2e audit of the current state of the site for this feature.
-Identify all existing backend logic, APIs, data models, and integration points related to the feature.
-Map all connections between backend, admin, and public-facing pages.
-Explicitly list any unknowns, gaps, or inconsistencies.
-Requirements & Functionality Planning
+---
 
-Define all backend requirements to fully support the final UI/UX flow.
-Specify all endpoints, data models, business logic, validation, and security needs.
-Ensure the backend plan covers both admin and public user flows, including all CRUD operations, publishing, scheduling, and analytics if relevant.
-Integration & Public Page Connection
 
-Detail how backend functionality will connect to and power the public pages e2e.
-Include API contracts, data flow diagrams, and error handling strategies.
-Ensure all public endpoints are secure, performant, and follow project conventions.
-Documentation & Compliance
+***Phase 4: Implementation Tasks***
+Begin only after test scripts from Phase 3 are complete and reviewed:
+- Reference the backend plan file: `DOC\Features\BLOG\Backend\BACKEND-PLAN.md`
+- Reference the test specs summary: `DOC\Features\BLOG\Backend\BACKEND-TEST-SPECS.md`
+- Reference the test scripts: `tests/`
+- Based on the backend plan and test scripts, create and update implementation tasks in: `DOC\Features\BLOG\tasks.md` following the existing task format. Use `.specify\templates\tasks-template.md` if needed.
+- Then implement the backend tasks sequentially and keep `DOC\Features\BLOG\tasks.md` updated as work progresses. Always reference the plan and test specs summary as SOT for requirements and coverage.
 
-Reference and strictly follow all rules in:
-Do NOT overwrite or delete any existing documentation.
-Only add new files/folders or append to existing documentation as instructed.
-Update the SOT/README for the feature to reflect the backend plan and any new decisions.
-Validation & Success Criteria
+---
 
-The plan must be clear, actionable, and detailed enough for any AI or developer to implement without ambiguity.
-All backend logic must be auditable, testable, and traceable to the UI/UX and business requirements.
-Explicitly list all risks, dependencies, and open questions.
-STRICT RULES:
 
-Follow the Guidelines from the file above before doing anything.
-Do not make assumptions—if anything is unclear, list it as an unknown.
-The plan must be e2e, covering admin, backend, and public flows.
-No implementation until the plan is confirmed.
+***Phase 5: Testing & Validation Tasks***
+Begin only after implementation tasks from Phase 4 are complete:
+- Reference the test scripts from Phase 3: `tests/`
+- Reference the test specs summary: `DOC\Features\BLOG\Backend\BACKEND-TEST-SPECS.md`
+- Run all tests as per the testing plan and backend plan.
+- **Artifact (SOT):** `DOC\Features\BLOG\Backend\BACKEND-VALIDATION.md` (summarize all validation results, issues, and required fixes here)
+- Document results, issues, and any required fixes in this file under this phase. Always update `tasks.md` with a summary and a link to `BACKEND-VALIDATION.md`.
+#
+# Artifact Filenames (SOT for each phase)
+#
+# - Audit: `DOC\Features\BLOG\Audit Report\CURRENT-STATE-E2E-AUDIT.md`
+# - Plan: `DOC\Features\BLOG\Backend\BACKEND-PLAN.md`
+# - Test Specs Summary: `DOC\Features\BLOG\Backend\BACKEND-TEST-SPECS.md`
+# - Validation: `DOC\Features\BLOG\Backend\BACKEND-VALIDATION.md`

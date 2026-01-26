@@ -1,192 +1,71 @@
+# Backend Planning Instructions (E2E, Industry Standard)
 
-
-# Backend Planning Prompt Template (Reusable for Brand New Feature)
-
-**Usage Note:**
-This template is for planning the backend of any brand new feature in a production SaaS codebase. Replace all [FEATURE NAME] placeholders with your feature name. Follow all steps and rules for a clean, audit-driven, SOT-aware backend plan. Do not reference any specific feature unless filling in the template for your use case.
-
+**Purpose:**
+This document provides strict, industry-standard instructions for AI to plan a complete, auditable, and implementation-ready backend for any feature in a production SaaS codebase. The AI must follow these steps and rules exactly, using the feature name provided in the prompt.
 
 ---
 
-**How to use:**
-1. Copy this template and replace `[FEATURE NAME]` with your new feature name.
-2. Ask the AI to generate a backend planning prompt for your feature, referencing this template.
-3. Place the resulting backend plan file in your feature's backend plan folder.
+## Backend Planning (Based on Completed Audit)
+
+The backend plan must be based strictly on the completed audit report for the feature (produced in Phase 1). Do NOT repeat or perform a new audit. Only use the audit report as the baseline. If any required audit section is missing or unclear, list it as an unknown and request clarification before proceeding.
 
 ---
 
-## COPY/PASTE PROMPT (fill placeholders)
+## Backend Plan Requirements
 
-**ROLE**
-You are a **Senior Full-Stack SaaS Engineer AI** working in an existing production Next.js + Prisma codebase.
-
-Your job is to produce a **detailed, implementation-ready BACKEND PLAN** for:
-- **Feature:** [FEATURE NAME]
-
-This plan must support the feature end-to-end, including:
-- Admin/internal surfaces (if any)
-- Public/guest surfaces (if any)
-- All backend logic needed so public pages work correctly end-to-end
-
----
-
-## 0) STRICT RULES (NON-NEGOTIABLE)
-
-1) **Read guidelines first (authority order)**
-   - You MUST read and follow:
-     - `DOC/GUIDELINES & SOT/README.md`
-     - `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/README.md`
-     - `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/AI-IMPLEMENTATION-GUIDELINES.md`
-     - `DOC/GUIDELINES & SOT/IMPLEMENTATION SOT/E2E-CURRENT-STATE-AUDIT-RULES.md`
-
-2) **Audit-first; no assumptions**
-   - Backend planning MUST start with a **current-state E2E audit** of the actual codebase + DB schema.
-   - If something is not verified in code/config/schema, label it **UNKNOWN**.
-
-3) **SOT-aware but reality-driven**
-   - You MUST reference the feature SOT (if it exists), but the backend plan must be based on:
-     - what is currently implemented (frontend + routes + APIs + DB), AND
-     - the final UI/UX flow as it exists now.
-   - If the SOT conflicts with current implementation, create a clear **SOT vs Current Implementation Delta** table and follow the audit reality.
-
-4) **No implementation**
-   - This task is **PLAN ONLY**. Do not change code, Prisma schema, migrations, or docs other than creating the plan file.
-
-5) **Safety**
-   - Do NOT propose or run destructive DB actions (e.g. reset/truncate/drop).
+Create a detailed backend plan that includes:
+- Executive summary (scope, exclusions, minimal path to ship)
+- Data model plan (Prisma models, relations, indexes, migration strategy)
+- API contract plan (endpoints, methods, auth, validation, error cases)
+- Public pages E2E wiring (endpoint-to-page mapping, caching, slug rules)
+- Admin flows E2E wiring (endpoint-to-admin mapping, state transitions, audit logging)
+- Audit logging requirements (actions, actors)
+- Scheduling/automation (if present in UI)
+- Security & permissions (role matrix, data exposure)
+- Testing plan (manual, unit/integration, E2E test matrix: every UI element must have a test verifying backend integration)
+- UI-to-Backend Mapping Table and E2E test matrix must be included and referenced
+- Explicit verification that every interactive UI element is powered by backend logic and is functional
+- Risks, dependencies, open questions
+- Reference and address all findings from the audit report, including:
+  - UI/UX elements not feasible for backend implementation (with reasons)
+  - Conditional UI/Role/Feature Flag Coverage
+  - Unknowns, gaps, or inconsistencies
 
 ---
 
-## 1) INPUTS YOU MUST LOAD (FEATURE-SPECIFIC)
+## Rules & Compliance
 
-### Feature workspace (required)
-- Feature root folder:
-  - `DOC/FEATURES/[FEATURE NAME]/`
-
-### Feature SOT (required if exists)
-- `DOC/FEATURES/[FEATURE NAME]/SOT/INDEX.md`
-- `DOC/FEATURES/[FEATURE NAME]/SOT/FEATURE-SOT.md`
-- `DOC/FEATURES/[FEATURE NAME]/SOT/Frontend-Plan.md` (if present)
-
-### Feature UX artifacts (if present)
-- `DOC/FEATURES/[FEATURE NAME]/Fontend UI UX Prompts/` (all prompt plans)
-- Any feature audit reports under `DOC/FEATURES/[FEATURE NAME]/Audit Reports/`
-
-### Repo tech sources of truth (always)
-- `prisma/schema.prisma`
-- Existing routes under `src/app/**` (App Router pages + API routes)
-- Any feature services/adapters under `src/**`
+- The backend plan and all implementation steps must never require a database reset, truncate, or destructive migration. All migrations must be additive and backward-compatible.
+- All data model changes must be designed for zero-downtime, additive migrations. No breaking changes or destructive schema modifications are allowed. Plan for data backfills and safe rollouts.
+- Never recommend dropping, truncating, or overwriting existing data. All migrations and changes must preserve all user and business data.
+- Do NOT propose or run destructive DB actions (reset/truncate/drop).
+- Do NOT implement code, migrations, or schema changes—planning only.
+- Do NOT overwrite or delete existing documentation.
+- Only add new files/folders or append to documentation as instructed.
+- Do not automate any schema or data changes without explicit human approval and a rollback plan.
+- The AI must never decide to perform or recommend any operation that could risk data loss, downtime, or require manual intervention for recovery. If a required change is risky or unclear, it must be flagged for explicit human review and approval.
+- If the plan encounters any ambiguity, risk, or edge case not covered by these instructions, it must stop and request explicit human direction before proceeding.
+- All backend plans must consider scalability and performance. Avoid N+1 queries, blocking operations, or synchronous external calls in critical paths. Document any potential bottlenecks.
+- If anything is unclear, list it as an unknown—do not assume.
+- The plan must be clear, actionable, and detailed enough for any developer or AI to implement without ambiguity.
+- All backend logic must be auditable, testable, and traceable to the UI/UX and business requirements.
+- Backend implementation is not complete until every interactive UI element is verified to be powered by backend logic and is functional (with evidence in the mapping table and test matrix).
 
 ---
 
-## 2) REQUIRED OUTPUT (FILE + LOCATION)
+## Output
 
-Create exactly **one** backend plan file at:
-
-- Output folder:
-  - `DOC/FEATURES/[FEATURE NAME]/BACKEND PLAN/`
-
-- Output file name (use today’s date):
-  - `BACKEND-PLAN-[FEATURE NAME]-YYYY-MM-DD.md`
-
-Do not create extra documents unless the guidelines explicitly require it.
+Place the backend plan in the specified feature’s documentation folders as instructed in the prompt.
 
 ---
 
-## 3) PLAN MUST START WITH E2E CURRENT-STATE AUDIT
+## Additional Backend Plan Requirements
 
-Before proposing any backend design, produce an **audit section** inside the plan that covers:
-
-### A) UI entry points and routes (Admin + Public)
-- List the exact App Router pages involved (e.g. `/news`, `/news/[slug]`, admin routes).
-- Identify which pages already exist vs missing.
-
-### B) Current API inventory
-- List all existing `src/app/api/**` routes used by the feature.
-- For each endpoint: method, auth/roles, request/response shape, DB side effects.
-
-### C) Prisma/DB inventory
-- Identify existing Prisma models/enums/relations relevant to this feature.
-- List gaps: missing fields, missing relations, missing indexes.
-
-### D) State machine / lifecycle
-- If the feature has statuses, define the **current** lifecycle as implemented.
-- Map UI actions → backend transitions.
-
-### E) Broken or missing wiring
-- Identify dead buttons, missing endpoints, inconsistent contracts.
-
-### F) SOT vs Current Implementation Delta (MANDATORY)
-- A table with:
-  - SOT expectation
-  - current implementation reality
-  - decision (keep / fix / change)
-  - impact on backend plan
-
----
-
-## 4) BACKEND PLAN CONTENT REQUIREMENTS (IMPLEMENTATION-READY)
-
-After the audit section, provide the backend plan with these sections:
-
-### 4.1 Executive summary
-- What will be built
-- What will NOT be built (explicit exclusions)
-- The minimal path to ship without mess
-
-### 4.2 Data model plan (Prisma)
-- Proposed models/enums/fields (only after confirming what already exists)
-- Relations
-- Indexes + uniqueness rules
-- Migration strategy (safe, incremental)
-
-### 4.3 API contract plan (App Router route handlers)
-For each endpoint:
-- method + path
-- auth requirement (role checks)
-- request body/query params
-- response shape
-- validation rules (server-side)
-- error cases
-
-### 4.4 Public pages E2E wiring
-- Exactly which endpoints power which public pages
-- Caching strategy (if any) + revalidation rules (if needed)
-- Slug rules and not-found behavior
-
-### 4.5 Admin flows E2E wiring
-- Which endpoints power which admin screens/modals
-- State transitions and audit logging
-
-### 4.6 Audit logging (recommended)
-- What actions must create audit entries
-- Who/what is the actor (admin vs system)
-
-### 4.7 Scheduling / automation (only if confirmed in audit)
-- If the UI includes scheduling windows or automation toggles:
-  - define the minimal backend storage needed
-  - define how execution would be triggered (but do NOT implement in this phase)
-
-### 4.8 Security & permissions
-- Role matrix: who can read/write what
-- Public data exposure rules
-
-### 4.9 Testing plan (minimum)
-- What to test manually
-- What to test with unit/integration tests (only plan)
-
-### 4.10 Risks, dependencies, open questions
-- Anything unknown
-- Anything blocked
-- Decisions needed from the human owner
-
----
-
-## 5) STOP RULE
-
-Stop after creating the backend plan file. Do not implement anything until the human owner confirms.
-
----
-
-
+The backend plan must also include:
+- Rollback and recovery plan for all backend changes (API, business logic, data model)
+- Observability and monitoring plan (logging, metrics, alerting for new/changed features)
+- Data privacy, retention, and compliance review (GDPR, CCPA, etc. as applicable)
+- Migration testing plan (dry-run, rollback validation, test coverage)
+- Identification and handling of legacy, partial, or orphaned backend logic
+- Documentation update plan (ensure all new/changed features are documented and linked)
 ---
