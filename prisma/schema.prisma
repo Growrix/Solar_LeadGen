@@ -123,6 +123,8 @@ model User {
   quotesAsInstaller        Quote[]                  @relation("installer_quotes")
   sessions                 Session[]
   writtenQuotesAsInstaller WrittenQuote[]           @relation("installer_written_quotes")
+  blogAuthors              BlogAuthor[]             @relation("blog_author_user")
+  mediaAssets              MediaAsset[]             @relation("media_asset_uploader")
 
   @@index([email])
   @@index([role])
@@ -191,6 +193,9 @@ model BlogPost {
   categoryId     String?
   category       BlogCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tags           BlogPostTag[]
+  comments       BlogComment[]
+  blogAuthorId   String?
+  blogAuthor     BlogAuthor?    @relation("BlogAuthorPosts", fields: [blogAuthorId], references: [id], onDelete: SetNull)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -199,6 +204,7 @@ model BlogPost {
   @@index([scheduledFor])
   @@index([authorId])
   @@index([categoryId])
+  @@index([blogAuthorId])
   @@map("blog_posts")
 }
 
@@ -1297,4 +1303,118 @@ enum EmailDeliveryStatus {
 enum QuoteType {
   FORMAL
   INFORMAL
+}
+
+// ============================================
+// Blog Authors, Comments, Media Library Models
+// Added: 2026-01-26
+// ============================================
+
+enum BlogAuthorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BlogCommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
+enum MediaAssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum MediaAssetStatus {
+  ACTIVE
+  TRASHED
+}
+
+model BlogAuthor {
+  id          String           @id @default(cuid())
+  name        String
+  email       String           @unique
+  bio         String           @default("")
+  avatarUrl   String           @default("")
+  status      BlogAuthorStatus @default(ACTIVE)
+  socialLinks Json?
+  userId      String?
+  user        User?            @relation("blog_author_user", fields: [userId], references: [id], onDelete: SetNull)
+  posts       BlogPost[]       @relation("BlogAuthorPosts")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@map("blog_authors")
+}
+
+model BlogComment {
+  id          String             @id @default(cuid())
+  postId      String
+  post        BlogPost           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorName  String
+  authorEmail String
+  content     String
+  status      BlogCommentStatus  @default(PENDING)
+  ipAddress   String?
+  userAgent   String?
+  parentId    String?
+  parent      BlogComment?       @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     BlogComment[]      @relation("CommentReplies")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([postId])
+  @@index([status])
+  @@index([parentId])
+  @@index([createdAt])
+  @@map("blog_comments")
+}
+
+model MediaFolder {
+  id        String        @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  MediaFolder[] @relation("FolderHierarchy")
+  assets    MediaAsset[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([parentId, name])
+  @@index([parentId])
+  @@map("media_folders")
+}
+
+model MediaAsset {
+  id           String            @id @default(cuid())
+  name         String
+  type         MediaAssetType
+  url          String
+  s3Key        String            @unique
+  size         Int
+  dimensions   String?
+  mimeType     String
+  altText      String            @default("")
+  caption      String            @default("")
+  tags         String[]
+  folderId     String?
+  folder       MediaFolder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  status       MediaAssetStatus  @default(ACTIVE)
+  uploadedById String
+  uploadedBy   User              @relation("media_asset_uploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  trashedAt    DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([folderId])
+  @@index([status])
+  @@index([type])
+  @@index([uploadedById])
+  @@index([createdAt])
+  @@map("media_assets")
 }
