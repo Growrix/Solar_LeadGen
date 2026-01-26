@@ -5,41 +5,121 @@ A pro-level, modern, and scalable design system defining all visual and brand ch
 
 ---
 
+## Source of Truth (Current Implementation)
+
+These files define the global design system behavior and tokens used across the entire frontend:
+
+- Global CSS variables, base styles, and reusable utility classes: `src/app/globals.css`
+- Tailwind token wiring (semantic class names -> CSS variables): `tailwind.config.js`
+- Theme application + persistence (adds `theme-dark|theme-light|theme-purple|theme-system` class to `<html>`): `src/components/ThemeProvider.tsx`
+- App root layout (font + providers): `src/app/layout.tsx`
+- Semantic TS tokens (typography/spacing/shadows/borders/animations used by Tailwind config): `src/design-tokens/*`
+
+---
+
 - **Colors:**
-  - Primary: #
-  - Secondary: #
-  - Background: #
-  - Surface: #
-  - Error: #
-  - Success: #
-  - Warning: #
-  - Info: #
-  - Text Primary: #
-  - Text Secondary: #
+  - Primary (alias, maps to `--color-primary`):
+    - Dark: #FFFFFF
+    - Light: #000000
+    - Purple: #A78BFA
+  - Secondary (alias, maps to `--color-secondary`):
+    - Dark: #1A1A1A
+    - Light: #E8EDF4
+    - Purple: #3E296C
+  - Background (maps to `--color-background`):
+    - Dark: #121212
+    - Light: #E0E5EC
+    - Purple: #2C1D4D
+  - Surface / Elevated (maps to `--color-background-elevated`):
+    - Dark: #1A1A1A
+    - Light: #E8EDF4
+    - Purple: #3E296C
+  - Border (maps to `--color-border`):
+    - Dark: #2C2C2C
+    - Light: #9CA3AF
+    - Purple: #4C3383
+  - Accent (preferred for CTAs/focus, maps to `--color-accent`):
+    - Dark: #FFFFFF
+    - Light: #000000
+    - Purple: #A78BFA
+  - Error (maps to `--color-error`):
+    - Dark: #F87171
+    - Light: #DC2626
+    - Purple: #F87171
+  - Success (maps to `--color-success`):
+    - Dark: #4ADE80
+    - Light: #16A34A
+    - Purple: #4ADE80
+  - Warning (maps to `--color-warning`):
+    - Dark: #FACC15
+    - Light: #EAB308
+    - Purple: #FACC15
+  - Info (maps to `--color-info`):
+    - Dark: #60A5FA
+    - Light: #2563EB
+    - Purple: #93C5FD
+  - Text Primary (maps to `--color-foreground`):
+    - Dark: #F3F4F6
+    - Light: #000000
+    - Purple: #E9E3FF
+  - Text Secondary (maps to `--color-foreground-muted`):
+    - Dark: #D1D5DB
+    - Light: #374151
+    - Purple: #CABEFF
 - **Typography:**
-  - Font Family: 
-  - Font Sizes: 
-  - Font Weights: 
-  - Line Heights: 
+  - Font Family:
+    - Primary: Inter (loaded via Next.js `next/font/google` and also locally via `@font-face` in `globals.css`)
+    - Fallback: system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif
+    - Mono: Fira Code, Courier New, Consolas, Monaco, monospace
+  - Font Sizes (semantic, see `src/design-tokens/semantic/typography.ts`):
+    - Heading 1: 24 / 30 / 36 (mobile / md / lg)
+    - Heading 2: 20 / 24 / 30
+    - Heading 3: 18 / 20 / 24
+    - Heading 4: 16 / 18 / 20
+    - Body: 14 (mobile) → 16 (desktop)
+    - Caption: 12
+  - Font Weights: 300 (light), 400 (normal), 500 (medium), 600 (semibold), 700 (bold)
+  - Line Heights: 1 (none), 1.25 (tight), 1.375 (snug), 1.5 (normal), 1.625 (relaxed), 2 (loose)
 - **Spacing:**
-  - Unit: 
-  - Scale: 
+  - Unit: 4px base (0.25rem)
+  - Scale (core, see `src/design-tokens/primitives/spacingScale.ts`): 0, 4, 8, 12, 16, 20, 24, 32, 48, 64 (and extended)
+  - Global CSS spacing variables (used in some global CSS):
+    - `--spacing-xs`: 4px, `--spacing-sm`: 8px, `--spacing-md`: 16px, `--spacing-lg`: 24px, `--spacing-xl`: 32px
 - **Border Radius:**
+  - Global CSS variables:
+    - `--radius-sm`: 8px
+    - `--radius-md`: 12px
+    - `--radius-lg`: 16px
+    - `--radius-xl`: 20px
+    - `--radius-full`: 9999px
+  - Tailwind semantic radii (wired from `src/design-tokens/semantic/borders.ts` in `tailwind.config.js`):
+    - `rounded-card`: 12px, `rounded-button`: 8px, `rounded-input`: 8px, `rounded-modal`: 16px
 - **Shadows:**
+  - Neumorphic CSS shadow system (global, theme-aware):
+    - `--shadow-outset-sm|md|lg|xl`
+    - `--shadow-inset-sm|md|lg`
+    - Legacy aliases: `--shadow-neu-outset*`, `--shadow-neu-inset*`
+  - Tailwind semantic shadows (wired from `src/design-tokens/semantic/shadows.ts`):
+    - `shadow-card`, `shadow-modal`, `shadow-dropdown`, `shadow-button`, `shadow-focus`
 - **Motion:**
-  - Transition: 0.2s cubic-bezier(0.4,0,0.2,1)
-  - Easing: cubic-bezier(0.4,0,0.2,1)
+  - Transition:
+    - Default: 250ms `cubic-bezier(0.4, 0, 0.2, 1)`
+    - Fast: 150ms, Slow: 350ms
+  - Easing:
+    - `--ease-in-out`: cubic-bezier(0.4, 0, 0.2, 1)
+    - `--ease-out`: cubic-bezier(0, 0, 0.2, 1)
 - **Theme:**
-  - Light and dark mode tokens (define overrides as needed)
+  - Implemented themes: Dark, Light, Purple via `<html>` class `theme-dark|theme-light|theme-purple` in `src/components/ThemeProvider.tsx`
+  - System theme: `theme-system` exists as a value in code, but is not currently mapped to `prefers-color-scheme` tokens
 
 ## 1a. Dark Mode Tokens
 - **Colors (Dark):**
-  - Background: #
-  - Surface: #
-  - Text Primary: #
-  - Text Secondary: #
-  - Card: #
-  - Border: #
+  - Background: #121212 (`--color-background`)
+  - Surface / Elevated: #1A1A1A (`--color-background-elevated`)
+  - Text Primary: #F3F4F6 (`--color-foreground`)
+  - Text Secondary: #D1D5DB (`--color-foreground-muted`)
+  - Card: use `.theme-card` or `bg-background-alt` (currently `--color-background-alt` is #1A1A1A)
+  - Border: #2C2C2C (`--color-border`)
   - Update other tokens as needed for dark mode
 
 ## 1b. Animation & Motion
@@ -51,14 +131,17 @@ A pro-level, modern, and scalable design system defining all visual and brand ch
 
 ## 1c. Z-Index & Layering
 - **Z-Index Scale:**
-  - Modal: 1000
-  - Drawer: 1100
-  - Tooltip: 1200
-  - Toast: 1300
-  - Dropdown: 1050
+  - Dropdown: 1000 (`--z-dropdown`)
+  - Sticky: 1100 (`--z-sticky`)
+  - Fixed: 1200 (`--z-fixed`)
+  - Modal Backdrop: 1300 (`--z-modal-backdrop`)
+  - Modal: 1400 (`--z-modal`)
+  - Popover: 1500 (`--z-popover`)
+  - Tooltip: 1600 (`--z-tooltip`)
+  - Toast: (not standardized yet; Sonner is used via `Toaster` in `src/app/layout.tsx`)
 
 ## 1d. Iconography
-- **Icon Set:** [Specify icon set]
+- **Icon Set:** lucide-react (primary) and @heroicons/react (legacy/secondary)
 - **Size:** 24x24px (default), 2px stroke
 - **Color:** Use currentColor for fill/stroke
 - **Usage:**
@@ -155,8 +238,8 @@ A pro-level, modern, and scalable design system defining all visual and brand ch
 - Support screen readers and dynamic font scaling
 
 ## 6. Branding
-- **Logo:** [Add logo usage guidelines]
-- **Icons:** [Preferred icon set]
+- **Logo:** Use the header/sidebar logo as the canonical reference; keep logo color theme-aware via semantic tokens (`text-primary`, `text-foreground`, etc.)
+- **Icons:** lucide-react preferred for consistency (24px / 2px stroke)
 - **Imagery:** [Brand imagery guidelines]
 
 ---
