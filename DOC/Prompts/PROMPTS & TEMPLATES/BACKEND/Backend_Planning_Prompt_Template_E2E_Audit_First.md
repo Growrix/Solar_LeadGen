@@ -11,6 +11,7 @@ The backend plan must be based strictly on the completed audit report for the fe
 
 ---
 
+
 ## Backend Plan Requirements
 
 Create a detailed backend plan that includes:
@@ -33,13 +34,37 @@ Create a detailed backend plan that includes:
 
 ---
 
+
+## Migration SQL/Prisma Script Generation (Implementation Phase)
+
+
+**MANDATORY:**
+- For every data model or schema change described in the backend plan, generate the required migration SQL files and/or Prisma migration scripts.
+- Place all generated migration files in the appropriate migrations folder (e.g., `prisma/migrations/` or `DOC/Features/BLOG/DB-MIGRATIONS/`).
+- Document the filenames and locations of all migration files in `tasks.md` and the backend plan.
+- All migration scripts must be additive, backward-compatible, and follow zero-downtime best practices. No destructive or breaking migrations are allowed.
+- Include a migration testing plan: dry-run, rollback validation, and test coverage for all migrations.
+- Migration scripts must be ready for production use and reviewed before application in any environment.
+
+---
+
+## Database Seeding (Implementation Phase)
+
+**MANDATORY:**
+- For every new or changed data model, generate a database seeding script (e.g., Prisma `seed.ts`, SQL file, or custom script) to populate the database with initial/test data.
+- Place all seed files in the appropriate folder (e.g., `prisma/seed.ts` or `DOC/Features/BLOG/DB-SEED/`).
+- Document the filenames, locations, and instructions for running the seed process in `tasks.md` and the backend plan.
+- Ensure seed scripts are safe, idempotent, and suitable for local development and testing.
+
+---
+
 ## Rules & Compliance
 
 - The backend plan and all implementation steps must never require a database reset, truncate, or destructive migration. All migrations must be additive and backward-compatible.
 - All data model changes must be designed for zero-downtime, additive migrations. No breaking changes or destructive schema modifications are allowed. Plan for data backfills and safe rollouts.
 - Never recommend dropping, truncating, or overwriting existing data. All migrations and changes must preserve all user and business data.
 - Do NOT propose or run destructive DB actions (reset/truncate/drop).
-- Do NOT implement code, migrations, or schema changes—planning only.
+- Do NOT implement code or schema changes during planning. **However, in the implementation phase, you MUST generate all required migration SQL/Prisma migration scripts as described above.**
 - Do NOT overwrite or delete existing documentation.
 - Only add new files/folders or append to documentation as instructed.
 - Do not automate any schema or data changes without explicit human approval and a rollback plan.
