@@ -40,6 +40,13 @@ Preferred communication style: Simple, everyday language.
 - **Written Quotes**: Alternative quote flow with negotiation history
 - **Notifications**: Real-time notification system per user
 - **News Engine**: Content management with AI drafting capabilities
+- **Blog Feature** (Added 2026-01-26):
+  - **BlogAuthor**: Author profiles with status, bio, social links (linked to Users)
+  - **BlogComment**: Post comments with moderation workflow (PENDING/APPROVED/REJECTED/SPAM)
+  - **BlogPost**: Extended with comments relation and optional BlogAuthor
+- **Media Library** (Added 2026-01-26):
+  - **MediaAsset**: Files with type (IMAGE/VIDEO/DOCUMENT), trash/restore, tags, metadata
+  - **MediaFolder**: Hierarchical folder structure for asset organization
 
 ### Authentication Flow
 1. NextAuth handles session management with JWT tokens
@@ -77,6 +84,9 @@ The application uses a centralized design token approach:
 - **AWS S3**: File uploads for documents and images
   - @aws-sdk/client-s3
   - @aws-sdk/s3-request-presigner for secure upload URLs
+- **Replit Object Storage**: Media library file storage (Added 2026-01-26)
+  - Presigned URL upload flow via sidecar
+  - Integration in `src/lib/replit_integrations/object_storage/`
 
 ### AI Integration
 - **OpenAI**: News content drafting and automation (configured via environment)
