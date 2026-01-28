@@ -19,13 +19,32 @@ export type AdminBlogPost = {
   robots: AdminBlogRobots;
   status: AdminBlogStatus;
   scheduledFor: string;
+  blogAuthorId: string | null;
+  blogAuthor: null | { id: string; name: string; email: string; avatarUrl: string };
   createdAt: string;
   updatedAt: string;
 };
 
-export type AdminBlogPostCreateInput = Omit<AdminBlogPost, 'id' | 'createdAt' | 'updatedAt'>;
+export type AdminBlogPostCreateInput = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  coverImageUrl: string;
+  readTime: string;
+  category: string;
+  tags: string[];
+  seoTitle: string;
+  seoDescription: string;
+  ogImageUrl: string;
+  canonicalUrl: string;
+  robots: AdminBlogRobots;
+  status: AdminBlogStatus;
+  scheduledFor: string;
+  blogAuthorId?: string | null;
+};
 
-export type AdminBlogPostUpdateInput = Partial<Omit<AdminBlogPost, 'id' | 'createdAt'>>;
+export type AdminBlogPostUpdateInput = Partial<Omit<AdminBlogPost, 'id' | 'createdAt' | 'updatedAt'>>;
 
 export type AdminBlogPostListCounts = {
   all: number;
@@ -69,6 +88,8 @@ type AdminApiPost = {
   updatedAt: string;
   category: null | { id: string; name: string; slug: string };
   tags: Array<{ id: string; name: string; slug: string }>;
+  blogAuthorId?: string | null;
+  blogAuthor?: null | { id: string; name: string; email: string; avatarUrl: string | null };
 };
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -124,6 +145,15 @@ function mapAdminApiPostToAdminBlogPost(post: AdminApiPost): AdminBlogPost {
     robots: post.robots ?? 'index,follow',
     status: post.status ?? 'DRAFT',
     scheduledFor: normalizeString(post.scheduledFor ?? ''),
+    blogAuthorId: normalizeString(post.blogAuthorId ?? '') || null,
+    blogAuthor: post.blogAuthor
+      ? {
+          id: normalizeString(post.blogAuthor.id),
+          name: normalizeString(post.blogAuthor.name),
+          email: normalizeString(post.blogAuthor.email),
+          avatarUrl: normalizeString(post.blogAuthor.avatarUrl ?? ''),
+        }
+      : null,
     createdAt: normalizeString(post.createdAt),
     updatedAt: normalizeString(post.updatedAt),
   };
@@ -187,6 +217,7 @@ export async function createAdminBlogPost(input: AdminBlogPostCreateInput): Prom
       ...input,
       tags: input.tags ?? [],
       category: input.category ?? '',
+      blogAuthorId: input.blogAuthorId ?? null,
     }),
   });
 
@@ -205,6 +236,7 @@ export async function updateAdminBlogPost(
           ...patch,
           ...(patch.tags ? { tags: patch.tags } : {}),
           ...(patch.category !== undefined ? { category: patch.category } : {}),
+          ...(patch.blogAuthorId !== undefined ? { blogAuthorId: patch.blogAuthorId } : {}),
         }),
       }
     );
@@ -286,4 +318,262 @@ export async function deleteAdminBlogTag(id: string): Promise<boolean> {
     { method: 'DELETE' }
   );
   return true;
+}
+
+export type AdminBlogAuthorStatus = 'ACTIVE' | 'INACTIVE';
+
+export type AdminBlogAuthor = {
+  id: string;
+  name: string;
+  email: string;
+  bio: string;
+  avatarUrl: string;
+  status: AdminBlogAuthorStatus;
+  socialLinks: unknown;
+  userId: string | null;
+  user: null | { id: string; name: string | null; email: string; role?: string };
+  postCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AdminApiAuthor = {
+  id: string;
+  name: string;
+  email: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  status: AdminBlogAuthorStatus;
+  socialLinks: unknown;
+  userId: string | null;
+  user: null | { id: string; name: string | null; email: string; role?: string };
+  postCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function normalizeAuthorStatus(value: unknown): AdminBlogAuthorStatus {
+  const upper = typeof value === 'string' ? value.toUpperCase() : '';
+  return upper === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
+}
+
+function mapAdminApiAuthorToAdminBlogAuthor(author: AdminApiAuthor): AdminBlogAuthor {
+  return {
+    id: normalizeString(author.id),
+    name: normalizeString(author.name),
+    email: normalizeString(author.email),
+    bio: normalizeString(author.bio ?? ''),
+    avatarUrl: normalizeString(author.avatarUrl ?? ''),
+    status: normalizeAuthorStatus(author.status),
+    socialLinks: author.socialLinks ?? null,
+    userId: normalizeString(author.userId ?? '') || null,
+    user: author.user
+      ? {
+          id: normalizeString(author.user.id),
+          name: author.user.name ?? null,
+          email: normalizeString(author.user.email),
+          role: (author.user as any).role,
+        }
+      : null,
+    postCount: Number(author.postCount ?? 0),
+    createdAt: normalizeString(author.createdAt),
+    updatedAt: normalizeString(author.updatedAt),
+  };
+}
+
+export async function listAdminBlogAuthors(options?: {
+  q?: string;
+  status?: AdminBlogAuthorStatus | 'ALL';
+}): Promise<{ authors: AdminBlogAuthor[]; counts: { all: number; active: number; inactive: number } }> {
+  const params = new URLSearchParams();
+  if (options?.q) params.set('q', options.q);
+  if (options?.status && options.status !== 'ALL') params.set('status', options.status);
+
+  const qs = params.toString();
+  const url = qs ? `/api/admin/blog/authors?${qs}` : '/api/admin/blog/authors';
+
+  const data = await requestJson<{ authors: AdminApiAuthor[]; counts?: Partial<{ all: number; active: number; inactive: number }> }>(
+    url,
+    { method: 'GET' }
+  );
+
+  return {
+    authors: (data.authors ?? []).map(mapAdminApiAuthorToAdminBlogAuthor),
+    counts: {
+      all: Number(data.counts?.all ?? 0),
+      active: Number(data.counts?.active ?? 0),
+      inactive: Number(data.counts?.inactive ?? 0),
+    },
+  };
+}
+
+export async function createAdminBlogAuthor(input: {
+  name: string;
+  email: string;
+  bio?: string;
+  avatarUrl?: string;
+  status?: AdminBlogAuthorStatus;
+  socialLinks?: unknown;
+  userId?: string | null;
+}): Promise<AdminBlogAuthor> {
+  const data = await requestJson<{ author: AdminApiAuthor }>('/api/admin/blog/authors', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+  return mapAdminApiAuthorToAdminBlogAuthor(data.author);
+}
+
+export async function updateAdminBlogAuthor(
+  id: string,
+  patch: {
+    name?: string;
+    email?: string;
+    bio?: string;
+    avatarUrl?: string;
+    status?: AdminBlogAuthorStatus;
+    socialLinks?: unknown;
+    userId?: string | null;
+  }
+): Promise<AdminBlogAuthor> {
+  const data = await requestJson<{ author: AdminApiAuthor }>(
+    `/api/admin/blog/authors/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    }
+  );
+  return mapAdminApiAuthorToAdminBlogAuthor(data.author);
+}
+
+export async function deleteAdminBlogAuthor(id: string): Promise<boolean> {
+  await requestJson<{ success: boolean }>(`/api/admin/blog/authors/${encodeURIComponent(id)}`,
+    { method: 'DELETE' }
+  );
+  return true;
+}
+
+export type AdminBlogCommentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SPAM';
+
+export type AdminBlogComment = {
+  id: string;
+  postId: string;
+  post: { id: string; title: string; slug: string };
+  authorName: string;
+  authorEmail: string;
+  content: string;
+  status: AdminBlogCommentStatus;
+  parentId: string | null;
+  replyCount?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AdminApiComment = {
+  id: string;
+  postId: string;
+  post: { id: string; title: string; slug: string };
+  authorName: string;
+  authorEmail: string;
+  content: string;
+  status: AdminBlogCommentStatus;
+  parentId: string | null;
+  replyCount?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function normalizeCommentStatus(value: unknown): AdminBlogCommentStatus {
+  const upper = typeof value === 'string' ? value.toUpperCase() : '';
+  if (upper === 'APPROVED' || upper === 'REJECTED' || upper === 'SPAM' || upper === 'PENDING') return upper;
+  return 'PENDING';
+}
+
+function mapAdminApiCommentToAdminBlogComment(comment: AdminApiComment): AdminBlogComment {
+  return {
+    id: normalizeString(comment.id),
+    postId: normalizeString(comment.postId),
+    post: {
+      id: normalizeString(comment.post?.id),
+      title: normalizeString(comment.post?.title),
+      slug: normalizeString(comment.post?.slug),
+    },
+    authorName: normalizeString(comment.authorName),
+    authorEmail: normalizeString(comment.authorEmail),
+    content: normalizeString(comment.content),
+    status: normalizeCommentStatus(comment.status),
+    parentId: normalizeString(comment.parentId ?? '') || null,
+    replyCount: Number(comment.replyCount ?? 0),
+    createdAt: normalizeString(comment.createdAt),
+    updatedAt: normalizeString(comment.updatedAt),
+  };
+}
+
+export async function listAdminBlogComments(options?: {
+  status?: AdminBlogCommentStatus | 'ALL';
+  postId?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{
+  comments: AdminBlogComment[];
+  counts: { all: number; pending: number; approved: number; rejected: number; spam: number };
+}> {
+  const params = new URLSearchParams();
+  if (options?.status && options.status !== 'ALL') params.set('status', options.status);
+  if (options?.postId) params.set('postId', options.postId);
+  if (options?.page) params.set('page', String(options.page));
+  if (options?.limit) params.set('limit', String(options.limit));
+
+  const qs = params.toString();
+  const url = qs ? `/api/admin/blog/comments?${qs}` : '/api/admin/blog/comments';
+
+  const data = await requestJson<{
+    comments: AdminApiComment[];
+    counts?: Partial<{ all: number; pending: number; approved: number; rejected: number; spam: number }>;
+  }>(url, { method: 'GET' });
+
+  return {
+    comments: (data.comments ?? []).map(mapAdminApiCommentToAdminBlogComment),
+    counts: {
+      all: Number(data.counts?.all ?? 0),
+      pending: Number(data.counts?.pending ?? 0),
+      approved: Number(data.counts?.approved ?? 0),
+      rejected: Number(data.counts?.rejected ?? 0),
+      spam: Number(data.counts?.spam ?? 0),
+    },
+  };
+}
+
+export async function updateAdminBlogComment(
+  id: string,
+  patch: { status?: AdminBlogCommentStatus; content?: string; authorName?: string; authorEmail?: string }
+): Promise<AdminBlogComment> {
+  const data = await requestJson<{ comment: AdminApiComment }>(
+    `/api/admin/blog/comments/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    }
+  );
+  return mapAdminApiCommentToAdminBlogComment(data.comment);
+}
+
+export async function deleteAdminBlogComment(id: string): Promise<boolean> {
+  await requestJson<{ success: boolean }>(`/api/admin/blog/comments/${encodeURIComponent(id)}`,
+    { method: 'DELETE' }
+  );
+  return true;
+}
+
+export async function bulkAdminBlogComments(input: {
+  ids: string[];
+  action: 'approve' | 'reject' | 'spam' | 'delete';
+}): Promise<{ success: boolean; processed: number; notFound?: string[] }> {
+  const data = await requestJson<{ success: boolean; processed: number; notFound?: string[] }>(
+    '/api/admin/blog/comments/bulk',
+    {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }
+  );
+  return data;
 }

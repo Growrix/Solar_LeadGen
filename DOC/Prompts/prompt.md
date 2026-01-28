@@ -5678,3 +5678,77 @@ Theme / Appearance Customizer
 Basic controls to set the public site's primary colors, fonts, and layout options (e.g., Grid vs. List view for the blog index).
 Webhooks & Integrations
 A settings page to manage external connections (e.g., Google Analytics ID, Mailchimp API keys, or Webhooks to trigger static site builds).
+
+
+--------------------------------------------------------------------------------------------------
+
+***Audit***
+- I want you to follow this audit instructions stricktly and perform the audit `DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\CMS Wordpress like Audit.md`
+- perpare the audit report in the : `DOC\Features\Generate Audit Reports`
+
+***Analysis report***
+- After that compare the audit report that you created with this stricktly : `DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\Wordpress CMS Checklist.md`
+- And finally prepare the Gap Analysis report in the : `DOC\Features\Generate Audit Reports` 
+
+---------------------------------------------------------------------------------------------------
+
+### **PHASE 1 — SYSTEM AUDIT (MANDATORY)**
+
+You MUST strictly follow the audit instructions defined in:
+
+`DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\CMS Wordpress like Audit.md`
+
+Rules for this phase:
+
+1. Perform a **deep system-level audit**, not a feature summary
+2. Evaluate **capabilities, architecture, and behavior**, not UI polish
+3. Do NOT reference or use any external knowledge of WordPress
+4. Do NOT invent requirements
+5. Do NOT perform gap analysis yet
+6. Produce a **full audit report** exactly as required by the audit document
+7. Save the audit output to:
+
+`DOC\Features\Generate Audit Reports`
+
+End Phase 1 explicitly with:
+
+> **“PHASE 1 COMPLETE — AUDIT REPORT GENERATED”**
+
+---
+
+### **PHASE 2 — GAP ANALYSIS AGAINST CANONICAL CHECKLIST (STRICT COMPARISON)**
+
+You MUST now compare the Phase 1 audit report **ONLY** against the following checklist:
+
+`DOC\Prompts\PROMPTS & TEMPLATES\ADVANCED AUDIT\Wordpress CMS Checklist.md`
+
+Rules for this phase:
+
+1. Treat the checklist as the **single source of truth**
+2. Do NOT add, remove, or reinterpret checklist items
+3. Every checklist item must be marked as:
+
+   * Fully Implemented
+   * Partially Implemented
+   * Missing
+4. Any capability NOT explicitly confirmed in the audit = **Missing**
+5. Do NOT recommend plugins, WordPress, or third-party tools
+6. Do NOT over-engineer beyond the checklist
+
+Produce a **Gap Analysis Report** containing:
+
+* A capability-by-capability comparison table
+* Clear identification of the missing 20–30%
+* Impact of each missing capability
+* Whether each gap is **Critical / Important / Optional**
+* A **CMS Core v1 build checklist** derived strictly from missing items
+
+Save the Gap Analysis report to:
+
+`DOC\Features\Generate Audit Reports`
+
+End Phase 2 explicitly with:
+
+> **“PHASE 2 COMPLETE — GAP ANALYSIS GENERATED”**
+
+---

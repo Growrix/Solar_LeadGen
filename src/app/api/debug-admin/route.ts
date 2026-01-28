@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
+  // Safety: this was a one-off debug endpoint and must never run in production.
+  // It also caused build-time Prisma access when no DB is available.
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DEBUG_ADMIN_ENDPOINT !== 'true') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   try {
     // Get the actual admin user from database
     const admin = await prisma.user.findUnique({
@@ -28,11 +34,8 @@ export async function GET() {
       role: admin.role,
       isActive: admin.isActive,
       hasPassword: !!admin.password,
-      passwordHashLength: admin.password?.length || 0,
-      passwordHashPreview: admin.password?.substring(0, 20) + '...',
       testPassword: testPassword,
       passwordMatches: passwordMatch,
-      actualPasswordHash: admin.password, // TEMPORARY - for debugging only
     });
 
   } catch (error) {

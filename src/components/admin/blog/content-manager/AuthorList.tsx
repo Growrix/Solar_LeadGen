@@ -18,41 +18,56 @@ import { ConfirmationModal } from '@/components/admin/blog/shared/ConfirmationMo
 import { ManageAuthorModal } from '@/components/admin/blog/shared/ManageAuthorModal';
 import { AuthorPreviewModal } from '@/components/admin/blog/shared/AuthorPreviewModal';
 import type { AuthorProfile } from '@/components/admin/blog/shared/authorTypes';
+import {
+  createAdminBlogAuthor,
+  deleteAdminBlogAuthor,
+  listAdminBlogAuthors,
+  updateAdminBlogAuthor,
+  type AdminBlogAuthor,
+  type AdminBlogAuthorStatus,
+} from '@/lib/blog/adminApiClient';
 
 type ViewState = 'loading' | 'success' | 'error' | 'empty';
 
-const STUB_AUTHORS: AuthorProfile[] = [
-  {
-    id: 'a-1',
-    name: 'SolarMatch Admin',
-    email: 'admin@solarmatch.example',
-    role: 'admin',
-    status: 'active',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-    joinedAt: 'Jan 10, 2026',
-    bio: 'Admin account for managing blog content.',
-  },
-  {
-    id: 'a-2',
-    name: 'Jamie Chen',
-    email: 'jamie.chen@solarmatch.example',
-    role: 'editor',
-    status: 'active',
-    avatar: 'https://i.pravatar.cc/150?img=8',
-    joinedAt: 'Dec 03, 2025',
-    bio: 'Editor focusing on policy and incentives.',
-  },
-  {
-    id: 'a-3',
-    name: 'Alex Rivera',
-    email: 'alex.rivera@solarmatch.example',
-    role: 'contributor',
-    status: 'inactive',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-    joinedAt: 'Nov 20, 2025',
-    bio: 'Contributor writing technical explainers.',
-  },
-];
+function formatJoinedAt(value: string): string {
+  if (!value) return '';
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return '';
+  try {
+    return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+  } catch {
+    return dt.toISOString();
+  }
+}
+
+function mapAuthorStatus(status: AdminBlogAuthorStatus): 'active' | 'inactive' {
+  return status === 'INACTIVE' ? 'inactive' : 'active';
+}
+
+function getAuthorRole(author: AdminBlogAuthor): string {
+  const social = author.socialLinks as any;
+  const roleFromSocial = social && typeof social === 'object' ? social.role : null;
+  if (typeof roleFromSocial === 'string' && roleFromSocial.trim()) return roleFromSocial.trim();
+  if (author.user?.role === 'ADMIN') return 'admin';
+  return 'contributor';
+}
+
+function getDefaultAvatar(name: string): string {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+}
+
+function mapAdminAuthorToProfile(author: AdminBlogAuthor): AuthorProfile {
+  return {
+    id: author.id,
+    name: author.name,
+    email: author.email,
+    role: getAuthorRole(author),
+    status: mapAuthorStatus(author.status),
+    avatar: author.avatarUrl || getDefaultAvatar(author.name),
+    joinedAt: formatJoinedAt(author.createdAt),
+    bio: author.bio || '',
+  };
+}
 
 export function AuthorList({ isTabbed = false }: { isTabbed?: boolean }) {
   const [viewState, setViewState] = useState<ViewState>('loading');
@@ -71,17 +86,20 @@ export function AuthorList({ isTabbed = false }: { isTabbed?: boolean }) {
 
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  const fetchData = () => {
+  const fetchData = async () => {
     setViewState('loading');
-    setTimeout(() => {
-      const data = STUB_AUTHORS;
-      setAuthors(data);
-      setViewState(data.length === 0 ? 'empty' : 'success');
-    }, 600);
+    try {
+      const { authors: found } = await listAdminBlogAuthors({ status: 'ALL' });
+      const mapped = found.map(mapAdminAuthorToProfile);
+      setAuthors(mapped);
+      setViewState(mapped.length === 0 ? 'empty' : 'success');
+    } catch {
+      setViewState('error');
+    }
   };
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, []);
 
   useEffect(() => {
@@ -123,34 +141,52 @@ export function AuthorList({ isTabbed = false }: { isTabbed?: boolean }) {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!authorToDelete) return;
     setIsDeleting(true);
-    setTimeout(() => {
+    try {
+      await deleteAdminBlogAuthor(authorToDelete);
       setAuthors((prev) => prev.filter((a) => a.id !== authorToDelete));
-      setIsDeleting(false);
+      setNotification({ message: 'Author removed successfully.', type: 'success' });
       setIsDeleteModalOpen(false);
       setAuthorToDelete(null);
-      setNotification({ message: 'Author removed successfully.', type: 'success' });
-    }, 600);
+    } catch (err) {
+      const message = (err as Error)?.message || 'Failed to remove author.';
+      setNotification({ message, type: 'error' });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
-  const handleSaveAuthor = (data: Omit<AuthorProfile, 'id' | 'joinedAt'>) => {
-    if (editingAuthor) {
-      setAuthors((prev) => prev.map((a) => (a.id === editingAuthor.id ? { ...a, ...data } : a)));
-      setNotification({ message: 'Author updated successfully.', type: 'success' });
-    } else {
-      const newAuthor: AuthorProfile = {
-        ...(data as any),
-        id: Math.random().toString(36).slice(2, 11),
-        joinedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+  const handleSaveAuthor = async (data: Omit<AuthorProfile, 'id' | 'joinedAt'>) => {
+    try {
+      const payload = {
+        name: data.name,
+        email: data.email,
+        bio: data.bio ?? '',
+        avatarUrl: data.avatar,
+        status: (data.status === 'inactive' ? 'INACTIVE' : 'ACTIVE') as AdminBlogAuthorStatus,
+        socialLinks: { role: data.role },
       };
-      setAuthors((prev) => [newAuthor, ...prev]);
-      setNotification({ message: 'New author added successfully.', type: 'success' });
-    }
 
-    setIsManageModalOpen(false);
-    setEditingAuthor(null);
+      if (editingAuthor) {
+        const updated = await updateAdminBlogAuthor(editingAuthor.id, payload);
+        const mapped = mapAdminAuthorToProfile(updated);
+        setAuthors((prev) => prev.map((a) => (a.id === editingAuthor.id ? mapped : a)));
+        setNotification({ message: 'Author updated successfully.', type: 'success' });
+      } else {
+        const created = await createAdminBlogAuthor(payload);
+        const mapped = mapAdminAuthorToProfile(created);
+        setAuthors((prev) => [mapped, ...prev]);
+        setNotification({ message: 'New author added successfully.', type: 'success' });
+      }
+
+      setIsManageModalOpen(false);
+      setEditingAuthor(null);
+    } catch (err) {
+      const message = (err as Error)?.message || 'Failed to save author.';
+      setNotification({ message, type: 'error' });
+    }
   };
 
   const RoleBadge = ({ role }: { role: string }) => {
@@ -230,7 +266,7 @@ export function AuthorList({ isTabbed = false }: { isTabbed?: boolean }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search team members..."
-              className="w-full pl-9 pr-4 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
+              className="w-full pl-9 pr-4 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition"
             />
           </div>
 

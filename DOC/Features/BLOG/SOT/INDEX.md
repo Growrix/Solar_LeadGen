@@ -13,8 +13,10 @@ This folder is the **single Source of Truth** for the BLOG feature (planning + e
 
 ## Required Pre-Implementation Docs (Non-negotiable)
 
+- `CURRENT-STATE-E2E-AUDIT.md`
+  - Canonical E2E current-state audit (frontend + backend + DB + integrations).
 - `CURRENT-UI-AUDIT-BLOG.md`
-  - E2E current-state audit (frontend + backend + DB + integrations).
+  - Legacy baseline capture (keep for history; superseded by CURRENT-STATE-E2E-AUDIT).
 - `Frontend-Plan.md`
   - Visual contract of routes/pages/modals/flows (includes বাংলা ব্যাখ্যা).
 - `IMPLEMENTATION-PLAN.md`

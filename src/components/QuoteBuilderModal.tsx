@@ -5,6 +5,7 @@ import Button from '@/components/ui/button';
 import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download } from 'lucide-react';
 import { calcQuoteTotals, DEFAULT_ASSUMPTIONS, QuoteInputs } from '@/utils/quoteCalculator';
 import { parseBudgetRange } from '@/lib/mappers/instant-to-bid';
+import { mapInstantToBid } from '@/lib/mappers/instant-to-bid';
 import SavingsChart from './SavingsChart';
 import HomeownerPreviewModal from './HomeownerPreviewModal';
 import BidEvaluationModal from './BidEvaluationModal';
@@ -96,6 +97,9 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
   const [fullLeadData, setFullLeadData] = useState<LeadData | null>(null);
   const [isLoadingFullLead, setIsLoadingFullLead] = useState(false);
   const [leadFetchError, setLeadFetchError] = useState<string | null>(null);
+
+  // Phase: Import from Instant Quote
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Collapsible section state
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -200,6 +204,33 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
       autosaveStatus: 'idle'
     }
   });
+
+  const leadQuoteData = (lead as any)?.quoteData;
+  const canImportFromInstantQuote = mode === 'bid' && !!lead && !!leadQuoteData;
+
+  const applyInstantQuoteImport = () => {
+    if (!canImportFromInstantQuote) return;
+
+    const partial = mapInstantToBid(leadQuoteData);
+    setQuoteDraft((prev) => ({
+      ...prev,
+      ...partial,
+      system: { ...prev.system, ...(partial.system || {}) },
+      roof: { ...prev.roof, ...(partial.roof || {}) },
+      products: { ...prev.products, ...(partial.products || {}) },
+      pricing: { ...prev.pricing, ...(partial.pricing || {}) },
+      assumptions: { ...prev.assumptions, ...(partial.assumptions || {}) },
+      meta: {
+        ...prev.meta,
+        ...(partial.meta || {}),
+        importedAt: partial.meta?.importedAt || new Date().toISOString(),
+        importSource: 'instant-quote',
+        prefilledFields: partial.meta?.prefilledFields || prev.meta?.prefilledFields || [],
+      },
+    }));
+
+    setIsImportModalOpen(false);
+  };
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -699,9 +730,10 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
     feedInTariff: quoteDraft.assumptions.feedInTariff,
     annualOpex: quoteDraft.assumptions.annualOpex
   });
+  const totalBeforeIncentives = currentTotals.subtotal + currentTotals.tax;
   const showBudgetHint = !isBudgetHintDismissed && 
     budgetRange && 
-    currentTotals.total > budgetRange.max * 1.1; // Show if >10% over budget
+    totalBeforeIncentives > budgetRange.max * 1.1; // Show if >10% over budget (before rebates/incentives)
 
   return (
     <div
@@ -729,7 +761,7 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
             <div className="flex items-center gap-2">
               <Info className="h-4 w-4 text-accent" />
               <span className="text-body-small text-accent">
-                Current total (${currentTotals.total.toLocaleString()}) exceeds homeowner budget (${budgetRange?.max.toLocaleString()}). 
+                Current total (${totalBeforeIncentives.toLocaleString()}) exceeds homeowner budget (${budgetRange?.max.toLocaleString()}). 
                 Consider adjusting system size or components.
               </span>
             </div>
@@ -775,6 +807,15 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+              {canImportFromInstantQuote && (
+                <Button
+                  onClick={() => setIsImportModalOpen(true)}
+                  variant="secondary"
+                  className="flex-1 md:flex-initial px-4 py-2"
+                >
+                  <Download className="h-4 w-4" /> Import from Instant Quote
+                </Button>
+              )}
               <Button
                 onClick={() => setIsBidEvaluationOpen(true)}
                 variant="secondary"
@@ -832,6 +873,50 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
             ))}
           </div>
         </header>
+
+        {/* Import Modal */}
+        {isImportModalOpen && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-full max-w-lg rounded-2xl bg-background shadow-neu-outset-lg border border-border p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-heading-3">Import from Instant Quote</h3>
+                  <p className="text-caption text-muted-foreground mt-1">
+                    This will prefill fields from the homeowners Instant Quote data.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="p-2 rounded-button hover:bg-surface-hover"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <Button
+                  variant="minimal"
+                  className="px-4 py-2"
+                  onClick={() => setIsImportModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  className="px-4 py-2"
+                  onClick={applyInstantQuoteImport}
+                >
+                  Accept & Import
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content - Two Column Layout */}
         <div className="flex-grow overflow-hidden flex gap-4 p-4 md:p-6">

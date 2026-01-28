@@ -23,7 +23,9 @@ import {
 import {
   createAdminBlogPost,
   getAdminBlogPostById,
+  listAdminBlogAuthors,
   updateAdminBlogPost,
+  type AdminBlogAuthor,
   type AdminBlogPost,
   type AdminBlogPostCreateInput,
   type AdminBlogStatus,
@@ -81,6 +83,7 @@ function buildCreatePayload(draft: EditorDraft): AdminBlogPostCreateInput {
     robots: draft.robots,
     status: draft.status,
     scheduledFor: draft.scheduledFor,
+    blogAuthorId: draft.blogAuthorId ? draft.blogAuthorId : null,
   };
 }
 
@@ -94,6 +97,7 @@ type EditorDraft = {
   tags: string;
   content: string;
   readTime: string;
+  blogAuthorId: string;
 
   status: AdminBlogStatus;
   scheduledFor: string;
@@ -119,6 +123,7 @@ const DEFAULT_DRAFT: EditorDraft = {
   tags: '',
   content: '',
   readTime: '5 min read',
+  blogAuthorId: '',
 
   status: 'DRAFT',
   scheduledFor: '',
@@ -143,6 +148,8 @@ export function AdminPostEditorClient(props: { id?: string }) {
 
   const [draft, setDraft] = useState<EditorDraft>(DEFAULT_DRAFT);
   const [isSlugTouched, setIsSlugTouched] = useState(false);
+
+  const [authors, setAuthors] = useState<AdminBlogAuthor[]>([]);
 
   const [postId, setPostId] = useState<string | null>(isNew ? null : props.id ?? null);
 
@@ -195,6 +202,7 @@ export function AdminPostEditorClient(props: { id?: string }) {
           tags: (found.tags ?? []).join(', '),
           content: found.content,
           readTime: found.readTime,
+          blogAuthorId: found.blogAuthorId ?? '',
           status: found.status,
           scheduledFor: found.scheduledFor,
           seoTitle: found.seoTitle,
@@ -216,6 +224,26 @@ export function AdminPostEditorClient(props: { id?: string }) {
       cancelled = true;
     };
   }, [isNew, props.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAuthors() {
+      try {
+        const data = await listAdminBlogAuthors({ status: 'ACTIVE' });
+        if (cancelled) return;
+        setAuthors(data.authors ?? []);
+      } catch {
+        if (cancelled) return;
+        setAuthors([]);
+      }
+    }
+
+    void loadAuthors();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (isSlugTouched) return;
@@ -263,6 +291,7 @@ export function AdminPostEditorClient(props: { id?: string }) {
         robots: draft.robots,
         readTime: draft.readTime,
         scheduledFor: draft.scheduledFor,
+        blogAuthorId: draft.blogAuthorId ? draft.blogAuthorId : null,
       };
 
       await updateAdminBlogPost(postId, patch);
@@ -802,6 +831,25 @@ export function AdminPostEditorClient(props: { id?: string }) {
                   </div>
 
                   <div>
+                    <label className="block text-label text-muted-foreground mb-1">Blog author</label>
+                    <select
+                      value={draft.blogAuthorId}
+                      onChange={(e) => setDraft((p) => ({ ...p, blogAuthorId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-background text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="">Use admin user (default)</option>
+                      {authors.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}{a.email ? ` (${a.email})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-caption text-muted-foreground mt-1">
+                      Controls the public byline if your blog pages prefer blog authors.
+                    </p>
+                  </div>
+
+                  <div>
                     <label className="block text-label text-muted-foreground mb-1">Read time</label>
                     <input
                       type="text"
@@ -822,6 +870,7 @@ export function AdminPostEditorClient(props: { id?: string }) {
                           fill
                           sizes="(min-width: 1024px) 30vw, 100vw"
                           className="object-cover"
+                          unoptimized
                         />
                       </div>
                     ) : (

@@ -589,7 +589,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                       setStatusFilter(tab.key);
                       setSelectedIds(new Set());
                     }}
-                    className={`px-3 py-1.5 text-button rounded-md transition-colors transition-shadow transition-transform whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-button rounded-md transition whitespace-nowrap ${
                       statusFilter === tab.key
                         ? 'bg-muted text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -606,7 +606,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-colors transition-shadow transition-transform ${
+                  className={`p-1.5 rounded-md transition ${
                     viewMode === 'list' ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="List View"
@@ -616,7 +616,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                 <button
                   type="button"
                   onClick={() => setViewMode('board')}
-                  className={`p-1.5 rounded-md transition-colors transition-shadow transition-transform ${
+                  className={`p-1.5 rounded-md transition ${
                     viewMode === 'board' ? 'bg-muted text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                   title="Board View"
@@ -832,7 +832,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                 {hasIssues && (
                                   <div className="relative group/tooltip">
                                     <AlertTriangle className="w-4 h-4 text-warning" />
-                                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-foreground text-background text-caption rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-colors transition-shadow transition-transform z-30 border border-border">
+                                    <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-foreground text-background text-caption rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition z-30 border border-border">
                                       <div className="text-label mb-2">Attention Needed:</div>
                                       <ul className="space-y-1">
                                         {issues.map((issue) => (
@@ -908,7 +908,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex items-center gap-2 text-body text-muted-foreground">
                               <User className="w-4 h-4 text-muted-foreground" />
-                              Admin
+                              {post.blogAuthor?.name || 'Admin'}
                             </span>
                           </td>
                         )}
@@ -1083,7 +1083,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                     {(hasIssues && post.coverImageUrl) && (
                                       <div className="relative group/tooltip">
                                         <AlertTriangle className="w-4 h-4 text-warning" />
-                                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-foreground text-background text-caption rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-colors transition-shadow transition-transform z-30 border border-border">
+                                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-56 bg-foreground text-background text-caption rounded-lg p-3 shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition z-30 border border-border">
                                           <div className="text-label mb-2">Attention Needed:</div>
                                           <ul className="space-y-1">
                                             {issues.map((issue) => (
@@ -1112,7 +1112,7 @@ export function PostList({ isTabbed = false }: PostListProps) {
                                 )}
                                 {visibleBoardFields.has('author') && (
                                   <div className="text-body text-muted-foreground flex items-center gap-2">
-                                    <User className="w-4 h-4 text-muted-foreground" /> Admin
+                                    <User className="w-4 h-4 text-muted-foreground" /> {post.blogAuthor?.name || 'Admin'}
                                   </div>
                                 )}
                                 {visibleBoardFields.has('date') && (

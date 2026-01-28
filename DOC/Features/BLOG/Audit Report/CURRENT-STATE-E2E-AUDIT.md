@@ -8,24 +8,24 @@
 
 ## Table of Contents
 
-1. [Scope & Entry Points](#1-scope--entry-points)
-2. [Frontend (Routes, Pages, Components, Assets)](#2-frontend-routes-pages-components-assets)
-3. [Backend/API (Routes, Auth, Contracts, Middleware, Adapters)](#3-backendapi-routes-auth-contracts-middleware-adapters)
-4. [Data Layer (Prisma / DB)](#4-data-layer-prisma--db)
-5. [Business Rules & State Transitions](#5-business-rules--state-transitions)
-6. [Integrations & Automation](#6-integrations--automation)
-7. [Risks, Coupling Map & Config](#7-risks-coupling-map--config)
-8. [Test Coverage & Documentation](#8-test-coverage--documentation)
-9. [Error Handling & Edge Cases](#9-error-handling--edge-cases)
-10. ["What's Already There" Inventory (Anti-Duplication)](#10-whats-already-there-inventory-anti-duplication)
-11. [UI-to-Backend Mapping Table](#11-ui-to-backend-mapping-table)
-12. [Conditional UI/Role/Feature Flag Coverage](#12-conditional-uirolefeature-flag-coverage)
-13. [Additional Audit Requirements](#13-additional-audit-requirements)
-14. [Audit Verification Checklist](#14-audit-verification-checklist)
+1. [Scope & Entry Points](#scope--entry-points)
+2. [Frontend (Routes, Pages, Components, Assets)](#frontend-routes-pages-components-assets)
+3. [Backend/API (Routes, Auth, Contracts, Middleware, Adapters)](#backendapi-routes-auth-contracts-middleware-adapters)
+4. [Data Layer (Prisma / DB)](#data-layer-prisma--db)
+5. [Business Rules & State Transitions](#business-rules--state-transitions)
+6. [Integrations & Automation](#integrations--automation)
+7. [Risks, Coupling Map & Config](#risks-coupling-map--config)
+8. [Test Coverage & Documentation](#test-coverage--documentation)
+9. [Error Handling & Edge Cases](#error-handling--edge-cases)
+10. ["What's Already There" Inventory (Anti-Duplication)](#whats-already-there-inventory-anti-duplication)
+11. [UI-to-Backend Mapping Table](#ui-to-backend-mapping-table)
+12. [Conditional UI/Role/Feature Flag Coverage](#conditional-uirolefeature-flag-coverage)
+13. [Additional Audit Requirements](#additional-audit-requirements)
+14. [Audit Verification Checklist](#audit-verification-checklist)
 
 ---
 
-## 1. Scope & Entry Points
+## Scope & Entry Points
 
 ### Feature: Blog Feature + Media Library
 
@@ -60,7 +60,7 @@
 
 ---
 
-## 2. Frontend (Routes, Pages, Components, Assets)
+## Frontend (Routes, Pages, Components, Assets)
 
 ### Admin Routes & Pages
 
@@ -136,13 +136,13 @@
 | PostList | `/api/admin/blog/posts` | **Server (DB)** |
 | CategoryList | `/api/admin/blog/categories` | **Server (DB)** |
 | TagList | `/api/admin/blog/tags` | **Server (DB)** |
-| CommentsList | **Local state (mock data)** | **Client only** |
-| AuthorList | **Local state (mock data)** | **Client only** |
-| MediaLibrary | **Local state (mock data)** | **Client only** |
+| CommentsList | `/api/admin/blog/comments` (+ `/bulk`, `[id]`) | **Server (DB)** |
+| AuthorList | `/api/admin/blog/authors` (+ `[id]`) | **Server (DB)** |
+| MediaLibrary | `/api/admin/media/assets`, `/api/admin/media/folders`, `/api/admin/media/upload` | **Server (DB + Object Storage)** |
 
 ---
 
-## 3. Backend/API (Routes, Auth, Contracts, Middleware, Adapters)
+## Backend/API (Routes, Auth, Contracts, Middleware, Adapters)
 
 ### Existing API Routes
 
@@ -166,6 +166,33 @@
 | PATCH | `/api/admin/blog/tags/[id]` | `requireAdmin` | **Exists** | Update tag |
 | DELETE | `/api/admin/blog/tags/[id]` | `requireAdmin` | **Exists** | Delete tag |
 | POST | `/api/admin/blog/ai/generate` | `requireAdmin` | **Exists** | AI content generation |
+| GET | `/api/admin/blog/comments` | `requireAdmin` | **Exists** | List comments (filters + counts + pagination) |
+| POST | `/api/admin/blog/comments` | `requireAdmin` | **Exists** | Create comment (admin/testing utility) |
+| GET | `/api/admin/blog/comments/[id]` | `requireAdmin` | **Exists** | Get single comment + replies |
+| PUT | `/api/admin/blog/comments/[id]` | `requireAdmin` | **Exists** | Update/moderate comment |
+| DELETE | `/api/admin/blog/comments/[id]` | `requireAdmin` | **Exists** | Delete comment |
+| POST | `/api/admin/blog/comments/bulk` | `requireAdmin` | **Exists** | Bulk moderate/delete comments |
+| GET | `/api/admin/blog/authors` | `requireAdmin` | **Exists** | List blog authors (filters + counts) |
+| POST | `/api/admin/blog/authors` | `requireAdmin` | **Exists** | Create blog author |
+| GET | `/api/admin/blog/authors/[id]` | `requireAdmin` | **Exists** | Get single author + recent posts |
+| PUT | `/api/admin/blog/authors/[id]` | `requireAdmin` | **Exists** | Update author (including status) |
+| DELETE | `/api/admin/blog/authors/[id]` | `requireAdmin` | **Exists** | Delete author (blocked if posts exist) |
+
+#### Admin Media API (Authenticated - Admin only)
+
+| Method | Path | Auth | Status | Description |
+|--------|------|------|--------|-------------|
+| GET | `/api/admin/media/assets` | `requireAdmin` | **Exists** | List assets (ACTIVE/TRASHED) with filters + counts + pagination |
+| POST | `/api/admin/media/assets` | `requireAdmin` | **Exists** | Create media asset DB record (after upload) |
+| GET | `/api/admin/media/assets/[id]` | `requireAdmin` | **Exists** | Get single asset |
+| PUT | `/api/admin/media/assets/[id]` | `requireAdmin` | **Exists** | Update metadata/folder |
+| DELETE | `/api/admin/media/assets/[id]` | `requireAdmin` | **Exists** | Toggle TRASHED/ACTIVE; permanent delete via `?permanent=true` |
+| GET | `/api/admin/media/folders` | `requireAdmin` | **Exists** | List folders by parentId |
+| POST | `/api/admin/media/folders` | `requireAdmin` | **Exists** | Create folder |
+| GET | `/api/admin/media/folders/[id]` | `requireAdmin` | **Exists** | Get folder details (children + sample assets) |
+| PUT | `/api/admin/media/folders/[id]` | `requireAdmin` | **Exists** | Rename/move folder |
+| DELETE | `/api/admin/media/folders/[id]` | `requireAdmin` | **Exists** | Delete folder (must be empty) |
+| POST | `/api/admin/media/upload` | `requireAdmin` | **Exists (S3/local only)** | Get presigned upload URL (S3 or dev-local) |
 
 #### Public Blog API (Unauthenticated)
 
@@ -174,40 +201,15 @@
 | GET | `/api/blog/posts` | None | **Exists** | List published posts |
 | GET | `/api/blog/posts/[slug]` | None | **Exists** | Get single post by slug |
 
-### Missing API Routes (Required for UI Parity)
+### API Routes Present But With Known Gaps
 
-| Method | Path | Purpose | Priority |
-|--------|------|---------|----------|
-| **Comments** | | | |
-| GET | `/api/admin/blog/comments` | List all comments | **P1** |
-| GET | `/api/admin/blog/comments/[id]` | Get single comment | **P2** |
-| PATCH | `/api/admin/blog/comments/[id]` | Update comment (moderate) | **P1** |
-| DELETE | `/api/admin/blog/comments/[id]` | Delete comment | **P1** |
-| POST | `/api/admin/blog/comments/bulk` | Bulk moderate comments | **P1** |
-| GET | `/api/blog/posts/[slug]/comments` | Public: Get comments for post | **P2** |
-| POST | `/api/blog/posts/[slug]/comments` | Public: Add comment | **P2** |
-| **Authors** | | | |
-| GET | `/api/admin/blog/authors` | List all authors | **P1** |
-| POST | `/api/admin/blog/authors` | Create author | **P1** |
-| GET | `/api/admin/blog/authors/[id]` | Get single author | **P2** |
-| PATCH | `/api/admin/blog/authors/[id]` | Update author | **P1** |
-| DELETE | `/api/admin/blog/authors/[id]` | Delete/deactivate author | **P2** |
-| **Media Library** | | | |
-| GET | `/api/admin/media` | List all media | **P1** |
-| POST | `/api/admin/media` | Upload media file | **P1** |
-| GET | `/api/admin/media/[id]` | Get single media | **P2** |
-| PATCH | `/api/admin/media/[id]` | Update media metadata | **P1** |
-| DELETE | `/api/admin/media/[id]` | Move to trash | **P1** |
-| POST | `/api/admin/media/[id]/restore` | Restore from trash | **P1** |
-| DELETE | `/api/admin/media/[id]/permanent` | Permanently delete | **P1** |
-| POST | `/api/admin/media/bulk/move` | Bulk move to folder | **P1** |
-| POST | `/api/admin/media/bulk/edit` | Bulk edit metadata | **P1** |
-| POST | `/api/admin/media/bulk/delete` | Bulk trash/delete | **P1** |
-| **Folders** | | | |
-| GET | `/api/admin/media/folders` | List folders | **P1** |
-| POST | `/api/admin/media/folders` | Create folder | **P1** |
-| PATCH | `/api/admin/media/folders/[id]` | Rename folder | **P1** |
-| DELETE | `/api/admin/media/folders/[id]` | Delete folder | **P1** |
+| Area | Route(s) | Status | Notes |
+|------|----------|--------|-------|
+| Admin Comments | `/api/admin/blog/comments`, `/api/admin/blog/comments/[id]`, `/api/admin/blog/comments/bulk` | **Exists & used** | Bulk route supports approve/reject/spam/delete; “pending” bulk is not supported (UI falls back to per-item updates). |
+| Admin Authors | `/api/admin/blog/authors`, `/api/admin/blog/authors/[id]` | **Exists & used** | UI stores a display “role” in `socialLinks.role` (DB does not have a BlogAuthor role field). |
+| Media Assets | `/api/admin/media/assets`, `/api/admin/media/assets/[id]` | **Exists & used** | Replace/overwrite file is not supported by API yet (metadata + folder move supported). |
+| Media Folders | `/api/admin/media/folders`, `/api/admin/media/folders/[id]` | **Exists & used** | Delete requires folder to be empty (server enforces no children/assets). |
+| Media Upload | `/api/admin/media/upload` | **Exists (S3/local only)** | Uses S3 helpers when configured; dev-only local fallback available via `ALLOW_LOCAL_MEDIA_UPLOADS=true` (non-production). |
 
 ### Request/Response Contracts (Existing)
 
@@ -259,7 +261,7 @@ Request: {
 
 ---
 
-## 4. Data Layer (Prisma / DB)
+## Data Layer (Prisma / DB)
 
 ### Existing Blog Models
 
@@ -269,6 +271,10 @@ Request: {
 | `BlogCategory` | **Exists** | Categories (name, slug) |
 | `BlogTag` | **Exists** | Tags (name, slug) |
 | `BlogPostTag` | **Exists** | Many-to-many join table |
+| `BlogComment` | **Exists** | Comment threads for posts (admin moderation) |
+| `BlogAuthor` | **Exists** | Public-facing authors for post bylines (optional) |
+| `MediaAsset` | **Exists** | Uploaded media records (image/video/document) |
+| `MediaFolder` | **Exists** | Folder tree for organizing media |
 | `BlogAiRequestLog` | **Exists** | AI generation audit log |
 | `BlogJobLog` | **Exists** | Scheduled job logs |
 
@@ -276,10 +282,7 @@ Request: {
 
 | Model | Status | Required Fields |
 |-------|--------|-----------------|
-| `BlogComment` | **DOES NOT EXIST** | id, postId, authorName, authorEmail, content, status (PENDING/APPROVED/SPAM/REJECTED), createdAt, updatedAt |
-| `BlogAuthor` | **DOES NOT EXIST** | id, userId?, name, email, bio, avatarUrl, status (ACTIVE/INACTIVE), socialLinks, createdAt, updatedAt |
-| `MediaAsset` | **DOES NOT EXIST** | id, name, type (image/video/document), url, s3Key, size, dimensions, altText, caption, tags, folderId, uploadedById, uploadedAt, trashedAt, deletedAt |
-| `MediaFolder` | **DOES NOT EXIST** | id, name, parentId, type, createdAt, updatedAt |
+| None | — | All models required by the current Blog admin UI are present. |
 
 ### Existing Schema Details
 
@@ -338,7 +341,7 @@ model BlogTag {
 
 ---
 
-## 5. Business Rules & State Transitions
+## Business Rules & State Transitions
 
 ### Blog Post Status Transitions
 
@@ -382,7 +385,7 @@ model BlogTag {
 
 ---
 
-## 6. Integrations & Automation
+## Integrations & Automation
 
 ### Existing Integrations
 
@@ -401,7 +404,7 @@ model BlogTag {
 
 ---
 
-## 7. Risks, Coupling Map & Config
+## Risks, Coupling Map & Config
 
 ### Hard Couplings
 
@@ -427,7 +430,7 @@ No feature flags currently in use for blog feature.
 
 ---
 
-## 8. Test Coverage & Documentation
+## Test Coverage & Documentation
 
 ### Existing Tests
 
@@ -449,7 +452,7 @@ No feature flags currently in use for blog feature.
 
 ---
 
-## 9. Error Handling & Edge Cases
+## Error Handling & Edge Cases
 
 ### Current Error Handling
 
@@ -467,12 +470,12 @@ No feature flags currently in use for blog feature.
 | Duplicate slug | 409 Conflict response | Handled |
 | Missing category/tag | connectOrCreate pattern | Handled |
 | Missing blog tables | Helpful error message | Handled |
-| Media upload failure | N/A (no backend) | **Not handled** |
-| Large file uploads | N/A (no backend) | **Not handled** |
+| Media upload failure | API returns 503 if storage not configured; UI shows error notification | **Partially handled** |
+| Large file uploads | API rejects >100MB | **Handled** |
 
 ---
 
-## 10. "What's Already There" Inventory (Anti-Duplication)
+## "What's Already There" Inventory (Anti-Duplication)
 
 ### Posts
 
@@ -508,36 +511,36 @@ No feature flags currently in use for blog feature.
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| List comments | **Does not exist** | UI uses mock data |
-| Moderate comment | **Does not exist** | UI-only |
-| Bulk moderate | **Does not exist** | UI-only |
-| Delete comment | **Does not exist** | UI-only |
+| List comments | **Exists & works** | DB-backed via `/api/admin/blog/comments` |
+| Moderate comment | **Exists & works** | PUT `/api/admin/blog/comments/[id]` |
+| Bulk moderate | **Exists but partial** | `/bulk` supports approve/reject/spam/delete; pending bulk falls back to per-item updates |
+| Delete comment | **Exists & works** | DELETE `/api/admin/blog/comments/[id]` |
 
 ### Authors
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| List authors | **Does not exist** | UI uses mock data |
-| Create author | **Does not exist** | UI-only |
-| Edit author | **Does not exist** | UI-only |
-| Preview author | **Does not exist** | UI-only |
+| List authors | **Exists & works** | DB-backed via `/api/admin/blog/authors` |
+| Create author | **Exists & works** | POST `/api/admin/blog/authors` |
+| Edit author | **Exists & works** | PUT `/api/admin/blog/authors/[id]` |
+| Preview author | **Exists (UI-only preview)** | Preview modal only; no public author page is wired |
 
 ### Media Library
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| List media | **Does not exist** | UI uses local state |
-| Upload media | **Does not exist** | UI-only simulation |
-| Edit media metadata | **Does not exist** | UI-only |
-| Move to folder | **Does not exist** | UI-only |
-| Trash/restore | **Does not exist** | UI-only |
-| Permanent delete | **Does not exist** | UI-only |
-| Folder management | **Does not exist** | UI-only |
-| Bulk operations | **Does not exist** | UI-only |
+| List media | **Exists & works** | GET `/api/admin/media/assets` (ACTIVE/TRASHED) |
+| Upload media | **Exists, S3/local only** | Presigned upload via `/api/admin/media/upload` + record create via `/api/admin/media/assets`; works with S3 or dev-local config |
+| Edit media metadata | **Exists & works** | PUT `/api/admin/media/assets/[id]` |
+| Move to folder | **Exists & works** | PUT `/api/admin/media/assets/[id]` (folderId) |
+| Trash/restore | **Exists & works** | DELETE `/api/admin/media/assets/[id]` toggles TRASHED/ACTIVE |
+| Permanent delete | **Exists & works** | DELETE `/api/admin/media/assets/[id]?permanent=true` |
+| Folder management | **Exists & works** | `/api/admin/media/folders` + `/[id]` |
+| Bulk operations | **Exists & works (UI loops)** | UI performs per-asset PUT/DELETE calls (no dedicated bulk API) |
 
 ---
 
-## 11. UI-to-Backend Mapping Table
+## UI-to-Backend Mapping Table
 
 ### Content Manager - Posts Tab
 
@@ -575,45 +578,41 @@ No feature flags currently in use for blog feature.
 
 | UI Element | Page/Route | Expected Action | Backend Endpoint | Status |
 |------------|------------|-----------------|------------------|--------|
-| Comments list | /admin/blog/content-manager?tab=comments | Fetch comments | GET /api/admin/blog/comments | **MISSING** |
-| Approve comment | /admin/blog/content-manager?tab=comments | Approve | PATCH /api/admin/blog/comments/[id] | **MISSING** |
-| Reject comment | /admin/blog/content-manager?tab=comments | Reject | PATCH /api/admin/blog/comments/[id] | **MISSING** |
-| Delete comment | /admin/blog/content-manager?tab=comments | Delete | DELETE /api/admin/blog/comments/[id] | **MISSING** |
-| Bulk moderate | /admin/blog/content-manager?tab=comments | Bulk action | POST /api/admin/blog/comments/bulk | **MISSING** |
+| Comments list | /admin/blog/content-manager?tab=comments | Fetch comments | GET /api/admin/blog/comments | **Exists** |
+| Approve/Reject/Spam | /admin/blog/content-manager?tab=comments | Moderate | PUT /api/admin/blog/comments/[id] | **Exists** |
+| Delete comment | /admin/blog/content-manager?tab=comments | Delete | DELETE /api/admin/blog/comments/[id] | **Exists** |
+| Bulk moderate | /admin/blog/content-manager?tab=comments | Bulk action | POST /api/admin/blog/comments/bulk | **Exists (partial)** |
 
 ### Content Manager - Authors Tab
 
 | UI Element | Page/Route | Expected Action | Backend Endpoint | Status |
 |------------|------------|-----------------|------------------|--------|
-| Authors list | /admin/blog/content-manager?tab=authors | Fetch authors | GET /api/admin/blog/authors | **MISSING** |
+| Authors list | /admin/blog/content-manager?tab=authors | Fetch authors | GET /api/admin/blog/authors | **Exists** |
 | Add Author button | /admin/blog/content-manager?tab=authors | Open modal | N/A (client) | **Exists** |
-| Save author (modal) | /admin/blog/content-manager?tab=authors | Create author | POST /api/admin/blog/authors | **MISSING** |
-| Edit author | /admin/blog/content-manager?tab=authors | Update author | PATCH /api/admin/blog/authors/[id] | **MISSING** |
-| Deactivate author | /admin/blog/content-manager?tab=authors | Deactivate | PATCH /api/admin/blog/authors/[id] | **MISSING** |
+| Save author (modal) | /admin/blog/content-manager?tab=authors | Create author | POST /api/admin/blog/authors | **Exists** |
+| Edit author | /admin/blog/content-manager?tab=authors | Update author | PUT /api/admin/blog/authors/[id] | **Exists** |
+| Deactivate author | /admin/blog/content-manager?tab=authors | Deactivate | PUT /api/admin/blog/authors/[id] | **Exists** |
 
 ### Media Library
 
 | UI Element | Page/Route | Expected Action | Backend Endpoint | Status |
 |------------|------------|-----------------|------------------|--------|
-| Media grid | /admin/blog/media | Fetch media | GET /api/admin/media | **MISSING** |
+| Media grid | /admin/blog/media | Fetch media | GET /api/admin/media/assets | **Exists** |
 | Upload button | /admin/blog/media | Open upload modal | N/A (client) | **Exists** |
-| Upload files | /admin/blog/media | Upload to S3 | POST /api/admin/media | **MISSING** |
-| Media details modal | /admin/blog/media | View/edit details | GET /api/admin/media/[id] | **MISSING** |
-| Save metadata | /admin/blog/media | Update metadata | PATCH /api/admin/media/[id] | **MISSING** |
+| Upload files | /admin/blog/media | Upload via presign + create record | POST /api/admin/media/upload; PUT presigned URL; POST /api/admin/media/assets | **Exists (env-coupled)** |
+| Media details modal | /admin/blog/media | View/edit details | GET /api/admin/media/assets (list provides data); GET /api/admin/media/assets/[id] (optional) | **Exists** |
+| Save metadata | /admin/blog/media | Update metadata | PUT /api/admin/media/assets/[id] | **Exists** |
 | Copy URL | /admin/blog/media | Copy to clipboard | N/A (client) | **Exists** |
-| Move to trash | /admin/blog/media | Soft delete | DELETE /api/admin/media/[id] | **MISSING** |
-| Restore from trash | /admin/blog/media | Restore | POST /api/admin/media/[id]/restore | **MISSING** |
-| Permanent delete | /admin/blog/media | Hard delete | DELETE /api/admin/media/[id]/permanent | **MISSING** |
-| Create folder | /admin/blog/media | Create folder | POST /api/admin/media/folders | **MISSING** |
-| Rename folder | /admin/blog/media | Rename | PATCH /api/admin/media/folders/[id] | **MISSING** |
-| Delete folder | /admin/blog/media | Delete | DELETE /api/admin/media/folders/[id] | **MISSING** |
-| Bulk move | /admin/blog/media | Move multiple | POST /api/admin/media/bulk/move | **MISSING** |
-| Bulk edit | /admin/blog/media | Edit multiple | POST /api/admin/media/bulk/edit | **MISSING** |
-| Bulk delete | /admin/blog/media | Delete multiple | POST /api/admin/media/bulk/delete | **MISSING** |
+| Move to trash / restore | /admin/blog/media | Toggle TRASHED/ACTIVE | DELETE /api/admin/media/assets/[id] | **Exists** |
+| Permanent delete | /admin/blog/media | Hard delete | DELETE /api/admin/media/assets/[id]?permanent=true | **Exists** |
+| Create folder | /admin/blog/media | Create folder | POST /api/admin/media/folders | **Exists** |
+| Rename folder | /admin/blog/media | Rename | PUT /api/admin/media/folders/[id] | **Exists** |
+| Delete folder | /admin/blog/media | Delete (must be empty) | DELETE /api/admin/media/folders/[id] | **Exists** |
+| Bulk move/edit/delete | /admin/blog/media | Apply to multiple items | Multiple PUT/DELETE per asset (UI loop) | **Exists** |
 
 ---
 
-## 12. Conditional UI/Role/Feature Flag Coverage
+## Conditional UI/Role/Feature Flag Coverage
 
 ### Role-Based Access
 
@@ -636,7 +635,7 @@ No feature flags currently used.
 
 ---
 
-## 13. Additional Audit Requirements
+## Additional Audit Requirements
 
 ### Observability
 
@@ -650,9 +649,9 @@ No feature flags currently used.
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Comment author data | **N/A** | Comments not implemented |
+| Comment author data | **Exists** | Stores authorName/authorEmail + optional ipAddress/userAgent (PII); consider retention policy |
 | User data in posts | Author reference only | Low risk |
-| Media metadata | **N/A** | Media not implemented |
+| Media metadata | **Exists** | Stores url/s3Key/tags/altText/caption; upload provider depends on environment |
 
 ### Migration & Upgrade History
 
@@ -671,22 +670,22 @@ No API versioning currently in use.
 | AuthN | **Exists** | Session-based auth |
 | AuthZ | **Exists** | `requireAdmin()` middleware |
 | Input validation | **Partial** | Basic normalization, no Zod schemas |
-| Secrets management | **N/A** | No secrets for blog |
+| Secrets management | **Decoupled** | Media upload relies on S3 configuration; dev-local fallback is implemented |
 
 ---
 
-## 14. Audit Verification Checklist
+## Audit Verification Checklist
 
 | Question | Answer |
 |----------|--------|
 | Where is the UI entry point? | `/admin/blog/content-manager`, `/admin/blog/media`, `/blog` |
 | What pages/routes are involved? | Listed in Section 2 |
-| What are the data sources today? | DB for posts/categories/tags; Local state for comments/authors/media |
-| What APIs are called (or missing)? | Listed in Section 3 |
+| What are the data sources today? | DB-backed for posts/categories/tags/comments/authors/media; upload storage is environment-coupled |
+| What APIs are called (or missing)? | Listed in Section 3 (gaps noted) |
 | What DB entities exist (or don't)? | Listed in Section 4 |
 | What role checks exist? | `requireAdmin()` for all admin endpoints |
 | What flows are deep-link safe vs state-dependent? | Tab navigation via URL params; media folders are state-dependent |
-| Does every interactive UI element have a mapped backend handler or API? | **NO** - Comments, Authors, Media Library missing |
+| Does every interactive UI element have a mapped backend handler or API? | **YES (Admin UI)** - Remaining gaps are environment-coupling + missing “replace file” flow |
 | Are all conditional UI elements covered? | **YES** - Role-based access verified |
 
 ---
@@ -700,26 +699,24 @@ No API versioning currently in use.
 | Blog Posts | **EXISTS** | **EXISTS** | **COMPLETE** |
 | Categories | **EXISTS** | **EXISTS** | **COMPLETE** |
 | Tags | **EXISTS** | **EXISTS** | **COMPLETE** |
-| Comments | **MISSING** | **MISSING** | **NOT STARTED** |
-| Authors | **MISSING** | **MISSING** | **NOT STARTED** |
-| Media Library | **MISSING** | **MISSING** | **NOT STARTED** |
-| Media Folders | **MISSING** | **MISSING** | **NOT STARTED** |
+| Comments | **EXISTS** | **EXISTS** | **COMPLETE (admin)** |
+| Authors | **EXISTS** | **EXISTS** | **COMPLETE (admin)** |
+| Media Library | **EXISTS** | **EXISTS** | **COMPLETE (admin UI + DB)** |
+| Media Upload | **EXISTS** | **EXISTS** | **S3/local only (Replit removed)** |
 
 ### Critical Gaps
 
-1. **Comments Backend** - UI exists with mock data, no persistence
-2. **Authors Backend** - UI exists with mock data, no persistence  
-3. **Media Library Backend** - UI exists with local state, no file storage or persistence
-4. **Media Folders** - UI exists, no backend
+1. **Upload decoupling** - Production upload is S3-based (or dev-local fallback with `ALLOW_LOCAL_MEDIA_UPLOADS=true`).
+2. **Replace file flow** - UI has a “Replace” affordance but there is no API workflow to replace an existing asset’s underlying file.
+3. **BlogAuthor on posts** - Implemented: admin post create/update/editor now supports `blogAuthorId`; public adapter prefers `blogAuthor` for byline when set.
 
 ### Recommendations for Phase 2 (Backend Planning)
 
-1. Design `BlogComment`, `BlogAuthor`, `MediaAsset`, `MediaFolder` models
-2. Plan additive migrations (no destructive changes)
-3. Plan S3/Object Storage integration for media files
-4. Design API contracts matching existing UI expectations
-5. Plan bulk operation endpoints for media
-6. Consider soft-delete patterns for all entities
+1. Add a storage-agnostic upload fallback (dev/local) OR standard S3 config path.
+2. Add a dedicated “replace asset file” workflow (upload new, update url/s3Key, keep id).
+3. Decide product rule for bylines (prefer `blogAuthor` vs admin User) and extend public UI to show author profiles if desired.
+4. Plan bulk operation endpoints for media
+5. Consider soft-delete patterns for all entities
 
 ---
 

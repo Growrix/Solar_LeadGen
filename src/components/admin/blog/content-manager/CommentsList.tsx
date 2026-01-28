@@ -16,44 +16,62 @@ import { ConfirmationModal } from '@/components/admin/blog/shared/ConfirmationMo
 import { BulkModerateModal } from '@/components/admin/blog/shared/BulkModerateModal';
 import { ModerateCommentModal } from '@/components/admin/blog/shared/ModerateCommentModal';
 import type { Comment, CommentStatus } from '@/components/admin/blog/shared/commentTypes';
+import {
+  bulkAdminBlogComments,
+  deleteAdminBlogComment,
+  listAdminBlogComments,
+  updateAdminBlogComment,
+  type AdminBlogComment,
+  type AdminBlogCommentStatus,
+} from '@/lib/blog/adminApiClient';
 
 type ViewState = 'loading' | 'success' | 'error' | 'empty';
 
-const STUB_COMMENTS: Comment[] = [
-  {
-    id: 'c-1',
-    authorName: 'Alex Rivera',
-    authorEmail: 'alex@example.com',
-    authorAvatar: 'https://i.pravatar.cc/100?img=12',
-    content: 'This was super helpful — thanks for breaking it down so clearly.',
-    status: 'pending',
-    submittedAt: 'Jan 22, 2026 · 10:14 AM',
-    postTitle: 'Solar Battery Storage Trends 2025',
-    postSlug: 'solar-battery-trends-2025',
-  },
-  {
-    id: 'c-2',
-    authorName: 'Jamie Chen',
-    authorEmail: 'jamie@example.com',
-    authorAvatar: 'https://i.pravatar.cc/100?img=5',
-    content: 'Do you have a source for the STC deeming period reduction timeline?',
-    status: 'approved',
-    submittedAt: 'Jan 23, 2026 · 2:05 PM',
-    postTitle: 'Tax Incentives for Commercial Solar',
-    postSlug: 'commercial-solar-tax-incentives',
-  },
-  {
-    id: 'c-3',
-    authorName: 'Morgan Patel',
-    authorEmail: 'morgan@example.com',
-    authorAvatar: 'https://i.pravatar.cc/100?img=32',
-    content: 'Buy cheap panels at spammy-site.example — limited time deal!',
-    status: 'spam',
-    submittedAt: 'Jan 24, 2026 · 9:01 AM',
-    postTitle: 'The Myth of cloudy days',
-    postSlug: 'myth-cloudy-days-solar',
-  },
-];
+function mapApiStatusToUi(status: AdminBlogCommentStatus): CommentStatus {
+  if (status === 'APPROVED') return 'approved';
+  if (status === 'SPAM') return 'spam';
+  if (status === 'REJECTED') return 'hidden';
+  return 'pending';
+}
+
+function mapUiStatusToApi(status: CommentStatus): AdminBlogCommentStatus {
+  if (status === 'approved') return 'APPROVED';
+  if (status === 'spam') return 'SPAM';
+  if (status === 'hidden') return 'REJECTED';
+  return 'PENDING';
+}
+
+function formatSubmittedAt(value: string): string {
+  if (!value) return '';
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return '';
+  try {
+    const date = dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const time = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return `${date} · ${time}`;
+  } catch {
+    return dt.toISOString();
+  }
+}
+
+function avatarForEmail(email: string): string {
+  const safe = email || 'unknown';
+  return `https://i.pravatar.cc/100?u=${encodeURIComponent(safe)}`;
+}
+
+function mapAdminCommentToUi(comment: AdminBlogComment): Comment {
+  return {
+    id: comment.id,
+    authorName: comment.authorName,
+    authorEmail: comment.authorEmail,
+    authorAvatar: avatarForEmail(comment.authorEmail),
+    content: comment.content,
+    status: mapApiStatusToUi(comment.status),
+    submittedAt: formatSubmittedAt(comment.createdAt),
+    postTitle: comment.post?.title ?? '',
+    postSlug: comment.post?.slug ?? '',
+  };
+}
 
 export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
   const [viewState, setViewState] = useState<ViewState>('loading');
@@ -80,18 +98,21 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
   const [bulkModerateAction, setBulkModerateAction] = useState<CommentStatus | null>(null);
   const [isBulkModerating, setIsBulkModerating] = useState(false);
 
-  const fetchData = () => {
+  const fetchData = async () => {
     setViewState('loading');
     setSelectedIds(new Set());
-    setTimeout(() => {
-      const data = STUB_COMMENTS;
-      setComments(data);
-      setViewState(data.length === 0 ? 'empty' : 'success');
-    }, 500);
+    try {
+      const { comments: items } = await listAdminBlogComments({ status: 'ALL', limit: 100 });
+      const mapped = items.map(mapAdminCommentToUi);
+      setComments(mapped);
+      setViewState(mapped.length === 0 ? 'empty' : 'success');
+    } catch {
+      setViewState('error');
+    }
   };
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -150,16 +171,21 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
     if (selectedIds.size > 0) setIsBulkDeleteModalOpen(true);
   };
 
-  const confirmBulkDelete = () => {
+  const confirmBulkDelete = async () => {
     setIsBulkDeleting(true);
-    setTimeout(() => {
-      selectedIds.forEach((id) => deleteComment(id));
-      const count = selectedIds.size;
+    const ids = Array.from(selectedIds);
+    try {
+      await bulkAdminBlogComments({ ids, action: 'delete' });
+      ids.forEach((id) => deleteComment(id));
       setSelectedIds(new Set());
-      setNotification({ message: `${count} comments deleted permanently.`, type: 'success' });
-      setIsBulkDeleting(false);
+      setNotification({ message: `${ids.length} comments deleted permanently.`, type: 'success' });
       setIsBulkDeleteModalOpen(false);
-    }, 500);
+    } catch (err) {
+      const message = (err as Error)?.message || 'Failed to delete comments.';
+      setNotification({ message, type: 'error' });
+    } finally {
+      setIsBulkDeleting(false);
+    }
   };
 
   const initiateBulkStatusChange = (status: CommentStatus) => {
@@ -169,15 +195,27 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
     }
   };
 
-  const handleBulkModerateConfirm = (note?: string) => {
+  const handleBulkModerateConfirm = async (note?: string) => {
     void note;
     if (!bulkModerateAction) return;
 
     setIsBulkModerating(true);
-    setTimeout(() => {
-      selectedIds.forEach((id) => updateCommentStatus(id, bulkModerateAction));
+    const ids = Array.from(selectedIds);
 
-      const count = selectedIds.size;
+    try {
+      if (bulkModerateAction === 'approved') {
+        await bulkAdminBlogComments({ ids, action: 'approve' });
+      } else if (bulkModerateAction === 'hidden') {
+        await bulkAdminBlogComments({ ids, action: 'reject' });
+      } else if (bulkModerateAction === 'spam') {
+        await bulkAdminBlogComments({ ids, action: 'spam' });
+      } else {
+        // pending is not supported by bulk endpoint; fall back to per-row update
+        await Promise.all(ids.map((id) => updateAdminBlogComment(id, { status: 'PENDING' })));
+      }
+
+      ids.forEach((id) => updateCommentStatus(id, bulkModerateAction));
+
       const actionLabels: Record<CommentStatus, string> = {
         approved: 'approved',
         hidden: 'hidden',
@@ -185,25 +223,35 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
         pending: 'marked as pending',
       };
       const label = actionLabels[bulkModerateAction] || 'updated';
-      setNotification({ message: `${count} comments ${label} successfully.`, type: 'success' });
+      setNotification({ message: `${ids.length} comments ${label} successfully.`, type: 'success' });
 
       setSelectedIds(new Set());
-      setIsBulkModerating(false);
       setIsBulkModerateModalOpen(false);
       setBulkModerateAction(null);
-    }, 500);
+    } catch (err) {
+      const message = (err as Error)?.message || 'Failed to update comments.';
+      setNotification({ message, type: 'error' });
+    } finally {
+      setIsBulkModerating(false);
+    }
   };
 
-  const handleUpdateStatus = (id: string, newStatus: CommentStatus) => {
-    updateCommentStatus(id, newStatus);
+  const handleUpdateStatus = async (id: string, newStatus: CommentStatus) => {
+    try {
+      await updateAdminBlogComment(id, { status: mapUiStatusToApi(newStatus) });
+      updateCommentStatus(id, newStatus);
 
-    let message = '';
-    if (newStatus === 'approved') message = 'Comment approved.';
-    if (newStatus === 'hidden') message = 'Comment hidden from public.';
-    if (newStatus === 'spam') message = 'Comment marked as spam.';
-    if (newStatus === 'pending') message = 'Comment marked as pending.';
+      let message = '';
+      if (newStatus === 'approved') message = 'Comment approved.';
+      if (newStatus === 'hidden') message = 'Comment hidden from public.';
+      if (newStatus === 'spam') message = 'Comment marked as spam.';
+      if (newStatus === 'pending') message = 'Comment marked as pending.';
 
-    setNotification({ message, type: 'success' });
+      setNotification({ message, type: 'success' });
+    } catch (err) {
+      const message = (err as Error)?.message || 'Failed to update comment.';
+      setNotification({ message, type: 'error' });
+    }
   };
 
   const handleModerateClick = (id: string) => {
@@ -217,7 +265,7 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
   const handleModerationComplete = (action: CommentStatus, note?: string) => {
     void note;
     if (!selectedComment) return;
-    handleUpdateStatus(selectedComment.id, action);
+    void handleUpdateStatus(selectedComment.id, action);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -225,11 +273,12 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!commentToDelete) return;
 
     setIsDeleting(true);
-    setTimeout(() => {
+    try {
+      await deleteAdminBlogComment(commentToDelete);
       deleteComment(commentToDelete);
 
       if (selectedIds.has(commentToDelete)) {
@@ -241,10 +290,14 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
       }
 
       setNotification({ message: 'Comment deleted permanently.', type: 'success' });
-      setIsDeleting(false);
       setIsDeleteModalOpen(false);
       setCommentToDelete(null);
-    }, 500);
+    } catch (err) {
+      const message = (err as Error)?.message || 'Failed to delete comment.';
+      setNotification({ message, type: 'error' });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const StatusPill = ({ status }: { status: CommentStatus }) => {
@@ -394,7 +447,7 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 text-button rounded-button transition-colors transition-shadow transition-transform capitalize whitespace-nowrap ${
+                className={`px-3 py-1.5 text-button rounded-button transition capitalize whitespace-nowrap ${
                   statusFilter === status ? 'bg-foreground text-background shadow-button' : 'text-foreground-muted hover:bg-muted'
                 }`}
                 type="button"
@@ -411,7 +464,7 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search author or content..."
-              className="w-full pl-9 pr-4 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
+              className="w-full pl-9 pr-4 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition"
             />
           </div>
         </div>
@@ -510,6 +563,7 @@ export function CommentsList({ isTabbed = false }: { isTabbed?: boolean }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={comment.authorAvatar} alt="" className="w-8 h-8 rounded-full bg-background-alt border border-border" />
                             <div>
                               <div className="text-body-small text-foreground">{comment.authorName}</div>

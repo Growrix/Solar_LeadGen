@@ -237,10 +237,10 @@ test.describe('Pusher and Notification System - Deep Audit', () => {
       const fs = require('fs');
       const path = require('path');
       
-      const servicePath = path.join(process.cwd(), 'src/lib/services/notification-service.ts');
+      const servicePath = path.join(process.cwd(), 'src/lib/notifications/notification-service.ts');
       const serviceExists = fs.existsSync(servicePath);
       
-      console.log(`  src/lib/services/notification-service.ts: ${serviceExists ? '✅ Exists' : '❌ Not found'}`);
+      console.log(`  src/lib/notifications/notification-service.ts: ${serviceExists ? '✅ Exists' : '❌ Not found'}`);
       expect(serviceExists).toBe(true);
       
       if (serviceExists) {

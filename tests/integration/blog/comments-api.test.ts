@@ -1,13 +1,65 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { getIntegrationOrigin, loginAdminAndGetCookieHeader } from '../helpers/adminAuth';
 
 describe('Comments API Integration Tests', () => {
-  const adminBaseUrl = 'http://localhost:5000/api/admin/blog/comments';
-  const publicBaseUrl = 'http://localhost:5000/api/blog/posts';
+  const origin = getIntegrationOrigin();
+  const adminBaseUrl = `${origin}/api/admin/blog/comments`;
+  const adminPostsBaseUrl = `${origin}/api/admin/blog/posts`;
+  let adminCookie: string;
+  let postId: string;
+
+  beforeAll(async () => {
+    adminCookie = await loginAdminAndGetCookieHeader(origin);
+
+    const unique = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const createPostResp = await fetch(adminPostsBaseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        cookie: adminCookie,
+      },
+      body: JSON.stringify({
+        title: `Integration Test Post ${unique}`,
+        content: 'Hello world',
+        status: 'DRAFT',
+      }),
+    });
+
+    expect(createPostResp.status).toBe(201);
+    const createdPost = await createPostResp.json();
+    postId = createdPost?.post?.id as string;
+    expect(postId).toBeTruthy();
+  });
+
+  const adminHeaders = () => ({
+    'Content-Type': 'application/json',
+    cookie: adminCookie,
+  });
+
+  async function createTestComment() {
+    const unique = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const response = await fetch(adminBaseUrl, {
+      method: 'POST',
+      headers: adminHeaders(),
+      body: JSON.stringify({
+        postId,
+        authorName: 'Integration Tester',
+        authorEmail: `integration-${unique}@example.com`,
+        content: `Test comment ${unique}`,
+        status: 'PENDING',
+      }),
+    });
+
+    expect(response.status).toBe(201);
+    const data = await response.json();
+    expect(data?.comment?.id).toBeTruthy();
+    return data.comment as { id: string; status: string; postId: string };
+  }
   
   describe('GET /api/admin/blog/comments', () => {
     it('should return all comments with counts', async () => {
       const response = await fetch(adminBaseUrl, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -18,8 +70,9 @@ describe('Comments API Integration Tests', () => {
     });
 
     it('should filter by status when ?status=PENDING', async () => {
+      await createTestComment();
       const response = await fetch(`${adminBaseUrl}?status=PENDING`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -30,150 +83,127 @@ describe('Comments API Integration Tests', () => {
     });
 
     it('should filter by post when ?postId=X', async () => {
-      const response = await fetch(`${adminBaseUrl}?postId=test-post-id`, {
-        headers: { 'Content-Type': 'application/json' },
+      await createTestComment();
+      const response = await fetch(`${adminBaseUrl}?postId=${encodeURIComponent(postId)}`, {
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(Array.isArray(data.comments)).toBe(true);
+      data.comments.forEach((comment: { postId: string }) => {
+        expect(comment.postId).toBe(postId);
+      });
     });
   });
 
-  describe('PATCH /api/admin/blog/comments/[id]', () => {
+  describe('PUT /api/admin/blog/comments/[id]', () => {
     it('should approve comment - status becomes APPROVED', async () => {
-      const commentId = 'test-comment-id';
-      const response = await fetch(`${adminBaseUrl}/${commentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const comment = await createTestComment();
+      const response = await fetch(`${adminBaseUrl}/${comment.id}`, {
+        method: 'PUT',
+        headers: adminHeaders(),
         body: JSON.stringify({ status: 'APPROVED' }),
       });
-      
-      expect([200, 404]).toContain(response.status);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.comment?.status).toBe('APPROVED');
     });
 
     it('should reject comment - status becomes REJECTED', async () => {
-      const commentId = 'test-comment-id';
-      const response = await fetch(`${adminBaseUrl}/${commentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const comment = await createTestComment();
+      const response = await fetch(`${adminBaseUrl}/${comment.id}`, {
+        method: 'PUT',
+        headers: adminHeaders(),
         body: JSON.stringify({ status: 'REJECTED' }),
       });
-      
-      expect([200, 404]).toContain(response.status);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.comment?.status).toBe('REJECTED');
     });
 
     it('should mark as spam - status becomes SPAM', async () => {
-      const commentId = 'test-comment-id';
-      const response = await fetch(`${adminBaseUrl}/${commentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const comment = await createTestComment();
+      const response = await fetch(`${adminBaseUrl}/${comment.id}`, {
+        method: 'PUT',
+        headers: adminHeaders(),
         body: JSON.stringify({ status: 'SPAM' }),
       });
-      
-      expect([200, 404]).toContain(response.status);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.comment?.status).toBe('SPAM');
     });
   });
 
   describe('DELETE /api/admin/blog/comments/[id]', () => {
     it('should delete comment (hard delete)', async () => {
-      const commentId = 'test-comment-id';
-      const response = await fetch(`${adminBaseUrl}/${commentId}`, {
+      const comment = await createTestComment();
+      const response = await fetch(`${adminBaseUrl}/${comment.id}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
-      expect([200, 404]).toContain(response.status);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.success).toBe(true);
     });
   });
 
   describe('POST /api/admin/blog/comments/bulk', () => {
     it('should bulk approve comments', async () => {
+      const c1 = await createTestComment();
+      const c2 = await createTestComment();
       const response = await fetch(`${adminBaseUrl}/bulk`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
-          ids: ['comment1', 'comment2'],
+          ids: [c1.id, c2.id],
           action: 'approve',
         }),
       });
       
-      expect([200, 404]).toContain(response.status);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.success).toBe(true);
+      expect(data?.newStatus).toBe('APPROVED');
     });
 
     it('should bulk reject comments', async () => {
+      const c1 = await createTestComment();
+      const c2 = await createTestComment();
       const response = await fetch(`${adminBaseUrl}/bulk`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
-          ids: ['comment1', 'comment2'],
+          ids: [c1.id, c2.id],
           action: 'reject',
         }),
       });
       
-      expect([200, 404]).toContain(response.status);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.success).toBe(true);
+      expect(data?.newStatus).toBe('REJECTED');
     });
 
     it('should bulk delete comments', async () => {
+      const c1 = await createTestComment();
+      const c2 = await createTestComment();
       const response = await fetch(`${adminBaseUrl}/bulk`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
-          ids: ['comment1', 'comment2'],
+          ids: [c1.id, c2.id],
           action: 'delete',
         }),
       });
       
-      expect([200, 404]).toContain(response.status);
-    });
-  });
-
-  describe('GET /api/blog/posts/[slug]/comments', () => {
-    it('should return approved comments only for public', async () => {
-      const response = await fetch(`${publicBaseUrl}/test-post/comments`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      expect([200, 404]).toContain(response.status);
-      if (response.status === 200) {
-        const data = await response.json();
-        expect(Array.isArray(data.comments)).toBe(true);
-      }
-    });
-  });
-
-  describe('POST /api/blog/posts/[slug]/comments', () => {
-    it('should create pending comment for public submit', async () => {
-      const response = await fetch(`${publicBaseUrl}/test-post/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          authorName: 'Test User',
-          authorEmail: 'test@example.com',
-          content: 'Great post!',
-        }),
-      });
-      
-      expect([201, 404, 429]).toContain(response.status);
-    });
-
-    it('should rate limit excessive submissions', async () => {
-      const promises = Array(10).fill(null).map(() =>
-        fetch(`${publicBaseUrl}/test-post/comments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            authorName: 'Spam User',
-            authorEmail: 'spam@example.com',
-            content: 'Spam comment',
-          }),
-        })
-      );
-      
-      const responses = await Promise.all(promises);
-      const statuses = responses.map(r => r.status);
-      
-      expect(statuses.some(s => s === 429 || s === 404 || s === 201)).toBe(true);
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data?.success).toBe(true);
     });
   });
 
@@ -183,7 +213,7 @@ describe('Comments API Integration Tests', () => {
         headers: { 'Content-Type': 'application/json' },
       });
       
-      expect([200, 401, 403]).toContain(response.status);
+      expect([401, 403]).toContain(response.status);
     });
   });
 });

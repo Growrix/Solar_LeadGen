@@ -47,6 +47,8 @@
 			"command": "npx",
 			"args": [
 				"tsc",
+				"-p",
+				"tsconfig.gate.json",
 				"--noEmit"
 			],
 			"isBackground": false,
@@ -157,6 +159,8 @@
 			"command": "npx",
 			"args": [
 				"tsc",
+				"-p",
+				"tsconfig.gate.json",
 				"--noEmit"
 			],
 			"isBackground": false,

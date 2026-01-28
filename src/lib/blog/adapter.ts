@@ -79,6 +79,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       orderBy: { publishedAt: 'desc' },
       include: {
         author: { select: { name: true, email: true } },
+        blogAuthor: { select: { name: true, email: true } },
         category: { select: { name: true } },
       },
     });
@@ -92,7 +93,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
       slug: p.slug,
       title: p.title,
       excerpt: p.excerpt,
-      author: p.author.name || p.author.email || 'SolarMatch',
+      author: p.blogAuthor?.name || p.author.name || p.blogAuthor?.email || p.author.email || 'SolarMatch',
       date: formatPublicDate(p.publishedAt ?? p.createdAt),
       readTime: p.readTime,
       category: p.category?.name ?? 'General',
@@ -114,6 +115,7 @@ export async function getBlogPostBySlug(slug: BlogPostSlug): Promise<BlogPost | 
       },
       include: {
         author: { select: { name: true, email: true } },
+        blogAuthor: { select: { name: true, email: true } },
         category: { select: { name: true } },
       },
     });
@@ -131,7 +133,7 @@ export async function getBlogPostBySlug(slug: BlogPostSlug): Promise<BlogPost | 
       slug: fromDb.slug,
       title: fromDb.title,
       excerpt: fromDb.excerpt,
-      author: fromDb.author.name || fromDb.author.email || 'SolarMatch',
+      author: fromDb.blogAuthor?.name || fromDb.author.name || fromDb.blogAuthor?.email || fromDb.author.email || 'SolarMatch',
       date: formatPublicDate(fromDb.publishedAt ?? fromDb.createdAt),
       readTime: fromDb.readTime,
       category: fromDb.category?.name ?? 'General',
@@ -153,6 +155,7 @@ export async function getBlogPostDetailBySlug(slug: BlogPostSlug): Promise<BlogP
       },
       include: {
         author: { select: { name: true, email: true } },
+        blogAuthor: { select: { name: true, email: true } },
         category: { select: { name: true } },
       },
     });
@@ -170,7 +173,7 @@ export async function getBlogPostDetailBySlug(slug: BlogPostSlug): Promise<BlogP
       slug: fromDb.slug,
       title: fromDb.title,
       excerpt: fromDb.excerpt,
-      author: fromDb.author.name || fromDb.author.email || 'SolarMatch',
+      author: fromDb.blogAuthor?.name || fromDb.author.name || fromDb.blogAuthor?.email || fromDb.author.email || 'SolarMatch',
       date: formatPublicDate(fromDb.publishedAt ?? fromDb.createdAt),
       readTime: fromDb.readTime,
       category: fromDb.category?.name ?? 'General',

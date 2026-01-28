@@ -197,7 +197,7 @@ export function MediaDetailsModal({
           </Button>
         )}
 
-        <div className="w-full md:w-2/3 bg-background-alt flex flex-col relative transition-colors transition-shadow transition-transform duration-300">
+        <div className="w-full md:w-2/3 bg-background-alt flex flex-col relative transition duration-300">
           {isEditing && (
             <div className="flex items-center justify-between px-4 py-3 bg-surface border-b border-border z-10">
               <h3 className="text-heading-5 text-foreground flex items-center gap-2">
@@ -233,6 +233,7 @@ export function MediaDetailsModal({
           <div className="flex-1 relative overflow-hidden flex items-center justify-center p-8 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
             {mediaItem.type === 'image' ? (
               <div className="relative flex items-center justify-center max-w-full max-h-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={mediaItem.url}
                   alt={mediaItem.name}
@@ -474,7 +475,7 @@ export function MediaDetailsModal({
                 <Button
                   onClick={handleCopyUrl}
                   variant="ghost"
-                  className={`p-2 rounded-button border transition-colors transition-shadow transition-transform ${
+                  className={`p-2 rounded-button border transition ${
                     isCopied ? 'bg-success/10 border-success/20 text-success' : 'bg-surface border-border text-muted-foreground hover:bg-muted'
                   }`}
                   title="Copy URL"

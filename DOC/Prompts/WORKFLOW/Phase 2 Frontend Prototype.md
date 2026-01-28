@@ -8,7 +8,7 @@
 - Prepare the frontend plan in : `DOC\Features\BLOG\Fontend UI UX`
 
 
-------------------------------------------------
+---------------------------------------------------------------------------
 
 ***phase 2 : Frontend Plan into Atomic Tasks***
 - Here is the front end plan based on initial plan : `DOC\Features\BLOG\Fontend UI UX`
@@ -48,13 +48,18 @@ Save all completed UI/UX code and documentation in the appropriate project folde
 
 
 
-***phase 3 : Frontend Development***
+***Brand New : Frontend Development***
 
 - Industry Standards `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Industry-Standards-Best-Practices.md`
 
 -Shows how a filled-in design system looks and can be used as a starting point or reference. `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Frontend-Design-System.md`
 
 - a blank, customizable template for your project’s design system. `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Design-System.md`
+
+- Component library checklist `DOC\Prompts\PROMPTS & TEMPLATES\FRONTEND\Component-Library-Checklist.md`
+
+
+
 
 
 

@@ -1,12 +1,24 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { getIntegrationOrigin, loginAdminAndGetCookieHeader } from '../helpers/adminAuth';
 
 describe('Authors API Integration Tests', () => {
-  const baseUrl = 'http://localhost:5000/api/admin/blog/authors';
+  const origin = getIntegrationOrigin();
+  const baseUrl = `${origin}/api/admin/blog/authors`;
+  let adminCookie: string;
+
+  beforeAll(async () => {
+    adminCookie = await loginAdminAndGetCookieHeader(origin);
+  });
+
+  const adminHeaders = () => ({
+    'Content-Type': 'application/json',
+    cookie: adminCookie,
+  });
   
   describe('GET /api/admin/blog/authors', () => {
     it('should return all authors', async () => {
       const response = await fetch(baseUrl, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -17,7 +29,7 @@ describe('Authors API Integration Tests', () => {
 
     it('should filter by status when ?status=ACTIVE', async () => {
       const response = await fetch(`${baseUrl}?status=ACTIVE`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -29,7 +41,7 @@ describe('Authors API Integration Tests', () => {
 
     it('should search by name/email when ?q=john', async () => {
       const response = await fetch(`${baseUrl}?q=john`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -42,7 +54,7 @@ describe('Authors API Integration Tests', () => {
     it('should create author with valid data', async () => {
       const response = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
           name: 'Test Author',
           email: `test-${Date.now()}@example.com`,
@@ -61,13 +73,13 @@ describe('Authors API Integration Tests', () => {
       
       await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({ name: 'First', email }),
       });
 
       const response = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({ name: 'Second', email }),
       });
       
@@ -77,7 +89,7 @@ describe('Authors API Integration Tests', () => {
     it('should reject missing name with 400', async () => {
       const response = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({ email: 'test@example.com' }),
       });
       
@@ -89,7 +101,7 @@ describe('Authors API Integration Tests', () => {
     it('should return single author', async () => {
       const createResponse = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
           name: 'Get Test',
           email: `get-${Date.now()}@example.com`,
@@ -99,7 +111,7 @@ describe('Authors API Integration Tests', () => {
       const { author } = await createResponse.json();
       
       const response = await fetch(`${baseUrl}/${author.id}`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -109,18 +121,18 @@ describe('Authors API Integration Tests', () => {
 
     it('should return 404 for non-existent author', async () => {
       const response = await fetch(`${baseUrl}/nonexistent123`, {
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(404);
     });
   });
 
-  describe('PATCH /api/admin/blog/authors/[id]', () => {
+  describe('PUT /api/admin/blog/authors/[id]', () => {
     it('should update author fields', async () => {
       const createResponse = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
           name: 'Update Test',
           email: `update-${Date.now()}@example.com`,
@@ -130,8 +142,8 @@ describe('Authors API Integration Tests', () => {
       const { author } = await createResponse.json();
       
       const response = await fetch(`${baseUrl}/${author.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT',
+        headers: adminHeaders(),
         body: JSON.stringify({ name: 'Updated Name', bio: 'Updated bio' }),
       });
       
@@ -146,7 +158,7 @@ describe('Authors API Integration Tests', () => {
     it('should deactivate author (soft delete)', async () => {
       const createResponse = await fetch(baseUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
         body: JSON.stringify({
           name: 'Delete Test',
           email: `delete-${Date.now()}@example.com`,
@@ -157,7 +169,7 @@ describe('Authors API Integration Tests', () => {
       
       const response = await fetch(`${baseUrl}/${author.id}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: adminHeaders(),
       });
       
       expect(response.status).toBe(200);
@@ -172,7 +184,7 @@ describe('Authors API Integration Tests', () => {
         headers: { 'Content-Type': 'application/json' },
       });
       
-      expect([200, 401, 403]).toContain(response.status);
+      expect([401, 403]).toContain(response.status);
     });
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { format, parse } from 'date-fns';
 import {
   CheckCircle,
@@ -60,78 +61,8 @@ interface Folder {
   type: 'media';
 }
 
-const initialFolders: Folder[] = [
-  { id: 'f_marketing', name: 'Marketing', parentId: null, type: 'media' },
-  { id: 'f_blog', name: 'Blog', parentId: null, type: 'media' },
-  { id: 'f_blog_hero', name: 'Hero', parentId: 'f_blog', type: 'media' },
-];
-
-const initialMedia: MediaItem[] = [
-  {
-    id: 'm1',
-    name: 'solar-panels-hero.webp',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1200',
-    size: '245 KB',
-    uploadedAt: 'Jan 15, 2025',
-    dimensions: '1200x800',
-    altText: 'Solar panels on roof',
-    tags: ['hero', 'solar'],
-    folderId: 'f_blog_hero',
-  },
-  {
-    id: 'm2',
-    name: 'team-photo.webp',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200',
-    size: '180 KB',
-    uploadedAt: 'Jan 14, 2025',
-    dimensions: '1200x800',
-    altText: 'Team meeting',
-    folderId: 'f_marketing',
-  },
-  {
-    id: 'm3',
-    name: 'installation-guide.pdf',
-    type: 'document',
-    url: 'https://example.com/installation-guide.pdf',
-    size: '2.1 MB',
-    uploadedAt: 'Jan 12, 2025',
-    folderId: null,
-  },
-  {
-    id: 'm4',
-    name: 'product-demo.mp4',
-    type: 'video',
-    url: 'https://example.com/product-demo.mp4',
-    size: '15.3 MB',
-    uploadedAt: 'Jan 10, 2025',
-    folderId: null,
-  },
-  {
-    id: 'm5',
-    name: 'roof-installation.webp',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=1200',
-    size: '312 KB',
-    uploadedAt: 'Jan 8, 2025',
-    dimensions: '1200x800',
-    altText: 'Roof installation',
-    tags: ['installation'],
-    folderId: 'f_blog',
-  },
-  {
-    id: 'm6',
-    name: 'energy-savings-chart.webp',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200',
-    size: '95 KB',
-    uploadedAt: 'Jan 5, 2025',
-    dimensions: '1200x800',
-    altText: 'Energy savings',
-    folderId: null,
-  },
-];
+const initialFolders: Folder[] = [];
+const initialMedia: MediaItem[] = [];
 
 const nowLabel = () => {
   const date = new Date();
@@ -142,6 +73,108 @@ const parseDate = (dateStr: string): number => {
   if (dateStr === 'Just now') return new Date().getTime();
   return Date.parse(dateStr) || 0;
 };
+
+type ApiMediaAssetType = 'IMAGE' | 'VIDEO' | 'DOCUMENT';
+type ApiMediaAssetStatus = 'ACTIVE' | 'TRASHED';
+
+type ApiMediaAsset = {
+  id: string;
+  name: string;
+  type: ApiMediaAssetType;
+  url: string;
+  size: number | null;
+  dimensions: string | null;
+  altText: string | null;
+  caption: string | null;
+  tags: string[];
+  folderId: string | null;
+  status: ApiMediaAssetStatus;
+  trashedAt: string | null;
+  createdAt: string;
+};
+
+type ApiMediaFolder = {
+  id: string;
+  name: string;
+  parentId: string | null;
+};
+
+function formatBytes(size: number | null | undefined): string | undefined {
+  if (!size || size <= 0) return undefined;
+  if (size < 1024) return `${size} B`;
+  const kb = size / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  const mb = kb / 1024;
+  if (mb < 1024) return `${mb.toFixed(1)} MB`;
+  const gb = mb / 1024;
+  return `${gb.toFixed(1)} GB`;
+}
+
+function toUiMediaType(type: ApiMediaAssetType): MediaItem['type'] {
+  switch (type) {
+    case 'IMAGE':
+      return 'image';
+    case 'VIDEO':
+      return 'video';
+    case 'DOCUMENT':
+    default:
+      return 'document';
+  }
+}
+
+function formatUploadedAtLabel(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return format(date, 'MMM d, yyyy');
+}
+
+function mapApiAssetToMediaItem(asset: ApiMediaAsset): MediaItem {
+  return {
+    id: asset.id,
+    name: asset.name,
+    type: toUiMediaType(asset.type),
+    url: asset.url,
+    size: formatBytes(asset.size ?? undefined),
+    uploadedAt: formatUploadedAtLabel(asset.createdAt),
+    dimensions: asset.dimensions ?? undefined,
+    altText: asset.altText ?? undefined,
+    caption: asset.caption ?? undefined,
+    tags: asset.tags ?? [],
+    folderId: asset.folderId,
+  };
+}
+
+function mapApiAssetToTrashedMediaItem(asset: ApiMediaAsset): TrashedMediaItem {
+  return {
+    ...mapApiAssetToMediaItem(asset),
+    trashedAt: asset.trashedAt ? formatUploadedAtLabel(asset.trashedAt) : 'Unknown',
+  };
+}
+
+async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers);
+  if (init?.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  const res = await fetch(url, {
+    ...init,
+    headers,
+  });
+
+  const text = await res.text();
+  const data = text ? (JSON.parse(text) as unknown) : null;
+
+  if (!res.ok) {
+    const message =
+      data && typeof data === 'object' && 'error' in data && typeof (data as any).error === 'string'
+        ? (data as any).error
+        : `Request failed (${res.status})`;
+    throw new Error(message);
+  }
+
+  return data as T;
+}
 
 const FileIcon = ({ type, className = 'w-8 h-8' }: { type: string; className?: string }) => {
   switch (type) {
@@ -198,11 +231,104 @@ export function MediaLibrary() {
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
   const folderNameInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const loadAllFolders = async (): Promise<Folder[]> => {
+    const results: Folder[] = [];
+    const queue: Array<string | null> = [null];
+    const visited = new Set<string | null>();
+
+    while (queue.length > 0) {
+      const parentId = queue.shift() ?? null;
+      if (visited.has(parentId)) continue;
+      visited.add(parentId);
+
+      const url = parentId ? `/api/admin/media/folders?parentId=${encodeURIComponent(parentId)}` : '/api/admin/media/folders';
+      const data = await requestJson<{ folders: ApiMediaFolder[] }>(url);
+      for (const folder of data.folders ?? []) {
+        results.push({ id: folder.id, name: folder.name, parentId: folder.parentId, type: 'media' });
+        queue.push(folder.id);
+      }
+
+      if (results.length > 5000) break;
+    }
+
+    return results;
+  };
+
+  const loadAssets = async (options?: { showLoading?: boolean }) => {
+    if (options?.showLoading !== false) setViewState('loading');
+
+    const status: ApiMediaAssetStatus = activeTab === 'trash' ? 'TRASHED' : 'ACTIVE';
+    const typeParam =
+      typeFilter === 'all' ? null : (typeFilter.toUpperCase() as ApiMediaAssetType);
+
+    const params = new URLSearchParams();
+    params.set('status', status);
+    params.set('limit', '100');
+    params.set('page', '1');
+
+    if (typeParam) params.set('type', typeParam);
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+
+    if (activeTab === 'library' && !searchQuery.trim()) {
+      params.set('folderId', currentFolderId ? currentFolderId : 'root');
+    }
+
+    const data = await requestJson<{ assets: ApiMediaAsset[] }>(`/api/admin/media/assets?${params.toString()}`);
+    const assets = data.assets ?? [];
+
+    if (activeTab === 'trash') {
+      setTrashedMedia(assets.map(mapApiAssetToTrashedMediaItem));
+    } else {
+      setMedia(assets.map(mapApiAssetToMediaItem));
+    }
+
+    setViewState('success');
+  };
+
+  const reloadEverything = async () => {
     setViewState('loading');
-    const timer = setTimeout(() => setViewState('success'), 500);
-    return () => clearTimeout(timer);
+    const [folderList] = await Promise.all([loadAllFolders()]);
+    setFolders(folderList);
+    await loadAssets({ showLoading: false });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setViewState('loading');
+        const folderList = await loadAllFolders();
+        if (cancelled) return;
+        setFolders(folderList);
+        await loadAssets({ showLoading: false });
+      } catch (error) {
+        if (cancelled) return;
+        setNotification({ message: error instanceof Error ? error.message : 'Failed to load media', type: 'error' });
+        setViewState('success');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await loadAssets();
+      } catch (error) {
+        if (cancelled) return;
+        setNotification({ message: error instanceof Error ? error.message : 'Failed to load media', type: 'error' });
+        setViewState('success');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, currentFolderId, searchQuery, typeFilter]);
 
   useEffect(() => {
     setSelectedIds(new Set());
@@ -326,8 +452,16 @@ export function MediaLibrary() {
     setDragOverFolderId(null);
   };
 
-  const moveMediaToFolder = (mediaIds: string[], folderId: string | null) => {
-    setMedia(prev => prev.map(m => (mediaIds.includes(m.id) ? { ...m, folderId } : m)));
+  const moveMediaToFolder = async (mediaIds: string[], folderId: string | null) => {
+    await Promise.all(
+      mediaIds.map(id =>
+        requestJson(`/api/admin/media/assets/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          body: JSON.stringify({ folderId }),
+        }),
+      ),
+    );
+    await loadAssets({ showLoading: false });
   };
 
   const handleFolderDrop = (e: React.DragEvent, targetId: string) => {
@@ -340,67 +474,61 @@ export function MediaLibrary() {
       if (!jsonStr) return;
       const data = JSON.parse(jsonStr) as { mediaIds?: string[] };
       if (!data.mediaIds?.length) return;
-      moveMediaToFolder(data.mediaIds, targetId);
-      setNotification({ message: `${data.mediaIds.length} item${data.mediaIds.length !== 1 ? 's' : ''} moved to folder`, type: 'success' });
-      setSelectedIds(new Set());
+      void (async () => {
+        try {
+          await moveMediaToFolder(data.mediaIds!, targetId);
+          setNotification({
+            message: `${data.mediaIds!.length} item${data.mediaIds!.length !== 1 ? 's' : ''} moved to folder`,
+            type: 'success',
+          });
+          setSelectedIds(new Set());
+        } catch (error) {
+          setNotification({ message: error instanceof Error ? error.message : 'Move failed', type: 'error' });
+        }
+      })();
     } catch {
       setNotification({ message: 'Drop failed', type: 'error' });
     }
   };
 
-  const moveMediaToTrash = (id: string) => {
-    setMedia(prev => {
-      const item = prev.find(m => m.id === id);
-      if (!item) return prev;
-      setTrashedMedia(tPrev => [{ ...item, trashedAt: nowLabel() }, ...tPrev]);
-      return prev.filter(m => m.id !== id);
+  const toggleTrashOrRestore = async (id: string) => {
+    await requestJson(`/api/admin/media/assets/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  };
+
+  const permanentlyDeleteMedia = async (id: string) => {
+    await requestJson(`/api/admin/media/assets/${encodeURIComponent(id)}?permanent=true`, { method: 'DELETE' });
+  };
+
+  const updateMedia = async (id: string, data: { altText: string; caption: string; tags: string[] }) => {
+    await requestJson(`/api/admin/media/assets/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
+    await loadAssets({ showLoading: false });
   };
 
-  const restoreMediaFromTrash = (id: string) => {
-    setTrashedMedia(prev => {
-      const item = prev.find(m => m.id === id);
-      if (!item) return prev;
-      const { trashedAt: _trashedAt, ...restored } = item;
-      setMedia(mPrev => [restored, ...mPrev]);
-      return prev.filter(m => m.id !== id);
+  const renameMedia = async (id: string, newName: string) => {
+    await requestJson(`/api/admin/media/assets/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name: newName }),
     });
+    await loadAssets({ showLoading: false });
   };
 
-  const permanentlyDeleteMedia = (id: string) => {
-    setTrashedMedia(prev => prev.filter(m => m.id !== id));
+  const replaceMedia = () => {
+    setNotification({ message: 'Replace is not supported yet (upload backend required)', type: 'error' });
   };
 
-  const updateMedia = (id: string, data: { altText: string; caption: string; tags: string[] }) => {
-    setMedia(prev => prev.map(m => (m.id === id ? { ...m, ...data } : m)));
-  };
-
-  const renameMedia = (id: string, newName: string) => {
-    setMedia(prev => prev.map(m => (m.id === id ? { ...m, name: newName } : m)));
-  };
-
-  const replaceMedia = (id: string, file: File) => {
-    const newUrl = URL.createObjectURL(file);
-    const newSize = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-    const newType = file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'document';
-    setMedia(prev =>
-      prev.map(m =>
-        m.id === id
-          ? {
-              ...m,
-              name: file.name,
-              url: newUrl,
-              size: newSize,
-              type: newType as MediaItem['type'],
-              uploadedAt: 'Just now',
-            }
-          : m,
+  const bulkUpdateMedia = async (ids: string[], updates: { altText?: string; caption?: string; tags?: string[] }) => {
+    await Promise.all(
+      ids.map(id =>
+        requestJson(`/api/admin/media/assets/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          body: JSON.stringify(updates),
+        }),
       ),
     );
-  };
-
-  const bulkUpdateMedia = (ids: string[], updates: { altText?: string; caption?: string; tags?: string[] }) => {
-    setMedia(prev => prev.map(m => (ids.includes(m.id) ? { ...m, ...updates } : m)));
+    await loadAssets({ showLoading: false });
   };
 
   const handleCopyUrl = (url: string) => {
@@ -414,54 +542,82 @@ export function MediaLibrary() {
   };
 
   const handleSaveDetails = (id: string, data: { altText: string; caption: string; tags: string[] }) => {
-    updateMedia(id, data);
-    setNotification({ message: 'Media details saved successfully', type: 'success' });
+    void (async () => {
+      try {
+        await updateMedia(id, data);
+        setNotification({ message: 'Media details saved successfully', type: 'success' });
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Failed to save details', type: 'error' });
+      }
+    })();
   };
 
   const handleRenameMedia = (id: string, newName: string) => {
-    renameMedia(id, newName);
-    setNotification({ message: 'File renamed successfully', type: 'success' });
-    setDetailsModalItem(prev => (prev ? { ...prev, name: newName } : null));
+    void (async () => {
+      try {
+        await renameMedia(id, newName);
+        setNotification({ message: 'File renamed successfully', type: 'success' });
+        setDetailsModalItem(prev => (prev ? { ...prev, name: newName } : null));
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Rename failed', type: 'error' });
+      }
+    })();
   };
 
   const handleReplaceMedia = (id: string, file: File) => {
-    replaceMedia(id, file);
-    setNotification({ message: 'File replaced successfully', type: 'success' });
-
-    const newUrl = URL.createObjectURL(file);
-    const newSize = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-    const newType = file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'document';
-    setDetailsModalItem(prev =>
-      prev
-        ? { ...prev, name: file.name, url: newUrl, size: newSize, type: newType as any, uploadedAt: 'Just now' }
-        : null,
-    );
+    replaceMedia();
+    void id;
+    void file;
   };
 
   const handleUploadComplete = (files: FileWithMeta[], targetFolderId: string | null) => {
-    const newItems: MediaItem[] = files.map(f => {
-      const finalName = f.isOptimized ? f.file.name.replace(/\.[^/.]+$/, '') + '.webp' : f.file.name;
-      const type: MediaItem['type'] = f.file.type.startsWith('image')
-        ? 'image'
-        : f.file.type.startsWith('video')
-          ? 'video'
-          : 'document';
-      return {
-        id: Math.random().toString(36).slice(2),
-        name: finalName,
-        url: f.preview || 'https://picsum.photos/seed/new/1200/800',
-        type,
-        size: f.optimizedSize || f.originalSize,
-        uploadedAt: 'Just now',
-        dimensions: '1024x1024',
-        altText: f.altText,
-        caption: f.caption,
-        folderId: targetFolderId,
-      };
-    });
+    void (async () => {
+      try {
+        for (const f of files) {
+          const file = f.file;
+          const presigned = await requestJson<{
+            uploadURL: string;
+            objectPath: string;
+            publicUrl: string;
+            metadata: { name: string; size: number; contentType: string; type: ApiMediaAssetType };
+          }>('/api/admin/media/upload', {
+            method: 'POST',
+            body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+          });
 
-    setMedia(prev => [...newItems, ...prev]);
-    setNotification({ message: 'Files uploaded successfully', type: 'success' });
+          const putRes = await fetch(presigned.uploadURL, {
+            method: 'PUT',
+            headers: { 'Content-Type': file.type },
+            body: file,
+          });
+
+          if (!putRes.ok) {
+            throw new Error(`Upload failed (${putRes.status})`);
+          }
+
+          await requestJson('/api/admin/media/assets', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: file.name,
+              url: presigned.publicUrl,
+              s3Key: presigned.objectPath,
+              mimeType: file.type,
+              type: presigned.metadata.type,
+              size: file.size,
+              altText: f.altText,
+              caption: f.caption,
+              tags: [],
+              folderId: targetFolderId,
+            }),
+          });
+        }
+
+        await loadAssets({ showLoading: false });
+        setNotification({ message: 'Files uploaded successfully', type: 'success' });
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Upload failed', type: 'error' });
+      }
+    })();
   };
 
   const initiateDelete = (id: string) => {
@@ -495,56 +651,83 @@ export function MediaLibrary() {
   };
 
   const confirmDelete = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      const idsToProcess = actionItem ? [actionItem] : Array.from(selectedIds);
-      if (activeTab === 'library') {
-        idsToProcess.forEach(id => moveMediaToTrash(id));
-        setNotification({ message: `${idsToProcess.length} item(s) moved to trash`, type: 'success' });
-      } else {
-        idsToProcess.forEach(id => permanentlyDeleteMedia(id));
-        setNotification({ message: `${idsToProcess.length} item(s) permanently deleted`, type: 'success' });
+    void (async () => {
+      setIsProcessing(true);
+      try {
+        const idsToProcess = actionItem ? [actionItem] : Array.from(selectedIds);
+        if (activeTab === 'library') {
+          await Promise.all(idsToProcess.map(id => toggleTrashOrRestore(id)));
+          await loadAssets({ showLoading: false });
+          setNotification({ message: `${idsToProcess.length} item(s) moved to trash`, type: 'success' });
+        } else {
+          await Promise.all(idsToProcess.map(id => permanentlyDeleteMedia(id)));
+          await loadAssets({ showLoading: false });
+          setNotification({ message: `${idsToProcess.length} item(s) permanently deleted`, type: 'success' });
+        }
+
+        setSelectedIds(prev => {
+          const next = new Set(prev);
+          idsToProcess.forEach(id => next.delete(id));
+          return next;
+        });
+        setActionItem(null);
+        setIsDeleteModalOpen(false);
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Delete failed', type: 'error' });
+      } finally {
+        setIsProcessing(false);
       }
-      setSelectedIds(prev => {
-        const next = new Set(prev);
-        idsToProcess.forEach(id => next.delete(id));
-        return next;
-      });
-      setActionItem(null);
-      setIsProcessing(false);
-      setIsDeleteModalOpen(false);
-    }, 500);
+    })();
   };
 
   const confirmRestore = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      const idsToProcess = actionItem ? [actionItem] : Array.from(selectedIds);
-      idsToProcess.forEach(id => restoreMediaFromTrash(id));
-      setNotification({ message: `${idsToProcess.length} item(s) restored`, type: 'success' });
-      setSelectedIds(prev => {
-        const next = new Set(prev);
-        idsToProcess.forEach(id => next.delete(id));
-        return next;
-      });
-      setActionItem(null);
-      setIsProcessing(false);
-      setIsRestoreModalOpen(false);
-    }, 500);
+    void (async () => {
+      setIsProcessing(true);
+      try {
+        const idsToProcess = actionItem ? [actionItem] : Array.from(selectedIds);
+        await Promise.all(idsToProcess.map(id => toggleTrashOrRestore(id)));
+        await loadAssets({ showLoading: false });
+        setNotification({ message: `${idsToProcess.length} item(s) restored`, type: 'success' });
+
+        setSelectedIds(prev => {
+          const next = new Set(prev);
+          idsToProcess.forEach(id => next.delete(id));
+          return next;
+        });
+        setActionItem(null);
+        setIsRestoreModalOpen(false);
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Restore failed', type: 'error' });
+      } finally {
+        setIsProcessing(false);
+      }
+    })();
   };
 
   const confirmMove = (targetFolderId: string | null) => {
     const idsToProcess = Array.from(selectedIds);
-    moveMediaToFolder(idsToProcess, targetFolderId);
-    setNotification({ message: `${idsToProcess.length} item(s) moved`, type: 'success' });
-    setSelectedIds(new Set());
+    void (async () => {
+      try {
+        await moveMediaToFolder(idsToProcess, targetFolderId);
+        setNotification({ message: `${idsToProcess.length} item(s) moved`, type: 'success' });
+        setSelectedIds(new Set());
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Move failed', type: 'error' });
+      }
+    })();
   };
 
   const confirmBulkEdit = (updates: { altText?: string; caption?: string; tags?: string[] }) => {
     const idsToProcess = Array.from(selectedIds);
-    bulkUpdateMedia(idsToProcess, updates);
-    setNotification({ message: `${idsToProcess.length} item(s) updated`, type: 'success' });
-    setSelectedIds(new Set());
+    void (async () => {
+      try {
+        await bulkUpdateMedia(idsToProcess, updates);
+        setNotification({ message: `${idsToProcess.length} item(s) updated`, type: 'success' });
+        setSelectedIds(new Set());
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Bulk update failed', type: 'error' });
+      }
+    })();
   };
 
   const handleCreateFolder = () => {
@@ -570,30 +753,91 @@ export function MediaLibrary() {
 
   const submitFolderForm = () => {
     if (!folderNameInput.trim()) return;
-    if (folderModalMode === 'create') {
-      const newFolder: Folder = {
-        id: Math.random().toString(36).slice(2),
-        name: folderNameInput.trim(),
-        parentId: currentFolderId,
-        type: 'media',
-      };
-      setFolders(prev => [...prev, newFolder]);
-      setNotification({ message: 'Folder created', type: 'success' });
-    } else if (targetFolder) {
-      setFolders(prev => prev.map(f => (f.id === targetFolder.id ? { ...f, name: folderNameInput.trim() } : f)));
-      setNotification({ message: 'Folder renamed', type: 'success' });
-    }
-    setIsFolderModalOpen(false);
+    void (async () => {
+      try {
+        if (folderModalMode === 'create') {
+          await requestJson('/api/admin/media/folders', {
+            method: 'POST',
+            body: JSON.stringify({ name: folderNameInput.trim(), parentId: currentFolderId }),
+          });
+          setNotification({ message: 'Folder created', type: 'success' });
+        } else if (targetFolder) {
+          await requestJson(`/api/admin/media/folders/${encodeURIComponent(targetFolder.id)}`, {
+            method: 'PUT',
+            body: JSON.stringify({ name: folderNameInput.trim() }),
+          });
+          setNotification({ message: 'Folder renamed', type: 'success' });
+        }
+
+        await reloadEverything();
+        setIsFolderModalOpen(false);
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Folder action failed', type: 'error' });
+      }
+    })();
   };
 
   const confirmDeleteFolder = () => {
     if (!folderToDelete) return;
+    void (async () => {
+      try {
+        const folderInfo = await requestJson<{ folder: { id: string; parentId: string | null } }>(
+          `/api/admin/media/folders/${encodeURIComponent(folderToDelete)}`,
+        );
 
-    setMedia(prev => prev.map(m => (m.folderId === folderToDelete ? { ...m, folderId: null } : m)));
-    setFolders(prev => prev.map(f => (f.parentId === folderToDelete ? { ...f, parentId: null } : f)).filter(f => f.id !== folderToDelete));
-    setNotification({ message: 'Folder deleted', type: 'success' });
-    setIsFolderDeleteModalOpen(false);
-    setFolderToDelete(null);
+        const targetParentId = folderInfo.folder.parentId;
+
+        const children = await requestJson<{ folders: ApiMediaFolder[] }>(
+          `/api/admin/media/folders?parentId=${encodeURIComponent(folderToDelete)}`,
+        );
+
+        await Promise.all(
+          (children.folders ?? []).map(child =>
+            requestJson(`/api/admin/media/folders/${encodeURIComponent(child.id)}`, {
+              method: 'PUT',
+              body: JSON.stringify({ parentId: targetParentId }),
+            }),
+          ),
+        );
+
+        for (const status of ['ACTIVE', 'TRASHED'] as ApiMediaAssetStatus[]) {
+          let page = 1;
+          while (true) {
+            const params = new URLSearchParams();
+            params.set('status', status);
+            params.set('folderId', folderToDelete);
+            params.set('limit', '100');
+            params.set('page', String(page));
+            const assetsResp = await requestJson<{ assets: ApiMediaAsset[]; pagination?: { totalPages?: number } }>(
+              `/api/admin/media/assets?${params.toString()}`,
+            );
+            const assets = assetsResp.assets ?? [];
+            if (assets.length === 0) break;
+
+            await Promise.all(
+              assets.map(a =>
+                requestJson(`/api/admin/media/assets/${encodeURIComponent(a.id)}`, {
+                  method: 'PUT',
+                  body: JSON.stringify({ folderId: null }),
+                }),
+              ),
+            );
+
+            const totalPages = assetsResp.pagination?.totalPages ?? 1;
+            if (page >= totalPages) break;
+            page += 1;
+          }
+        }
+
+        await requestJson(`/api/admin/media/folders/${encodeURIComponent(folderToDelete)}`, { method: 'DELETE' });
+        setNotification({ message: 'Folder deleted', type: 'success' });
+        setIsFolderDeleteModalOpen(false);
+        setFolderToDelete(null);
+        await reloadEverything();
+      } catch (error) {
+        setNotification({ message: error instanceof Error ? error.message : 'Folder delete failed', type: 'error' });
+      }
+    })();
   };
 
   const moveFoldersForModal: MoveMediaFolder[] = folders.map(f => ({ id: f.id, name: f.name, parentId: f.parentId }));
@@ -778,6 +1022,10 @@ export function MediaLibrary() {
         <div className="flex flex-col gap-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col gap-2">
+              <h1 className="text-heading-2 text-foreground">
+                {activeTab === 'library' ? 'Media Library' : 'Media Trash'}
+              </h1>
+
               <nav className="flex items-center text-body-small text-muted-foreground overflow-x-auto no-scrollbar whitespace-nowrap">
                 {activeTab === 'library' ? (
                   breadcrumbs.map((crumb, index) => (
@@ -833,7 +1081,7 @@ export function MediaLibrary() {
               <div className="flex bg-surface rounded-input p-1 border border-border shadow-card">
                 <button
                   onClick={() => setActiveTab('library')}
-                  className={`px-3 py-1.5 rounded-button text-button transition-colors transition-shadow transition-transform ${
+                  className={`px-3 py-1.5 rounded-button text-button transition ${
                     activeTab === 'library' ? 'bg-background-alt text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -841,7 +1089,7 @@ export function MediaLibrary() {
                 </button>
                 <button
                   onClick={() => setActiveTab('trash')}
-                  className={`px-3 py-1.5 rounded-button text-button transition-colors transition-shadow transition-transform ${
+                  className={`px-3 py-1.5 rounded-button text-button transition ${
                     activeTab === 'trash'
                       ? 'bg-error/10 text-error border border-error/20'
                       : 'text-muted-foreground hover:text-foreground'
@@ -858,7 +1106,7 @@ export function MediaLibrary() {
                   <button
                     key={type}
                     onClick={() => setTypeFilter(type)}
-                    className={`px-3 py-1.5 text-button rounded-button transition-colors transition-shadow transition-transform capitalize whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-button rounded-button transition capitalize whitespace-nowrap ${
                       typeFilter === type
                         ? 'bg-surface text-foreground shadow-button border border-border'
                         : 'text-muted-foreground hover:bg-surface/50'
@@ -878,7 +1126,7 @@ export function MediaLibrary() {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
+                  className="w-full pl-9 pr-3 py-2 bg-background-alt border border-border rounded-input text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition"
                 />
               </div>
 
@@ -935,7 +1183,7 @@ export function MediaLibrary() {
               <div className="flex bg-surface p-1 rounded-input border border-border shadow-card">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded transition-colors transition-shadow transition-transform ${
+                  className={`p-1.5 rounded transition ${
                     viewMode === 'grid' ? 'bg-background-alt text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -943,7 +1191,7 @@ export function MediaLibrary() {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded transition-colors transition-shadow transition-transform ${
+                  className={`p-1.5 rounded transition ${
                     viewMode === 'list' ? 'bg-background-alt text-foreground' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -993,7 +1241,7 @@ export function MediaLibrary() {
                       onDragOver={e => handleFolderDragOver(e, folder.id)}
                       onDragLeave={handleFolderDragLeave}
                       onDrop={e => handleFolderDrop(e, folder.id)}
-                      className={`group relative flex flex-col p-4 bg-surface border rounded-card cursor-pointer transition-colors transition-shadow transition-transform hover:shadow-card ${
+                      className={`group relative flex flex-col p-4 bg-surface border rounded-card cursor-pointer transition hover:shadow-card ${
                         dragOverFolderId === folder.id
                           ? 'border-accent ring-2 ring-accent/30 bg-accent/10'
                           : 'border-border hover:border-accent/40'
@@ -1075,7 +1323,7 @@ export function MediaLibrary() {
                       return (
                         <div
                           key={item.id}
-                          className={`group relative bg-surface border rounded-card shadow-card hover:shadow-modal transition-colors transition-shadow transition-transform cursor-pointer flex flex-col ${
+                          className={`group relative bg-surface border rounded-card shadow-card hover:shadow-modal transition cursor-pointer flex flex-col ${
                             isSelected ? 'ring-2 ring-accent/40 border-accent/40' : 'border-border'
                           }`}
                           onClick={() => handleItemClick(item as MediaItem)}
@@ -1098,10 +1346,12 @@ export function MediaLibrary() {
 
                           <div className="aspect-square bg-background-alt relative overflow-hidden flex items-center justify-center rounded-t-card">
                             {item.type === 'image' ? (
-                              <img
+                              <Image
                                 src={item.url}
                                 alt={item.name}
-                                className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500"
+                                fill
+                                sizes={`${thumbnailSize}px`}
+                                className="object-cover transition-transform group-hover:scale-105 duration-500"
                               />
                             ) : item.type === 'video' ? (
                               <video
@@ -1214,9 +1464,9 @@ export function MediaLibrary() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
-                                  <div className="h-10 w-10 flex-shrink-0 mr-4 bg-background-alt rounded-input flex items-center justify-center overflow-hidden border border-border">
+                                  <div className="h-10 w-10 flex-shrink-0 mr-4 bg-background-alt rounded-input flex items-center justify-center overflow-hidden border border-border relative">
                                     {item.type === 'image' ? (
-                                      <img className="h-full w-full object-cover" src={item.url} alt="" />
+                                      <Image src={item.url} alt={item.name} fill sizes="40px" className="object-cover" />
                                     ) : (
                                       <FileIcon type={item.type} className="w-5 h-5" />
                                     )}

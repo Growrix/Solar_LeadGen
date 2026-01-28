@@ -16,8 +16,11 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ke
     const { key: keySegments } = await context.params;
     const key = decodeKeyPath(keySegments || []);
 
-    // Safety: only allow reading News Engine OG images.
-    if (!key.startsWith('news-engine/og-images/')) {
+    // Safety: only allow reading specific public asset prefixes.
+    // - News Engine OG images
+    // - Blog/Media Library uploads
+    const isAllowed = key.startsWith('news-engine/og-images/') || key.startsWith('media/');
+    if (!isAllowed) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 

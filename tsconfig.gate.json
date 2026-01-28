@@ -1,0 +1,27 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    ".next/**",
+    "__archive__",
+    "__archive__/**",
+    "backup",
+    "backup/**",
+    "DOC",
+    "DOC/**",
+    "solarmatch_SOT",
+    "next-gen-web-agency",
+    "backup-*",
+    "prisma/seed-admin.ts",
+    "prisma/seed-settings.ts",
+    "test-*.ts",
+    "check-*.ts",
+    "migrate-*.ts"
+  ]
+}

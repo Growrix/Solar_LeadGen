@@ -17,22 +17,30 @@ import { test, expect, Page } from '@playwright/test';
 // Test user credentials
 const ADMIN_CREDENTIALS = {
   email: 'admin@solarmatch.com',
-  password: 'Admin123!@#'
+  password: 'Admin123!Secure'
 };
 
 const HOMEOWNER_CREDENTIALS = {
-  email: 'homeowner.test@example.com',
-  password: 'Homeowner123!@#'
+  email: 'homeowner@test.com',
+  password: 'homeowner123'
 };
 
 const INSTALLER_CREDENTIALS = {
-  email: 'installer.test@example.com',
-  password: 'Installer123!@#'
+  email: 'mohammad@installer.com',
+  password: 'installer123'
 };
 
 // Helper: Login function
 async function login(page: Page, email: string, password: string, role: 'admin' | 'installer' | 'homeowner') {
-  await page.goto('/login');
+  if (role === 'admin') {
+    await page.request.post('/api/fix-admin');
+  } else if (role === 'installer') {
+    await page.request.post('/api/fix-installer');
+  } else {
+    await page.request.post('/api/fix-homeowner');
+  }
+
+  await page.goto(`/login?role=${role}`);
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await page.click('button[type="submit"]');

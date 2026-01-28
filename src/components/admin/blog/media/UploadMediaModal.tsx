@@ -182,7 +182,7 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`
-                border-2 border-dashed rounded-card p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors transition-shadow transition-transform
+                border-2 border-dashed rounded-card p-8 flex flex-col items-center justify-center text-center cursor-pointer transition
                 ${isDragging 
                   ? 'border-primary/50 bg-primary/5' 
                   : 'border-border hover:border-primary/40 hover:bg-background-alt'}
@@ -267,6 +267,8 @@ export function UploadMediaModal({ isOpen, onClose, onUpload, folders, defaultFo
                   <div key={fileItem.id} className="flex gap-4 p-3 bg-surface border border-border rounded-card shadow-sm">
                     <div className="w-16 h-16 bg-muted rounded-card flex-shrink-0 overflow-hidden flex items-center justify-center border border-border relative">
                       {fileItem.preview ? (
+                        // next/image does not support blob: URLs reliably; use <img> for local previews.
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={fileItem.preview} alt="preview" className="w-full h-full object-cover" />
                       ) : (
                         <FileIcon className="w-8 h-8 text-muted-foreground" />

@@ -118,7 +118,7 @@ export function ManageTaxonomyModal({
               value={name}
               onChange={handleNameChange}
               placeholder={`e.g. ${type === 'Category' ? 'Industry News' : 'Solar'}`}
-              className="w-full px-3 py-2 border border-border rounded-input bg-background-alt text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
+              className="w-full px-3 py-2 border border-border rounded-input bg-background-alt text-body-small text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition"
               autoFocus
             />
           </div>
@@ -134,7 +134,7 @@ export function ManageTaxonomyModal({
                 value={slug}
                 onChange={handleSlugChange}
                 placeholder="url-friendly-slug"
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-input bg-background-alt text-body-small text-foreground font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform"
+                className="w-full pl-9 pr-3 py-2 border border-border rounded-input bg-background-alt text-body-small text-foreground font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition"
               />
             </div>
             <p className="mt-1 text-caption text-foreground-muted">

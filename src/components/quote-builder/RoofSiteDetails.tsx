@@ -1,9 +1,21 @@
 'use client'
 
 import React from 'react';
-import { Home, Upload } from 'lucide-react';
+import { Home, Info, Upload } from 'lucide-react';
 import { ROOF_TYPES, ORIENTATIONS, SHADING_LEVELS, PHASE_TYPES } from './Presets';
 import Button from '@/components/ui/button';
+
+function TooltipInfo({ testId, text }: { testId: string; text: string }) {
+  return (
+    <span className="relative inline-flex items-center group" tabIndex={0} data-testid={testId}>
+      <Info className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+      <span className="sr-only">Info</span>
+      <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border bg-background px-3 py-2 text-body-small text-foreground shadow-neu-outset opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+        {text}
+      </span>
+    </span>
+  );
+}
 
 interface RoofSiteDetailsProps {
   roofType: string;
@@ -99,8 +111,9 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
         </div>
 
         <div>
-          <label className="text-label text-foreground block mb-2">
+          <label className="text-label text-foreground mb-2 flex items-center gap-2">
             Roof Pitch (degrees)
+            <TooltipInfo testId="tooltip-pitch" text="Optimal pitch is typically 20-30° for most Australian locations." />
           </label>
           <input
             type="number"
@@ -130,8 +143,12 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
 
       {/* Row 2: Orientations (Multi-select chips) */}
       <div>
-        <label className="text-label text-foreground block mb-3">
+        <label className="text-label text-foreground mb-3 flex items-center gap-2">
           Array Orientations
+          <TooltipInfo
+            testId="tooltip-orientation"
+            text="North-facing panels typically generate 100% efficiency; East/West may reduce output depending on shading and roof layout."
+          />
         </label>
         <div className="flex flex-wrap gap-2">
           {ORIENTATIONS.map((orientation) => (
@@ -151,8 +168,12 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
 
       {/* Row 3: Shading Level */}
       <div>
-        <label className="text-label text-foreground block mb-2">
+        <label className="text-label text-foreground mb-2 flex items-center gap-2">
           Shading Level
+          <TooltipInfo
+            testId="tooltip-shading"
+            text="Minimal: ~10% shading; Moderate: ~25% shading; Heavy: ~40% shading. Consider optimizers or array design changes if shading is high."
+          />
         </label>
         <select
           value={shadingLevel}

@@ -35,7 +35,7 @@ export function ConfirmationModal({
         onClick={!isLoading ? onClose : undefined}
       />
 
-      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-md overflow-hidden transform transition-colors transition-shadow transition-transform scale-100 opacity-100">
+      <div className="relative bg-surface rounded-modal shadow-modal w-full max-w-md overflow-hidden transform transition scale-100 opacity-100">
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div
@@ -79,7 +79,7 @@ export function ConfirmationModal({
             type="button"
             disabled={isLoading}
             onClick={onConfirm}
-            className={`w-full sm:w-auto px-4 py-2 rounded-button text-button flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors transition-shadow transition-transform disabled:opacity-70 disabled:cursor-not-allowed ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-button text-button flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 transition disabled:opacity-70 disabled:cursor-not-allowed ${
               isDestructive
                 ? 'bg-error hover:bg-error/90 text-error-foreground'
                 : 'bg-primary hover:bg-primary-hover text-background'

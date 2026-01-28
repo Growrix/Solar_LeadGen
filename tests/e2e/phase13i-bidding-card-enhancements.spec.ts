@@ -25,7 +25,8 @@ const INSTALLER_CREDENTIALS = {
  * Helper: Login as user
  */
 async function login(page: Page, email: string, password: string) {
-  await page.goto('/auth/signin');
+  await page.request.post('/api/fix-homeowner');
+  await page.goto('/login?role=homeowner');
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);
   await page.click('button[type="submit"]');
@@ -233,8 +234,9 @@ test.describe('Phase 13I-B: Review Modal Installer Contact Unmasking', () => {
 test.describe('Phase 13I-C: Installer Button Fix', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Login as installer
-    await page.goto('/auth/signin');
+    // Ensure deterministic E2E installer + login
+    await page.request.post('/api/fix-installer');
+    await page.goto('/login?role=installer');
     await page.fill('input[name="email"]', INSTALLER_CREDENTIALS.email);
     await page.fill('input[name="password"]', INSTALLER_CREDENTIALS.password);
     await page.click('button[type="submit"]');

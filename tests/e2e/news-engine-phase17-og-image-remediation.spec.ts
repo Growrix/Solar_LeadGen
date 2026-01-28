@@ -107,9 +107,9 @@ test.describe('News Engine Phase 17 OG Image Remediation', () => {
     await page.getByRole('button', { name: 'Close review' }).waitFor();
 
     await page.getByRole('button', { name: 'SEO & Compliance' }).click();
-    await page.locator('input[placeholder="https://..."]').waitFor({ timeout: 45000 });
-
     const overrideInput = page.locator('input[placeholder="https://..."]');
+    await overrideInput.scrollIntoViewIfNeeded();
+    await expect(overrideInput).toBeVisible({ timeout: 45000 });
 
     // Phase 17 requirement: initial OG URL should auto-ingest into stable storage.
     await expect(overrideInput).toHaveValue(/\/api\/public\/news-engine\/s3\/|news-engine\/og-images\//, { timeout: 45000 });
@@ -123,9 +123,10 @@ test.describe('News Engine Phase 17 OG Image Remediation', () => {
 
     // Publish via UI (confirmation modal).
     const publishNow = page.getByRole('button', { name: 'Publish Now' });
+    await publishNow.scrollIntoViewIfNeeded();
     await publishNow.click();
 
-    await page.getByRole('heading', { name: 'Confirm Live Publication' }).waitFor();
+    await expect(page.getByRole('heading', { name: 'Confirm Live Publication' })).toBeVisible({ timeout: 15000 });
 
     const publishRespPromise = page.waitForResponse(
       (r) => r.url().includes(`/api/admin/news-engine/items/${encodeURIComponent(htmlOgItemId)}/publish-now`) && r.request().method() === 'POST'
@@ -157,9 +158,9 @@ test.describe('News Engine Phase 17 OG Image Remediation', () => {
     await page.getByRole('button', { name: 'Close review' }).waitFor();
 
     await page.getByRole('button', { name: 'SEO & Compliance' }).click();
-    await page.locator('input[placeholder="https://..."]').waitFor({ timeout: 15000 });
-
     const overrideInput = page.locator('input[placeholder="https://..."]');
+    await overrideInput.scrollIntoViewIfNeeded();
+    await expect(overrideInput).toBeVisible({ timeout: 15000 });
     await overrideInput.fill(`${baseUrl()}/api/e2e/test-image`);
 
     // Manual ingest path remains and must work.
@@ -170,9 +171,10 @@ test.describe('News Engine Phase 17 OG Image Remediation', () => {
     await expect(page.getByText(/Approved\s/i)).toBeVisible({ timeout: 15000 });
 
     const publishNow = page.getByRole('button', { name: 'Publish Now' });
+    await publishNow.scrollIntoViewIfNeeded();
     await publishNow.click();
 
-    await page.getByRole('heading', { name: 'Confirm Live Publication' }).waitFor();
+    await expect(page.getByRole('heading', { name: 'Confirm Live Publication' })).toBeVisible({ timeout: 15000 });
 
     const publishRespPromise = page.waitForResponse(
       (r) => r.url().includes(`/api/admin/news-engine/items/${encodeURIComponent(overrideItemId)}/publish-now`) && r.request().method() === 'POST'
@@ -195,9 +197,9 @@ test.describe('News Engine Phase 17 OG Image Remediation', () => {
     await page.getByRole('button', { name: 'Close review' }).waitFor();
 
     await page.getByRole('button', { name: 'SEO & Compliance' }).click();
-    await page.locator('input[placeholder="https://..."]').waitFor({ timeout: 15000 });
-
     const overrideInput = page.locator('input[placeholder="https://..."]');
+    await overrideInput.scrollIntoViewIfNeeded();
+    await expect(overrideInput).toBeVisible({ timeout: 15000 });
 
     await page.getByRole('button', { name: 'Find free image' }).click();
     await expect(overrideInput).toHaveValue(/\/api\/public\/news-engine\/s3\/|news-engine\/og-images\//, { timeout: 45000 });

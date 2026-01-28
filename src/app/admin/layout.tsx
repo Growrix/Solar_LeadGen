@@ -6,6 +6,8 @@ import AdminMobileSidebarMenu from '@/components/AdminMobileSidebarMenu';
 import AdminBottomNavBar from '@/components/AdminBottomNavBar';
 import AdminHeader from '@/components/AdminHeader';
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname() ?? '';
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);

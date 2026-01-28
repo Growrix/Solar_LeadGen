@@ -1,7 +1,38 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+const ADMIN_CREDENTIALS = {
+  email: 'admin@solarmatch.com',
+  password: 'Admin123!Secure',
+};
+
+async function loginAdmin(page: Page) {
+  await page.request.post('/api/fix-admin');
+
+  const csrfResp = await page.request.get('/api/auth/csrf');
+  expect(csrfResp.ok()).toBeTruthy();
+  const csrf = (await csrfResp.json()) as { csrfToken?: string };
+  expect(csrf.csrfToken).toBeTruthy();
+
+  const callbackResp = await page.request.post('/api/auth/callback/credentials', {
+    form: {
+      csrfToken: csrf.csrfToken ?? '',
+      email: ADMIN_CREDENTIALS.email,
+      password: ADMIN_CREDENTIALS.password,
+      role: 'ADMIN',
+      callbackUrl: '/admin/dashboard',
+      json: 'true',
+    },
+  });
+  expect(callbackResp.status()).toBeLessThan(400);
+
+  const sessionResp = await page.request.get('/api/auth/session');
+  expect(sessionResp.ok()).toBeTruthy();
+  const session = (await sessionResp.json()) as any;
+  expect(session?.user?.role).toBe('ADMIN');
+}
 
 test.describe('Quote Limit Email Notifications', () => {
   let homeownerId: string;
@@ -43,32 +74,20 @@ test.describe('Quote Limit Email Notifications', () => {
     await prisma.$disconnect();
   });
 
-  test('Admin increases quote limit → Homeowner receives email', async () => {
+  test('Admin increases quote limit → Homeowner receives email', async ({ page }) => {
+    await loginAdmin(page);
+
     // Step 1: Simulate admin API call to increase quote limit
-    const response = await fetch('http://localhost:3000/api/admin/homeowners/'+homeownerId+'/lead-limit', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await page.request.patch(`/api/admin/homeowners/${homeownerId}/lead-limit`, {
+      data: {
         quoteLimit: 10,
         notify: true,
         reason: 'Test - Increasing limit for E2E test',
-      }),
-      // Note: In real test, you'd need to authenticate as admin
-      // For this test, we're assuming the endpoint is accessible
+      },
     });
 
-    console.log(`API Response Status: ${response.status}`);
-
-    // For this test to work, you need admin authentication
-    // If 403, skip email verification (test would need proper auth setup)
-    if (response.status === 403) {
-      console.warn('⚠️ Test skipped: Admin authentication required');
-      return;
-    }
-
-    expect(response.status).toBe(200);
+    console.log(`API Response Status: ${response.status()}`);
+    expect(response.status()).toBe(200);
 
     const data = await response.json();
     console.log('API Response:', JSON.stringify(data, null, 2));
@@ -87,7 +106,8 @@ test.describe('Quote Limit Email Notifications', () => {
     expect(emailLog).not.toBeNull();
     expect(emailLog?.status).toBe('SENT');
     expect(emailLog?.provider).toBe('sendgrid');
-    expect(emailLog?.messageType).toBe('notification');
+    // This is a system-generated transactional email (not a marketing notification).
+    expect(emailLog?.messageType).toBe('transactional');
 
     // Step 3: Verify internal notification was created
     const notification = await prisma.notification.findFirst({
@@ -112,28 +132,20 @@ test.describe('Quote Limit Email Notifications', () => {
     });
   });
 
-  test('Admin increases bidding limit → Homeowner receives email', async () => {
+  test('Admin increases bidding limit → Homeowner receives email', async ({ page }) => {
+    await loginAdmin(page);
+
     // Step 1: Simulate admin API call to increase bidding limit
-    const response = await fetch(`http://localhost:3000/api/admin/homeowners/${homeownerId}/bidding-limit`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await page.request.patch(`/api/admin/homeowners/${homeownerId}/bidding-limit`, {
+      data: {
         biddingLimit: 3,
         notify: true,
         reason: 'Test - Increasing bidding limit for E2E test',
-      }),
+      },
     });
 
-    console.log(`API Response Status: ${response.status}`);
-
-    if (response.status === 403) {
-      console.warn('⚠️ Test skipped: Admin authentication required');
-      return;
-    }
-
-    expect(response.status).toBe(200);
+    console.log(`API Response Status: ${response.status()}`);
+    expect(response.status()).toBe(200);
 
     const data = await response.json();
     console.log('API Response:', JSON.stringify(data, null, 2));
@@ -194,31 +206,24 @@ test.describe('Quote Limit Email Notifications', () => {
     console.log('Notification Route Key:', notification?.routeKey);
   });
 
-  test('No email sent when notify=false', async () => {
+  test('No email sent when notify=false', async ({ page }) => {
+    await loginAdmin(page);
+
     // Step 1: Get current email log count
     const beforeCount = await prisma.emailDelivery.count({
       where: { recipientEmail: homeownerEmail },
     });
 
     // Step 2: Direct API call with notify=false
-    const response = await fetch(`http://localhost:3000/api/admin/homeowners/${homeownerId}/lead-limit`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await page.request.patch(`/api/admin/homeowners/${homeownerId}/lead-limit`, {
+      data: {
         quoteLimit: 15,
         notify: false, // ← KEY: notify=false
         reason: 'Test - No notification requested',
-      }),
+      },
     });
 
-    if (response.status === 403) {
-      console.warn('⚠️ Test skipped: Admin authentication required');
-      return;
-    }
-
-    expect(response.status).toBe(200);
+    expect(response.status()).toBe(200);
 
     // Step 3: Verify NO new email was sent
     const afterCount = await prisma.emailDelivery.count({

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         where,
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { id: true, name: true, email: true } },
+          user: { select: { id: true, name: true, email: true, role: true } },
           _count: { select: { posts: true } },
         },
       }),
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         ...(body.userId ? { user: { connect: { id: body.userId } } } : {}),
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, role: true } },
         _count: { select: { posts: true } },
       },
     });

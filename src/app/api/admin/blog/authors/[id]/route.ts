@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const author = await prisma.blogAuthor.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, role: true } },
         posts: {
           orderBy: { createdAt: 'desc' },
           take: 10,
@@ -125,7 +125,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           : {}),
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, role: true } },
         _count: { select: { posts: true } },
       },
     });

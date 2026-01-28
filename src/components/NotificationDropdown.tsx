@@ -461,12 +461,16 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative dashboard-header__action-btn"
+        data-testid="notification-bell"
         aria-label="Notifications"
         aria-expanded={isOpen}
       >
         <BellIcon className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-caption text-foreground ring-2 ring-surface">
+          <span
+            className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-caption text-foreground ring-2 ring-surface"
+            data-testid="notification-badge"
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -479,6 +483,7 @@ export function NotificationDropdown({ className }: NotificationDropdownProps) {
           role="dialog"
           aria-label="Notifications panel"
           aria-live="polite"
+          data-testid="notification-center"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border p-4 bg-surface">
@@ -597,6 +602,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
           ? 'bg-surface border-l-4 border-primary hover:shadow-card hover:scale-[1.01]' 
           : 'bg-surface opacity-70 hover:opacity-90'
       }`}
+      data-testid="notification-item"
     >
       <div className="p-4">
         <div className="flex gap-3">
@@ -610,7 +616,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
             {/* T356: Title + Type Badge (hidden for homeowners) + Timestamp */}
             <div className="flex justify-between items-start gap-2 mb-1">
               <div className="flex items-center gap-2 flex-1">
-                <h4 className="text-heading-4 text-foreground">
+                <h4 className="text-heading-4 text-foreground" data-testid="notification-title">
                   {notification.title}
                 </h4>
                 {/* Only show type badge for Admin and Installer - hide for Homeowners */}
@@ -626,7 +632,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
             </div>
 
             {/* Message (full text, no truncation) */}
-            <p className="text-body-small text-foreground-secondary mb-3">
+            <p className="text-body-small text-foreground-secondary mb-3" data-testid="notification-message">
               {notification.message}
             </p>
 

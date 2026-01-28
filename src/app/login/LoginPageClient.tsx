@@ -6,8 +6,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 type Role = 'admin' | 'installer' | 'homeowner' | '';
 
+function roleToAuthRole(role: Role): string | undefined {
+  if (!role) return undefined;
+  return role.toUpperCase();
+}
+
 function callbackUrlForRole(role: Role): string {
-  if (role === 'admin') return '/admin';
+  if (role === 'admin') return '/admin/dashboard';
   if (role === 'installer') return '/installer/dashboard';
   if (role === 'homeowner') return '/homeowner/dashboard';
   return '/';
@@ -36,28 +41,21 @@ export default function LoginPageClient() {
     setSubmitting(true);
     setError(null);
 
+    // Use redirect flow so NextAuth can set cookies and navigate server-side.
+    // This is more reliable in E2E and avoids client-side navigation edge cases.
     const result = await signIn('credentials', {
-      redirect: false,
       email,
       password,
-      // If a role is supplied, enforce role-specific login server-side.
-      ...(role ? { role } : {}),
+      ...(role ? { role: roleToAuthRole(role) } : {}),
       callbackUrl,
     });
 
+    // With redirect enabled (default), NextAuth will navigate away on success.
+    // If it returns a result with an error, show it.
     setSubmitting(false);
-
-    if (!result) {
-      setError('Login failed');
-      return;
-    }
-
-    if (result.error) {
+    if (result?.error) {
       setError(result.error);
-      return;
     }
-
-    router.push(result.url || callbackUrl);
   }
 
   return (

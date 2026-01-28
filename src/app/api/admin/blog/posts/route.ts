@@ -77,6 +77,7 @@ export async function GET(request: NextRequest) {
       orderBy: { updatedAt: 'desc' },
       include: {
         author: { select: { id: true, name: true, email: true } },
+        blogAuthor: { select: { id: true, name: true, email: true, avatarUrl: true } },
         category: { select: { id: true, name: true, slug: true } },
         tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
       },
@@ -108,6 +109,8 @@ export async function GET(request: NextRequest) {
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         author: p.author,
+        blogAuthorId: p.blogAuthorId,
+        blogAuthor: p.blogAuthor,
         category: p.category,
         tags: p.tags.map((t) => t.tag),
       })),
@@ -161,6 +164,14 @@ export async function POST(request: NextRequest) {
     const categoryName = normalizeString(body.category).trim();
     const tags = normalizeStringArray(body.tags);
 
+    const blogAuthorId = normalizeString(body.blogAuthorId).trim();
+    if (blogAuthorId) {
+      const exists = await prisma.blogAuthor.findUnique({ where: { id: blogAuthorId } });
+      if (!exists) {
+        return NextResponse.json({ error: 'Invalid blogAuthorId' }, { status: 400 });
+      }
+    }
+
     const status = normalizeStatus(body.status) ?? 'DRAFT';
     const scheduledFor = parseNullableDate(body.scheduledFor);
 
@@ -182,6 +193,7 @@ export async function POST(request: NextRequest) {
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
         archivedAt: status === 'ARCHIVED' ? new Date() : null,
         author: { connect: { id: auth.userId } },
+        ...(blogAuthorId ? { blogAuthor: { connect: { id: blogAuthorId } } } : {}),
         ...(categoryName
           ? {
               category: {
@@ -208,6 +220,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         author: { select: { id: true, name: true, email: true } },
+        blogAuthor: { select: { id: true, name: true, email: true, avatarUrl: true } },
         category: { select: { id: true, name: true, slug: true } },
         tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
       },

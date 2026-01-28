@@ -56,6 +56,7 @@ export async function GET(
       where: { id },
       include: {
         author: { select: { id: true, name: true, email: true } },
+        blogAuthor: { select: { id: true, name: true, email: true, avatarUrl: true } },
         category: { select: { id: true, name: true, slug: true } },
         tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
       },
@@ -114,6 +115,15 @@ export async function PATCH(
     const categoryName = body.category !== undefined ? normalizeString(body.category).trim() : undefined;
     const tags = body.tags !== undefined ? normalizeStringArray(body.tags) : undefined;
 
+    const blogAuthorId = body.blogAuthorId !== undefined ? normalizeString(body.blogAuthorId).trim() : undefined;
+
+    if (blogAuthorId !== undefined && blogAuthorId) {
+      const exists = await prisma.blogAuthor.findUnique({ where: { id: blogAuthorId } });
+      if (!exists) {
+        return NextResponse.json({ error: 'Invalid blogAuthorId' }, { status: 400 });
+      }
+    }
+
     if (computedSlug) {
       const existing = await prisma.blogPost.findUnique({ where: { slug: computedSlug } });
       if (existing && existing.id !== id) {
@@ -130,6 +140,11 @@ export async function PATCH(
         ...(body.content !== undefined ? { content: normalizeString(body.content) } : {}),
         ...(body.coverImageUrl !== undefined ? { coverImageUrl: normalizeString(body.coverImageUrl) } : {}),
         ...(body.readTime !== undefined ? { readTime: normalizeString(body.readTime) } : {}),
+        ...(blogAuthorId !== undefined
+          ? blogAuthorId
+            ? { blogAuthor: { connect: { id: blogAuthorId } } }
+            : { blogAuthor: { disconnect: true } }
+          : {}),
         ...(nextStatus
           ? {
               status: nextStatus,
@@ -176,6 +191,7 @@ export async function PATCH(
       },
       include: {
         author: { select: { id: true, name: true, email: true } },
+        blogAuthor: { select: { id: true, name: true, email: true, avatarUrl: true } },
         category: { select: { id: true, name: true, slug: true } },
         tags: { include: { tag: { select: { id: true, name: true, slug: true } } } },
       },

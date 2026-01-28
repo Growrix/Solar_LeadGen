@@ -5,7 +5,7 @@ interface AuthorInput {
   email: string;
   bio?: string;
   avatarUrl?: string;
-  socialLinks?: Record<string, string>;
+  socialLinks?: Record<string, string> | null;
 }
 
 interface Author {

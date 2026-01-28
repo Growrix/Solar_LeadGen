@@ -67,15 +67,18 @@ export function AutomationLogicTabV6({
     blackoutDates?: string[];
   };
 
-  const dayDefs: Array<{ key: DayKey; label: string; jsDay: number }> = [
-    { key: 'mon', label: 'Mon', jsDay: 1 },
-    { key: 'tue', label: 'Tue', jsDay: 2 },
-    { key: 'wed', label: 'Wed', jsDay: 3 },
-    { key: 'thu', label: 'Thu', jsDay: 4 },
-    { key: 'fri', label: 'Fri', jsDay: 5 },
-    { key: 'sat', label: 'Sat', jsDay: 6 },
-    { key: 'sun', label: 'Sun', jsDay: 0 },
-  ];
+  const dayDefs = React.useMemo<Array<{ key: DayKey; label: string; jsDay: number }>>(
+    () => [
+      { key: 'mon', label: 'Mon', jsDay: 1 },
+      { key: 'tue', label: 'Tue', jsDay: 2 },
+      { key: 'wed', label: 'Wed', jsDay: 3 },
+      { key: 'thu', label: 'Thu', jsDay: 4 },
+      { key: 'fri', label: 'Fri', jsDay: 5 },
+      { key: 'sat', label: 'Sat', jsDay: 6 },
+      { key: 'sun', label: 'Sun', jsDay: 0 },
+    ],
+    []
+  );
 
   const makeId = React.useCallback(() => {
     return `${Date.now()}_${Math.random().toString(16).slice(2)}`;

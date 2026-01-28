@@ -4,11 +4,25 @@ import bcrypt from"bcryptjs";
 import { prisma } from"@/lib/prisma";
 import { getSettingAsNumber } from"@/lib/services/settings-service";
 
+function normalizeRole(role?: string | null): string | undefined {
+  if (!role) return undefined;
+  const trimmed = String(role).trim();
+  if (!trimmed) return undefined;
+  return trimmed.toUpperCase();
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [CredentialsProvider({
     name:"credentials",
     credentials: { email: { label:"Email", type:"email" }, password: { label:"Password", type:"password" }, role: { label:"Role", type:"text" } },
     async authorize(credentials) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[NextAuth] authorize attempt', {
+          email: credentials?.email,
+          role: (credentials as any)?.role,
+        });
+      }
+
       if (!credentials?.email || !credentials?.password) throw new Error("Invalid credentials");
       
       const user = await prisma.user.findUnique({
@@ -37,9 +51,17 @@ export const authOptions: NextAuthOptions = {
       if (!user.isActive) throw new Error("Account deactivated");
 
       // Enforce role-specific login when provided by role pages
-      const expectedRole = (credentials as any).role as string | undefined;
+      const expectedRole = normalizeRole((credentials as any).role as string | undefined);
       if (expectedRole && user.role !== expectedRole) {
         throw new Error("Invalid login page for this account");
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[NextAuth] authorize success', {
+          email: user.email,
+          role: user.role,
+          expectedRole: expectedRole ?? null,
+        });
       }
 
       prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() }, select: { id: true } }).catch(console.error);
@@ -77,13 +99,16 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60,
   },
   pages: { 
-    signIn:"/",
-    error:"/admin",
+    signIn: "/login",
+    error: "/login",
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       // On sign in, add user data to token
       if (user) { 
+        // Ensure a stable subject for JWT-based sessions.
+        // Some NextAuth internals/middleware expect `sub` to be present.
+        token.sub = token.sub ?? user.id;
         token.id = user.id;
         token.role = user.role || 'HOMEOWNER';
         token.email = user.email || '';
@@ -97,30 +122,10 @@ export const authOptions: NextAuthOptions = {
         token.sessionVersion = (user as any).sessionVersion ?? 0; // Auth Part A+B
         token.profileComplete = (user as any).profileComplete ?? false; // Auth Part A+B
       } else if ((token.quoteLimit === undefined || token.quoteLimit === null) && token.id) {
-        try {
-          const refreshedUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
-            select: {
-              leadSubmissionLimit: true,
-              sessionVersion: true, // Auth Part A+B: check for session invalidation
-              profileComplete: true, // Auth Part A+B
-            },
-          });
-
-          if (refreshedUser) {
-            token.quoteLimit = refreshedUser.leadSubmissionLimit ?? 5;
-            // Auth Part A+B: Invalidate session if version mismatch (password reset)
-            if (refreshedUser.sessionVersion !== token.sessionVersion) {
-              console.log('[NextAuth] Session version mismatch - forcing logout');
-              return null as any; // Force logout
-            }
-            token.sessionVersion = refreshedUser.sessionVersion;
-            token.profileComplete = refreshedUser.profileComplete;
-          }
-        } catch (refreshError) {
-          console.error('[NextAuth] Failed to refresh user data from database:', refreshError);
-          token.quoteLimit = 5;
-        }
+        // Legacy / partial tokens: default the quoteLimit without hitting the DB.
+        // This keeps `next build` (and any DB-less environments) from attempting
+        // Prisma queries from inside auth callbacks.
+        token.quoteLimit = 5;
       }
 
       // Handle session updates (for phone number changes, verification status, etc.)
@@ -151,7 +156,7 @@ export const authOptions: NextAuthOptions = {
       // CRITICAL: Always return ONLY the fields we want
       // This prevents NextAuth from accumulating garbage data
       return {
-        sub: token.sub,
+        sub: (token.sub as string | undefined) ?? (token.id as string | undefined),
         id: token.id,
         role: token.role,
         email: token.email,

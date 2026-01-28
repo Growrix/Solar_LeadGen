@@ -378,3 +378,44 @@ description: "Task list for BLOG pixel-perfect prototype migration"
 
 **Checkpoint:** All tests passing; validation complete.
 
+---
+
+## Phase B6: Storage Decoupling (No “replit”) (Surgical)
+
+**Purpose:** Remove all “replit”-named code/paths and switch Media Library uploads to neutral storage while preserving functionality.
+
+**Primary Audit (SOT for this phase):**
+- `DOC/Features/BLOG/Audit Report/STORAGE-DECOUPLING-E2E-AUDIT-2026-01-27.md`
+
+**Scope:**
+- Media upload presign endpoint only: `src/app/api/admin/media/upload/route.ts`
+- Removal of unused legacy artifacts: `src/lib/replit_integrations/**`, `.replit_integration_files/**`, `replit.md`
+- Config cleanup where it references deleted paths (e.g. `tsconfig.json` excludes)
+
+**Non-goals:**
+- No DB schema renames/migrations (keep `MediaAsset.s3Key` as-is)
+- No changes to Media Library UI upload flow (still POST presign → PUT upload → POST asset)
+
+- [ ] TB060 [P] Add a safety baseline commit (docs only) before code changes
+        - Include: the new audit report + this phase entry
+
+- [ ] TB061 Update Media upload presign to use S3 helpers (no “replit” references)
+        - File: `src/app/api/admin/media/upload/route.ts`
+        - Use: `getPresignedUploadUrl()` + `getPublicUrlForKey()` from `src/lib/s3.ts`
+        - Keep dev-local fallback (`ALLOW_LOCAL_MEDIA_UPLOADS=true` in non-production)
+
+- [ ] TB062 Remove all “replit”-named code and artifacts
+        - Delete: `src/lib/replit_integrations/**`
+        - Delete: `.replit_integration_files/**`
+        - Delete: `replit.md`
+
+- [ ] TB063 Clean config and references after deletion
+        - Remove dead `tsconfig.json` excludes pointing at deleted paths
+        - Confirm there are no remaining `replit` string/import references in `src/**`
+
+- [ ] TB064 Run gates
+        - Typecheck: `npx tsc --noEmit`
+        - Build: `npm run build`
+
+**Checkpoint:** No “replit” named folders/files remain; Media Library uploads still work (S3 when configured, dev-local when enabled); gates green.
+

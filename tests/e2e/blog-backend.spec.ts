@@ -1,11 +1,49 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+const ADMIN_CREDENTIALS = {
+  email: 'admin@solarmatch.com',
+  password: 'Admin123!Secure',
+};
+
+async function loginAdmin(page: Page) {
+  // Ensure the expected admin account/password exists in the local DB.
+  await page.request.post('/api/fix-admin');
+
+  // Programmatic sign-in via NextAuth.
+  const csrfResp = await page.request.get('/api/auth/csrf');
+  expect(csrfResp.ok()).toBeTruthy();
+  const csrf = (await csrfResp.json()) as { csrfToken?: string };
+  expect(csrf.csrfToken).toBeTruthy();
+
+  const callbackResp = await page.request.post('/api/auth/callback/credentials', {
+    form: {
+      csrfToken: csrf.csrfToken ?? '',
+      email: ADMIN_CREDENTIALS.email,
+      password: ADMIN_CREDENTIALS.password,
+      role: 'ADMIN',
+      callbackUrl: '/admin/dashboard',
+      json: 'true',
+    },
+  });
+  expect(callbackResp.status()).toBeLessThan(400);
+
+  const sessionResp = await page.request.get('/api/auth/session');
+  expect(sessionResp.ok()).toBeTruthy();
+  const session = (await sessionResp.json()) as any;
+  expect(session?.user?.role).toBe('ADMIN');
+}
 
 test.describe('Blog Backend E2E Tests', () => {
   test.describe('Authors Management', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
     test('Admin can view authors list', async ({ page }) => {
       await page.goto('/admin/blog/content-manager?tab=authors');
-      
-      await expect(page.locator('h1, h2').filter({ hasText: /authors|author/i }).first()).toBeVisible();
+
+      await expect(page.locator('h1').filter({ hasText: /blog manager/i })).toBeVisible();
+      await expect(page.locator('input[placeholder="Search team members..."]')).toBeVisible();
     });
 
     test('Admin can create new author', async ({ page }) => {
@@ -14,9 +52,8 @@ test.describe('Blog Backend E2E Tests', () => {
       const addButton = page.locator('button').filter({ hasText: /add author|new author/i });
       if (await addButton.isVisible()) {
         await addButton.click();
-        
-        const modal = page.locator('[role="dialog"], .modal, [data-testid="author-modal"]');
-        await expect(modal).toBeVisible();
+
+        await expect(page.locator('h3').filter({ hasText: /add new author|edit author/i }).first()).toBeVisible();
       }
     });
 
@@ -40,10 +77,15 @@ test.describe('Blog Backend E2E Tests', () => {
   });
 
   test.describe('Comments Moderation', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
     test('Admin can view comments list', async ({ page }) => {
       await page.goto('/admin/blog/content-manager?tab=comments');
-      
-      await expect(page.locator('h1, h2').filter({ hasText: /comments|comment/i }).first()).toBeVisible();
+
+      await expect(page.locator('h1').filter({ hasText: /blog manager/i })).toBeVisible();
+      await expect(page.locator('input[placeholder="Search author or content..."]')).toBeVisible();
     });
 
     test('Admin can approve comment', async ({ page }) => {
@@ -83,6 +125,10 @@ test.describe('Blog Backend E2E Tests', () => {
   });
 
   test.describe('Media Library', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAdmin(page);
+    });
+
     test('Admin can view media library', async ({ page }) => {
       await page.goto('/admin/blog/media');
       
@@ -95,9 +141,8 @@ test.describe('Blog Backend E2E Tests', () => {
       const uploadButton = page.locator('button').filter({ hasText: /upload/i });
       if (await uploadButton.isVisible()) {
         await uploadButton.click();
-        
-        const modal = page.locator('[role="dialog"], .modal');
-        await expect(modal).toBeVisible();
+
+        await expect(page.locator('h3').filter({ hasText: /upload media/i }).first()).toBeVisible();
       }
     });
 

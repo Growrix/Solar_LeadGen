@@ -1,4 +1,6 @@
 import { uploadFile, getPublicUrlForKey } from '@/lib/s3';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8MB
 const MAX_HTML_BYTES = 512 * 1024; // 512KB
@@ -224,6 +226,34 @@ export async function ingestOgImageToS3(input: {
   const normalizedUrl = normalizeUrl(input.imageUrl);
   const fetched = await fetchRemoteImage(normalizedUrl);
   const key = buildOgImageKey(input.itemId, fetched.contentType);
+  const bucket = (process.env.AWS_S3_BUCKET || '').trim();
+
+  // Local dev/test fallback when S3 isn't configured.
+  // Guarded to avoid accidental use in production.
+  if (!bucket) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('S3 not configured');
+    }
+
+    const allowLocal = (process.env.ALLOW_LOCAL_MEDIA_UPLOADS || '').trim().toLowerCase() === 'true';
+    if (!allowLocal) {
+      throw new Error('S3 not configured (set AWS_S3_BUCKET or enable ALLOW_LOCAL_MEDIA_UPLOADS=true for non-prod)');
+    }
+
+    const publicDir = path.join(process.cwd(), 'public');
+    const absPath = path.join(publicDir, ...key.split('/'));
+    await fs.mkdir(path.dirname(absPath), { recursive: true });
+    await fs.writeFile(absPath, fetched.buffer);
+
+    const url = `/${key}`;
+    return {
+      key,
+      url,
+      contentType: fetched.contentType,
+      sourceUrl: fetched.finalUrl,
+    };
+  }
+
   await uploadFile(fetched.buffer, key, fetched.contentType);
   const url = getPublicUrlForKey(key);
 

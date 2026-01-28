@@ -6,6 +6,8 @@ import HomeownerMobileSidebarMenu from '@/components/HomeownerMobileSidebarMenu'
 import HomeownerBottomNavBar from '@/components/HomeownerBottomNavBar';
 import { HomeownerDashboardHeader } from '@/components/homeowner/HomeownerDashboardHeader';
 
+export const dynamic = 'force-dynamic';
+
 export default function HomeownerLayout({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname() ?? '';
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);

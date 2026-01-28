@@ -13,10 +13,12 @@ import { test, expect } from '@playwright/test';
 test.describe('Purchased Bidding Lead - Contact Display', () => {
   
   test.beforeEach(async ({ page }) => {
-    // Login as installer (assuming test installer exists)
-    await page.goto('/api/auth/signin');
-    await page.fill('input[name="email"]', 'installer@test.com');
-    await page.fill('input[name="password"]', 'password123');
+    // Ensure deterministic E2E installer + login
+    await page.request.post('/api/fix-installer');
+
+    await page.goto('/login?role=installer');
+    await page.fill('input[name="email"]', 'mohammad@installer.com');
+    await page.fill('input[name="password"]', 'installer123');
     await page.click('button[type="submit"]');
     await page.waitForURL('/installer/dashboard');
   });

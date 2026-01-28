@@ -16,7 +16,10 @@ const nextBin = require.resolve('next/dist/bin/next');
 
 const env = {
   ...process.env,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  // Force local URLs for E2E (overrides any production `.env` values).
+  NEXTAUTH_URL: 'http://localhost:3000',
+  NEXTAUTH_URL_INTERNAL: 'http://localhost:3000',
+  NEXTAUTH_DEBUG: process.env.NEXTAUTH_DEBUG || 'false',
 };
 
 const child = spawn(process.execPath, [nextBin, 'dev', '--port', '3000'], {
