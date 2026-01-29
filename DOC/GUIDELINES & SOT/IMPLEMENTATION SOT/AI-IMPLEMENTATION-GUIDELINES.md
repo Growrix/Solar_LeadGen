@@ -156,13 +156,16 @@ Create audit report in `DOC/[folder]/[FEATURE]-AUDIT.md` with:
 
 ### Step 3: PLAN - Create Implementation Tasks
 
-Create/update `specs/[feature]/tasks.md` following structure from existing task files:
-- Clear phases (PHASE 0, 1, 2...)
-- Testing checkpoints after each phase
-- Stop criteria (when to halt if tests fail)
-- Rollback procedures
+Create/update `DOC/FEATURES/<Feature Name>/tasks.md` using the canonical template:
+- `DOC/.specify/templates/tasks-template.md`
 
-See existing `specs/*/tasks.md` files for template patterns.
+Minimum requirements:
+- Clear phases (Phase 1, Phase 2, ...)
+- Tasks grouped by user story (US1, US2, ...)
+- IDs in `T###` format and `[P]` label where parallel-safe
+- Explicit file paths in task descriptions
+- Testing checkpoints after each phase
+- Stop criteria (when to halt if checks fail)
 
 ---
 
@@ -176,12 +179,12 @@ Required artifacts:
 - Feature SOT (Phases 0–5 planning): `DOC/Features/<Feature Name>/SOT/FEATURE-SOT.md`
 - Feature SOT Index (Continuity Pack): `DOC/Features/<Feature Name>/SOT/INDEX.md`
    - Must list: canonical SOT, audit, execution tasks, and authority pointers
-- Execution Tasks (Phase 6 execution plan): `specs/<feature>/tasks.md`
+- Execution Tasks (all phases, including Phase 6): `DOC/FEATURES/<Feature Name>/tasks.md`
 
 Lock protocol:
 - When the user approves the plan, set Feature SOT status to `Locked (Approved)`.
 - After lock: changes require a written “Change Request” section in the SOT (scope/ordering/data contract changes).
-- Implementation MUST follow `specs/<feature>/tasks.md` phase-by-phase; do not improvise.
+- Implementation MUST follow `DOC/FEATURES/<Feature Name>/tasks.md` phase-by-phase; do not improvise.
 
 AI session restart rule:
 - Always start a new implementation session by opening the Feature SOT Index first and following its “next step”.

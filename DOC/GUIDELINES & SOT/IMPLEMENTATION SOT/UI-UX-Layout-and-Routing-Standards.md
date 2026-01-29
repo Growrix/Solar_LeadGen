@@ -143,24 +143,52 @@ export default function DashboardPage() {
 - **profile/page.tsx**: Pattern 2 - `<> <div className="space-y-6">...</div> </>`
 
 ### Admin Dashboard Page Layout (Different Pattern)
-**Standard:** Admin pages may use a wrapper for additional control:
+**Standard (Repo Reality / Current Site Standard):** Most Admin pages in this codebase use a **padding-only wrapper**.
 
+**Why:** The admin chrome/layout already owns the overall shell (sidebar/header + main area). Pages should avoid re-declaring app-wide structural wrappers (like `min-h-screen`, `bg-background`, `text-foreground`) unless there is a specific, justified reason.
+
+#### Pattern A: Padding-Only Wrapper (Preferred)
 ```tsx
-// ✅ Admin pattern (when needed)
+// ✅ PREFERRED: Matches existing admin pages in this repo
 export default function AdminPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 md:p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-heading-1">Page Title</h1>
-        <p className="text-muted">Description</p>
+        <h1 className="text-heading-1 text-foreground mb-2">Page Title</h1>
+        <p className="text-heading-4 text-muted-foreground">Description</p>
       </div>
-      {/* content */}
+
+      {/* content lives inside elevated surfaces */}
+      <div className="bg-surface rounded-2xl shadow-neu-outset p-6">
+        {/* ... */}
+      </div>
     </div>
   );
 }
 ```
 
-**Note:** Use admin pattern only when admin layout doesn't provide these styles.
+**Key Rules (Admin Pages):**
+- **YES**: Use `p-4 sm:p-6 lg:p-8` at the page root for consistent spacing.
+- **NO**: Do not add `min-h-screen` on the page root (layout already owns the overall app height).
+- **NO**: Do not add `bg-background` / `text-foreground` at the page root unless you are intentionally overriding layout behavior.
+- **NO (by default)**: Avoid `max-w-* mx-auto` shells unless the page is explicitly designed to be narrow.
+- **YES**: Put content in elevated surfaces (`bg-surface`, `shadow-neu-outset`, `border-border`) for consistent admin look.
+
+#### Pattern B: Full Shell Wrapper (Allowed Exception)
+Use only when the route intentionally needs to behave like a standalone page (rare in admin), or when you must override layout-provided structure.
+
+```tsx
+// ✅ Allowed exception (use sparingly)
+export default function AdminPage() {
+  return (
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8">
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+**Legacy Note:** Some older admin routes may still use Pattern B. When aligning layouts, prefer migrating toward Pattern A to match current site standards.
 
 ### Component Standards
 - Structural Surfaces: Use `bg-background` for body, header, sidebar, and shell layouts.
@@ -208,6 +236,19 @@ Background Decision Tree (from SOT):
 - Buttons/Links:
   - Use the shared `Button` and link helpers; do not add `as` to native tags.
   - Variants reside in the component; do not copy button class stacks.
+
+### Prototype-Preserving Migration Exception
+When a feature is migrated from a Google AI Studio/Vite prototype and is under the prototype-preserving contract:
+- Do not refactor structure in a way that changes rendered UI/UX.
+- Structural mirroring (extracting tabs/modals/components into separate files to match the prototype’s boundaries) is allowed and encouraged as long as rendered UI/UX remains identical.
+- Follow the mandatory 2-part migration sequencing:
+  - Part 1: Structural mirror (UI preserved)
+  - Part 2: Design-system compliance (tokenization + class contracts + multi-theme + verification gates)
+
+Tokenization and wrapper/layout adjustments remain allowed, but should be treated as Part 2 unless a blocker forces a minimal change.
+
+Authority:
+- See `DOC/GUIDELINES & SOT/README.md` → “Prototype-Preserving Migration Contract (Vite Prototype → Next.js)”.
 - Modals:
   - Backdrop: `fixed inset-0 bg-background/80 backdrop-blur-sm z-modal`
   - Panel: `bg-surface border border-border shadow-neu-outset rounded-xl`
