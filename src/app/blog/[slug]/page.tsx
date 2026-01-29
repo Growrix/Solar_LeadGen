@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import FooterNav from '@/components/FooterNav';
-import { getWpPostBySlug } from '@/lib/wordpress/posts';
+import { getWpPostBySlug, getWpTagsByIds, wpPostTags } from '@/lib/wordpress/posts';
 import { getWpPosts } from '@/lib/wordpress/posts';
 import { getWpCategories } from '@/lib/wordpress/categories';
 import BlogSidebarClient from '../BlogSidebarClient';
@@ -62,6 +62,11 @@ export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) 
     ? post.date
     : date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
+  let tags = wpPostTags(post);
+  if (tags.length === 0 && Array.isArray(post.tags) && post.tags.length > 0) {
+    tags = await getWpTagsByIds(post.tags);
+  }
+
   const sidebarCategories = categories
     .map((c) => ({ id: c.id, name: c.name, count: c.count }))
     .filter((c) => c.id > 0 && c.name);
@@ -91,6 +96,19 @@ export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) 
                 </Link>
 
                 <span className="text-label text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 inline-block">Blog</span>
+
+                {tags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {tags.map((t) => (
+                      <span
+                        key={t.id}
+                        className="text-caption text-muted-foreground border border-border px-3 py-1 rounded-full bg-surface/30"
+                      >
+                        {t.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
 
                 <h1 className="text-heading-1 sm:text-heading-1 md:text-heading-1 text-foreground mb-6 tracking-tight">{title}</h1>
 

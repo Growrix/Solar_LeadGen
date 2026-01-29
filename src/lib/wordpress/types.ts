@@ -1,5 +1,13 @@
 export type WpRendered = { rendered: string };
 
+export type WpTerm = {
+  id: number;
+  name: string;
+  slug: string;
+  taxonomy?: string;
+  link?: string;
+};
+
 export type WpPost = {
   id: number;
   date: string;
@@ -9,6 +17,8 @@ export type WpPost = {
   content: WpRendered;
   excerpt: WpRendered;
   featured_media?: number;
+  categories?: number[];
+  tags?: number[];
   // Optional SEO plugin fields (e.g., Yoast)
   yoast_head_json?: {
     title?: string;
@@ -20,6 +30,6 @@ export type WpPost = {
   _embedded?: {
     author?: Array<{ name?: string }>; 
     'wp:featuredmedia'?: Array<{ source_url?: string }>;
-    'wp:term'?: unknown;
+    'wp:term'?: Array<Array<WpTerm>>;
   };
 };

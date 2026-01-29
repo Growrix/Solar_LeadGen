@@ -1,4 +1,4 @@
-import type { WpPost } from './types';
+import type { WpPost, WpTerm } from './types';
 import { wpFetch } from './wpFetch';
 
 export type GetWpPostsOptions = {
@@ -49,6 +49,48 @@ export async function getWpPosts(options: GetWpPostsOptions = {}): Promise<WpPos
 export async function getWpPostBySlug(slug: string): Promise<WpPost | null> {
   const posts = await getWpPosts({ slug, perPage: 1, page: 1, status: 'publish', embed: true });
   return posts[0] ?? null;
+}
+
+export function wpPostTags(post: WpPost): WpTerm[] {
+  const groups = post._embedded?.['wp:term'];
+  if (!Array.isArray(groups)) return [];
+
+  const tags: WpTerm[] = [];
+  for (const group of groups) {
+    if (!Array.isArray(group)) continue;
+    for (const term of group) {
+      if (!term || typeof term !== 'object') continue;
+      if (term.taxonomy === 'post_tag') tags.push(term);
+    }
+  }
+
+  // De-dupe by id/slug while preserving order.
+  const seen = new Set<string>();
+  return tags.filter((t) => {
+    const key = `${t.id}:${t.slug}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export async function getWpTagsByIds(
+  ids: number[],
+  options: { revalidateSeconds?: number } = {}
+): Promise<Array<Pick<WpTerm, 'id' | 'name' | 'slug' | 'link'>>> {
+  const unique = Array.from(new Set(ids.filter((n) => Number.isFinite(n) && n > 0)));
+  if (unique.length === 0) return [];
+
+  const qs = new URLSearchParams();
+  qs.set('include', unique.join(','));
+  qs.set('per_page', String(Math.min(100, unique.length)));
+
+  const { data } = await wpFetch<Array<Pick<WpTerm, 'id' | 'name' | 'slug' | 'link'>>>(`/wp/v2/tags?${qs.toString()}`, {
+    next: { revalidate: options.revalidateSeconds ?? 300 },
+  });
+
+  const byId = new Map(data.map((t) => [t.id, t] as const));
+  return unique.map((id) => byId.get(id)).filter(Boolean) as Array<Pick<WpTerm, 'id' | 'name' | 'slug' | 'link'>>;
 }
 
 export function wpPostToCard(post: WpPost): {
