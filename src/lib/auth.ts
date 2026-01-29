@@ -97,30 +97,10 @@ export const authOptions: NextAuthOptions = {
         token.sessionVersion = (user as any).sessionVersion ?? 0; // Auth Part A+B
         token.profileComplete = (user as any).profileComplete ?? false; // Auth Part A+B
       } else if ((token.quoteLimit === undefined || token.quoteLimit === null) && token.id) {
-        try {
-          const refreshedUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
-            select: {
-              leadSubmissionLimit: true,
-              sessionVersion: true, // Auth Part A+B: check for session invalidation
-              profileComplete: true, // Auth Part A+B
-            },
-          });
-
-          if (refreshedUser) {
-            token.quoteLimit = refreshedUser.leadSubmissionLimit ?? 5;
-            // Auth Part A+B: Invalidate session if version mismatch (password reset)
-            if (refreshedUser.sessionVersion !== token.sessionVersion) {
-              console.log('[NextAuth] Session version mismatch - forcing logout');
-              return null as any; // Force logout
-            }
-            token.sessionVersion = refreshedUser.sessionVersion;
-            token.profileComplete = refreshedUser.profileComplete;
-          }
-        } catch (refreshError) {
-          console.error('[NextAuth] Failed to refresh user data from database:', refreshError);
-          token.quoteLimit = 5;
-        }
+        // Do not query the database here. This callback can run implicitly (e.g. via
+        // middleware/static generation), and we don't want builds or edge auth checks
+        // to depend on DB connectivity.
+        token.quoteLimit = 5;
       }
 
       // Handle session updates (for phone number changes, verification status, etc.)

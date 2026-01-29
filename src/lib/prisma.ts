@@ -36,9 +36,9 @@ export const prisma =
   globalForPrisma.prisma ??  // If prisma exists in global, use it
   new PrismaClient({
     // Create new PrismaClient with configuration
-    log: process.env.NODE_ENV === 'development' 
-      ? ['error', 'warn']  // In development: only errors and warnings (query logs are too verbose for JWT)
-      : ['error'],          // In production: only show errors (less noise)
+    // Keep Prisma logs in development only. In production builds/runtime,
+    // disable Prisma's stdout logger to avoid noisy build output.
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : [],
   });
 // TEACHING NOTE: The"??" is the"nullish coalescing operator"
 // It means:"If left side is null/undefined, use right side"

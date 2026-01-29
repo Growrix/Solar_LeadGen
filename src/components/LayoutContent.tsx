@@ -1,20 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import TopBar from './TopBar';
 import HeaderMenu from './HeaderMenu';
-import InstallerEligibilityModal from './InstallerEligibilityModal';
-import InstallerSignInModal from './InstallerSignInModal';
-import InstallerSignupModal from './InstallerSignupModal';
-import HomeownerSignupModal from './HomeownerSignupModal';
-import HomeownerSignInModal from './HomeownerSignInModal';
-import GuestBottomNavBar from './GuestBottomNavBar';
-import HomeownerBottomNavBar from './HomeownerBottomNavBar';
-import HomeownerMobileSidebarMenu from './HomeownerMobileSidebarMenu';
-import NewQuoteRequestModal from './NewQuoteRequestModal';
-import MessagingModal from './MessagingModal';
+
+const InstallerEligibilityModal = dynamic(() => import('./InstallerEligibilityModal'), { ssr: false });
+const InstallerSignInModal = dynamic(() => import('./InstallerSignInModal'), { ssr: false });
+const InstallerSignupModal = dynamic(() => import('./InstallerSignupModal'), { ssr: false });
+const HomeownerSignupModal = dynamic(() => import('./HomeownerSignupModal'), { ssr: false });
+const HomeownerSignInModal = dynamic(() => import('./HomeownerSignInModal'), { ssr: false });
+const GuestBottomNavBar = dynamic(() => import('./GuestBottomNavBar'), { ssr: false });
+const HomeownerBottomNavBar = dynamic(() => import('./HomeownerBottomNavBar'), { ssr: false });
+const HomeownerMobileSidebarMenu = dynamic(() => import('./HomeownerMobileSidebarMenu'), { ssr: false });
+const NewQuoteRequestModal = dynamic(() => import('./NewQuoteRequestModal'), { ssr: false });
+const MessagingModal = dynamic(() => import('./MessagingModal'), { ssr: false });
 
 interface LayoutContentProps {
   children: React.ReactNode;

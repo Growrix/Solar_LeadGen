@@ -6,4 +6,6 @@ export interface Post {
   readTime: string;
   category: string;
   image: string;
+  slug?: string;
+  link?: string;
 }

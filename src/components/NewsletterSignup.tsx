@@ -1,4 +1,6 @@
-﻿import React, { useState } from 'react';
+﻿"use client";
+
+import React, { useState } from 'react';
 import Button from '@/components/ui/button';
 
 // --- Icon Components ---
