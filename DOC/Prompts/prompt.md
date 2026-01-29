@@ -4336,3 +4336,10 @@ I want you to Prepare the task plan as per the D:\Desktop Mass\SOLAR LEAD GEN PR
  from this file before doing anything, and must read through:D:\Desktop Mass\SOLAR LEAD GEN PROJECT MAIN FILE\solarmatch\DOC\GUIDELINES & SOT\README.md
 
  ----------------------------------------------------------------------------------
+
+
+ - The Home page still shows the Old mock contents. check the screenshot for better understanding. I want you to update the home page with the new contents as per the current Blog posts. Audit deeply and implement it accordingly.
+
+ - The newsletter UI in the blog page is not looking good as its size is too big. the homepage newsletter UI is perfect. I want you to fix the blog page newsletter UI accordingly so that it looks fits in the blog page. Check the screenshot for better understanding Audit deeply and implement it accordingly.
+
+ ***Instructions*** audit the current state clearly and implement the necessary changes as per the above instructions. so that the home page shows the new contents as per the current Blog posts. Also fix the blog page newsletter UI accordingly so that it looks fits in the blog page. Audit deeply and implement it accordingly.

@@ -648,13 +648,11 @@ export default function Home() {
   };
 
   const handleBlogClick = () => {
-    // Navigate to blog page when implemented
-    console.log('Blog clicked');
+    router.push('/blog');
   };
 
   const handleGovernmentNewsClick = () => {
-    // Navigate to government news page when implemented
-    console.log('Government news clicked');
+    router.push('/blog');
   };
 
   const handleSeeAllBlogPosts = () => {
@@ -662,9 +660,12 @@ export default function Home() {
   };
 
   const handleNavigateToPost = (post: Post) => {
-    // Store post in sessionStorage and navigate
-    sessionStorage.setItem('currentBlogPost', JSON.stringify(post));
-    router.push('/blog/post');
+    const slug = post.slug;
+    if (!slug) {
+      router.push('/blog');
+      return;
+    }
+    router.push(`/blog/${slug}`);
   };
 
   return (

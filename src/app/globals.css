@@ -1,3 +1,7 @@
+/* OUTLINED BUTTON - Semantic, theme-adaptive */
+.btn-outline {
+  @apply w-full py-3 px-0 border border-border rounded-full text-base font-medium flex items-center justify-center gap-2 hover:bg-background/80 transition;
+}
 /* DELETE BUTTON - Semantic, theme-adaptive */
 .btn-delete {
   @apply flex items-center justify-center rounded-full w-8 h-8 p-0 transition-colors duration-200 shadow-neu-outset-sm;

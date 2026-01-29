@@ -1,6 +1,69 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import type { Post } from '../types/blog';
 import Button from '@/components/ui/button';
+
+type WpRendered = { rendered: string };
+
+type WpPostLite = {
+  id: number;
+  date: string;
+  slug: string;
+  link: string;
+  title?: WpRendered;
+  excerpt?: WpRendered;
+  content?: WpRendered;
+  yoast_head_json?: {
+    description?: string;
+  };
+  _embedded?: {
+    author?: Array<{ name?: string }>;
+    'wp:featuredmedia'?: Array<{
+      source_url?: string;
+      alt_text?: string;
+    }>;
+  };
+};
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function decodeHtmlEntities(text: string): string {
+  if (!text) return '';
+  if (typeof window === 'undefined') return text;
+  const el = document.createElement('textarea');
+  el.innerHTML = text;
+  return el.value;
+}
+
+function truncateToWords(text: string, maxWords = 36): string {
+  const normalized = decodeHtmlEntities(text)
+    .replace(/\[&hellip;\]/gi, '…')
+    .replace(/&hellip;/gi, '…')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!normalized) return '';
+
+  const words = normalized.split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return normalized;
+  return `${words.slice(0, maxWords).join(' ')}…`;
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function estimateReadTime(text: string): string {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.round(words / 200));
+  return `${minutes} min read`;
+}
 
 // --- Icon Components ---
 const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
@@ -14,35 +77,71 @@ interface BlogSectionProps {
 }
 
 const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigateToPost }) => {
-  const articles: Post[] = [
-    {
-      title:"2024 Solar Rebate Changes: What Australian Homeowners Need to Know",
-      excerpt:"Understanding the latest updates to government solar incentives and how they affect your savings potential.",
-      author:"Sarah Johnson",
-      date:"March 15, 2024",
-      readTime:"6 min read",
-      category:"Policy Updates",
-      image:"https://images.unsplash.com/photo-1509390636472-a0b5a1985799?q=80&w=800"
-    },
-    {
-      title:"Tesla Powerwall vs Competitors: Battery Storage Comparison",
-      excerpt:"An in-depth analysis of the top battery storage systems available in Australia, including costs and performance.",
-      author:"Michael Chen",
-      date:"March 10, 2024",
-      readTime:"8 min read",
-      category:"Technology",
-      image:"https://images.unsplash.com/photo-1629231249110-a1a1c63740e2?q=80&w=800"
-    },
-    {
-      title:"Summer Solar Tips: Maximizing Your System's Performance",
-      excerpt:"How to get the most out of your solar panels during Australia's peak sunshine months.",
-      author:"Emma Thompson",
-      date:"March 5, 2024",
-      readTime:"4 min read",
-      category:"Maintenance",
-      image:"https://images.unsplash.com/photo-1545284884-f3c914a2b9ae?q=80&w=800"
+  const [articles, setArticles] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch('/api/wp/posts?per_page=3&_embed=1&status=publish', { cache: 'no-store' });
+        const json = (await res.json()) as { items?: WpPostLite[]; error?: string };
+        if (!res.ok) {
+          throw new Error(json?.error || `Failed to load posts (${res.status})`);
+        }
+
+        const items = Array.isArray(json.items) ? json.items : [];
+
+        const mapped: Post[] = items.map((p) => {
+          const title = stripHtml(p.title?.rendered ?? '') || 'Untitled';
+          const excerpt =
+            (p.yoast_head_json?.description ? stripHtml(p.yoast_head_json.description) : '') ||
+            stripHtml(p.excerpt?.rendered ?? '') ||
+            stripHtml(p.content?.rendered ?? '');
+
+          const previewExcerpt = truncateToWords(excerpt, 36);
+
+          const contentText = stripHtml(p.content?.rendered ?? '');
+
+          const featured = p._embedded?.['wp:featuredmedia']?.[0];
+          const imageUrl = featured?.source_url || '/images/blog-placeholder.svg';
+
+          return {
+            title,
+            excerpt: previewExcerpt || title,
+            author: p._embedded?.author?.[0]?.name ?? 'SolarMatch',
+            date: formatDate(p.date),
+            readTime: estimateReadTime(contentText || excerpt || title),
+            category: 'Blog',
+            image: imageUrl,
+            slug: p.slug,
+            link: p.link,
+          };
+        });
+
+        if (!cancelled) {
+          setArticles(mapped);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : 'Failed to load posts');
+          setArticles([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-  ];
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className="blog-section">
@@ -57,17 +156,45 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {articles.map((article, index) => (
+          {error ? (
+            <div className="col-span-full bg-background rounded-2xl shadow-neu-inset p-6 text-center text-muted-foreground">
+              {error}
+            </div>
+          ) : null}
+
+          {(loading ? Array.from({ length: 3 }).map((_, i) => ({
+            title: 'Loading…',
+            excerpt: 'Loading latest posts…',
+            author: '—',
+            date: '—',
+            readTime: '—',
+            category: 'Blog',
+            image: '/images/blog-placeholder.svg',
+            slug: undefined,
+          })) : articles).map((article, index) => (
             <article 
               key={index} 
-              onClick={() => onNavigateToPost(article)}
-              className="bg-background rounded-2xl shadow-neu-outset hover:shadow-neu-outset-lg overflow-hidden group cursor-pointer transition-colors duration-300"
+              onClick={() => !loading && onNavigateToPost(article)}
+              className={`bg-background rounded-2xl shadow-neu-outset hover:shadow-neu-outset-lg overflow-hidden group transition-colors duration-300 ${
+                loading ? 'opacity-60 cursor-default' : 'cursor-pointer'
+              }`}
               role="button"
               tabIndex={0}
               aria-label={`Read article: ${article.title}`}
-              onKeyPress={(e) => e.key === 'Enter' && onNavigateToPost(article)}
+              onKeyDown={(e) => !loading && e.key === 'Enter' && onNavigateToPost(article)}
             >
-              <div className="p-6 lg:p-8 flex flex-col h-full">
+              <div className="relative w-full h-44 bg-background shadow-neu-inset">
+                <Image
+                  src={article.image || '/images/blog-placeholder.svg'}
+                  alt={article.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  className="object-cover"
+                  priority={index < 2}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+              </div>
+              <div className="p-6 lg:p-8 flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   <div className="inline-flex items-center gap-2 bg-background shadow-neu-inset px-3 py-1.5 rounded-xl">
                     <div className="w-2 h-2 rounded-full bg-primary shadow-neu-inset-sm"></div>
@@ -80,10 +207,10 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                   </span>
                 </div>
                 
-                <h3 className="text-heading-4 text-foreground mb-4 leading-snug group-hover:text-primary transition-colors">
+                <h3 className="text-heading-4 text-foreground mb-3 leading-snug group-hover:text-primary transition-colors">
                   {article.title}
                 </h3>
-                <p className="text-body text-muted-foreground mb-6 leading-relaxed">
+                <p className="text-body text-muted-foreground mb-5 leading-relaxed">
                   {article.excerpt}
                 </p>
                 
@@ -100,10 +227,18 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                   </div>
                 </div>
                 
-                <Button variant="secondary" className="inline-flex items-center space-x-2 mt-auto">
-                  <span>Read Article</span>
-                  <ArrowRightIcon />
-                </Button>
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div
+                    className="text-primary group-hover:text-primary/80 transition-colors inline-flex items-center space-x-2 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigateToPost(article);
+                    }}
+                  >
+                    <span>Read Article</span>
+                    <ArrowRightIcon />
+                  </div>
+                </div>
               </div>
             </article>
           ))}

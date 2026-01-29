@@ -79,7 +79,7 @@ export default function BlogSidebarClient({
       <section className="theme-card p-5">
         <h3 className="text-heading-4 text-foreground mb-2">Newsletter</h3>
         <p className="text-body-small text-muted-foreground mb-4">Get new posts and solar updates in your inbox.</p>
-        <NewsletterSignup />
+        <NewsletterSignup variant="compact" />
       </section>
     </aside>
   );
