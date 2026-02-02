@@ -813,7 +813,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
                   ${currentStep === step
-                    ? 'theme-light:bg-black theme-light:text-foreground-secondary theme- theme- theme-purple:bg-accent theme-purple:text-accent-foreground'
+                    ? 'bg-foreground text-background'
                     : 'bg-surface text-foreground shadow-neu-inset'}
                   ${currentStep === step ? 'shadow-neu-outset' : ''}
                 `}
@@ -1903,7 +1903,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     <div className="detail-card">
                       <div className="text-center">
                         <p className="performance-item-label">Estimated Out-of-Pocket Cost</p>
-                        <p className="text-heading-1 md:text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
+                        <p className="text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
                       </div>
                       <div className="mt-6 pt-6 border-t border-border">
                         <h3 className="detail-card-header justify-center">Cost Breakdown</h3>

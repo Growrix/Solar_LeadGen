@@ -274,7 +274,7 @@ export default function AdminHomeownersList() {
           value={searchInput}
           onChange={handleSearchChange}
           placeholder="Search by name, email, phone, or postcode..."
-          className="w-full pl-10 pr-4 py-3 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground placeholder:text-muted-foreground"
+          className="w-full pl-10 pr-4 py-3 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground placeholder:text-muted-foreground"
         />
       </div>
 
@@ -323,7 +323,7 @@ export default function AdminHomeownersList() {
                 value={filters.postcode}
                 onChange={(e) => handleFilterChange('postcode', e.target.value)}
                 placeholder="e.g. SW1A"
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
               />
             </div>
 
@@ -335,7 +335,7 @@ export default function AdminHomeownersList() {
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
               >
                 <option value="">All</option>
                 <option value="active">Active</option>
@@ -352,7 +352,7 @@ export default function AdminHomeownersList() {
                 type="date"
                 value={filters.from}
                 onChange={(e) => handleFilterChange('from', e.target.value)}
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
               />
             </div>
 
@@ -365,7 +365,7 @@ export default function AdminHomeownersList() {
                 type="date"
                 value={filters.to}
                 onChange={(e) => handleFilterChange('to', e.target.value)}
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
               />
             </div>
           </div>
@@ -764,7 +764,7 @@ export default function AdminHomeownersList() {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-3 py-1.5 bg-surface shadow-neu-inset border border-border rounded-lg text-body-small focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="px-3 py-1.5 bg-surface shadow-neu-inset border border-border rounded-lg text-body-small focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
               >
                 <option value="10">10</option>
                 <option value="25">25</option>

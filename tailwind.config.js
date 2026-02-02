@@ -1,4 +1,34 @@
-const { colors, typography, spacing, shadows, animations, borders } = require('./src/design-tokens');
+const { typography, spacing, shadows, animations, borders, layout } = require('./src/design-tokens');
+
+function toNumberPx(value) {
+  if (typeof value !== 'string') return NaN;
+  const trimmed = value.trim();
+  if (!trimmed.endsWith('px')) return NaN;
+  const parsed = Number(trimmed.slice(0, -2));
+  return Number.isFinite(parsed) ? parsed : NaN;
+}
+
+function responsiveFontSizeToClamp(fontSize) {
+  if (!fontSize) return fontSize;
+  if (typeof fontSize === 'string') return fontSize;
+  const min = fontSize.DEFAULT;
+  const max = fontSize.lg ?? fontSize.md ?? fontSize.DEFAULT;
+
+  const minPx = toNumberPx(min);
+  const maxPx = toNumberPx(max);
+  if (!Number.isFinite(minPx) || !Number.isFinite(maxPx) || minPx === maxPx) {
+    return min;
+  }
+
+  // Interpolate between mobile and desktop viewports.
+  const minViewport = 375;
+  const maxViewport = 1440;
+  const slope = (maxPx - minPx) / (maxViewport - minViewport);
+  const yIntercept = minPx - slope * minViewport;
+  const preferred = `calc(${yIntercept.toFixed(4)}px + ${(slope * 100).toFixed(4)}vw)`;
+
+  return `clamp(${min}, ${preferred}, ${max})`;
+}
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -8,8 +38,21 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './stories/**/*.{js,ts,jsx,tsx,mdx}', // Include Storybook stories
   ],
-  darkMode: 'class', // Enable class-based dark mode
+  // Tailwind `dark:` variants should follow the app theme class on <html>
+  // App uses: `theme-dark` / `theme-light` / `theme-purple`
+  darkMode: ['class', '.theme-dark'],
   theme: {
+    // Universal breakpoints (see Design System SOT)
+    // Tailwind screens are min-widths, mapping to:
+    // xs: 0–480, sm: 481–768, md: 769–1024, lg: 1025–1440, xl: 1441–1920, xxl: 1921+
+    screens: {
+      xs: '0px',
+      sm: '481px',
+      md: '769px',
+      lg: '1025px',
+      xl: '1441px',
+      xxl: '1921px',
+    },
     extend: {
       // Semantic color tokens with theme-aware variants (CSS VARIABLES)
       colors: {
@@ -43,10 +86,14 @@ module.exports = {
         // Border colors
         border: 'rgb(var(--color-border) / <alpha-value>)',
         'border-dark': 'rgb(var(--color-border) / <alpha-value>)',
+
+        // Overlay / Scrim (modal backdrops)
+        scrim: 'rgb(var(--color-scrim) / <alpha-value>)',
         
         // Accent colors (Orange)
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
         'accent-hover': 'rgb(var(--color-accent-hover) / <alpha-value>)',
+        'accent-foreground': 'rgb(var(--color-accent-foreground) / <alpha-value>)',
         
         // Status colors
         success: 'rgb(var(--color-success) / <alpha-value>)',
@@ -77,18 +124,19 @@ module.exports = {
         mono: typography.fontFamily.mono.split(', '),
       },
       fontSize: {
-        'heading-1': [typography.heading[1].fontSize.DEFAULT, { lineHeight: typography.heading[1].lineHeight, fontWeight: typography.heading[1].fontWeight }],
-        'heading-2': [typography.heading[2].fontSize.DEFAULT, { lineHeight: typography.heading[2].lineHeight, fontWeight: typography.heading[2].fontWeight }],
-        'heading-3': [typography.heading[3].fontSize.DEFAULT, { lineHeight: typography.heading[3].lineHeight, fontWeight: typography.heading[3].fontWeight }],
-        'heading-4': [typography.heading[4].fontSize.DEFAULT, { lineHeight: typography.heading[4].lineHeight, fontWeight: typography.heading[4].fontWeight }],
+        'heading-1': [responsiveFontSizeToClamp(typography.heading[1].fontSize), { lineHeight: typography.heading[1].lineHeight, fontWeight: typography.heading[1].fontWeight }],
+        'heading-2': [responsiveFontSizeToClamp(typography.heading[2].fontSize), { lineHeight: typography.heading[2].lineHeight, fontWeight: typography.heading[2].fontWeight }],
+        'heading-3': [responsiveFontSizeToClamp(typography.heading[3].fontSize), { lineHeight: typography.heading[3].lineHeight, fontWeight: typography.heading[3].fontWeight }],
+        'heading-4': [responsiveFontSizeToClamp(typography.heading[4].fontSize), { lineHeight: typography.heading[4].lineHeight, fontWeight: typography.heading[4].fontWeight }],
         'heading-5': ['14px', { lineHeight: '1.5', fontWeight: '600' }], // 14px semibold for smaller headings
         'heading-6': ['12px', { lineHeight: '1.5', fontWeight: '600' }], // 12px semibold for smallest headings
-        body: [typography.body.fontSize.DEFAULT, { lineHeight: typography.body.lineHeight, fontWeight: typography.body.fontWeight }],
-        'body-large': [typography['body-large'].fontSize.DEFAULT, { lineHeight: typography['body-large'].lineHeight }],
+        body: [responsiveFontSizeToClamp(typography.body.fontSize), { lineHeight: typography.body.lineHeight, fontWeight: typography.body.fontWeight }],
+        'body-large': [responsiveFontSizeToClamp(typography['body-large'].fontSize), { lineHeight: typography['body-large'].lineHeight }],
         'body-small': [typography['body-small'].fontSize, { lineHeight: typography['body-small'].lineHeight }],
         caption: [typography.caption.fontSize, { lineHeight: typography.caption.lineHeight }],
+        micro: [typography.micro.fontSize, { lineHeight: typography.micro.lineHeight, fontWeight: typography.micro.fontWeight, letterSpacing: typography.micro.letterSpacing }],
         label: [typography.label.fontSize, { lineHeight: typography.label.lineHeight, fontWeight: typography.label.fontWeight }],
-        button: [typography.button.fontSize.DEFAULT, { lineHeight: typography.button.lineHeight, fontWeight: typography.button.fontWeight }],
+        button: [responsiveFontSizeToClamp(typography.button.fontSize), { lineHeight: typography.button.lineHeight, fontWeight: typography.button.fontWeight }],
       },
       
       // Spacing tokens (semantic + responsive)
@@ -110,6 +158,12 @@ module.exports = {
         'neu-inset-sm': 'var(--shadow-neu-inset-sm)',
         'neu-outset-lg': 'var(--shadow-neu-outset-lg)',
       },
+
+      // Subtle interaction scales (avoid arbitrary scale-[...])
+      scale: {
+        98: '0.98',
+        101: '1.01',
+      },
       
       // Border radius tokens
       borderRadius: {
@@ -118,6 +172,22 @@ module.exports = {
         input: borders.radius.input,
         modal: borders.radius.modal,
         badge: borders.radius.badge,
+      },
+
+      // Semantic z-index scale (backed by CSS variables)
+      zIndex: {
+        ...layout.zIndex,
+      },
+
+      // Semantic sizing helpers (backed by CSS variables)
+      maxWidth: {
+        ...layout.maxWidth,
+      },
+      maxHeight: {
+        ...layout.maxHeight,
+      },
+      minHeight: {
+        ...layout.minHeight,
       },
       
       // Animation tokens

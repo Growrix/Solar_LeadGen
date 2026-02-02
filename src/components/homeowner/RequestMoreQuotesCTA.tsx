@@ -75,7 +75,7 @@ const RequestMoreQuotesCTA: React.FC<RequestMoreQuotesCTAProps> = ({
       )}
 
       {isFirstQuote ? (
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-body-small text-muted-foreground">
             Welcome! You&apos;re ready to get quotes from verified solar installers. No phone verification required for your first quote.
           </p>
@@ -90,7 +90,7 @@ const RequestMoreQuotesCTA: React.FC<RequestMoreQuotesCTAProps> = ({
           </Button>
         </div>
       ) : requiresVerification ? (
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-body-small text-warning">
             Your phone number must be verified before you can request more quotes. This keeps the marketplace fair and secure.
           </p>
@@ -105,7 +105,7 @@ const RequestMoreQuotesCTA: React.FC<RequestMoreQuotesCTAProps> = ({
           </Button>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-body-small text-muted-foreground">
             {hasRemaining
               ? 'Ready to explore more installers? Launch the quote request wizard to tailor your next project.'

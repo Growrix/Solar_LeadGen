@@ -5,6 +5,7 @@ import { X, Award, DollarSign, Calendar, Battery, Zap, TrendingUp, MapPin, Home,
 import SavingsChart from './SavingsChart';
 import Button from '@/components/ui/button';
 import BiddingStatusBadge from '@/components/BiddingStatusBadge';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 interface Bid {
   id: string;
@@ -167,13 +168,9 @@ export default function BidEvaluationModal({
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-background relative w-full h-full md:max-w-6xl md:h-[90vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg"
-        onClick={e => e.stopPropagation()}
+    <Dialog open={isOpen} onOpenChange={(open: boolean) => { if (!open) onClose(); }}>
+      <DialogContent
+        className="bg-background relative w-full h-full max-w-none left-0 right-0 top-0 translate-y-0 rounded-none p-0 shadow-neu-outset-lg animate-scale-in md:left-4 md:right-4 md:top-1/2 md:-translate-y-1/2 md:max-w-6xl md:max-h-modal md:rounded-2xl"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
@@ -183,13 +180,14 @@ export default function BidEvaluationModal({
               Compare anonymous bids for Lead #{leadId}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-surface rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <DialogClose asChild>
+            <button
+              className="p-2 hover:bg-surface rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Bids Comparison Table */}
@@ -787,7 +785,7 @@ export default function BidEvaluationModal({
               {displayBids.map((bid) => (
                 <div
                   key={bid.id}
-                  className={`bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4 border-2 transition-all ${
+                  className={`bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4 border-2 transition ${
                     bid.isYourBid 
                       ? 'border-primary/50 shadow-neu-outset' 
                       : 'border-transparent hover:border-border'
@@ -937,7 +935,7 @@ export default function BidEvaluationModal({
             Close
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

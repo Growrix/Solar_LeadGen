@@ -18,14 +18,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  MapPinIcon,
-  CurrencyPoundIcon,
-  ClockIcon,
-  SparklesIcon,
-  ShieldCheckIcon,
-  EyeSlashIcon
-} from '@heroicons/react/24/outline';
+import { Clock, EyeOff, MapPin, PoundSterling, ShieldCheck, Sparkles } from 'lucide-react';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
 
 interface Lead {
@@ -166,13 +159,13 @@ export default function InstallerMarketplacePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+            <div className="h-8 bg-subtle rounded w-1/3 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="h-64 bg-slate-200 rounded-lg"></div>
+                <div key={i} className="h-64 bg-subtle rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -183,7 +176,7 @@ export default function InstallerMarketplacePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-error/10 border border-error rounded-lg p-6">
             <p className="text-error">Error: {error}</p>
@@ -194,7 +187,7 @@ export default function InstallerMarketplacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -210,7 +203,7 @@ export default function InstallerMarketplacePage() {
         {!session?.user?.installerVerified && (
           <div className="mb-6 bg-warning/10 border border-warning rounded-lg p-4">
             <div className="flex items-center">
-              <ShieldCheckIcon className="h-5 w-5 text-warning mr-2" />
+              <ShieldCheck className="h-5 w-5 text-warning mr-2" />
               <p className="text-warning">
                 Verification Required
               </p>
@@ -230,7 +223,7 @@ export default function InstallerMarketplacePage() {
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filter === type
                   ? 'bg-brand-600 text-foreground-secondary'
-                  : 'bg-surface text-foreground border border-border hover:bg-slate-50'
+                  : 'bg-surface text-foreground border border-border hover:bg-surface-hover'
               }`}
             >
               {type === 'ALL' ? 'All Leads' : type.replace('_', ' ')}
@@ -241,7 +234,7 @@ export default function InstallerMarketplacePage() {
         {/* Leads Grid */}
         {filteredLeads.length === 0 ? (
           <div className="bg-surface rounded-lg p-12 text-center">
-            <SparklesIcon className="h-12 w-12 text-muted mx-auto mb-4" />
+            <Sparkles className="h-12 w-12 text-muted mx-auto mb-4" />
             <p className="text-muted">
               No leads available at the moment. Check back soon!
             </p>
@@ -277,7 +270,7 @@ export default function InstallerMarketplacePage() {
                 <div className="space-y-3 mb-4">
                   {/* Masked Homeowner Name */}
                   <div className="flex items-center text-body-small">
-                    <EyeSlashIcon className="h-4 w-4 text-muted mr-2" />
+                    <EyeOff className="h-4 w-4 text-muted mr-2" />
                     <span className="text-muted">
                       Homeowner: {lead.homeowner.name.split(' ')[0]}*** {/* Mask last name */}
                     </span>
@@ -286,7 +279,7 @@ export default function InstallerMarketplacePage() {
                   {/* Location (if available) */}
                   {lead.location && (
                     <div className="flex items-center text-body-small">
-                      <MapPinIcon className="h-4 w-4 text-muted mr-2" />
+                      <MapPin className="h-4 w-4 text-muted mr-2" />
                       <span className="text-muted">{lead.location}</span>
                     </div>
                   )}
@@ -307,7 +300,7 @@ export default function InstallerMarketplacePage() {
 
                   {/* Created Date */}
                   <div className="flex items-center text-body-small">
-                    <ClockIcon className="h-4 w-4 text-muted mr-2" />
+                    <Clock className="h-4 w-4 text-muted mr-2" />
                     <span className="text-muted">
                       {new Date(lead.createdAt).toLocaleDateString()}
                     </span>
@@ -318,7 +311,7 @@ export default function InstallerMarketplacePage() {
                 <div className="border-t border-border pt-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
-                      <CurrencyPoundIcon className="h-5 w-5 text-brand-600 mr-1" />
+                      <PoundSterling className="h-5 w-5 text-brand-600 mr-1" />
                       <span className="text-heading-2 text-foreground">
                         {lead.leadPrice || 50}
                       </span>
@@ -331,7 +324,7 @@ export default function InstallerMarketplacePage() {
                     disabled={!session?.user?.installerVerified || purchasing === lead.id}
                     className={`w-full py-3 px-4 rounded-lg transition-colors ${
                       !session?.user?.installerVerified
-                        ? 'bg-slate-300 text-muted cursor-not-allowed'
+                        ? 'bg-subtle text-muted-foreground cursor-not-allowed'
                         : purchasing === lead.id
                         ? 'bg-brand-400 text-foreground-secondary cursor-wait'
                         : 'bg-brand-600 text-foreground-secondary hover:bg-brand-700'

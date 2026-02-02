@@ -98,7 +98,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
+      className="fixed inset-0 bg-scrim/50 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -110,7 +110,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       <div
         ref={modalRef}
-        className={`theme-card relative w-full ${maxWidthClasses[maxWidth]} p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up ${className}`}
+        className={`theme-card relative w-full ${maxWidthClasses[maxWidth]} p-8 max-h-modal overflow-y-auto animate-slide-in-up ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}

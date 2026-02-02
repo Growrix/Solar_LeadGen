@@ -163,7 +163,7 @@ const Footer: React.FC<FooterProps> = ({ onBecomePartnerClick, onPartnerSignInCl
                 <a href="#" className="text-body-small text-muted-foreground hover:text-primary transition-colors">Cookie Policy</a>
                 <a href="#" className="text-body-small text-muted-foreground hover:text-primary transition-colors">Sitemap</a>
               </div>
-              <div className="text-body-small text-muted-foreground text-center lg:text-right">
+              <div className="text-body-small text-muted-foreground flex flex-col items-center">
                 <p>&copy; {new Date().getFullYear()} SolarMatch Australia. All rights reserved.</p>
                 <p className="mt-1">ABN: 12 345 678 901</p>
               </div>

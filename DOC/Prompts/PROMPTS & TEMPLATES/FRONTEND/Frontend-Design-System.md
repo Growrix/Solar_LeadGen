@@ -1,21 +1,21 @@
-# Frontend Design System
+# Frontend Design System (Universal Guidelines)
 
 ## Purpose
-A pro-level, modern, and scalable design system defining all visual and brand choices for the frontend. This file is the single source of truth for design tokens, component styles, usage guidelines, and mobile app-like design patterns.
+A pro-level, modern, and scalable design system guideline for frontend projects. **This file is NOT the source of truth for any specific product or brand.**
 
 ---
 
 - **Colors:**
-  - Primary: #1976d2
-  - Secondary: #ff9800
-  - Background: #f5f5f5
-  - Surface: #ffffff
-  - Error: #d32f2f
-  - Success: #388e3c
-  - Warning: #ffa726
-  - Info: #0288d1
-  - Text Primary: #212121
-  - Text Secondary: #757575
+  - Primary: _(example: #1976d2)_
+  - Secondary: _(example: #ff9800)_
+  - Background: _(example: #f5f5f5)_
+  - Surface: _(example: #ffffff)_
+  - Error: _(example: #d32f2f)_
+  - Success: _(example: #388e3c)_
+  - Warning: _(example: #ffa726)_
+  - Info: _(example: #0288d1)_
+  - Text Primary: _(example: #212121)_
+  - Text Secondary: _(example: #757575)_
 - **Typography:**
   - Font Family: 'Inter', 'Roboto', Arial, sans-serif
   - Font Sizes: 0.75rem, 0.875rem, 1rem, 1.25rem, 1.5rem, 2rem, 2.5rem
@@ -163,15 +163,21 @@ A pro-level, modern, and scalable design system defining all visual and brand ch
 
 ---
 
+
 ## Usage Guidelines
-- Always use tokens for colors, spacing, and typography—never hardcode values
-- Reference this file for all component and layout decisions
-- Always test layouts and forms at common laptop resolutions (e.g., 1366x768, 1440x900) to ensure comfortable sizing and spacing
-- Update this file as the design evolves, but keep changes traceable
+- This file provides universal design system guidelines and examples only.
+- **Do not use the color codes or tokens here as the source of truth for any product.**
+- For any specific product or SaaS, always refer to the SOT file: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/Design-System.md`.
+- Always use tokens for colors, spacing, and typography—never hardcode values.
+- Reference this file for general component and layout decisions, but defer to your product's SOT for implementation.
+- Always test layouts and forms at common laptop resolutions (e.g., 1366x768, 1440x900) to ensure comfortable sizing and spacing.
+- Update this file as the design evolves, but keep changes traceable.
 
 ---
 
 ## Instructions
-- Use this design system for all visual and brand choices in the frontend
-- Never override industry standards or best practices
-- Update and expand this file as your product grows
+- Use this file as a universal reference for best practices and design patterns.
+- **Do not treat this file as the implementation source of truth.**
+- For the actual design system of your SaaS or product, use and maintain `Design-System.md` as the SOT.
+- Never override industry standards or best practices.
+- Update and expand this file as your product grows.

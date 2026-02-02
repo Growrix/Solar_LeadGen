@@ -147,7 +147,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
     <section className="blog-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-heading-2 lg:text-heading-1 text-foreground mb-4">
+          <h2 className="text-heading-1 text-foreground mb-4">
             Latest Solar News & Insights
           </h2>
           <p className="text-body-large text-muted-foreground max-w-3xl mx-auto">

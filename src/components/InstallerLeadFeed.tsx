@@ -8,6 +8,7 @@ import BiddingStatusBadge from './BiddingStatusBadge';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
 import Button from '@/components/ui/button';
 import QuoteDataDisplay from '@/components/admin/QuoteDataDisplay';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 // --- Icon Components ---
 const FilterIcon = ({ className ="h-4 w-4" }: { className?: string }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3z"/></svg>;
@@ -203,7 +204,7 @@ const StripeUnlockModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-scrim/50 backdrop-blur-sm" onClick={onClose} />
       <div className="theme-card relative w-full max-w-md mx-4 p-6">
         <Button 
           onClick={onClose}
@@ -319,18 +320,19 @@ const ViewDetailsModal: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-surface rounded-lg border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-outset-lg)' }} onClick={(e) => e.stopPropagation()}>
+    <Dialog open={isOpen} onOpenChange={(open) => (open ? undefined : onClose())}>
+      <DialogContent className="max-w-2xl w-full max-h-modal overflow-y-auto bg-surface rounded-lg border border-border shadow-neu-outset-lg p-0">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
           <h2 className="text-heading-3 text-foreground">Lead Details</h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
-            aria-label="Close modal"
-          >
-            <XIcon className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <DialogClose asChild>
+            <button
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Close modal"
+            >
+              <XIcon className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Content */}
@@ -387,9 +389,9 @@ const ViewDetailsModal: React.FC<{
             <h3 className="text-heading-4 text-foreground mb-3">Property Details</h3>
             <div className="space-y-2">
               {lead.address && (
-                <div className="flex items-start justify-between pb-2 border-b border-border">
-                  <span className="text-body-small text-muted-foreground">Full Address:</span>
-                  <span className="text-body-small text-foreground text-right max-w-[60%]">{lead.address}</span>
+                <div className="grid grid-cols-5 items-start gap-2 pb-2 border-b border-border">
+                  <span className="text-body-small text-muted-foreground col-span-2">Full Address:</span>
+                  <span className="text-body-small text-foreground text-right col-span-3 break-words">{lead.address}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
@@ -551,8 +553,8 @@ const ViewDetailsModal: React.FC<{
             Close
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

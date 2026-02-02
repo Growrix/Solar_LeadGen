@@ -2,37 +2,9 @@
 'use client';
 
 import React from 'react';
+import { AlertCircle, BarChart3, Mail, X } from 'lucide-react';
 import Button from '@/components/ui/button';
-
-// --- Icon Components ---
-const XIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
-const AlertCircleIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-warning">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
-
-const BarChartIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-primary">
-    <line x1="12" y1="20" x2="12" y2="10" />
-    <line x1="18" y1="20" x2="18" y2="4" />
-    <line x1="6" y1="20" x2="6" y2="16" />
-  </svg>
-);
-
-const MailIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-primary">
-    <rect width="20" height="16" x="2" y="4" rx="2" />
-    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-  </svg>
-);
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 interface LeadLimitReachedModalProps {
   isOpen: boolean;
@@ -47,40 +19,27 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
   usedQuotes,
   totalQuoteLimit,
 }) => {
-  if (!isOpen) return null;
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   const handleContactSupport = () => {
     window.location.href = 'mailto:support@solarmatch.com.au?subject=Request%20Additional%20Quote%20Limit';
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/50 backdrop-blur-sm animate-fade-in"
-      onClick={handleBackdropClick}
-    >
-      <div
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => (open ? undefined : onClose())}>
+      <DialogContent className="w-full max-w-2xl max-h-modal overflow-y-auto bg-surface shadow-neu-outset-md text-foreground animate-slide-in-up p-0">
         <div className="card bg-surface shadow-neu-outset-md text-foreground">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
-          aria-label="Close"
-        >
-          <XIcon />
-        </button>
+          {/* Close Button */}
+          <DialogClose asChild>
+            <button
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
+              aria-label="Close"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </DialogClose>
 
         {/* Warning Icon */}
         <div className="flex flex-col items-center justify-center pt-8 pb-6">
-          <AlertCircleIcon />
+          <AlertCircle className="h-16 w-16 text-warning" />
           <h2 className="text-heading-1 text-foreground mt-4 mb-2">
             Quote Request Limit Reached
           </h2>
@@ -93,7 +52,7 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
         <div className="mx-6 mb-6 p-6 card bg-warning/10 border border-warning">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
-              <BarChartIcon />
+              <BarChart3 className="h-5 w-5 text-primary" />
               <div>
                 <h3 className="text-heading-4 text-foreground mb-1">
                   Quote Usage
@@ -115,7 +74,7 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
         {/* Info Section */}
         <div className="mx-6 mb-6 p-6 card bg-surface border border-border">
           <h3 className="text-heading-4 text-foreground mb-4 flex items-center gap-2">
-            <BarChartIcon />
+            <BarChart3 className="h-5 w-5 text-primary" />
             What happens next?
           </h3>
           <ul className="space-y-3 text-muted-foreground">
@@ -140,20 +99,18 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 mx-6 mb-6">
-          <Button
-            onClick={onClose}
-            variant="primary"
-            className="flex-1"
-          >
-            Close
-          </Button>
+          <DialogClose asChild>
+            <Button variant="primary" className="flex-1">
+              Close
+            </Button>
+          </DialogClose>
           {/* Use semantic Button component instead of legacy class */}
           <Button
             onClick={handleContactSupport}
             variant="secondary"
             className="flex-1 flex items-center justify-center gap-2"
           >
-            <MailIcon />
+            <Mail className="h-5 w-5 text-primary" />
             Contact Support
           </Button>
         </div>
@@ -169,8 +126,8 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
           </p>
         </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

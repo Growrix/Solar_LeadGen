@@ -113,7 +113,7 @@ export default function InstallerHomePage() {
       </div>
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="hero-section relative flex items-center justify-center min-h-[70vh] sm:min-h-[calc(100vh-80px)] overflow-hidden pt-8 sm:pt-24 pb-12 sm:pb-0">
+        <section className="hero-section relative flex items-center justify-center min-h-hero sm:min-h-viewport-minus-header overflow-hidden pt-8 sm:pt-24 pb-12 sm:pb-0">
           {/* Gradient Overlay */}
           <div className="gradient-overlay absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-transparent"></div>
           
@@ -122,7 +122,7 @@ export default function InstallerHomePage() {
             {/* Floating Geometric Shapes */}
             <div className="absolute top-20 left-10 w-16 h-16 border border-primary/20" style={{ animation: 'float-slow 8s ease-in-out infinite' }}></div>
             <div className="absolute top-40 right-20 w-8 h-8 bg-primary/10 rounded-full" style={{ animation: 'float-medium 6s ease-in-out infinite' }}></div>
-            <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-slate-500/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
+            <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-primary/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
             <div className="absolute top-60 left-1/3 w-6 h-6 bg-primary/15 transform rotate-45" style={{ animation: 'float-slow 8s ease-in-out infinite 1s' }}></div>
             <div className="absolute bottom-60 right-1/3 w-10 h-10 border border-border" style={{ animation: 'float-medium 6s ease-in-out infinite 1s' }}></div>
             
@@ -153,7 +153,7 @@ export default function InstallerHomePage() {
             <div className="absolute bottom-20 left-20">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="relative w-16 h-10 m-1 inline-block" style={{ animation: `panel-track 6s ease-in-out infinite ${i * 0.5}s` }}>
-                  <div className="panel-surface w-full h-full bg-slate-200 border border-primary/20 rounded relative">
+                  <div className="panel-surface w-full h-full bg-subtle border border-primary/20 rounded relative">
                     <div className="panel-glow" style={{ animation: `panel-glow-anim 4s ease-in-out infinite ${i * 0.3}s` }}></div>
                   </div>
                 </div>
@@ -164,11 +164,11 @@ export default function InstallerHomePage() {
           {/* Main Content */}
           <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
-              <h1 className="text-heading-1 md:text-heading-1 lg:text-heading-1 leading-tight mb-4 text-foreground">
+              <h1 className="text-heading-1 leading-tight mb-4 text-foreground">
                 Grow Smarter.
                 <span className="text-primary"> Not Harder.</span>
               </h1>
-              <p className="text-heading-4 md:text-heading-3 text-muted mb-10 max-w-2xl mx-auto">
+              <p className="text-heading-3 text-muted mb-10 max-w-2xl mx-auto">
                 From lead capture to compliance, future-proof your solar business with tools built for Australian installers.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -179,7 +179,7 @@ export default function InstallerHomePage() {
                 >
                   Try It Free
                 </Button>
-                <button className="bg-transparent border-2 border-slate-800 text-foreground px-8 py-3 rounded-xl text-heading-4 hover:bg-surface hover:text-foreground-secondary transition-colors shadow-lg">
+                <button className="bg-transparent border-2 border-border text-foreground px-8 py-3 rounded-xl text-heading-4 hover:bg-surface hover:text-foreground-secondary transition-colors shadow-lg">
                   Watch Installer Stories
                 </button>
               </div>
@@ -192,7 +192,7 @@ export default function InstallerHomePage() {
           <div className="animated-grid-background"></div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-heading-1 md:text-heading-1 text-foreground mb-4">
+              <h2 className="text-heading-1 text-foreground mb-4">
                 How SolarMatch Works for You
               </h2>
               <p className="text-heading-4 text-muted">

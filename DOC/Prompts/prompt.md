@@ -5752,3 +5752,6 @@ End Phase 2 explicitly with:
 > **“PHASE 2 COMPLETE — GAP ANALYSIS GENERATED”**
 
 ---
+-------------------------------------------------------------------------------
+
+in order to avoid miscommunications and confusions I want to read back and audit back as per needed and pin point the accurate tasks stepy by step. Create a phase in the DOC\Features\BLOG\tasks.md with all the remaining tasks by also referring all the important audit reports and docuemntations including SOT and plans within it . So that everything will be traceable , where now we are lacking of it and that is creating confusions and wrong implimenetations. must create the pashe in DOC\Features\BLOG\tasks.md to impliment next tasks. If you are confused then audit back accordingly and replan if needed and make sure we are doing everything based on the exactly current state and accurately. 

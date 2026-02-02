@@ -223,9 +223,9 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={notification.id}
-                  className={`relative transition-all duration-200 cursor-pointer ${
+                  className={`relative transition duration-200 cursor-pointer ${
                     !notification.isRead 
-                      ? "bg-surface border-l-4 border-primary hover:shadow-card hover:scale-[1.01]" 
+                      ? "bg-surface border-l-4 border-primary hover:shadow-card hover:scale-101" 
                       : "bg-surface opacity-70 hover:opacity-90"
                   }`}
                   tabIndex={0}

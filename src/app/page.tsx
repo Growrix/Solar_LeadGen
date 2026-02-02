@@ -680,7 +680,7 @@ export default function Home() {
         {/* Removed all gradient overlays for a flat cream look in light mode */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-heading-2 lg:text-heading-1 text-foreground mb-4">
+            <h2 className="text-heading-1 text-foreground mb-4">
               How Much Could You Save?
             </h2>
             <p className="text-body-large text-muted-foreground max-w-3xl mx-auto">

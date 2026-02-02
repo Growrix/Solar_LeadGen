@@ -178,7 +178,7 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
 
     return (
         <div 
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 md:hidden flex items-center justify-center p-4 animate-fade-in" 
+        className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 md:hidden flex items-center justify-center p-4 animate-fade-in" 
             onClick={onClose}
         >
             <div 

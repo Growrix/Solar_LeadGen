@@ -14,15 +14,15 @@
 }
 .theme-light .btn-delete {
   background-color: rgb(var(--color-error));
-  color: #fff;
+  color: rgb(255 255 255);
 }
 .theme-purple .btn-delete {
   background-color: rgb(var(--color-error));
-  color: #1a112e;
+  color: rgb(26 17 46);
 }
 /* Dark theme: theme-card uses elevated background and shows shadow on hover and active */
 :root.theme-dark .theme-card {
-  background: #121212;
+  background: rgb(var(--color-background));
   box-shadow: var(--shadow-outset-md);
 }
 :root.theme-dark .theme-card:hover,
@@ -66,13 +66,21 @@
   --color-foreground-secondary: 255 255 255; /* #FFFFFF - High emphasis text */
   --color-foreground-muted: 209 213 219;  /* #D1D5DB - Secondary text, labels (gray-300) */
   --color-foreground-tertiary: 107 114 128; /* #6B7280 - Tertiary text, placeholders (gray-400) */
+  --color-foreground-subtle: 107 114 128; /* Alias for subtle UI text (matches tertiary) */
   
   /* Icon Colors */
   --color-icon: 229 231 235;              /* #E5E7EB - Icon color (gray-200) */
+
+  /* Select caret icon (kept as a token so the rule stays theme-driven) */
+  --select-caret-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23E5E7EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   
   /* Accent Color - White Only */
   --color-accent: 255 255 255;            /* #FFFFFF - CTAs, links, focus states */
   --color-accent-hover: 230 230 230;      /* #E6E6E6 - Hover on white accent */
+  --color-accent-foreground: 18 18 18;    /* Text/icon color on accent surfaces */
+
+  /* Overlay / Scrim (modal backdrops) */
+  --color-scrim: 0 0 0;                   /* Semantic overlay color; use with opacity via Tailwind */
   
   /* Border Colors */
   --color-border: 44 44 44;               /* #2C2C2C - Subtle borders */
@@ -118,6 +126,7 @@
   --radius-md: 0.75rem;     /* 12px */
   --radius-lg: 1rem;        /* 16px */
   --radius-xl: 1.25rem;     /* 20px */
+  --radius-2xl: 1.5rem;     /* 24px */
   --radius-full: 9999px;    /* Fully rounded */
   
   /* --------------------------------------------------
@@ -126,21 +135,21 @@
      -------------------------------------------------- */
   
   /* Shadow Colors - Solid colors per prototype */
-  --shadow-light: #242424;                    /* Light highlight (solid) */
-  --shadow-dark: #000000;                     /* Dark shadow (solid) */
-  --shadow-inset-light: #1a1a1a;              /* Inset highlight (solid) */
-  --shadow-inset-dark: #000000;               /* Inset shadow (solid) */
+  --shadow-light: 36 36 36;                   /* #242424 - Light highlight (solid) */
+  --shadow-dark: 0 0 0;                       /* #000000 - Dark shadow (solid) */
+  --shadow-inset-light: 26 26 26;             /* #1A1A1A - Inset highlight (solid) */
+  --shadow-inset-dark: 0 0 0;                 /* #000000 - Inset shadow (solid) */
   
   /* Outset Shadows (Raised Elements) */
-  --shadow-outset-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-  --shadow-outset-md: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-  --shadow-outset-lg: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-  --shadow-outset-xl: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+  --shadow-outset-sm: 4px 4px 8px rgb(var(--shadow-dark)), -4px -4px 8px rgb(var(--shadow-light));
+  --shadow-outset-md: 6px 6px 12px rgb(var(--shadow-dark)), -6px -6px 12px rgb(var(--shadow-light));
+  --shadow-outset-lg: 8px 8px 16px rgb(var(--shadow-dark)), -8px -8px 16px rgb(var(--shadow-light));
+  --shadow-outset-xl: 12px 12px 24px rgb(var(--shadow-dark)), -12px -12px 24px rgb(var(--shadow-light));
   
   /* Inset Shadows (Pressed Elements) */
-  --shadow-inset-sm: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
-  --shadow-inset-md: inset 4px 4px 8px var(--shadow-inset-dark), inset -4px -4px 8px var(--shadow-inset-light);
-  --shadow-inset-lg: inset 6px 6px 12px var(--shadow-inset-dark), inset -6px -6px 12px var(--shadow-inset-light);
+  --shadow-inset-sm: inset 3px 3px 6px rgb(var(--shadow-inset-dark)), inset -3px -3px 6px rgb(var(--shadow-inset-light));
+  --shadow-inset-md: inset 4px 4px 8px rgb(var(--shadow-inset-dark)), inset -4px -4px 8px rgb(var(--shadow-inset-light));
+  --shadow-inset-lg: inset 6px 6px 12px rgb(var(--shadow-inset-dark)), inset -6px -6px 12px rgb(var(--shadow-inset-light));
   
   /* Legacy shadow aliases - TO BE DEPRECATED */
   --shadow-neu-outset: var(--shadow-outset-md);
@@ -178,6 +187,17 @@
   --z-modal: 1400;
   --z-popover: 1500;
   --z-tooltip: 1600;
+
+  /* --------------------------------------------------
+     SIZING (Semantic, reusable)
+     -------------------------------------------------- */
+  --size-modal-max-h-sm: 70vh;
+  --size-modal-max-h: 90vh;
+  --size-modal-max-h-lg: 95vh;
+  --size-viewport-98w: 98vw;
+  --size-viewport-98h: 98vh;
+  --size-hero-min-h: 70vh;
+  --size-viewport-minus-header: calc(100vh - 80px);
 }
 
 /* --------------------------------------------------
@@ -194,13 +214,21 @@
   --color-foreground-secondary: 17 24 39; /* #111827 - High emphasis text (gray-900) */
   --color-foreground-muted: 55 65 81;     /* #374151 - Secondary text (gray-700) */
   --color-foreground-tertiary: 107 114 128; /* #6B7280 - Tertiary text, placeholders (gray-500) */
+  --color-foreground-subtle: 107 114 128; /* Alias for subtle UI text (matches tertiary) */
   
   /* Icon Colors */
   --color-icon: 17 24 39;                 /* #111827 - Very dark icons for maximum contrast */
+
+  /* Select caret icon */
+  --select-caret-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23111827' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   
   /* Accent Color - Pure Black (same as dark theme background) */
   --color-accent: 0 0 0;                  /* #000000 - Pure black accent for maximum contrast */
   --color-accent-hover: 37 37 37;         /* #252525 - Hover state */
+  --color-accent-foreground: 255 255 255; /* Text/icon color on accent surfaces */
+
+  /* Overlay / Scrim (modal backdrops) */
+  --color-scrim: 0 0 0;                   /* Semantic overlay color; use with opacity via Tailwind */
   
   /* Border Colors */
   --color-border: 156 163 175;            /* #9CA3AF - Stronger borders for visibility */
@@ -242,24 +270,25 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
   --radius-full: 9999px;
   
   /* Shadows - Neumorphic Light Style */
-  --shadow-light: #FFFFFF;                    /* White highlight */
-  --shadow-dark: #A3B1C6;                     /* Neumorphic shadow */
-  --shadow-inset-light: #FFFFFF;              /* Inset highlight */
-  --shadow-inset-dark: #A3B1C6;               /* Inset shadow */
+  --shadow-light: 255 255 255;                /* #FFFFFF - White highlight */
+  --shadow-dark: 163 177 198;                 /* #A3B1C6 - Neumorphic shadow */
+  --shadow-inset-light: 255 255 255;          /* #FFFFFF - Inset highlight */
+  --shadow-inset-dark: 163 177 198;           /* #A3B1C6 - Inset shadow */
   
   /* Outset Shadows */
-  --shadow-outset-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-  --shadow-outset-md: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-  --shadow-outset-lg: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-  --shadow-outset-xl: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+  --shadow-outset-sm: 4px 4px 8px rgb(var(--shadow-dark)), -4px -4px 8px rgb(var(--shadow-light));
+  --shadow-outset-md: 6px 6px 12px rgb(var(--shadow-dark)), -6px -6px 12px rgb(var(--shadow-light));
+  --shadow-outset-lg: 8px 8px 16px rgb(var(--shadow-dark)), -8px -8px 16px rgb(var(--shadow-light));
+  --shadow-outset-xl: 12px 12px 24px rgb(var(--shadow-dark)), -12px -12px 24px rgb(var(--shadow-light));
   
   /* Inset Shadows */
-  --shadow-inset-sm: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
-  --shadow-inset-md: inset 4px 4px 8px var(--shadow-inset-dark), inset -4px -4px 8px var(--shadow-inset-light);
-  --shadow-inset-lg: inset 6px 6px 12px var(--shadow-inset-dark), inset -6px -6px 12px var(--shadow-inset-light);
+  --shadow-inset-sm: inset 3px 3px 6px rgb(var(--shadow-inset-dark)), inset -3px -3px 6px rgb(var(--shadow-inset-light));
+  --shadow-inset-md: inset 4px 4px 8px rgb(var(--shadow-inset-dark)), inset -4px -4px 8px rgb(var(--shadow-inset-light));
+  --shadow-inset-lg: inset 6px 6px 12px rgb(var(--shadow-inset-dark)), inset -6px -6px 12px rgb(var(--shadow-inset-light));
   
   /* Legacy shadow aliases */
   --shadow-neu-outset: var(--shadow-outset-md);
@@ -306,13 +335,21 @@
   --color-foreground-secondary: 255 255 255; /* #FFFFFF - High emphasis */
   --color-foreground-muted: 202 190 255;  /* #CABEFF - Medium lavender secondary */
   --color-foreground-tertiary: 160 148 194; /* #A094C2 - Placeholder lavender */
+  --color-foreground-subtle: 160 148 194; /* Alias for subtle UI text (matches tertiary) */
   
   /* Icon Colors */
   --color-icon: 213 201 255;              /* #D5C9FF - Bright lavender icons */
+
+  /* Select caret icon */
+  --select-caret-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23D5C9FF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   
   /* Accent Color */
   --color-accent: 167 139 250;            /* #A78BFA - Vibrant purple accent */
   --color-accent-hover: 196 181 253;      /* #C4B5FD - Lighter purple hover */
+  --color-accent-foreground: 26 17 46;    /* Text/icon color on accent surfaces */
+
+  /* Overlay / Scrim (modal backdrops) */
+  --color-scrim: 0 0 0;                   /* Semantic overlay color; use with opacity via Tailwind */
   
   /* Border Colors */
   --color-border: 76 51 131;              /* #4C3383 - Purple borders */
@@ -354,24 +391,25 @@
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
   --radius-full: 9999px;
   
   /* Shadows - Purple-tinted Neumorphism */
-  --shadow-light: #3E296C;                    /* Lighter purple highlight */
-  --shadow-dark: #1A112E;                     /* Very dark purple shadow */
-  --shadow-inset-light: #3E296C;              /* Inset highlight */
-  --shadow-inset-dark: #1A112E;               /* Inset shadow */
+  --shadow-light: 62 41 108;                  /* #3E296C - Lighter purple highlight */
+  --shadow-dark: 26 17 46;                    /* #1A112E - Very dark purple shadow */
+  --shadow-inset-light: 62 41 108;            /* #3E296C - Inset highlight */
+  --shadow-inset-dark: 26 17 46;              /* #1A112E - Inset shadow */
   
   /* Outset Shadows */
-  --shadow-outset-sm: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-  --shadow-outset-md: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-  --shadow-outset-lg: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-  --shadow-outset-xl: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+  --shadow-outset-sm: 4px 4px 8px rgb(var(--shadow-dark)), -4px -4px 8px rgb(var(--shadow-light));
+  --shadow-outset-md: 6px 6px 12px rgb(var(--shadow-dark)), -6px -6px 12px rgb(var(--shadow-light));
+  --shadow-outset-lg: 8px 8px 16px rgb(var(--shadow-dark)), -8px -8px 16px rgb(var(--shadow-light));
+  --shadow-outset-xl: 12px 12px 24px rgb(var(--shadow-dark)), -12px -12px 24px rgb(var(--shadow-light));
   
   /* Inset Shadows */
-  --shadow-inset-sm: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
-  --shadow-inset-md: inset 4px 4px 8px var(--shadow-inset-dark), inset -4px -4px 8px var(--shadow-inset-light);
-  --shadow-inset-lg: inset 6px 6px 12px var(--shadow-inset-dark), inset -6px -6px 12px var(--shadow-inset-light);
+  --shadow-inset-sm: inset 3px 3px 6px rgb(var(--shadow-inset-dark)), inset -3px -3px 6px rgb(var(--shadow-inset-light));
+  --shadow-inset-md: inset 4px 4px 8px rgb(var(--shadow-inset-dark)), inset -4px -4px 8px rgb(var(--shadow-inset-light));
+  --shadow-inset-lg: inset 6px 6px 12px rgb(var(--shadow-inset-dark)), inset -6px -6px 12px rgb(var(--shadow-inset-light));
   
   /* Legacy shadow aliases */
   --shadow-neu-outset: var(--shadow-outset-md);
@@ -751,7 +789,7 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: var(--shadow-inset-md) !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+    background-image: var(--select-caret-icon) !important;
     background-position: right 0.75rem center !important;
     background-repeat: no-repeat !important;
     background-size: 1.25em 1.25em !important;
@@ -1380,6 +1418,10 @@ body {
   .text-primary-foreground {
     color: rgb(var(--color-primary-foreground) / <alpha-value>);
   }
+
+  .after-content-empty::after {
+    content: '';
+  }
 }
 
 /* --- RESPONSIVE DESIGN IMPROVEMENTS --- */
@@ -1611,7 +1653,7 @@ body {
 .dashboard-collapse-btn--floating {
   @apply fixed top-4 h-8 w-8 flex items-center justify-center rounded-full bg-surface text-primary shadow-neu-inset border border-border transition-all duration-200;
   z-index: 100;
-  box-shadow: 0 2px 8px var(--shadow-dark);
+  box-shadow: 0 2px 8px rgb(var(--shadow-dark));
 }
 
 .dashboard-collapse-btn--floating-left {

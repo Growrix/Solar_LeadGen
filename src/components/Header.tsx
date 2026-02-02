@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme, isLoggedIn, onLoginCli
             {/* Logo */}
             <button onClick={onHomeClick} className="flex items-center space-x-3 cursor-pointer hover:opacity-90 transition-opacity">
               <SunIcon />
-              <span className="text-heading-3 sm:text-heading-2 text-primary">SolarMatch</span>
+              <span className="text-heading-2 text-primary">SolarMatch</span>
             </button>
             
             {/* Right Side: Theme Switcher + Navigation */}
@@ -49,13 +49,13 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme, isLoggedIn, onLoginCli
                   <>
                     <button 
                       onClick={onDashboardClick}
-                      className="px-5 py-2 text-body-small tracking-wider text-foreground hover:text-primary transition-colors rounded-full bg-background shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-[0.98]"
+                      className="px-5 py-2 text-body-small tracking-wider text-foreground hover:text-primary transition-colors rounded-full bg-background shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-98"
                     >
                       Dashboard
                     </button>
                     <button 
                       onClick={onLogoutClick}
-                      className="px-5 py-2 text-body-small tracking-wider text-foreground hover:text-primary transition-colors rounded-full bg-background shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-[0.98]"
+                      className="px-5 py-2 text-body-small tracking-wider text-foreground hover:text-primary transition-colors rounded-full bg-background shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-98"
                     >
                       Logout
                     </button>
@@ -64,13 +64,13 @@ const Header: React.FC<HeaderProps> = ({ theme, setTheme, isLoggedIn, onLoginCli
                   <>
                     <button 
                       onClick={onLoginClick}
-                      className="px-5 py-2 text-body-small tracking-wider text-foreground hover:text-primary transition-colors rounded-full bg-background shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-[0.98]"
+                      className="px-5 py-2 text-body-small tracking-wider text-foreground hover:text-primary transition-colors rounded-full bg-background shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-98"
                     >
                       Login
                     </button>
                     <button 
                       onClick={onSignupClick}
-                      className="px-5 py-2 text-body-small tracking-wider border border-primary text-primary rounded-full bg-transparent shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-[0.98]"
+                      className="px-5 py-2 text-body-small tracking-wider border border-primary text-primary rounded-full bg-transparent shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-98"
                     >
                       Sign Up
                     </button>

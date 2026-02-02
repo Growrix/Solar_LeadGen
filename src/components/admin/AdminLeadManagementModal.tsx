@@ -592,7 +592,7 @@ export default function AdminLeadManagementModal({
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
+          className="fixed inset-0 bg-scrim/50 transition-opacity"
           onClick={onClose}
         />
 
@@ -639,7 +639,7 @@ export default function AdminLeadManagementModal({
           )}
 
           {/* Scrollable Body */}
-          <div className="px-6 py-4 grid grid-cols-1 lg:grid-cols-5 lg:grid-flow-row-dense gap-6 max-h-[70vh] overflow-y-auto items-start">
+          <div className="px-6 py-4 grid grid-cols-1 lg:grid-cols-5 lg:grid-flow-row-dense gap-6 max-h-modal-sm overflow-y-auto items-start">
 
             {/* Negotiation Window (Written Quotes) */}
             <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-2 lg:col-start-4">

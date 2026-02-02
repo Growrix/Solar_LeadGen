@@ -1,5 +1,27 @@
 # Frontend Global Design System Audit (2026-01-26)
 
+## Revalidation (2026-01-29)
+
+This report was revalidated against the current rollback state on **2026-01-29** (pre-migration).
+
+- No material changes were found in the core global design-system files:
+  - `src/app/globals.css`
+  - `tailwind.config.js`
+  - `src/components/ThemeProvider.tsx`
+  - `src/app/layout.tsx`
+- The findings in this report were accurate at the time of revalidation.
+
+### Status After P0 Fixes (2026-01-29)
+
+The following P0 fixes were implemented after revalidation:
+
+- Tailwind dark selector now matches `.theme-dark` (so `dark:*` variants can work).
+- `system` theme now resolves to OS `prefers-color-scheme` and applies `theme-dark` or `theme-light`.
+
+Remaining high-priority work:
+
+- Multiple competing sources of truth for colors (CSS vs TS token files) still needs a final decision and cleanup.
+
 ## Scope
 This audit reviews the **global frontend settings** and any files that define or influence the **design system** (tokens, theming, typography, spacing, motion, layering) and compares them against the requirements implied by the design system template in:
 

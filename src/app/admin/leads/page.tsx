@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme, type Theme } from '@/components/ThemeProvider';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
-import Button from '@/components/Button';
+import Button from '@/components/ui/button';
 
 interface Lead {
   id: string;
@@ -192,7 +192,7 @@ export default function AdminLeadsPage() {
       {/* Search & Filters */}
       <div className="bg-surface rounded-2xl shadow-neu-outset p-6 mb-6">
         <form className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
-          <div className="flex-1 flex flex-col gap-2 min-w-[220px]">
+          <div className="flex-1 flex flex-col gap-2 min-w-56">
             <label className="block text-body-small text-foreground">Search Leads</label>
             <div className="relative">
               <input
@@ -219,7 +219,7 @@ export default function AdminLeadsPage() {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
+          <div className="flex-1 flex flex-col gap-2 min-w-48">
             <label className="block text-body-small text-foreground">Status</label>
             <select
               value={statusFilter}
@@ -237,7 +237,7 @@ export default function AdminLeadsPage() {
             </select>
           </div>
 
-          <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
+          <div className="flex-1 flex flex-col gap-2 min-w-48">
             <label className="block text-body-small text-foreground">Verification</label>
             <select
               value={verificationFilter}
@@ -250,7 +250,7 @@ export default function AdminLeadsPage() {
             </select>
           </div>
 
-          <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
+          <div className="flex-1 flex flex-col gap-2 min-w-48">
             <label className="block text-body-small text-foreground">Postcode</label>
             <input
               type="text"
@@ -261,7 +261,7 @@ export default function AdminLeadsPage() {
             />
           </div>
 
-          <div className="flex-1 flex items-end min-w-[180px]">
+          <div className="flex-1 flex items-end min-w-48">
             <Button
               onClick={fetchLeads}
               disabled={loading}

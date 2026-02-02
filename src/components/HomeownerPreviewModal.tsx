@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Edit, Check, Lock, Sun, Zap, Battery, DollarSign, Calendar, Award } from 'lucide-react';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 import SavingsChart from './SavingsChart';
 
 interface HomeownerPreviewModalProps {
@@ -61,8 +62,6 @@ export default function HomeownerPreviewModal({
   installerInfo,
   isSubmitting = false
 }: HomeownerPreviewModalProps) {
-  if (!isOpen) return null;
-
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-AU', {
       style: 'currency',
@@ -72,13 +71,9 @@ export default function HomeownerPreviewModal({
     }).format(value);
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-background relative w-full h-full md:max-w-5xl md:h-[90vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg"
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open={isOpen} onOpenChange={(open) => (open ? undefined : onClose())}>
+      <DialogContent
+        className="left-0 right-0 top-0 translate-y-0 mx-0 max-w-none w-full h-screen p-0 overflow-hidden bg-background shadow-neu-outset-lg md:left-4 md:right-4 md:top-1/2 md:-translate-y-1/2 md:mx-auto md:max-w-5xl md:max-h-modal md:rounded-2xl animate-scale-in"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
@@ -88,13 +83,14 @@ export default function HomeownerPreviewModal({
               Review your bid as the homeowner will see it
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-surface rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <DialogClose asChild>
+            <button
+              className="p-2 hover:bg-surface rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Content */}
@@ -324,7 +320,7 @@ export default function HomeownerPreviewModal({
             )}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

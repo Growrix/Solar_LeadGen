@@ -1,7 +1,7 @@
 commit all the changes to your local repository:
 git add .
 git commit -m "Your commit message"
-Push the changes to the remote repository: git push to the branch-name: WP-CMS-INTEGRATED
+Push the changes to the remote repository: git push to the branch-name: FRONTEND UPDATE
 
  ***backup instruction***
 Take a backup of the PostgreSQL database running in Docker to ensure data safety before making any significant changes. Use the following command to create a backup:

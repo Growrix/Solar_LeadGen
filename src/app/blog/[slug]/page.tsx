@@ -89,8 +89,8 @@ export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) 
           </header>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-start">
-              <div className="max-w-3xl">
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-10 items-start">
+              <div className="max-w-3xl lg:col-span-7">
                 <Link href="/blog" className="inline-flex items-center text-primary hover:text-primary/80 text-body-small mb-8">
                   Back to All Articles
                 </Link>
@@ -110,7 +110,7 @@ export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) 
                   </div>
                 ) : null}
 
-                <h1 className="text-heading-1 sm:text-heading-1 md:text-heading-1 text-foreground mb-6 tracking-tight">{title}</h1>
+                <h1 className="text-heading-1 text-foreground mb-6 tracking-tight">{title}</h1>
 
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground mb-8 border-y border-border py-4">
                   <div className="flex items-center space-x-2">
@@ -127,7 +127,9 @@ export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) 
                 </div>
               </div>
 
-              <BlogSidebarClient categories={sidebarCategories} recentPosts={recentPosts} />
+              <div className="lg:col-span-3">
+                <BlogSidebarClient categories={sidebarCategories} recentPosts={recentPosts} />
+              </div>
             </div>
           </div>
         </article>

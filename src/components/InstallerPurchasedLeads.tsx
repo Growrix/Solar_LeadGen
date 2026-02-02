@@ -13,15 +13,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  PhoneIcon,
-  EnvelopeIcon,
-  MapPinIcon,
-  CurrencyPoundIcon,
-  CalendarIcon,
-  CheckCircleIcon,
-  EyeIcon
-} from '@heroicons/react/24/outline';
+import { Calendar, CheckCircle2, Eye, Mail, MapPin, Phone, PoundSterling } from 'lucide-react';
 
 interface PurchasedLead {
   id: string;
@@ -100,9 +92,9 @@ export default function InstallerPurchasedLeads() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+        <div className="h-8 bg-subtle rounded w-1/3 mb-6"></div>
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-48 bg-slate-200 rounded-lg"></div>
+          <div key={i} className="h-48 bg-subtle rounded-lg"></div>
         ))}
       </div>
     );
@@ -136,7 +128,7 @@ export default function InstallerPurchasedLeads() {
               <p className="text-body-small text-muted">Total Purchased</p>
               <p className="text-heading-1 text-foreground mt-2">{totalPurchased}</p>
             </div>
-            <CheckCircleIcon className="h-12 w-12 text-success" />
+            <CheckCircle2 className="h-12 w-12 text-success" />
           </div>
         </div>
 
@@ -146,7 +138,7 @@ export default function InstallerPurchasedLeads() {
               <p className="text-body-small text-muted">Total Spent</p>
               <p className="text-heading-1 text-foreground mt-2">£{totalSpent}</p>
             </div>
-            <CurrencyPoundIcon className="h-12 w-12 text-info" />
+            <PoundSterling className="h-12 w-12 text-info" />
           </div>
         </div>
 
@@ -156,7 +148,7 @@ export default function InstallerPurchasedLeads() {
               <p className="text-body-small text-muted">This Month</p>
               <p className="text-heading-1 text-foreground mt-2">{thisMonth}</p>
             </div>
-            <CalendarIcon className="h-12 w-12 text-accent" />
+            <Calendar className="h-12 w-12 text-accent" />
           </div>
         </div>
       </div>
@@ -164,7 +156,7 @@ export default function InstallerPurchasedLeads() {
       {/* Leads List */}
       {leads.length === 0 ? (
         <div className="text-center py-12 bg-surface rounded-lg border border-border">
-          <CheckCircleIcon className="h-12 w-12 text-muted mx-auto mb-3" />
+          <CheckCircle2 className="h-12 w-12 text-muted mx-auto mb-3" />
           <h3 className="text-heading-4 text-foreground mb-1">
             No purchased leads yet
           </h3>
@@ -185,7 +177,7 @@ export default function InstallerPurchasedLeads() {
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-caption bg-success/20 text-success">
-                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                      <CheckCircle2 className="h-4 w-4 mr-1" />
                       Purchased
                     </span>
                     <span className="text-body-small text-muted">
@@ -200,16 +192,16 @@ export default function InstallerPurchasedLeads() {
                     </h3>
                     <div className="flex flex-wrap gap-4 text-body-small text-muted">
                       <a href={`tel:${lead.homeowner.phone}`} className="flex items-center space-x-2 hover:text-info">
-                        <PhoneIcon className="h-4 w-4" />
+                        <Phone className="h-4 w-4" />
                         <span>{lead.homeowner.phone}</span>
                       </a>
                       <a href={`mailto:${lead.homeowner.email}`} className="flex items-center space-x-2 hover:text-info">
-                        <EnvelopeIcon className="h-4 w-4" />
+                        <Mail className="h-4 w-4" />
                         <span>{lead.homeowner.email}</span>
                       </a>
                       {lead.location && (
                         <div className="flex items-center space-x-2">
-                          <MapPinIcon className="h-4 w-4" />
+                          <MapPin className="h-4 w-4" />
                           <span>{lead.location}</span>
                         </div>
                       )}
@@ -246,26 +238,26 @@ export default function InstallerPurchasedLeads() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-row lg:flex-col gap-2 lg:min-w-[160px]">
+                <div className="flex flex-row lg:flex-col gap-2 lg:min-w-40">
                   <button
                     onClick={() => handleCall(lead.homeowner.phone)}
                     className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-success hover:bg-success text-foreground-secondary rounded-lg transition-colors"
                   >
-                    <PhoneIcon className="h-5 w-5" />
+                    <Phone className="h-5 w-5" />
                     <span>Call Now</span>
                   </button>
                   <button
                     onClick={() => handleEmail(lead.homeowner.email)}
                     className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-primary hover:bg-primary text-foreground-secondary rounded-lg transition-colors"
                   >
-                    <EnvelopeIcon className="h-5 w-5" />
+                    <Mail className="h-5 w-5" />
                     <span>Send Email</span>
                   </button>
                   <button
                     onClick={() => handleViewDetails(lead.id)}
-                    className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-slate-600 hover:bg-surface text-foreground-secondary rounded-lg transition-colors"
+                    className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-subtle hover:bg-surface-hover text-foreground rounded-lg transition-colors"
                   >
-                    <EyeIcon className="h-5 w-5" />
+                    <Eye className="h-5 w-5" />
                     <span>View Details</span>
                   </button>
                 </div>

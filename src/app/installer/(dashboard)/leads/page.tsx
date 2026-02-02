@@ -265,7 +265,7 @@ export default function InstallerLeadsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
           <p className="text-foreground-muted">Loading your assigned leads...</p>
@@ -276,12 +276,12 @@ export default function InstallerLeadsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <p className="text-error mb-4">⚠️ {error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-accent text-white rounded-lg hover:opacity-90"
+            className="px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:opacity-90"
           >
             Retry
           </button>
@@ -292,7 +292,7 @@ export default function InstallerLeadsPage() {
 
   if (!installer) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-96">
         <p className="text-foreground-muted">No installer profile found.</p>
       </div>
     );

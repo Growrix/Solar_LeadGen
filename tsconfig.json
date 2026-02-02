@@ -31,12 +31,21 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "prisma/**/*.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
+    "DOC",
+    "DOC/**",
+    "specs",
+    "specs/**",
+    "tests",
+    "tests/**",
+    "test-results",
+    "playwright-report",
     "__archive__",
     "__archive__/**",
       "backup",

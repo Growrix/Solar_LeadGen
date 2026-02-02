@@ -146,7 +146,7 @@ export default function InstallerSelectorModal({
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
+          className="fixed inset-0 bg-scrim/50 transition-opacity"
           onClick={onClose}
         />
 
@@ -159,7 +159,7 @@ export default function InstallerSelectorModal({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-muted-foreground"
+              className="text-muted-foreground hover:text-foreground"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -168,7 +168,7 @@ export default function InstallerSelectorModal({
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="px-6 py-4 space-y-4 max-h-modal-sm overflow-y-auto">
             {/* Error Alert */}
             {error && (
               <div className="rounded-md bg-error/10 p-4">
@@ -183,7 +183,7 @@ export default function InstallerSelectorModal({
                 placeholder="Search by name, email, company, or postcode..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-md border border-border px-4 py-2 bg-surface text-foreground focus:ring-2 focus:ring-emerald-500"
+                className="w-full rounded-md border border-border px-4 py-2 bg-surface text-foreground focus:ring-2 focus:ring-primary"
               />
 
               <div className="flex items-center justify-between">
@@ -194,7 +194,7 @@ export default function InstallerSelectorModal({
                     onChange={(e) => setIncludeUnverified(e.target.checked)}
                     className="rounded border-border text-success focus:ring-success"
                   />
-                  <span className="text-body-small text-gray-700">
+                  <span className="text-body-small text-foreground">
                     Include Unverified Installers
                   </span>
                 </label>
@@ -210,7 +210,7 @@ export default function InstallerSelectorModal({
 
             {/* Assignment Mode */}
             <div className="space-y-2">
-              <label className="block text-body-small text-gray-700">
+              <label className="block text-body-small text-foreground">
                 Assignment Mode
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -218,8 +218,8 @@ export default function InstallerSelectorModal({
                   onClick={() => setMode('exclusive')}
                   className={`px-4 py-3 rounded-md border-2 text-body-small transition-colors ${
                     mode === 'exclusive'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
-                      : 'border-border bg-surface text-gray-700 hover:border-gray-400'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-surface text-foreground hover:border-primary/40'
                   }`}
                 >
                   <div className="">Exclusive</div>
@@ -229,8 +229,8 @@ export default function InstallerSelectorModal({
                   onClick={() => setMode('competitive')}
                   className={`px-4 py-3 rounded-md border-2 text-body-small transition-colors ${
                     mode === 'competitive'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
-                      : 'border-border bg-surface text-gray-700 hover:border-gray-400'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-surface text-foreground hover:border-primary/40'
                   }`}
                 >
                   <div className="">Competitive</div>
@@ -241,7 +241,7 @@ export default function InstallerSelectorModal({
 
             {/* Installer List */}
             <div className="space-y-2">
-              <label className="block text-body-small text-gray-700">
+              <label className="block text-body-small text-foreground">
                 Select Installers ({selectedIds.length} selected)
               </label>
 
@@ -260,7 +260,7 @@ export default function InstallerSelectorModal({
                       key={installer.id}
                       className={`flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors ${
                         selectedIds.includes(installer.id)
-                          ? 'bg-emerald-50 border border-emerald-300'
+                          ? 'bg-success/10 border border-success/30'
                           : 'bg-surface hover:bg-surface border border-transparent'
                       }`}
                     >
@@ -295,7 +295,7 @@ export default function InstallerSelectorModal({
 
             {/* Assignment Notes */}
             <div className="space-y-2">
-              <label className="block text-body-small text-gray-700">
+              <label className="block text-body-small text-foreground">
                 Assignment Notes (Optional)
               </label>
               <textarea
@@ -303,7 +303,7 @@ export default function InstallerSelectorModal({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add any notes or context for the installer(s)..."
                 rows={3}
-                className="w-full rounded-md border border-border px-4 py-2 bg-surface text-foreground focus:ring-2 focus:ring-emerald-500"
+                className="w-full rounded-md border border-border px-4 py-2 bg-surface text-foreground focus:ring-2 focus:ring-primary"
               />
             </div>
 
@@ -315,7 +315,7 @@ export default function InstallerSelectorModal({
                 onChange={(e) => setNotifyInstallers(e.target.checked)}
                 className="rounded border-border text-success focus:ring-success"
               />
-              <span className="text-body-small text-gray-700">
+              <span className="text-body-small text-foreground">
                 Send notifications to assigned installers
               </span>
             </label>
@@ -326,7 +326,7 @@ export default function InstallerSelectorModal({
             <button
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 text-body-small text-gray-700 hover:bg-surface rounded-md transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-body-small text-foreground hover:bg-surface rounded-md transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

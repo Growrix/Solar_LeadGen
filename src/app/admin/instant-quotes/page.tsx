@@ -9,8 +9,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { X } from 'lucide-react';
 import SavingsChart from '@/components/SavingsChart';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 // ============================================================================
 // ICON COMPONENTS
@@ -32,10 +34,7 @@ const CalculatorIcon = () => (
 );
 
 const XIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-    <line x1="18" x2="6" y1="6" y2="18"/>
-    <line x1="6" x2="18" y1="6" y2="18"/>
-  </svg>
+  <X className="h-6 w-6" />
 );
 
 const RefreshIcon = () => (
@@ -618,18 +617,16 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface shadow-neu-outset rounded-2xl border border-border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+      <DialogContent className="bg-surface shadow-neu-outset rounded-2xl border border-border max-w-4xl w-full max-h-modal overflow-y-auto p-0">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
           <h2 className="text-heading-2 text-foreground">Quote Details</h2>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClose}
-          >
-            <XIcon />
-          </Button>
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              <XIcon />
+            </Button>
+          </DialogClose>
         </div>
 
         <div className="p-6 space-y-8">
@@ -1358,7 +1355,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
             Close
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

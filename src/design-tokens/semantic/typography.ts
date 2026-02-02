@@ -70,6 +70,13 @@ export const typography = {
     lineHeight: lineHeights.normal,
     letterSpacing: letterSpacing.wide,
   } as TextStyle,
+
+  micro: {
+    fontSize: '10px',
+    fontWeight: fontWeights.medium,
+    lineHeight: lineHeights.none,
+    letterSpacing: letterSpacing.wide,
+  } as TextStyle,
   
   label: {
     fontSize: fontSizes.sm,

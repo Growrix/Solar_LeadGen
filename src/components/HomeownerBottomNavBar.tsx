@@ -26,13 +26,15 @@ interface HomeownerBottomNavBarProps {
 
 const NavItem: React.FC<{ icon: React.ReactNode; label: string; isActive: boolean; onClick: () => void; badgeCount?: number; }> = ({ icon, label, isActive, onClick, badgeCount }) => (
   <button onClick={onClick} className={`relative flex flex-col items-center justify-center space-y-1 w-full pt-2 pb-1 transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted hover:text-primary/80'}`}>
-    {icon}
+    <span className="relative">
+      {icon}
+      {badgeCount && badgeCount > 0 && (
+        <span className="absolute -top-1 -right-2 bg-destructive text-foreground-secondary text-micro w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-background">
+          {badgeCount}
+        </span>
+      )}
+    </span>
     <span className="text-caption">{label}</span>
-    {badgeCount && badgeCount > 0 && (
-      <span className="absolute top-1 right-[calc(50%-22px)] bg-destructive text-foreground-secondary text-[10px] w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white">
-        {badgeCount}
-      </span>
-    )}
   </button>
 );
 
@@ -46,7 +48,7 @@ const HomeownerBottomNavBar: React.FC<HomeownerBottomNavBarProps> = ({ activePag
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-40">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border shadow-card z-40">
       <div className="flex items-center justify-around h-full max-w-md mx-auto">
         {currentPage === 'dashboard' ? (
           <NavItem icon={<HomeIcon />} label="Home" isActive={false} onClick={onHomeClick} />

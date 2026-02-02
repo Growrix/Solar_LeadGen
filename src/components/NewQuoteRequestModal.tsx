@@ -3,12 +3,8 @@
 
 import React, { useEffect } from 'react';
 import InstantQuoteForm from './InstantQuoteForm';
-
-const XIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 
 interface NewQuoteRequestModalProps {
   isOpen: boolean;
@@ -41,34 +37,45 @@ const NewQuoteRequestModal: React.FC<NewQuoteRequestModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8 sm:py-20 animate-fade-in"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div
-        className="theme-card relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 max-h-[95vh] overflow-y-auto animate-slide-in-up"
-        onClick={e => e.stopPropagation()}
+      <DialogContent
+        className="relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 max-h-modal"
+        onEscapeKeyDown={(event) => {
+          // Existing Escape handling is implemented via the component's effect.
+          event.preventDefault();
+        }}
+        onPointerDownOutside={(event) => {
+          event.preventDefault();
+          onClose();
+        }}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors p-2 sm:p-3 rounded-xl bg-background shadow-neu-inset hover:shadow-neu-outset"
-          aria-label="Close"
-        >
-          <XIcon />
-        </button>
+        <DialogClose asChild>
+          <button
+            className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors p-2 sm:p-3 rounded-xl bg-background shadow-neu-inset hover:shadow-neu-outset"
+            aria-label="Close"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </DialogClose>
+
         <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-heading-3 sm:text-heading-2 text-foreground mb-2">Request a New Quote</h2>
-          <p className="text-muted-foreground text-body-small">Fill out the form below to get a personalized solar quote from verified installers.</p>
+          <DialogTitle className="text-heading-3 text-foreground mb-2">Request a New Quote</DialogTitle>
+          <DialogDescription className="text-body-small text-muted-foreground">
+            Fill out the form below to get a personalized solar quote from verified installers.
+          </DialogDescription>
         </div>
         <InstantQuoteForm
           onQuoteCalculated={onQuoteCalculated}
           onProceedToDetailedQuote={onProceedToDetailedQuote}
           initialData={initialData ?? null}
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

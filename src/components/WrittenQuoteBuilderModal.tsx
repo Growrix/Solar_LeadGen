@@ -1358,12 +1358,12 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1400] flex items-center justify-center p-0 md:p-4 animate-fade-in"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal-backdrop flex items-center justify-center p-0 md:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
         ref={modalRef}
-        className="bg-background relative w-full h-full md:max-w-[98vw] md:max-h-[98vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg overflow-hidden"
+        className="bg-background relative w-full h-full md:max-w-viewport-98 md:max-h-viewport-98 md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Draft Restoration Banner */}
@@ -1496,9 +1496,9 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
         </header>
 
         {/* Main Content - Two Column Layout */}
-        <div className="flex-grow overflow-hidden flex gap-4 p-4 md:p-6">
+        <div className="flex-grow overflow-hidden grid grid-cols-10 gap-4 p-4 md:p-6">
           {/* Left Column - 70% - Form Sections */}
-          <div className="w-[70%] overflow-y-auto pr-2 space-y-6">
+          <div className="col-span-7 overflow-y-auto pr-2 space-y-6">
             {/* Homeowner Requirements (Phase 12 - T112) */}
             <HomeownerContext meta={quoteDraft.meta} />
 
@@ -1600,7 +1600,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
           </div>
 
           {/* Right Column - 30% - Customer Preview & Lead Details (Sticky) */}
-          <div className="w-[30%] overflow-y-auto pl-2">
+          <div className="col-span-3 overflow-y-auto pl-2">
             <div className="sticky top-0 space-y-6">
                 {/* Negotiation Panel (Phase 13W) */}
                 <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
@@ -1721,7 +1721,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                                 variant="secondary"
                                 onClick={handleRejectDeal}
                                 disabled={isRejectingDeal}
-                                className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                                className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                               >
                                 {isRejectingDeal ? 'Rejecting...' : 'Reject Deal'}
                               </Button>
@@ -1787,7 +1787,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                             variant="secondary"
                             onClick={handleRejectNegotiationClick}
                             disabled={isRejectingNegotiation}
-                            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           >
                             {isRejectingNegotiation ? 'Rejecting...' : 'Reject Quote'}
                           </Button>
@@ -1984,7 +1984,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       {/* Done Deal Confirmation Modal */}
       {showDoneDealConfirmation && negotiationQuote && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal flex items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div
@@ -2020,7 +2020,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
       {/* Reject Negotiation Confirmation Modal */}
       {showRejectNegotiationConfirmation && negotiationQuote && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal flex items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div

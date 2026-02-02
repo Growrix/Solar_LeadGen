@@ -174,7 +174,7 @@ export default function AdminBidsPanel({
           {sortedBids.map((bid) => (
             <div
               key={bid.id}
-              className={`bg-surface rounded-2xl shadow-neu-inset p-6 border-2 transition-all ${
+              className={`bg-surface rounded-2xl shadow-neu-inset p-6 border-2 transition ${
                 bid.flagged
                   ? 'border-error/50'
                   : bid.status === 'shortlisted'
@@ -421,7 +421,7 @@ export default function AdminBidsPanel({
                   <textarea
                     value={flagReason}
                     onChange={(e) => setFlagReason(e.target.value)}
-                    className="form-input w-full px-4 py-3 mb-3 min-h-[80px]"
+                    className="form-input w-full px-4 py-3 mb-3 min-h-20"
                     placeholder="E.g., Suspiciously low price, unverified company, quality concerns..."
                   />
                   <div className="flex gap-2">

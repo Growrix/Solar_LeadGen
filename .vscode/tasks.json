@@ -32,10 +32,11 @@
 		{
 			"label": "Gate0: Next build",
 			"type": "shell",
-			"command": "npm",
+			"command": "powershell",
 			"args": [
-				"run",
-				"build"
+				"-NoProfile",
+				"-Command",
+				"if (Test-Path .next) { Remove-Item -Recurse -Force .next }; npm run build"
 			],
 			"isBackground": false,
 			"problemMatcher": [],

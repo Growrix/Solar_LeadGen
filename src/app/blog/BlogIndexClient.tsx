@@ -127,8 +127,8 @@ export default function BlogIndexClient({
       <main className="flex-grow pb-24 md:pb-0">
         <section className="py-16 sm:py-24 bg-surface/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-fade-in-up">
-            <h1 className="text-heading-1 sm:text-heading-1 md:text-heading-1 text-foreground mb-4 tracking-tight">The SolarMatch Blog</h1>
-            <p className="text-heading-4 sm:text-heading-3 text-muted-foreground max-w-3xl mx-auto">Your definitive guide to solar energy, rebates, and technology in Australia.</p>
+            <h1 className="text-heading-1 text-foreground mb-4 tracking-tight">The SolarMatch Blog</h1>
+            <p className="text-heading-4 text-muted-foreground max-w-3xl mx-auto">Your definitive guide to solar energy, rebates, and technology in Australia.</p>
 
             <div className="max-w-xl mx-auto mt-10">
               <div className="theme-card flex items-center gap-3 px-4 py-3">
@@ -152,8 +152,8 @@ export default function BlogIndexClient({
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10 items-start">
-              <div>
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-10 items-start">
+              <div className="lg:col-span-7">
                 {filteredArticles.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {filteredArticles.slice(0, visibleCount).map((article, index) => (

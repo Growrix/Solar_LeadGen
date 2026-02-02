@@ -719,14 +719,14 @@ export default function HomeownerWrittenQuoteReviewModal({
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1400] flex items-center justify-center p-0 md:p-4 animate-fade-in"
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal-backdrop flex items-center justify-center p-0 md:p-4 animate-fade-in"
       onClick={() => {
         if (showConfirmation || showRejectConfirmation) return;
         onClose();
       }}
     >
       <div 
-        className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
+        className="bg-background relative w-full h-full md:max-w-viewport-98 md:max-h-viewport-98 md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -802,9 +802,9 @@ export default function HomeownerWrittenQuoteReviewModal({
 
               {/* 2 Column Grid */}
               {selectedWrittenQuote && (
-                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
                   {/* LEFT COLUMN: Written Quote Details */}
-                  <div className="space-y-6 overflow-y-auto">
+                  <div className="space-y-6 overflow-y-auto lg:col-span-7">
                     {/* Quote Header */}
                     <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
                       <div className="flex items-start justify-between">
@@ -1213,25 +1213,25 @@ export default function HomeownerWrittenQuoteReviewModal({
                       </h4>
                       <div className="space-y-3">
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Company:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Company:</span>
                           <span className="text-body text-foreground">
                             {selectedWrittenQuote.installer.companyName}
                           </span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Phone:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Phone:</span>
                           <span className="text-body text-foreground">
                             {selectedWrittenQuote.installer.phone || 'Not provided'}
                           </span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Email:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Email:</span>
                           <span className="text-body text-foreground">
                             {selectedWrittenQuote.installer.email || 'Not provided'}
                           </span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Address:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Address:</span>
                           <span className="text-body text-foreground">
                             {selectedWrittenQuote.installer.businessAddress || 'Not provided'}
                           </span>
@@ -1246,7 +1246,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                   )}
 
                   {/* RIGHT COLUMN: Lead Details (InstantQuote Data) */}
-                  <div className="space-y-6 lg:sticky lg:top-0 lg:h-fit">
+                  <div className="space-y-6 lg:sticky lg:top-0 lg:h-fit lg:col-span-3">
                     {/* Negotiation Panel */}
                     <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
                       <h3 className="text-heading-4 text-foreground">Negotiation</h3>
@@ -1535,7 +1535,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                 variant="secondary"
                 onClick={handleRejectClick}
                 disabled={isRejecting}
-                className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
                 {isRejecting ? (
                   <>
@@ -1583,7 +1583,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                       variant="secondary"
                       onClick={handleRejectDeal}
                       disabled={isRejectingDeal}
-                      className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                      className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                     >
                       {isRejectingDeal ? (
                         <>
@@ -1656,7 +1656,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       {/* Confirmation Modal */}
       {showConfirmation && selectedWrittenQuote && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal flex items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div
@@ -1692,7 +1692,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       {/* Reject Confirmation Modal */}
       {showRejectConfirmation && selectedWrittenQuote && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal flex items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div

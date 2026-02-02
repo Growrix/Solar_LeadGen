@@ -12,13 +12,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Button from '@/components/ui/button';
-
-// --- Icon Components ---
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
-
-const ShieldCheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-12 w-12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>;
-
-const AlertCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { AlertCircle, ShieldCheck, X } from 'lucide-react';
 
 interface OTPVerificationModalProps {
   isOpen: boolean;
@@ -272,37 +267,47 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
   const canResend = !isResending && resendCooldown === 0 && rateLimitRetryAfter === 0;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 animate-fade-in"
-      onClick={onClose}
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div 
-        className="theme-card max-w-md w-full p-8 relative animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
+      <DialogContent
+        className="max-w-md animate-scale-in"
+        onEscapeKeyDown={(event) => {
+          // Existing Escape handling is implemented via the component's effect.
+          event.preventDefault();
+        }}
+        onPointerDownOutside={(event) => {
+          event.preventDefault();
+          onClose();
+        }}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors p-2 rounded-lg"
-          aria-label="Close"
-        >
-          <XIcon />
-        </button>
+        <DialogClose asChild>
+          <button
+            className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors p-2 rounded-lg"
+            aria-label="Close"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </DialogClose>
 
         {/* Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-            <ShieldCheckIcon />
+            <ShieldCheck className="h-12 w-12" />
           </div>
         </div>
 
         {/* Header */}
-        <h2 className="text-heading-2 text-foreground text-center mb-2">
+        <DialogTitle className="text-heading-2 text-foreground text-center mb-2">
           Verify Your Phone
-        </h2>
-        <p className="text-muted text-center mb-6">
+        </DialogTitle>
+        <DialogDescription className="text-muted text-center mb-6">
           Enter the 6-digit code sent to<br />
           <span className="text-foreground">{phoneNumber}</span>
-        </p>
+        </DialogDescription>
 
         {/* OTP Input Fields */}
         <div className="flex justify-center gap-2 mb-6" onPaste={handlePaste}>
@@ -361,7 +366,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
         {error && (
           <div className="bg-error/10 border border-error rounded-lg p-3 mb-4 flex items-start gap-2">
             <div className="text-destructive flex-shrink-0 mt-0.5">
-              <AlertCircleIcon />
+              <AlertCircle className="h-5 w-5" />
             </div>
             <p className="text-body-small text-error">{error}</p>
           </div>
@@ -383,7 +388,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               disabled={!canResend || isVerifying}
               className={`text-label ${
                 canResend && !isVerifying
-                  ? 'text-primary hover:text-teal-700'
+                  ? 'text-primary hover:text-primary-hover'
                   : 'text-muted cursor-not-allowed'
               } transition-colors`}
             >
@@ -406,8 +411,8 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
         <p className="text-caption text-muted text-center mt-4">
           This helps us ensure the security of your account and prevents spam submissions.
         </p>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

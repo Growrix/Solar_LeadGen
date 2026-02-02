@@ -1,16 +1,16 @@
 /**
- * Semantic Color Tokens
- * 
- * Meaningful color names mapped to primitive values.
- * These change for rebranding (e.g., primary: blue-600 instead of teal-600).
- * 
- * Theme Support:
- * - light: Color value for light theme
- * - dark: Color value for dark theme
- * - DEFAULT: Tailwind default (same as light for backward compatibility)
- * 
- * Usage: Import in components, hooks, and Tailwind config.
- * 
+ * Semantic Color Tokens (DEPRECATED FOR RUNTIME)
+ *
+ * SolarMatch runtime color tokens are defined as CSS variables in `src/app/globals.css`.
+ * Tailwind consumes those variables directly via `tailwind.config.js`.
+ *
+ * This file remains as historical/reference material only and is intentionally
+ * NOT exported from `src/design-tokens/index.ts` to prevent multiple sources
+ * of truth (and AI/codegen picking the wrong token source).
+ *
+ * @deprecated Do not use for runtime styling. Use semantic Tailwind classes that
+ * resolve to CSS variables (e.g. `text-foreground`, `bg-surface`, `border-border`).
+ *
  * @see src/design-tokens/primitives/colors.ts for raw color values
  */
 

@@ -73,7 +73,7 @@ const GuestBottomNavBar: React.FC<GuestBottomNavBarProps> = ({
   };
   
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] z-40">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border shadow-card z-40">
       <div className="flex items-center justify-around h-full max-w-md mx-auto">
         <NavItem icon={<HomeIcon />} label="Home" onClick={handleHomeClick} />
         <NavItem icon={<ArticlesIcon />} label="Articles" onClick={onArticlesClick} />

@@ -1768,7 +1768,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                 <div className="detail-card">
                   <div className="text-center">
                     <p className="performance-item-label">Estimated Out-of-Pocket Cost</p>
-                    <p className="text-heading-1 md:text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
+                    <p className="text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
                   </div>
                   <div className="mt-6 pt-6 border-t border-border">
                     <h3 className="detail-card-header justify-center">Cost Breakdown</h3>

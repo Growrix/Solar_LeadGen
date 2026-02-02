@@ -1,8 +1,13 @@
 /**
- * Default SolarMatch Theme
- * 
- * This file is separate from index.ts to avoid circular dependencies.
- * Client themes can import and extend this theme without circular imports.
+ * Default SolarMatch Theme (DEPRECATED FOR RUNTIME)
+ *
+ * SolarMatch runtime theming is implemented via CSS variables in `src/app/globals.css`
+ * and `ThemeProvider` applying `theme-dark|theme-light|theme-purple` on `<html>`.
+ *
+ * This TS-based theme model is not used by the app at runtime and is retained
+ * for reference only.
+ *
+ * @deprecated Do not use for runtime theming.
  */
 
 import { primitives } from '../primitives/colors'

@@ -45,7 +45,7 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
       </h3>
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
         {/* Project Type */}
-        <div className="flex-1 min-w-[160px]">
+        <div className="flex-1 min-w-40">
           <label className="text-label text-foreground block mb-2">Project Type</label>
           <select
             value={projectType}
@@ -62,7 +62,7 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
           )}
         </div>
         {/* System Type */}
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-52">
           <label className="text-label text-foreground block mb-2">System Type</label>
           <select
             value={systemType}
@@ -77,7 +77,7 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
           </select>
         </div>
         {/* System Size */}
-        <div className="flex-1 min-w-[140px]">
+        <div className="flex-1 min-w-36">
           <label className="text-label text-foreground block mb-2">System Size (kW)</label>
           <div className="flex items-center gap-2">
             <button
@@ -95,7 +95,7 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
               step="0.1"
               value={systemSize}
               onChange={(e) => handleSizeChange(parseFloat(e.target.value) || 0)}
-              className="form-input max-w-[100px] px-4 py-3"
+              className="form-input max-w-24 px-4 py-3"
             />
             <button
               type="button"

@@ -1,35 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function ThemeTestPage() {
-  const [isDark, setIsDark] = useState(true);
+  const { theme, setTheme } = useTheme();
 
-  // Toggle dark mode
+  const resolvedTheme = useMemo(() => {
+    if (theme !== 'system') return theme;
+    if (typeof window === 'undefined') return 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }, [theme]);
+
+  const isDark = resolvedTheme === 'dark';
+
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
+    setTheme(isDark ? 'light' : 'dark');
   };
 
   return (
-    <div className={isDark ? 'dark' : ''}>
-      <div className="min-h-screen bg-background transition-colors duration-300">
-        {/* Header with Theme Toggle */}
-        <header className="border-b border-border bg-surface">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <h1 className="text-heading-2 text-foreground">
-              Theme Test Dashboard
-            </h1>
-            <button
-              onClick={toggleTheme}
-              className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-foreground-secondary transition-colors"
-            >
-              {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
-            </button>
-          </div>
-        </header>
+    <div className="min-h-screen bg-background transition-colors duration-300">
+      {/* Header with Theme Toggle */}
+      <header className="border-b border-border bg-surface">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 className="text-heading-2 text-foreground">
+            Theme Test Dashboard
+          </h1>
+          <button
+            onClick={toggleTheme}
+            className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-foreground-secondary transition-colors"
+          >
+            {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          </button>
+        </div>
+      </header>
 
-        <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
           {/* Color Palette Display */}
           <section className="bg-surface border border-border rounded-xl p-6 shadow-lg">
             <h2 className="text-heading-3 text-foreground mb-6">
@@ -223,8 +229,7 @@ export default function ThemeTestPage() {
               </button>
             </div>
           </section>
-        </main>
-      </div>
+      </main>
     </div>
   );
 }

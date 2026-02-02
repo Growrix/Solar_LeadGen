@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { X } from 'lucide-react';
 import { z } from 'zod';
 import { useMultiFileUpload } from '@/hooks/useFileUpload';
 
@@ -206,17 +208,6 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
     }
   };
 
-  // Close on ESC
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [open, onClose]);
-
   // Reset on open
   useEffect(() => {
     if (open) {
@@ -228,17 +219,8 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal flex items-center justify-center px-4 py-6"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="verification-modal-title"
-    >
-      <div
-        className="bg-surface border border-border rounded-xl shadow-neu-outset max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent className="bg-surface border border-border rounded-xl shadow-neu-outset max-w-4xl w-full max-h-modal overflow-y-auto p-0">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
           <div>
@@ -249,15 +231,11 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
               Complete all required sections below
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-icon hover:text-foreground transition-colors"
-            aria-label="Close modal"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <DialogClose asChild>
+            <button className="text-icon hover:text-foreground transition-colors" aria-label="Close modal">
+              <X className="w-6 h-6" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Body - 4 Static Sections */}
@@ -853,8 +831,8 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
             )}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

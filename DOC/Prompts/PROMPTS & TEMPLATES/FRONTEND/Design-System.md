@@ -1,258 +1,420 @@
-# Project Design System
+
+
+# SolarMatch Design System SOT (Target v3)
+
+> **IMPORTANT:** This file is the **only source of truth** for the SolarMatch (or your SaaS) frontend design system. The universal guideline (`Frontend-Design-System.md`) is for reference and examples only—**do not use its color codes or tokens as SOT**. All implementation and product decisions must be based on this file.
 
 ## Purpose
-A pro-level, modern, and scalable design system defining all visual and brand choices for the frontend. This file is the single source of truth for design tokens, component styles, usage guidelines, and mobile app-like design patterns.
+This document is the single source of truth for the *target* frontend design system, referencing but not dictated by the universal guidelines in:
+`DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/Frontend-Design-System.md`.
+
+It defines the tokens, rules, and component standards that the codebase will be refactored to match.
 
 ---
 
-## Source of Truth (Current Implementation)
+## Source of Truth (Implementation References)
 
-These files define the global design system behavior and tokens used across the entire frontend:
+Current implementation sources (what exists today):
+- `src/app/globals.css` (CSS variables for theme tokens + semantic component classes)
+- `tailwind.config.js` (Tailwind mappings to CSS variables + TS token modules)
+- `src/design-tokens/**` (typography, spacing, borders, shadows, animations)
+- `src/components/ThemeProvider.tsx` (theme switching; writes `theme-*` classes on `<html>`)
+- `src/components/ThemeSwitcher.tsx` (theme switch UI)
+- `src/app/component-library/page.tsx` (component showcase / working examples)
 
-- Global CSS variables, base styles, and reusable utility classes: `src/app/globals.css`
-- Tailwind token wiring (semantic class names -> CSS variables): `tailwind.config.js`
-- Theme application + persistence (adds `theme-dark|theme-light|theme-purple|theme-system` class to `<html>`): `src/components/ThemeProvider.tsx`
-- App root layout (font + providers): `src/app/layout.tsx`
-- Semantic TS tokens (typography/spacing/shadows/borders/animations used by Tailwind config): `src/design-tokens/*`
+Audit output:
+- `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/AUDIT-OUTPUT-2026-02-01/Frontend-System-Gap-Audit-Report-2026-02-01.md`
 
 ---
 
-- **Colors:**
-  - Primary (alias, maps to `--color-primary`):
-    - Dark: #FFFFFF
-    - Light: #000000
-    - Purple: #A78BFA
-  - Secondary (alias, maps to `--color-secondary`):
-    - Dark: #1A1A1A
-    - Light: #E8EDF4
-    - Purple: #3E296C
-  - Background (maps to `--color-background`):
-    - Dark: #121212
-    - Light: #E0E5EC
-    - Purple: #2C1D4D
-  - Surface / Elevated (maps to `--color-background-elevated`):
-    - Dark: #1A1A1A
-    - Light: #E8EDF4
-    - Purple: #3E296C
-  - Border (maps to `--color-border`):
-    - Dark: #2C2C2C
-    - Light: #9CA3AF
-    - Purple: #4C3383
-  - Accent (preferred for CTAs/focus, maps to `--color-accent`):
-    - Dark: #FFFFFF
-    - Light: #000000
-    - Purple: #A78BFA
-  - Error (maps to `--color-error`):
-    - Dark: #F87171
-    - Light: #DC2626
-    - Purple: #F87171
-  - Success (maps to `--color-success`):
-    - Dark: #4ADE80
-    - Light: #16A34A
-    - Purple: #4ADE80
-  - Warning (maps to `--color-warning`):
-    - Dark: #FACC15
-    - Light: #EAB308
-    - Purple: #FACC15
-  - Info (maps to `--color-info`):
-    - Dark: #60A5FA
-    - Light: #2563EB
-    - Purple: #93C5FD
-  - Text Primary (maps to `--color-foreground`):
-    - Dark: #F3F4F6
-    - Light: #000000
-    - Purple: #E9E3FF
-  - Text Secondary (maps to `--color-foreground-muted`):
-    - Dark: #D1D5DB
-    - Light: #374151
-    - Purple: #CABEFF
-- **Typography:**
-  - Font Family:
-    - Primary: Inter (loaded via Next.js `next/font/google` and also locally via `@font-face` in `globals.css`)
-    - Fallback: system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif
-    - Mono: Fira Code, Courier New, Consolas, Monaco, monospace
-  - Font Sizes (semantic, see `src/design-tokens/semantic/typography.ts`):
-    - Heading 1: 24 / 30 / 36 (mobile / md / lg)
-    - Heading 2: 20 / 24 / 30
-    - Heading 3: 18 / 20 / 24
-    - Heading 4: 16 / 18 / 20
-    - Body: 14 (mobile) → 16 (desktop)
-    - Caption: 12
-  - Font Weights: 300 (light), 400 (normal), 500 (medium), 600 (semibold), 700 (bold)
-  - Line Heights: 1 (none), 1.25 (tight), 1.375 (snug), 1.5 (normal), 1.625 (relaxed), 2 (loose)
-- **Spacing:**
-  - Unit: 4px base (0.25rem)
-  - Scale (core, see `src/design-tokens/primitives/spacingScale.ts`): 0, 4, 8, 12, 16, 20, 24, 32, 48, 64 (and extended)
-  - Global CSS spacing variables (used in some global CSS):
-    - `--spacing-xs`: 4px, `--spacing-sm`: 8px, `--spacing-md`: 16px, `--spacing-lg`: 24px, `--spacing-xl`: 32px
-- **Border Radius:**
-  - Global CSS variables:
-    - `--radius-sm`: 8px
-    - `--radius-md`: 12px
-    - `--radius-lg`: 16px
-    - `--radius-xl`: 20px
-    - `--radius-full`: 9999px
-  - Tailwind semantic radii (wired from `src/design-tokens/semantic/borders.ts` in `tailwind.config.js`):
-    - `rounded-card`: 12px, `rounded-button`: 8px, `rounded-input`: 8px, `rounded-modal`: 16px
-- **Shadows:**
-  - Neumorphic CSS shadow system (global, theme-aware):
-    - `--shadow-outset-sm|md|lg|xl`
-    - `--shadow-inset-sm|md|lg`
-    - Legacy aliases: `--shadow-neu-outset*`, `--shadow-neu-inset*`
-  - Tailwind semantic shadows (wired from `src/design-tokens/semantic/shadows.ts`):
-    - `shadow-card`, `shadow-modal`, `shadow-dropdown`, `shadow-button`, `shadow-focus`
-- **Motion:**
-  - Transition:
-    - Default: 250ms `cubic-bezier(0.4, 0, 0.2, 1)`
-    - Fast: 150ms, Slow: 350ms
-  - Easing:
-    - `--ease-in-out`: cubic-bezier(0.4, 0, 0.2, 1)
-    - `--ease-out`: cubic-bezier(0, 0, 0.2, 1)
-- **Theme:**
-  - Implemented themes: Dark, Light, Purple via `<html>` class `theme-dark|theme-light|theme-purple` in `src/components/ThemeProvider.tsx`
-  - System theme: `theme-system` exists as a value in code, but is not currently mapped to `prefers-color-scheme` tokens
+## Design Tokens & Rules
 
-## 1a. Dark Mode Tokens
-- **Colors (Dark):**
-  - Background: #121212 (`--color-background`)
-  - Surface / Elevated: #1A1A1A (`--color-background-elevated`)
-  - Text Primary: #F3F4F6 (`--color-foreground`)
-  - Text Secondary: #D1D5DB (`--color-foreground-muted`)
-  - Card: use `.theme-card` or `bg-background-alt` (currently `--color-background-alt` is #1A1A1A)
-  - Border: #2C2C2C (`--color-border`)
-  - Update other tokens as needed for dark mode
+### Colors
 
-## 1b. Animation & Motion
-- **Motion:**
-  - Use transitions for all interactive elements (buttons, modals, drawers, etc.)
-  - Default: 0.2s cubic-bezier(0.4,0,0.2,1)
-  - Use prefers-reduced-motion media query to disable non-essential animations for accessibility
-  - Page transitions: fade/slide, 0.3s
+Token naming convention:
+- `primary` = brand primary (links, highlights)
+- `secondary` = brand secondary (secondary emphasis)
+- `accent` = primary call-to-action emphasis (buttons, focus)
+- `background`/`surface` = base layers
+- `foreground-*` = text hierarchy
 
-## 1c. Z-Index & Layering
-- **Z-Index Scale:**
-  - Dropdown: 1000 (`--z-dropdown`)
-  - Sticky: 1100 (`--z-sticky`)
-  - Fixed: 1200 (`--z-fixed`)
-  - Modal Backdrop: 1300 (`--z-modal-backdrop`)
-  - Modal: 1400 (`--z-modal`)
-  - Popover: 1500 (`--z-popover`)
-  - Tooltip: 1600 (`--z-tooltip`)
-  - Toast: (not standardized yet; Sonner is used via `Toaster` in `src/app/layout.tsx`)
+Universal baseline palette (Light):
+- Primary: `#1976D2` (rgb `25 118 210`)
+- Secondary: `#FF9800` (rgb `255 152 0`)
+- Background: `#F5F5F5` (rgb `245 245 245`)
+- Surface: `#FFFFFF` (rgb `255 255 255`)
+- Text Primary: `#212121` (rgb `33 33 33`)
+- Text Secondary: `#757575` (rgb `117 117 117`)
+- Error: `#D32F2F` (rgb `211 47 47`)
+- Success: `#388E3C` (rgb `56 142 60`)
+- Warning: `#FFA726` (rgb `255 167 38`)
+- Info: `#0288D1` (rgb `2 136 209`)
 
-## 1d. Iconography
-- **Icon Set:** lucide-react (primary) and @heroicons/react (legacy/secondary)
-- **Size:** 24x24px (default), 2px stroke
-- **Color:** Use currentColor for fill/stroke
-- **Usage:**
-  - Use SVGs for custom icons
-  - Maintain consistent style and alignment
+Theme tokens (target):
 
-## 1e. Image & Media
-- **Aspect Ratios:** 16:9, 4:3, 1:1 (as needed)
-- **Responsive Images:** Use srcset and sizes for responsive loading
-- **Lazy Loading:** All images should use lazy loading by default
-- **Optimization:** Compress images for web, use WebP where possible
+- **Primary**
+  - Light: `#1976D2`
+  - Dark: `#1976D2` (brand constant; hover uses darker shade)
+  - Purple: `#A78BFA` (premium variant)
 
-## 1f. Form Elements & Validation
-- **States:** default, focus, error, disabled, success
-- **Validation Feedback:**
-  - Inline (below field), toast, or modal as appropriate
-  - Use color and icon cues for error/success
-- **Accessibility:**
-  - Use aria-invalid, aria-describedby for errors
-  - Ensure all fields are keyboard accessible
+- **Secondary**
+  - Light: `#FF9800`
+  - Dark: `#FFB74D` (slightly lighter for contrast)
+  - Purple: `#C4B5FD`
 
-## 1g. Internationalization (i18n)
-- **Language Support:**
-  - Plan for multiple languages, including RTL (right-to-left) support
-- **Font Fallback:**
-  - Ensure font stacks support all required scripts
-- **Component Layout:**
-  - Test all components for RTL and LTR
+- **Accent (CTA + focus)**
+  - Light: `#FF9800`
+  - Dark: `#FF9800`
+  - Purple: `#A78BFA`
 
-## 1h. Documentation & Examples
-- For each component, provide code examples or Figma references (add links or sections as needed)
+- **Background**
+  - Light: `#F5F5F5`
+  - Dark: `#181818`
+  - Purple: `#2C1D4D`
 
-## 1i. Testing & QA
-- All components and layouts must be tested for:
-  - Accessibility (WCAG AA)
-  - Responsiveness (all breakpoints, especially laptop)
-  - Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
-  - Keyboard navigation and screen reader support
+- **Surface / Elevated**
+  - Light: `#FFFFFF`
+  - Dark: `#232323`
+  - Purple: `#3E296C`
 
-## 2. Breakpoints & Grid
-- **Breakpoints:**
-  - xs: 0-480px (mobile small)
-  - sm: 481-768px (mobile large)
-  - md: 769-1024px (tablet)
-  - lg: 1025-1440px (laptop/desktop, optimize for 1366–1440px)
-    - Note: Always test and optimize layouts, forms, and cards for common laptop resolutions (e.g., 1366x768, 1440x900) to avoid oversized or sparse UI. Use max-widths for containers and forms at this breakpoint.
-  - xl: 1441-1920px (large desktop)
-  - xxl: 1921px+
-- **Grid:**
-  - 12-column, fluid grid
-  - Gutters: 0.5rem, 1rem, 1.5rem
+- **Border**
+  - Light: `#E0E0E0`
+  - Dark: `#333333`
+  - Purple: `#4C3383`
 
-## 3. Components
-- **Button:**
-  - Variants: primary, secondary, text, icon, fab (floating action button)
-  - States: default, hover, active, disabled, loading
-  - Mobile: Large touch targets, bottom action bar support
-- **Card:**
-  - Responsive padding, elevation, border radius
-  - Mobile: Compact, swipeable, stackable
-- **Input:**
-  - Label, helper text, error state, clear button
-  - Mobile: Large tap area, auto-complete, numeric keypad for numbers
-- **Modal/Drawer:**
-  - Centered (desktop), full-screen or bottom sheet (mobile)
-  - Focus trap, scrollable, swipe-to-close (mobile)
-- **Alert/Toast:**
-  - Success, error, info, warning
-  - Mobile: Slide-in from bottom, dismissible by swipe
-- **Navigation:**
-  - Desktop: App bar, side nav, breadcrumbs, tabs
-  - Mobile: Bottom navigation, hamburger menu, swipe gestures
+- **Text (Hierarchy)**
+  - Light:
+    - Primary: `#212121`
+    - Secondary: `#757575`
+    - Subtle: `#9E9E9E`
+  - Dark:
+    - Primary: `#F5F5F5`
+    - Secondary: `#BDBDBD`
+    - Subtle: `#9E9E9E`
+  - Purple:
+    - Primary: `#E9E3FF`
+    - Secondary: `#CABEFF`
+    - Subtle: `#A094C2`
 
-## 4. Layout & Responsiveness
-- **Desktop:**
-  - Standard grid, sidebar, header/footer
-- **Mobile App-Like Design Guidelines:**
-  - Design mobile layouts as if for a native app, not just a scaled-down desktop
-  - Use bottom navigation for primary actions
-  - Floating action buttons for key actions
-  - Cards: Compact, swipeable, stack vertically, avoid excessive padding
-  - Touch targets: Minimum 44x44px (2.75rem)
-  - Typography: Larger, higher contrast, avoid dense text blocks
-  - Use sticky footers, pull-to-refresh, and mobile-specific gestures where appropriate
-  - Modals: Use bottom sheets or full-screen overlays
-  - Navigation: Hamburger menu or tab bar, avoid desktop-style sidebars
-  - Feedback: Use toasts, banners, and subtle haptics (if supported)
-  - Test all flows on real devices and emulators
+- **Status**
+  - Light:
+    - Error: `#D32F2F`
+    - Success: `#388E3C`
+    - Warning: `#FFA726`
+    - Info: `#0288D1`
+  - Dark:
+    - Error: `#EF5350`
+    - Success: `#66BB6A`
+    - Warning: `#FFB74D`
+    - Info: `#4FC3F7`
+  - Purple:
+    - Error: `#F87171`
+    - Success: `#4ADE80`
+    - Warning: `#FACC15`
+    - Info: `#93C5FD`
 
-## 5. Accessibility & UX
-- Ensure all components have focus states and are keyboard accessible
-- Use aria-labels and roles as needed
-- Maintain color contrast (WCAG AA minimum)
-- Support screen readers and dynamic font scaling
+Rules:
+- No hardcoded hex/rgb/rgba values in components.
+- No `text-gray-*`, `bg-slate-*`, or `dark:` classes.
+- Colors must be expressed via semantic Tailwind keys that map to CSS variables.
 
-## 6. Branding
-- **Logo:** Use the header/sidebar logo as the canonical reference; keep logo color theme-aware via semantic tokens (`text-primary`, `text-foreground`, etc.)
-- **Icons:** lucide-react preferred for consistency (24px / 2px stroke)
-- **Imagery:** [Brand imagery guidelines]
+---
+
+### Typography
+
+Font family (universal-aligned):
+- Primary: `Inter`
+- Fallback stack: `Inter, Roboto, Arial, system-ui, -apple-system, "Segoe UI", sans-serif`
+- Mono: `"Fira Code", Consolas, Monaco, "Courier New", monospace`
+
+Universal size scale (token baseline):
+- `0.75rem` (12px)
+- `0.875rem` (14px)
+- `1rem` (16px)
+- `1.25rem` (20px)
+- `1.5rem` (24px)
+- `2rem` (32px)
+- `2.5rem` (40px)
+
+Semantic typography utilities (project standard):
+- Headings: `text-heading-1` .. `text-heading-4`
+- Body: `text-body`, `text-body-large`, `text-body-small`
+- Meta: `text-caption`, `text-micro`, `text-label`
+
+Responsiveness:
+- Typography may be responsive via token definitions (e.g., clamp-based), but must not be applied ad-hoc via `sm:text-*` / `lg:text-*`.
+
+Font weights:
+- 400 (regular)
+- 500 (medium)
+- 700 (bold)
+
+Line heights:
+- 1.25 (tight)
+- 1.5 (normal)
+- 1.75 (relaxed)
+
+Rules:
+- Only use semantic typography utilities (e.g. `text-heading-1`, `text-body-small`).
+- Do not apply breakpoint typography overrides (`sm:text-*`, `lg:text-*`). Responsiveness must live in the token definitions.
+
+---
+
+### Icons
+
+Default icon system (UI):
+- Use `lucide-react` for all general-purpose UI icons.
+- Do not introduce new `@heroicons/react` imports.
+
+Allowed exceptions:
+- Brand/auth icons (e.g., Google/Apple) remain as custom SVG components under `src/components/icons/**`.
+
+Size scale:
+- `xs` = 14px
+- `sm` = 16px
+- `md` = 20px
+- `lg` = 24px
+- `xl` = 32px
+
+Implementation standard:
+- Prefer the canonical wrapper `src/components/ui/icon.tsx` to enforce consistent sizing/props.
+- Icons should inherit current text color (`className="text-current"` when needed) and rely on theme tokens for color.
+
+Rules:
+- Avoid inline SVGs in feature/pages. Use Lucide via `Icon`, or (for brand/auth only) custom SVG components under `src/components/icons/**`.
+- Icon-only buttons must have an `aria-label`.
+
+### Spacing
+
+Unit:
+- `4px` base (`0.25rem`).
+
+Scale:
+- `0.25rem` (4px)
+- `0.5rem` (8px)
+- `1rem` (16px)
+- `1.5rem` (24px)
+- `2rem` (32px)
+- `2.5rem` (40px)
+- `3rem` (48px)
+
+Semantic spacing tokens (implemented in TS):
+- `card-padding`, `modal-padding`, `form-gap`, `section-margin`, `heading-margin`, `button-padding-x/y`, `input-padding`, `nav-padding`
+
+Rules:
+- No Tailwind arbitrary spacing values (`p-[...]`, `gap-[...]`, `w-[...]`) except with an explicitly documented exception.
+
+---
+
+### Sizing
+
+Semantic sizing tokens (implemented via CSS variables in `src/app/globals.css` and surfaced through Tailwind):
+
+- Hero minimum height: `min-h-hero` (backs onto `--size-hero-min-h`)
+- Viewport minus header: `min-h-viewport-minus-header` (backs onto `--size-viewport-minus-header`)
+
+Rules:
+- Use semantic sizing utilities for repeated viewport/layout constraints; do not use `min-h-[...]` / `max-h-[...]` arbitrary values.
+
+---
+
+### Border Radius
+
+Universal-aligned radii:
+- Default: `0.25rem` (4px)
+- Card/Modal: `0.5rem` (8px)
+- Full: `9999px`
+
+Rules:
+- Components must use semantic radii (`rounded-card`, `rounded-modal`, etc.) mapped to these values.
+
+---
+
+### Shadows
+
+Universal-aligned elevation:
+- `shadow-sm`: `0 1px 3px rgba(0,0,0,0.08)`
+- `shadow-md`: `0 4px 12px rgba(0,0,0,0.12)`
+
+Rules:
+- No arbitrary shadows (`shadow-[...]`).
+- Shadows are semantic by elevation level (button/card/dropdown/modal).
+
+Note:
+- Neumorphic shadows may exist in the current implementation, but the **target v3** system aligns to the universal elevation model above.
+
+---
+
+### Motion
+
+Default transition:
+- `200ms cubic-bezier(0.4, 0, 0.2, 1)`
+
+Rules:
+- Prefer targeted transitions (`transition-colors`, `transition-shadow`, `transition-transform`, `transition-opacity`).
+- Respect `prefers-reduced-motion`: disable non-essential animations.
+
+---
+
+### Z-Index & Layering
+
+Universal-aligned scale:
+- Modal: `1000`
+- Drawer: `1100`
+- Tooltip: `1200`
+- Toast: `1300`
+- Dropdown: `1050`
+
+Rules:
+- Prefer semantic z-index utilities mapped from tokens; avoid scattered `z-*` usage in components.
+
+---
+
+### Theme
+
+Supported themes:
+- `dark`, `light`, `purple` (optional premium), and `system` (maps to dark/light).
+
+How theme switching works:
+- The `ThemeProvider` applies one of `theme-dark`, `theme-light`, `theme-purple` to `<html>`.
+- Theme preference is stored in localStorage key `solarmatch-theme`.
+- Tailwind dark variant uses `.theme-dark` selector (see `tailwind.config.js`).
+
+Rules:
+- Do not toggle Tailwind’s `dark` class directly.
+- Theme-aware colors must come from CSS variables.
+
+---
+
+## Tailwind & Utility Mapping
+
+- Semantic color keys in Tailwind (`primary`, `secondary`, `accent`, `background`, `surface`, `border`, `foreground-*`) map to CSS variables (RGB triples).
+- Typography utilities map to `src/design-tokens/semantic/typography.ts`.
+- Spacing utilities include semantic responsive tokens generated via a Tailwind plugin (see `tailwind.config.js`).
+
+Dark mode:
+- `darkMode: ['class', '.theme-dark']`
+- Use `theme-*` classes on `<html>`; avoid `dark:` usage.
+
+---
+
+## Component & Layout Guidelines
+
+### Breakpoints & Grid (Universal)
+
+Breakpoints:
+- xs: 0–480px
+- sm: 481–768px
+- md: 769–1024px
+- lg: 1025–1440px (optimize for 1366×768 and 1440×900)
+- xl: 1441–1920px
+- xxl: 1921px+
+
+Grid:
+- 12-column fluid grid
+- Gutters: `0.5rem`, `1rem`, `1.5rem`
+
+### Components
+
+Button:
+- Variants: primary, secondary, text/ghost, icon, fab
+- States: default, hover, active, disabled, loading
+
+Card:
+- Use consistent padding + elevation + radius
+
+Input:
+- Label, helper text, error state, disabled state
+- Use `aria-invalid` and `aria-describedby` for errors
+
+Modal/Drawer:
+- Desktop: centered
+- Mobile: full-screen or bottom sheet
+- Must have focus trap + ESC close
+
+Alert/Toast:
+- success/error/info/warning
+- Mobile: bottom slide-in, swipe-to-dismiss where feasible
+
+Navigation:
+- Desktop: top bar / side nav as needed
+- Mobile: bottom navigation for primary actions
+
+### Layout & Responsiveness
+
+Desktop:
+- Use max-width containers and avoid sparse layouts at laptop resolutions.
+
+Mobile app-like rules:
+- Touch targets: minimum 44×44px (`2.75rem`)
+- Prefer bottom nav and bottom sheets
+- Avoid dense typography; use semantic scale
+
+---
+
+## Accessibility & UX
+
+- WCAG 2.1 AA contrast in all themes
+- Visible focus states for all interactive elements
+- Keyboard navigation must work end-to-end
+- Dialogs must trap focus and restore focus on close
+- Reduced motion supported via `prefers-reduced-motion`
+
+---
+
+## Image & Media
+
+- Use `next/image` for all product imagery.
+- Responsive images: provide `sizes` and correct intrinsic `width`/`height`.
+- Lazy load by default unless the image is LCP-critical.
+- Prefer WebP/AVIF where possible.
+
+---
+
+## Forms & Validation
+
+- States: default, focus, error, disabled, success.
+- Accessibility: use `aria-invalid` and `aria-describedby` for errors.
+- Touch targets: interactive controls should meet the 44×44px minimum where feasible.
+
+---
+
+## Internationalization (i18n)
+
+- Plan for multiple languages, including RTL support.
+- Ensure font stacks support required scripts.
+
+---
+
+## Testing & QA
+
+- Test all themes (dark/light/purple), key breakpoints, and WCAG AA contrast.
+- Verify keyboard navigation and focus management for dialogs/menus.
+
+---
+
+## Branding
+
+- Logo: SolarMatch wordmark + sun icon (document exact assets and usage)
+- Icons: Standardize on a single set (preferred: Lucide or Material Icons) and document size/stroke rules
+- Imagery: Use `next/image`, responsive sizing, lazy load by default
 
 ---
 
 ## Usage Guidelines
-- Always use tokens for colors, spacing, and typography—never hardcode values
-- Reference this file for all component and layout decisions
-- Always test layouts and forms at common laptop resolutions (e.g., 1366x768, 1440x900) to ensure comfortable sizing and spacing
-- Update this file as the design evolves, but keep changes traceable
+
+- Always use semantic tokens for colors/typography/spacing; never hardcode values.
+- Prefer `src/components/ui/**` for design-system components.
+- Enforce with scripts:
+  - `npm run ds:verify`
+  - `npm run ds:audit`
 
 ---
 
 ## Instructions
-- Use this design system for all visual and brand choices in the frontend
-- Never override industry standards or best practices
-- Update and expand this file as your product grows
+
+- When adding UI:
+  1) Choose the semantic component (Button/Card/Input/Modal) first.
+  2) Use semantic classes and tokens only.
+  3) Verify in all themes (dark/light/purple) and at key breakpoints.
+- Keep this file updated as the system evolves; changes should be traceable.

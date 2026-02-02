@@ -209,7 +209,7 @@ const ContactVerificationModal: React.FC<ContactVerificationModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-scrim/80 px-4 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="contact-verification-title"
@@ -222,7 +222,7 @@ const ContactVerificationModal: React.FC<ContactVerificationModalProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-2 text-muted transition-colors hover:bg-slate-100 hover:text-foreground"
+          className="absolute right-4 top-4 rounded-full p-2 text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
           aria-label="Close"
         >
           <CloseIcon />

@@ -592,9 +592,9 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
 
   return (
     <div
-      className={`relative transition-all duration-200 ${
+      className={`relative transition duration-200 ${
         !notification.isRead 
-          ? 'bg-surface border-l-4 border-primary hover:shadow-card hover:scale-[1.01]' 
+          ? 'bg-surface border-l-4 border-primary hover:shadow-card hover:scale-101' 
           : 'bg-surface opacity-70 hover:opacity-90'
       }`}
     >

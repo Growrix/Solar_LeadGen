@@ -97,8 +97,8 @@ const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
 
   // Color classes based on verification status
   const colorClasses = verified
-    ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
-    : 'text-muted bg-slate-100 border-border';
+    ? 'text-success bg-success/10 border-success/20'
+    : 'text-muted-foreground bg-subtle border-border';
 
   // Tooltip text
   const tooltipText = verified
@@ -112,7 +112,7 @@ const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
   if (variant === 'icon-only') {
     return (
       <span 
-        className={`inline-flex items-center ${verified ? 'text-emerald-600' : 'text-muted'}`}
+        className={`inline-flex items-center ${verified ? 'text-success' : 'text-muted-foreground'}`}
         title={showTooltip ? tooltipText : undefined}
       >
         <span className={sizeClass.icon}>
@@ -125,7 +125,7 @@ const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
   if (variant === 'inline') {
     return (
       <span 
-        className={`inline-flex items-center gap-1 ${sizeClass.text} ${verified ? 'text-emerald-600' : 'text-muted'}`}
+        className={`inline-flex items-center gap-1 ${sizeClass.text} ${verified ? 'text-success' : 'text-muted-foreground'}`}
         title={showTooltip ? tooltipText : undefined}
       >
         <span className={sizeClass.icon}>

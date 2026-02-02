@@ -101,8 +101,8 @@ const AdminSignIn: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in">
-      <div className="theme-card relative w-full max-w-md p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up">
+    <div className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in">
+      <div className="theme-card relative w-full max-w-md p-8 max-h-modal overflow-y-auto animate-slide-in-up">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-surface shadow-neu-outset rounded-2xl mx-auto mb-6 flex items-center justify-center">
             <LockIcon />

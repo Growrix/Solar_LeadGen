@@ -18,14 +18,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  MapPinIcon,
-  CurrencyPoundIcon,
-  ClockIcon,
-  SparklesIcon,
-  ShieldCheckIcon,
-  EyeSlashIcon
-} from '@heroicons/react/24/outline';
+import { Clock, EyeOff, MapPin, PoundSterling, ShieldCheck, Sparkles } from 'lucide-react';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
 
 interface Lead {
@@ -149,10 +142,10 @@ export default function InstallerMarketplace() {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+        <div className="h-8 bg-subtle rounded w-1/3 mb-6"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-64 bg-slate-200 rounded-lg"></div>
+            <div key={i} className="h-64 bg-subtle rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -182,7 +175,7 @@ export default function InstallerMarketplace() {
       {/* Verification Warning */}
       {!session?.user?.installerVerified && (
         <div className="bg-warning/10 border border-warning rounded-lg p-4 flex items-start space-x-3">
-          <ShieldCheckIcon className="h-6 w-6 text-warning flex-shrink-0" />
+          <ShieldCheck className="h-6 w-6 text-warning flex-shrink-0" />
           <div>
             <h3 className="text-label text-warning">
               Verification Required
@@ -203,7 +196,7 @@ export default function InstallerMarketplace() {
             className={`px-4 py-2 rounded-lg text-body-small transition-colors ${
               filter === filterType
                 ? 'bg-primary text-foreground-secondary'
-                : 'bg-surface text-foreground border border-border hover:bg-slate-50'
+                : 'bg-surface text-foreground border border-border hover:bg-surface-hover'
             }`}
           >
             {filterType.replace('_', ' ')}
@@ -214,7 +207,7 @@ export default function InstallerMarketplace() {
       {/* Leads Grid */}
       {filteredLeads.length === 0 ? (
         <div className="text-center py-12 bg-surface rounded-lg border border-border">
-          <SparklesIcon className="h-12 w-12 text-muted mx-auto mb-3" />
+          <Sparkles className="h-12 w-12 text-muted mx-auto mb-3" />
           <h3 className="text-heading-4 text-foreground mb-1">
             No leads available
           </h3>
@@ -248,7 +241,7 @@ export default function InstallerMarketplace() {
 
                 {/* Contact Info (Masked) */}
                 <div className="flex items-center space-x-2 text-muted">
-                  <EyeSlashIcon className="h-5 w-5 flex-shrink-0" />
+                  <EyeOff className="h-5 w-5 flex-shrink-0" />
                   <span className="text-body-small">
                     Homeowner: {lead.homeowner.name.split(' ')[0]}***
                   </span>
@@ -257,7 +250,7 @@ export default function InstallerMarketplace() {
                 {/* Location */}
                 {lead.location && (
                   <div className="flex items-center space-x-2 text-muted">
-                    <MapPinIcon className="h-5 w-5 flex-shrink-0" />
+                    <MapPin className="h-5 w-5 flex-shrink-0" />
                     <span className="text-body-small">{lead.location}</span>
                   </div>
                 )}
@@ -265,7 +258,7 @@ export default function InstallerMarketplace() {
                 {/* Price */}
                 <div className="flex items-center justify-between pt-4 border-t border-border">
                   <div className="flex items-center space-x-2">
-                    <CurrencyPoundIcon className="h-6 w-6 text-success" />
+                    <PoundSterling className="h-6 w-6 text-success" />
                     <span className="text-heading-2 text-foreground">
                       {lead.leadPrice || 25}
                     </span>
@@ -279,9 +272,9 @@ export default function InstallerMarketplace() {
                   disabled={purchasing === lead.id || !session?.user?.installerVerified}
                   className={`w-full py-3 px-4 rounded-lg transition-colors ${
                     !session?.user?.installerVerified
-                      ? 'bg-slate-300 text-muted cursor-not-allowed'
+                      ? 'bg-subtle text-muted-foreground cursor-not-allowed'
                       : purchasing === lead.id
-                      ? 'bg-blue-400 text-foreground-secondary cursor-wait'
+                      ? 'bg-primary/70 text-foreground-secondary cursor-wait'
                       : 'bg-primary hover:bg-primary text-foreground-secondary'
                   }`}
                 >

@@ -127,7 +127,7 @@ export default function InstallerAssignedLeads() {
     return (
       <div className="text-center py-12 bg-surface rounded-lg border border-border">
         <svg
-          className="mx-auto h-16 w-16 text-gray-400"
+          className="mx-auto h-16 w-16 text-muted-foreground"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -172,7 +172,7 @@ export default function InstallerAssignedLeads() {
             className="bg-surface rounded-lg border border-border overflow-hidden hover:shadow-lg transition-shadow"
           >
             {/* Header with badges */}
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-border">
+            <div className="p-4 bg-subtle border-b border-border">
               <div className="flex items-center justify-between mb-2">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-caption bg-primary text-foreground-secondary">
                   🎯 Admin Assigned
@@ -187,7 +187,7 @@ export default function InstallerAssignedLeads() {
                   </span>
                 )}
               </div>
-              <p className="text-body-small text-gray-700">
+              <p className="text-body-small text-foreground">
                 {lead.projectType} - {lead.propertyType}
               </p>
             </div>
@@ -195,7 +195,7 @@ export default function InstallerAssignedLeads() {
             {/* Lead Details */}
             <div className="p-4 space-y-3">
               <div className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-muted-foreground mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -208,7 +208,7 @@ export default function InstallerAssignedLeads() {
               </div>
 
               <div className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-muted-foreground mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div className="flex-1">
@@ -220,7 +220,7 @@ export default function InstallerAssignedLeads() {
               </div>
 
               <div className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-muted-foreground mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 <div className="flex-1">
@@ -246,7 +246,7 @@ export default function InstallerAssignedLeads() {
                   {format(new Date(lead.assignedAt), 'MMM d, yyyy h:mm a')}
                 </p>
                 {lead.assignmentNotes && (
-                  <div className="mt-2 p-2 bg-surface rounded text-caption text-gray-700">
+                  <div className="mt-2 p-2 bg-surface rounded text-caption text-foreground">
                     <p className="mb-1">Admin Notes:</p>
                     <p>{lead.assignmentNotes}</p>
                   </div>

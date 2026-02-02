@@ -2,18 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { AlertTriangle, User, X } from 'lucide-react';
 
 // --- Icon Components (matching HomeownerSignInModal SOT) ---
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
-
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-);
-
-const AlertTriangleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
+const XIcon = () => <X className="h-6 w-6" />;
+const UserIcon = () => <User className="h-8 w-8 text-primary" />;
+const AlertTriangleIcon = () => <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />;
 
 interface HomeownersInfoFormProps {
   isOpen: boolean;
@@ -58,21 +53,12 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
   };
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleClose();
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    } else {
+    if (!isOpen) {
       resetForm();
+      return;
     }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
+
+    return () => resetForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -116,23 +102,16 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div 
-        className="theme-card relative w-full max-w-md p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
-          aria-label="Close"
-        >
-          <XIcon />
-        </button>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="theme-card relative w-full max-w-md p-8 max-h-modal overflow-y-auto border-0">
+        <DialogClose asChild>
+          <button
+            className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
+            aria-label="Close"
+          >
+            <XIcon />
+          </button>
+        </DialogClose>
 
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-surface shadow-neu-outset rounded-2xl mx-auto mb-6 flex items-center justify-center">
@@ -244,8 +223,8 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
             Your information will only be shared with verified solar installers you choose to engage with.
           </p>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

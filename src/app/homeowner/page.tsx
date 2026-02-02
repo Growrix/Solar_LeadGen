@@ -37,9 +37,9 @@ export default function HomeownerHomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-teal-50/30 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-background via-primary/5 to-background">
       {/* Hero Section */}
-      <section className="hero-section relative flex items-center justify-center min-h-[70vh] sm:min-h-[calc(100vh-80px)] overflow-hidden pt-8 sm:pt-24 pb-12 sm:pb-0">
+      <section className="hero-section relative flex items-center justify-center min-h-hero sm:min-h-viewport-minus-header overflow-hidden pt-8 sm:pt-24 pb-12 sm:pb-0">
         {/* Gradient Overlay */}
         <div className="gradient-overlay absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-transparent"></div>
         
@@ -48,7 +48,7 @@ export default function HomeownerHomePage() {
           {/* Floating Geometric Shapes */}
           <div className="absolute top-20 left-10 w-16 h-16 border border-primary/20" style={{ animation: 'float-slow 8s ease-in-out infinite' }}></div>
           <div className="absolute top-40 right-20 w-8 h-8 bg-primary/10 rounded-full" style={{ animation: 'float-medium 6s ease-in-out infinite' }}></div>
-          <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-slate-500/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
+          <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-primary/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
           
           {/* Pulsating Sun Element */}
           <div className="absolute top-32 right-32">
@@ -71,13 +71,13 @@ export default function HomeownerHomePage() {
               <SunIcon />
             </div>
             
-            <h1 className="text-heading-1 sm:text-heading-1 md:text-heading-1 text-foreground mb-4 tracking-tight" style={{ animation: 'fade-in-up 0.8s ease-out' }}>
+            <h1 className="text-heading-1 text-foreground mb-4 tracking-tight" style={{ animation: 'fade-in-up 0.8s ease-out' }}>
               Welcome to Your
               <br />
               <span className="text-primary">Solar Journey</span>
             </h1>
             
-            <p className="text-heading-4 sm:text-heading-3 text-muted mb-8 leading-relaxed max-w-3xl mx-auto" style={{ animation: 'fade-in-up 0.8s ease-out 0.2s both' }}>
+            <p className="text-heading-3 text-muted mb-8 leading-relaxed max-w-3xl mx-auto" style={{ animation: 'fade-in-up 0.8s ease-out 0.2s both' }}>
               You&apos;re one step closer to clean, affordable energy. Let&apos;s find the perfect solar solution for your home.
             </p>
 

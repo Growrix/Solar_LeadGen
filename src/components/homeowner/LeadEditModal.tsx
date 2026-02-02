@@ -17,10 +17,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 import SimplifiedQuoteForm from './SimplifiedQuoteForm';
-
-// Icon components
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 interface LeadEditModalProps {
   isOpen: boolean;
@@ -161,14 +160,8 @@ export default function LeadEditModal({
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8 animate-fade-in"
-      onClick={handleCancel}
-    >
-      <div 
-        className="theme-card relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 animate-slide-in-up max-h-[95vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => (open ? undefined : handleCancel())}>
+      <DialogContent className="theme-card relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 animate-slide-in-up max-h-modal overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-surface border-b border-border px-6 py-4 flex items-center justify-between rounded-t-lg -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 mb-6">
           <div>
@@ -179,23 +172,22 @@ export default function LeadEditModal({
               Update your quote details before installer assignment
             </p>
           </div>
-          <button
-            onClick={handleCancel}
-            disabled={isLoading}
-            className="text-muted hover:text-foreground transition-colors p-2 rounded-lg disabled:opacity-50"
-            aria-label="Close"
-          >
-            <XIcon />
-          </button>
+          <DialogClose asChild>
+            <button
+              onClick={handleCancel}
+              disabled={isLoading}
+              className="text-muted hover:text-foreground transition-colors p-2 rounded-lg disabled:opacity-50"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Success Message */}
         {success && (
           <div className="mb-4 p-4 bg-success/10 border border-success rounded-lg flex items-center gap-2 text-success">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
+            <CheckCircle2 className="h-5 w-5" />
             <span className="">Lead updated successfully!</span>
           </div>
         )}
@@ -203,11 +195,7 @@ export default function LeadEditModal({
         {/* Error Message */}
         {error && (
           <div className="mb-4 p-4 bg-error/10 border border-error rounded-lg flex items-start gap-2 text-error">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="">Failed to update lead</p>
               <p className="text-body-small mt-1">{error}</p>
@@ -218,11 +206,7 @@ export default function LeadEditModal({
         {/* Info Banner */}
         <div className="mb-6 p-4 bg-primary/10 border border-primary rounded-lg">
           <div className="flex items-start gap-2 text-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="16" x2="12" y2="12"/>
-              <line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
+            <Info className="h-5 w-5 flex-shrink-0 mt-0.5" />
             <div className="text-body-small">
               <p className="">You can edit this quote because it hasn&apos;t been approved yet.</p>
               <p className="mt-1">Once an admin approves your request, you won&apos;t be able to make changes.</p>
@@ -238,7 +222,7 @@ export default function LeadEditModal({
           submitButtonText="Save Changes"
           isLoading={isLoading}
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,17 +1,10 @@
 ﻿
 'use client';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { FileText, Phone, Trophy, X } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
-
-// Icon components
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-
-const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
-
-const FileTextIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>;
-
-const TrophyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
 
 export interface QuoteDistribution {
   type: 'CALL_VISIT' | 'WRITTEN_QUOTE' | 'BIDDING';
@@ -113,8 +106,8 @@ export default function QuoteTypeDistributionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface shadow-neu-outset rounded-2xl border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-surface shadow-neu-outset rounded-2xl border border-border max-w-2xl w-full max-h-modal overflow-y-auto p-0">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
           <div>
@@ -125,12 +118,11 @@ export default function QuoteTypeDistributionModal({
               Choose how many quotes of each type you want to request
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <XIcon />
-          </button>
+          <DialogClose asChild>
+            <button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Close">
+              <X className="w-6 h-6" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Content */}
@@ -152,7 +144,7 @@ export default function QuoteTypeDistributionModal({
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
-                  <PhoneIcon /> Call or Site Visit Quotes
+                  <Phone className="h-5 w-5" /> Call or Site Visit Quotes
                 </h3>
                 <p className="text-body-small text-muted-foreground mt-1">
                   Installers will contact you to schedule a site visit and provide a personalized quote
@@ -172,7 +164,7 @@ export default function QuoteTypeDistributionModal({
                     onClick={() => handleCallVisitChange(num)}
                     className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
                       callVisitCount === num
-                        ? 'bg-white text-foreground-inverted shadow-md scale-105'
+                        ? 'bg-foreground text-background shadow-md scale-105'
                         : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
                     }`}
                   >
@@ -188,7 +180,7 @@ export default function QuoteTypeDistributionModal({
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
-                  <FileTextIcon /> Written Quotes
+                  <FileText className="h-5 w-5" /> Written Quotes
                 </h3>
                 <p className="text-body-small text-muted-foreground mt-1">
                   Receive detailed written proposals from installers with pricing and system specifications
@@ -208,7 +200,7 @@ export default function QuoteTypeDistributionModal({
                     onClick={() => handleWrittenQuoteChange(num)}
                     className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
                       writtenQuoteCount === num
-                        ? 'bg-white text-foreground-inverted shadow-md scale-105'
+                        ? 'bg-foreground text-background shadow-md scale-105'
                         : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
                     }`}
                   >
@@ -224,7 +216,7 @@ export default function QuoteTypeDistributionModal({
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
-                  <TrophyIcon /> Competitive Bidding
+                  <Trophy className="h-5 w-5" /> Competitive Bidding
                 </h3>
                 <p className="text-body-small text-muted-foreground mt-1">
                   Open competitive bidding - multiple installers submit proposals to compete for your project
@@ -257,7 +249,7 @@ export default function QuoteTypeDistributionModal({
                     disabled={remainingBiddingQuota === 0 && num > 0}
                     className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
                       biddingCount === num
-                        ? 'bg-white text-foreground-inverted shadow-md scale-105'
+                        ? 'bg-foreground text-background shadow-md scale-105'
                         : remainingBiddingQuota === 0 && num > 0
                         ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                         : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
@@ -320,13 +312,11 @@ export default function QuoteTypeDistributionModal({
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-surface border-t border-border px-6 py-4 flex gap-3 justify-end">
-          <Button
-            onClick={onClose}
-            variant="secondary"
-            className="px-6 py-2.5 rounded-lg"
-          >
-            Cancel
-          </Button>
+          <DialogClose asChild>
+            <Button variant="secondary" className="px-6 py-2.5 rounded-lg">
+              Cancel
+            </Button>
+          </DialogClose>
           <Button
             onClick={handleSubmit}
             disabled={!isValid}
@@ -336,7 +326,7 @@ export default function QuoteTypeDistributionModal({
             Confirm Selection
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

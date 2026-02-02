@@ -381,7 +381,7 @@ const InstallersTable: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Address:</span>
-                      <span className="text-foreground truncate max-w-[200px]" title={installer.installerVerification?.address || 'Not provided'}>
+                      <span className="text-foreground truncate max-w-52" title={installer.installerVerification?.address || 'Not provided'}>
                         {installer.installerVerification?.address || 'Not provided'}
                       </span>
                     </div>

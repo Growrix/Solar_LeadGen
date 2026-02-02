@@ -340,7 +340,7 @@ const ExpandIcon = () => (
 
 // PlaceholderContent Component
 const PlaceholderContent: React.FC<{ title: string }> = ({ title }) => (
-    <div className="flex items-center justify-center h-full min-h-[400px] rounded-2xl border-2 border-dashed border-border animate-fade-in">
+    <div className="flex items-center justify-center h-full min-h-96 rounded-2xl border-2 border-dashed border-border animate-fade-in">
       <div className="text-center">
         <h2 className="text-heading-3 text-muted-foreground">{title}</h2>
         <p className="text-muted-foreground mt-2">This feature is under construction. Check back soon!</p>
@@ -400,7 +400,7 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
         {icon}
       </div>
     </div>
-    <p className="text-heading-2 sm:text-heading-1 text-foreground mb-1">{value}</p>
+    <p className="text-heading-2 text-foreground mb-1">{value}</p>
     <p className="text-caption text-muted-foreground mb-4">{change}</p>
     <div className="flex-grow" />
     <div className="flex w-full justify-start">
@@ -484,7 +484,7 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
     <div className="animate-fade-in space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-body-large sm:text-heading-4 text-foreground">
+          <h2 className="text-heading-4 text-foreground">
             Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}!
           </h2>
           <div className="flex items-center gap-2 mt-1">
@@ -582,7 +582,7 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
   <div className="bg-background rounded-card p-5 sm:p-6" style={{
         boxShadow: '8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light)'
       }}>
-        <h3 className="text-body-large sm:text-heading-4 text-foreground mb-5" style={{
+        <h3 className="text-heading-4 text-foreground mb-5" style={{
           textShadow: '2px 2px 4px var(--shadow-dark), -1px -1px 2px var(--shadow-light)'
         }}>Quote Requests</h3>
         {summary.recentLeads.length === 0 ? (
@@ -612,7 +612,7 @@ const DashboardOverviewContent: React.FC<DashboardOverviewContentProps> = ({
               return (
                     <div
                       key={lead.id}
-                      className="flex items-center gap-3 p-3 rounded-full bg-background shadow-neu-outset transition-colors duration-normal min-h-[80px]"
+                      className="flex items-center gap-3 p-3 rounded-full bg-background shadow-neu-outset transition-colors duration-normal min-h-20"
                       style={{ position: 'relative' }}
                     >
                       {/* Left circular icon with strong neumorphic shadow */}

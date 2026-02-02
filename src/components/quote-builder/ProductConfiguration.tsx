@@ -503,7 +503,7 @@ const ProductConfiguration: React.FC<ProductConfigurationProps> = ({
                   onClick={() => addAddon(addon.key)}
                   disabled={addons.some((a) => a.key === addon.key)}
                   className={`
-                    text-left transition-all
+                    text-left transition
                     ${addons.some((a) => a.key === addon.key)
                       ? 'px-4 py-2 rounded-lg text-body-small bg-background-alt text-muted-foreground cursor-not-allowed'
                       : 'selection-chip'

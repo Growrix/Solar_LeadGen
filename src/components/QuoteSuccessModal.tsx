@@ -29,7 +29,7 @@ const QuoteSuccessModal: React.FC<QuoteSuccessModalProps> = ({ isOpen, onClose, 
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
+      className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
       onClick={onClose}
     >
       <div

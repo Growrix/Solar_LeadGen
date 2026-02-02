@@ -210,11 +210,11 @@ export default function HomeownerBiddingReviewModal({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
+      className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div 
-        className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
+        className="bg-background relative w-full h-full md:max-w-viewport-98 md:max-h-viewport-98 md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -290,9 +290,9 @@ export default function HomeownerBiddingReviewModal({
 
               {/* 2 Column Grid */}
               {selectedBid && (
-                <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
                   {/* LEFT COLUMN: Bid Details (Quotation Style) */}
-                  <div className="space-y-6 overflow-y-auto">
+                  <div className="space-y-6 overflow-y-auto lg:col-span-7">
                     {/* Quote Header */}
                     <div className="bg-surface rounded-xl p-6 border border-border space-y-4">
                       <div className="flex items-start justify-between">
@@ -644,25 +644,25 @@ export default function HomeownerBiddingReviewModal({
                       </h4>
                       <div className="space-y-3">
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Company:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Company:</span>
                           <span className="text-body text-foreground">
                             {selectedBid.installer.companyName}
                           </span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Phone:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Phone:</span>
                           <span className="text-body text-foreground">
                             {selectedBid.installer.phone || 'Not provided'}
                           </span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Email:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Email:</span>
                           <span className="text-body text-foreground">
                             {selectedBid.installer.email || 'Not provided'}
                           </span>
                         </div>
                         <div className="flex items-start gap-3">
-                          <span className="text-label text-muted-foreground min-w-[100px]">Address:</span>
+                          <span className="text-label text-muted-foreground min-w-24">Address:</span>
                           <span className="text-body text-foreground">
                             {selectedBid.installer.businessAddress || 'Not provided'}
                           </span>
@@ -677,7 +677,7 @@ export default function HomeownerBiddingReviewModal({
                   )}
 
                   {/* RIGHT COLUMN: Lead Details (InstantQuote Data) */}
-                  <div className="space-y-6 lg:sticky lg:top-0 lg:h-fit">
+                  <div className="space-y-6 lg:sticky lg:top-0 lg:h-fit lg:col-span-3">
                     <h3 className="text-heading-4 text-foreground border-b border-border pb-2">
                       Original Lead Details
                     </h3>
@@ -793,7 +793,7 @@ export default function HomeownerBiddingReviewModal({
 
       {/* Confirmation Modal */}
       {showConfirmation && selectedBid && (
-        <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-scrim/90 z-modal flex items-center justify-center p-4">
           <div className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg">
             <h3 className="text-heading-4 text-foreground">Confirm Winning Bid Selection</h3>
             <p className="text-body text-muted-foreground">

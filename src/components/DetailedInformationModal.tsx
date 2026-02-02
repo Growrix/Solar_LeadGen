@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { X, User, Phone, MapPin } from 'lucide-react';
 
 interface DetailedInformationModalProps {
@@ -36,18 +37,6 @@ const DetailedInformationModal: React.FC<DetailedInformationModalProps> = ({
       setApiError(null);
     }
   }, [isOpen]);
-
-  // Close modal on Escape key
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen, onClose]);
 
   // Validate Australian phone number in E.164 format
   const validatePhone = (phoneNumber: string): boolean => {
@@ -176,33 +165,29 @@ const DetailedInformationModal: React.FC<DetailedInformationModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
-      onClick={onClose}
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <div
-        className="theme-card relative w-full max-w-lg p-8 animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          className="absolute top-4 right-4 p-2"
-          aria-label="Close"
-        >
-          <X className="h-6 w-6" />
-        </Button>
+      <DialogContent>
+        <DialogClose asChild>
+          <Button
+            variant="ghost"
+            className="absolute top-4 right-4 p-2"
+            aria-label="Close"
+          >
+            <X className="h-6 w-6" />
+          </Button>
+        </DialogClose>
 
         <div className="text-center mb-6">
-          <h2 className="text-heading-2 text-foreground mb-2">
-            Complete Your Profile
-          </h2>
-          <p className="text-muted-foreground">
+          <DialogTitle className="mb-2">Complete Your Profile</DialogTitle>
+          <DialogDescription>
             We need a few more details to process your quote request
-          </p>
+          </DialogDescription>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -270,7 +255,7 @@ const DetailedInformationModal: React.FC<DetailedInformationModalProps> = ({
                   setAddress(e.target.value);
                   if (errors.address) setErrors(prev => ({ ...prev, address: '' }));
                 }}
-                className={`theme-input pl-10 min-h-[80px] resize-none ${errors.address ? 'border-destructive' : ''}`}
+                className={`theme-input pl-10 min-h-20 resize-none ${errors.address ? 'border-destructive' : ''}`}
                 placeholder="123 Main Street, Sydney NSW 2000"
                 disabled={isSubmitting}
                 rows={3}
@@ -312,8 +297,8 @@ const DetailedInformationModal: React.FC<DetailedInformationModalProps> = ({
         <p className="mt-4 text-caption text-center text-muted-foreground">
           Your information is secure and will only be shared with verified installers
         </p>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

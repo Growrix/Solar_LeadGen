@@ -1363,7 +1363,7 @@ const InstallerProfilePage: React.FC = () => {
                 onChange={(e) => handlePreferenceToggle('alertNewLead', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary/20" />
+              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after-content-empty after:absolute after:top-0.5 after:left-0.5 after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-primary/20" />
             </label>
           </div>
 
@@ -1379,7 +1379,7 @@ const InstallerProfilePage: React.FC = () => {
                 onChange={(e) => handlePreferenceToggle('alertLeadUpdates', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary/20" />
+              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after-content-empty after:absolute after:top-0.5 after:left-0.5 after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-primary/20" />
             </label>
           </div>
 
@@ -1395,7 +1395,7 @@ const InstallerProfilePage: React.FC = () => {
                 onChange={(e) => handlePreferenceToggle('alertAdminMessages', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary/20" />
+              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after-content-empty after:absolute after:top-0.5 after:left-0.5 after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-primary/20" />
             </label>
           </div>
 
@@ -1411,7 +1411,7 @@ const InstallerProfilePage: React.FC = () => {
                 onChange={(e) => handlePreferenceToggle('alertVerificationUpdates', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary/20" />
+              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after-content-empty after:absolute after:top-0.5 after:left-0.5 after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-primary/20" />
             </label>
           </div>
 
@@ -1427,7 +1427,7 @@ const InstallerProfilePage: React.FC = () => {
                 onChange={(e) => handlePreferenceToggle('alertAccountActivity', e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary/20" />
+              <div className="w-11 h-6 bg-surface border-2 border-border peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:border-primary after-content-empty after:absolute after:top-0.5 after:left-0.5 after:bg-foreground after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-primary/20" />
             </label>
           </div>
         </div>

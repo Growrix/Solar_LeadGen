@@ -226,7 +226,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
               className="w-24 h-24 rounded-full object-cover border-4 border-border" 
             />
             {isEditing && (
-              <div className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center">
+              <div className="absolute inset-0 bg-scrim/40 rounded-full flex items-center justify-center">
                 <span className="text-foreground-secondary text-caption">Edit</span>
               </div>
             )}

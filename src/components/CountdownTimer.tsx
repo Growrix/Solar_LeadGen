@@ -135,7 +135,7 @@ export function CountdownTimer({
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-subtle rounded-full h-2 overflow-hidden">
         <div
           className={`h-full ${colors.bg} transition-colors duration-300 ease-in-out`}
           style={{ width: `${countdown.progressPercent}%` }}

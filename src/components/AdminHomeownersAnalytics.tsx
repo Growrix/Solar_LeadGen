@@ -83,7 +83,7 @@ export default function AdminHomeownersAnalytics() {
         </div>
 
         {/* Time Window Tabs */}
-        <div className="inline-flex bg-slate-100 rounded-lg p-1">
+        <div className="inline-flex bg-subtle rounded-lg p-1">
           {(['all', '30d', '90d'] as TimeWindow[]).map((window) => (
             <button
               key={window}
@@ -119,7 +119,7 @@ export default function AdminHomeownersAnalytics() {
       {!isLoading && analytics && (
         <>
           {/* Total Homeowners Card */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-foreground-secondary">
+          <div className="bg-primary rounded-lg p-6 text-foreground-secondary">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-foreground-secondary text-body-small mb-1">Total Homeowners</p>
@@ -151,7 +151,7 @@ export default function AdminHomeownersAnalytics() {
                           {item.count} ({item.percentage?.toFixed(1) || '0.0'}%)
                         </span>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-subtle rounded-full h-2 overflow-hidden">
                         <div
                           className="bg-primary h-full rounded-full transition-colors duration-500"
                           style={{ width: `${item.percentage || 0}%` }}
@@ -187,7 +187,7 @@ export default function AdminHomeownersAnalytics() {
                           {item.count} ({item.percentage?.toFixed(1) || '0.0'}%)
                         </span>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-subtle rounded-full h-2 overflow-hidden">
                         <div
                           className="bg-success h-full rounded-full transition-colors duration-500"
                           style={{ width: `${item.percentage || 0}%` }}
@@ -215,7 +215,7 @@ export default function AdminHomeownersAnalytics() {
               </div>
               <div className="overflow-x-auto max-h-96">
                 <table className="w-full">
-                  <thead className="bg-slate-50 sticky top-0">
+                  <thead className="bg-subtle sticky top-0">
                     <tr>
                       <th className="px-6 py-3 text-left text-caption text-muted uppercase">
                         Postcode
@@ -228,9 +228,9 @@ export default function AdminHomeownersAnalytics() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-border">
                     {analytics.byPostcode.map((item, index) => (
-                      <tr key={index} className="hover:bg-slate-50">
+                      <tr key={index} className="hover:bg-surface-hover">
                         <td className="px-6 py-3 text-body-small text-foreground">
                           {item.postcode || 'Not set'}
                         </td>
@@ -254,7 +254,7 @@ export default function AdminHomeownersAnalytics() {
               </div>
               <div className="overflow-x-auto max-h-96">
                 <table className="w-full">
-                  <thead className="bg-slate-50 sticky top-0">
+                  <thead className="bg-subtle sticky top-0">
                     <tr>
                       <th className="px-6 py-3 text-left text-caption text-muted uppercase">
                         Location
@@ -267,9 +267,9 @@ export default function AdminHomeownersAnalytics() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-border">
                     {analytics.byLocation.map((item, index) => (
-                      <tr key={index} className="hover:bg-slate-50">
+                      <tr key={index} className="hover:bg-surface-hover">
                         <td className="px-6 py-3 text-body-small text-foreground">
                           {item.location}
                         </td>

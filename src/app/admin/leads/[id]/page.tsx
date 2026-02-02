@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
-import Button from '@/components/Button';
+import Button from '@/components/ui/button';
 import QuoteDataDisplay from '@/components/admin/QuoteDataDisplay';
 import InstallerSelectorModal from '@/components/admin/InstallerSelectorModal';
 import AssignmentHistoryTable from '@/components/admin/AssignmentHistoryTable';

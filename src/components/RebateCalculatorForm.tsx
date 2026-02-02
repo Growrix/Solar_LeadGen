@@ -2,6 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import {
+  Battery as BatteryIcon,
+  Calculator as CalculatorIcon,
+  Info as InfoIcon,
+  MapPin as MapPinIcon,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react';
 
 // -------------------------
 // Improved Rebate Calculator (React)
@@ -14,12 +23,12 @@ import Button from '@/components/ui/button';
 // -------------------------
 
 // --- Icon components (kept small) ---
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
-const Calculator = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary-foreground"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
-const MapPin = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline h-4 w-4 mr-1"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-const Battery = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-primary"><rect width="16" height="10" x="4" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>;
-const Info = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>;
-const SlidersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-2"><line x1="4" x2="4" y1="21" y2="14" /><line x1="4" x2="4" y1="10" y2="3" /><line x1="12" x2="12" y1="21" y2="12" /><line x1="12" x2="12" y1="8" y2="3" /><line x1="20" x2="20" y1="21" y2="16" /><line x1="20" x2="20" y1="12" y2="3" /><line x1="1" x2="7" y1="14" y2="14" /><line x1="9" x2="15" y1="8" y2="8" /><line x1="17" x2="23" y1="16" y2="16" /></svg>;
+const XIcon = () => <X className="h-6 w-6" />;
+const Calculator = () => <CalculatorIcon className="h-6 w-6 text-primary-foreground" />;
+const MapPin = () => <MapPinIcon className="inline h-4 w-4 mr-1" />;
+const Battery = () => <BatteryIcon className="h-5 w-5 text-primary" />;
+const Info = () => <InfoIcon className="h-4 w-4" />;
+const SlidersIcon = () => <SlidersHorizontal className="h-5 w-5 mr-2" />;
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
@@ -263,7 +272,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                 <input 
                     id="postcode"
                     type="text"
-                    className={`form-input w-full px-4 py-3 ${errors.postcode ? 'border-destructive ring-red-500' : 'focus:border-primary focus:ring-primary'}`}
+                    className={`form-input w-full px-4 py-3 ${errors.postcode ? 'border-destructive ring-destructive' : 'focus:border-primary focus:ring-primary'}`}
                     value={inputs.postcode} 
                     onChange={(e) => handleInput('postcode', e.target.value)} 
                     onBlur={(e) => setErrors({ ...errors, postcode: validatePostcode(e.target.value) })} 
@@ -434,7 +443,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
             className="w-full"
           >
             {isCalculating ? (
-              <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Calculating...</span></>
+              <><div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div><span>Calculating...</span></>
             ) : (
               <>
                 <Calculator />
@@ -446,21 +455,18 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
       </div>
 
       {showModal && result && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8 animate-fade-in" onClick={() => setShowModal(false)}>
-                <div className="theme-card relative w-full max-w-2xl p-6 sm:p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-heading-2 text-foreground">Your Rebate Estimate</h2>
-                      <Button 
-                        onClick={() => setShowModal(false)} 
-                        variant="ghost"
-                        className="p-2 -mr-2"
-                        aria-label="Close"
-                      >
-                        <XIcon />
-                      </Button>
-                    </div>
+        <Dialog open={showModal} onOpenChange={(open) => !open && setShowModal(false)}>
+          <DialogContent className="theme-card relative w-full max-w-2xl p-6 sm:p-8 animate-slide-in-up max-h-modal overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-heading-2 text-foreground">Your Rebate Estimate</h2>
+              <DialogClose asChild>
+                <Button variant="ghost" className="p-2 -mr-2" aria-label="Close">
+                  <XIcon />
+                </Button>
+              </DialogClose>
+            </div>
                     
-                    <div className="space-y-6">
+            <div className="space-y-6">
                         {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="theme-card rounded-2xl p-6 border border-border text-center"><h3 className="text-body-small text-muted-foreground">Total Rebate</h3><p className="text-heading-1 text-accent mt-1">{formatCurrency(result.totalRebate)}</p></div>
@@ -483,18 +489,16 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                             >
                               Get Installer Quotes →
                             </Button>
-                            <Button 
-                              onClick={() => setShowModal(false)} 
-                              variant="secondary"
-                              className="w-full sm:w-auto"
-                            >
-                              Close
-                            </Button>
+                            <DialogClose asChild>
+                              <Button variant="secondary" className="w-full sm:w-auto">
+                                Close
+                              </Button>
+                            </DialogClose>
                         </div>
                     </div>
-                </div>
-            </div>
-        )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

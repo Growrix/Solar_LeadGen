@@ -16,11 +16,10 @@
 'use client';
 
 import React from 'react';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { Check, X, XCircle } from 'lucide-react';
 
-// Icon components
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
-const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-const XCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>;
+const CheckIcon = () => <Check className="h-5 w-5" />;
 
 // Status label mapping for better UX
 const STATUS_DISPLAY_LABELS: Record<string, string> = {
@@ -73,25 +72,18 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   const formatBoolean = (value: boolean) => {
     return value ? (
       <span className="inline-flex items-center gap-1 text-success">
-        <CheckIcon /> Yes
+        <Check className="h-5 w-5" /> Yes
       </span>
     ) : (
       <span className="inline-flex items-center gap-1 text-muted">
-        <XCircleIcon /> No
+        <XCircle className="h-5 w-5" /> No
       </span>
     );
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-      style={{ zIndex: 1400 }}
-      onClick={onClose}
-    >
-      <div 
-        className="bg-surface rounded-xl shadow-modal w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="bg-surface rounded-xl shadow-modal w-full max-w-4xl max-h-modal flex flex-col overflow-hidden p-0">
         {/* Header - Fixed at top */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-surface flex-shrink-0">
           <div>
@@ -102,13 +94,14 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
               Read-only view • Created {formatDate(lead.createdAt)}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-icon hover:text-foreground transition-colors p-2 rounded-lg hover:bg-surface-hover"
-            aria-label="Close"
-          >
-            <XIcon />
-          </button>
+          <DialogClose asChild>
+            <button
+              className="text-icon hover:text-foreground transition-colors p-2 rounded-lg hover:bg-surface-hover"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </DialogClose>
         </div>
 
         {/* Scrollable Content Area */}
@@ -425,8 +418,8 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

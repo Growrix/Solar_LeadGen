@@ -65,7 +65,7 @@ const CustomerPreview: React.FC<CustomerPreviewProps> = ({
                 key={option.id}
                 onClick={() => setSelectedOption(option.id)}
                 className={`
-                  flex-1 min-w-[150px] transition-all
+                  flex-1 min-w-36 transition-colors
                   ${selectedOption === option.id
                     ? 'px-6 py-3 rounded-lg text-body bg-primary text-background shadow-neu-inset'
                     : 'selection-btn'
