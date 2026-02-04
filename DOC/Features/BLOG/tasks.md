@@ -490,6 +490,70 @@ description: "Task list for BLOG pixel-perfect prototype migration"
 
 ---
 
+## Design System Blueprint Adoption (New SOT)
+
+**Start Date:** 2026-02-03  
+**SOT Blueprint:** `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/Design_system_Blueprint.md`  
+**Gap Audit + Roadmap:** `DOC/Features/BLOG/Audit Report/design-system-blueprint-gap-audit-2026-02-03.md`
+
+**Goal:** Align the repo to the Blueprint architecture (tokens → themes → primitives → components → shells/layouts → pages), with enforceable boundaries and drift-proof governance.
+
+### Phase BP0: Governance Hardening (Prevent Drift First)
+
+- [ ] TBP000 Make design-system verifier catch computed `className` patterns
+        - Upgrade `scripts/design-system-verify.ts` to scan `TemplateExpression` literals and `className={...}` expressions (including `cn()`/`clsx()` args)
+        - Acceptance: violations inside template strings are detected; `npm run gate0` remains green after fixes
+
+- [ ] TBP010 Add CSS scan mode for theme CSS entrypoints
+        - Scan at least `src/app/globals.css` for hardcoded `#hex`, `rgb(a)`, `white/black`, `transition: all`, and `@media`-driven typography
+        - Acceptance: new script mode wired into `gate0` (or separate `ds:verify:css` in CI)
+
+- [ ] TBP020 Establish a single import surface for DS consumption
+        - Create `src/ds/index.ts` as the only supported import entry for DS consumers (`@/ds`)
+        - Add a lint rule (later) to restrict direct imports from `src/design-tokens/**` in app code
+
+### Phase BP1: DS Boundary Scaffold (`src/ds/**`)
+
+- [ ] TBP100 Create the Blueprint folder structure
+        - `src/ds/tokens`, `src/ds/themes`, `src/ds/primitives`, `src/ds/components`, `src/ds/layouts`, `src/ds/styles`, `src/ds/index.ts`
+        - Start by re-exporting the existing token sources via `src/ds/tokens/*` (no behavior changes)
+
+- [ ] TBP110 Move global DS CSS under `src/ds/styles/*` (no visual change)
+        - Keep `src/app/globals.css` as the runtime entrypoint but relocate DS-owned parts behind a single import or clearly delimited section
+
+### Phase BP2: Primitives (Layout + Typography Ownership)
+
+- [ ] TBP200 Implement layout primitives
+        - `Container`, `Stack`, `Grid`, `Spacer`, `Divider`
+        - Acceptance: pages stop using repeated layout utilities (`container mx-auto px-* max-w-*` patterns)
+
+- [ ] TBP210 Implement typography primitives
+        - `Text`, `Heading`, `LinkText` (token-driven variants only)
+        - Acceptance: no raw `text-sm|text-xl|font-semibold` outside DS primitives/components
+
+### Phase BP3: Shells / Layouts (Pages Stop Making Decisions)
+
+- [ ] TBP300 Add shells
+        - `PublicShell`, `DashboardShell`, `CenteredShell`
+        - Own responsive layout, gutters, max widths, and page scaffolding
+
+- [ ] TBP310 Migrate a pilot route set
+        - Start with `/solarconnect` + one existing route (home or installer dashboard)
+        - Acceptance: pages become orchestration-only (composition + data), not styling-heavy
+
+### Phase BP4: Repo-Wide Migration + Enforcement
+
+- [ ] TBP400 Migrate remaining routes incrementally (feature-by-feature)
+        - Prefer wrappers/adapters over big-bang rewrites
+        - Keep `gate0` green after each batch
+
+- [ ] TBP410 Enforce boundary rules
+        - ESLint restricted imports: pages/components must consume `@/ds` only
+        - CI gate: no direct token imports and no new hardcoded classes
+
+- [ ] TBP420 Remove/retire legacy token paths and compatibility mappings
+        - Acceptance: single DS SOT; no parallel token sources
+
 ## Backend Implementation Phases
 
 **Start Date:** 2026-01-26  

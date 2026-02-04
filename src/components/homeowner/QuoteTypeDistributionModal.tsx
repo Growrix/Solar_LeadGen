@@ -162,7 +162,7 @@ export default function QuoteTypeDistributionModal({
                   <button
                     key={num}
                     onClick={() => handleCallVisitChange(num)}
-                    className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
+                    className={`w-12 h-12 rounded-lg text-label transition-colors ${
                       callVisitCount === num
                         ? 'bg-foreground text-background shadow-md scale-105'
                         : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
@@ -198,7 +198,7 @@ export default function QuoteTypeDistributionModal({
                   <button
                     key={num}
                     onClick={() => handleWrittenQuoteChange(num)}
-                    className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
+                    className={`w-12 h-12 rounded-lg text-label transition-colors ${
                       writtenQuoteCount === num
                         ? 'bg-foreground text-background shadow-md scale-105'
                         : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
@@ -247,7 +247,7 @@ export default function QuoteTypeDistributionModal({
                     key={num}
                     onClick={() => handleBiddingChange(num)}
                     disabled={remainingBiddingQuota === 0 && num > 0}
-                    className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
+                    className={`w-12 h-12 rounded-lg text-label transition-colors ${
                       biddingCount === num
                         ? 'bg-foreground text-background shadow-md scale-105'
                         : remainingBiddingQuota === 0 && num > 0

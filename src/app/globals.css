@@ -34,6 +34,48 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* SolarConnect compatibility: glass surface primitives */
+  .surface-glass {
+    @apply bg-surface/90 backdrop-blur-md border border-neutral-100/10;
+  }
+
+  .card-glass {
+    @apply surface-glass rounded-card shadow-card;
+  }
+}
+
+@layer utilities {
+  /* SolarConnect compatibility: animation utilities */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 600ms var(--ease-out) both;
+  }
+
+  @keyframes kenBurns {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.1);
+    }
+  }
+
+  .animate-ken-burns {
+    animation: kenBurns 15s ease-out forwards;
+  }
+}
+
 /* ============================================
    SOLARMATCH DESIGN SYSTEM v2.0
    - Industry-standard CSS variables
@@ -48,43 +90,43 @@
    ============================================ */
 
 /* --------------------------------------------------
-   THEME 1: DARK (Default - Google AI Studio Aligned)
-   -------------------------------------------------- */
+  THEME 1: DARK (Default - SolarConnect Aligned)
+  -------------------------------------------------- */
 :root.theme-dark, :root {
   /* --------------------------------------------------
-     COLOR SYSTEM - Dark Theme (Google AI Studio Prototype Aligned)
-     White accent only, grayscale base, Material Design standards
-     -------------------------------------------------- */
+    COLOR SYSTEM - Dark Theme (SolarConnect Prototype Aligned)
+    Brand (purple) + slate neutrals
+    -------------------------------------------------- */
   
   /* Background Colors */
-  --color-background: 18 18 18;           /* #121212 - Main background (Material Design standard) */
-  --color-background-elevated: 26 26 26;  /* #1A1A1A - Cards, modals, elevated surfaces */
-  --color-background-hover: 37 37 37;     /* #252525 - Hover states */
+  --color-background: 21 20 25;           /* #151419 - App background */
+  --color-background-elevated: 27 27 30;  /* #1B1B1E - Cards, modals, elevated surfaces */
+  --color-background-hover: 38 38 38;     /* #262626 - Hover states */
   
-  /* Foreground/Text Colors - 3-level hierarchy */
-  --color-foreground: 243 244 246;        /* #F3F4F6 - Primary text (gray-100) */
-  --color-foreground-secondary: 255 255 255; /* #FFFFFF - High emphasis text */
-  --color-foreground-muted: 209 213 219;  /* #D1D5DB - Secondary text, labels (gray-300) */
-  --color-foreground-tertiary: 107 114 128; /* #6B7280 - Tertiary text, placeholders (gray-400) */
-  --color-foreground-subtle: 107 114 128; /* Alias for subtle UI text (matches tertiary) */
+  /* Foreground/Text Colors - SolarConnect hierarchy */
+  --color-foreground: 156 163 175;        /* #9CA3AF - Body/default text */
+  --color-foreground-secondary: 243 244 246; /* #F3F4F6 - High emphasis text */
+  --color-foreground-muted: 135 135 135;  /* #878787 - Muted text */
+  --color-foreground-tertiary: 135 135 135; /* #878787 - Placeholders */
+  --color-foreground-subtle: 135 135 135; /* Alias for subtle UI text */
   
   /* Icon Colors */
-  --color-icon: 229 231 235;              /* #E5E7EB - Icon color (gray-200) */
+  --color-icon: 209 213 219;              /* #D1D5DB */
 
   /* Select caret icon (kept as a token so the rule stays theme-driven) */
-  --select-caret-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23E5E7EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  --select-caret-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23F3F4F6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   
-  /* Accent Color - White Only */
-  --color-accent: 255 255 255;            /* #FFFFFF - CTAs, links, focus states */
-  --color-accent-hover: 230 230 230;      /* #E6E6E6 - Hover on white accent */
-  --color-accent-foreground: 18 18 18;    /* Text/icon color on accent surfaces */
+  /* Accent Color - SolarConnect Brand Purple */
+  --color-accent: 109 59 226;            /* #6D3BE2 - Brand primary */
+  --color-accent-hover: 141 110 235;     /* #8D6EEB - Brand hover */
+  --color-accent-foreground: 35 15 79;   /* #230F4F - On-brand foreground */
 
   /* Overlay / Scrim (modal backdrops) */
   --color-scrim: 0 0 0;                   /* Semantic overlay color; use with opacity via Tailwind */
   
   /* Border Colors */
-  --color-border: 44 44 44;               /* #2C2C2C - Subtle borders */
-  --color-border-strong: 64 64 64;        /* #404040 - Emphasized borders */
+  --color-border: 38 38 38;               /* #262626 */
+  --color-border-strong: 75 85 99;        /* #4B5563 */
   
   /* Status Colors */
   --color-success: 74 222 128;            /* #4ADE80 - green-400 */
@@ -97,16 +139,16 @@
   --destructive-foreground: 255 255 255;  /* #FFFFFF - White text on red background */
   
   /* Legacy aliases for backward compatibility - TO BE DEPRECATED */
-  --color-primary: 255 255 255;
-  --color-primary-hover: 230 230 230;
-  --color-primary-foreground: 243 244 246;
-  --color-secondary: 26 26 26;
+  --color-primary: 109 59 226;            /* Alias -> accent */
+  --color-primary-hover: 141 110 235;     /* Alias -> accent-hover */
+  --color-primary-foreground: 35 15 79;   /* Alias -> accent-foreground */
+  --color-secondary: 27 27 30;            /* Elevated surface */
   --color-secondary-foreground: 243 244 246;
-  --color-background-alt: 26 26 26;
-  --color-surface: 18 18 18;            /* #121212 - updated for dark theme */
-  --color-surface-hover: 37 37 37;
-  --color-muted: 209 213 219;              /* Updated to match gray-300 */
-  --color-subtle: 255 255 255;
+  --color-background-alt: 27 27 30;
+  --color-surface: 27 27 30;
+  --color-surface-hover: 38 38 38;
+  --color-muted: 135 135 135;
+  --color-subtle: 243 244 246;
   
   /* --------------------------------------------------
      SPACING SYSTEM - 8px base scale
@@ -129,27 +171,24 @@
   --radius-2xl: 1.5rem;     /* 24px */
   --radius-full: 9999px;    /* Fully rounded */
   
-  /* --------------------------------------------------
-     SHADOWS - Neumorphic Design System
-     Optimized for #121212 background (Google AI Studio Prototype Aligned)
-     -------------------------------------------------- */
+    /* --------------------------------------------------
+      SHADOWS - SolarConnect-style elevation + optional brand glow
+      -------------------------------------------------- */
   
-  /* Shadow Colors - Solid colors per prototype */
-  --shadow-light: 36 36 36;                   /* #242424 - Light highlight (solid) */
-  --shadow-dark: 0 0 0;                       /* #000000 - Dark shadow (solid) */
-  --shadow-inset-light: 26 26 26;             /* #1A1A1A - Inset highlight (solid) */
-  --shadow-inset-dark: 0 0 0;                 /* #000000 - Inset shadow (solid) */
+    /* Outset Shadows (Raised Elements) */
+    --shadow-outset-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 1px rgb(0 0 0 / 0.25);
+    --shadow-outset-md: 0 10px 20px rgb(0 0 0 / 0.35);
+    --shadow-outset-lg: 0 18px 40px rgb(0 0 0 / 0.45);
+    --shadow-outset-xl: 0 24px 60px rgb(0 0 0 / 0.55);
   
-  /* Outset Shadows (Raised Elements) */
-  --shadow-outset-sm: 4px 4px 8px rgb(var(--shadow-dark)), -4px -4px 8px rgb(var(--shadow-light));
-  --shadow-outset-md: 6px 6px 12px rgb(var(--shadow-dark)), -6px -6px 12px rgb(var(--shadow-light));
-  --shadow-outset-lg: 8px 8px 16px rgb(var(--shadow-dark)), -8px -8px 16px rgb(var(--shadow-light));
-  --shadow-outset-xl: 12px 12px 24px rgb(var(--shadow-dark)), -12px -12px 24px rgb(var(--shadow-light));
-  
-  /* Inset Shadows (Pressed Elements) */
-  --shadow-inset-sm: inset 3px 3px 6px rgb(var(--shadow-inset-dark)), inset -3px -3px 6px rgb(var(--shadow-inset-light));
-  --shadow-inset-md: inset 4px 4px 8px rgb(var(--shadow-inset-dark)), inset -4px -4px 8px rgb(var(--shadow-inset-light));
-  --shadow-inset-lg: inset 6px 6px 12px rgb(var(--shadow-inset-dark)), inset -6px -6px 12px rgb(var(--shadow-inset-light));
+    /* Inset Shadows (Pressed Elements) */
+    --shadow-inset-sm: inset 0 1px 2px rgb(0 0 0 / 0.35);
+    --shadow-inset-md: inset 0 2px 6px rgb(0 0 0 / 0.35);
+    --shadow-inset-lg: inset 0 4px 12px rgb(0 0 0 / 0.4);
+
+    /* Brand glow helpers (optional) */
+    --shadow-brand-glow-sm: 0 10px 20px rgb(var(--color-accent) / 0.20);
+    --shadow-brand-glow-md: 0 16px 32px rgb(var(--color-accent) / 0.28);
   
   /* Legacy shadow aliases - TO BE DEPRECATED */
   --shadow-neu-outset: var(--shadow-outset-md);
@@ -157,6 +196,34 @@
   --shadow-neu-outset-sm: var(--shadow-outset-sm);
   --shadow-neu-inset-sm: var(--shadow-inset-sm);
   --shadow-neu-outset-lg: var(--shadow-outset-lg);
+
+  /* --------------------------------------------------
+     OPTIONAL COLOR SCALES (centralized) — SolarConnect compatibility
+     These enable `brand-*` and `neutral-*` utilities without hardcoded values.
+     -------------------------------------------------- */
+  --color-brand-50: 244 241 253;
+  --color-brand-100: 232 226 251;
+  --color-brand-200: 208 195 247;
+  --color-brand-300: 176 156 242;
+  --color-brand-400: 141 110 235;
+  --color-brand-500: 109 59 226;
+  --color-brand-600: 94 44 209;
+  --color-brand-700: 80 35 179;
+  --color-brand-800: 67 31 148;
+  --color-brand-900: 56 27 122;
+  --color-brand-950: 35 15 79;
+
+  --color-neutral-50: 251 251 251;
+  --color-neutral-100: 243 244 246;
+  --color-neutral-200: 229 231 235;
+  --color-neutral-300: 209 213 219;
+  --color-neutral-400: 156 163 175;
+  --color-neutral-500: 135 135 135;
+  --color-neutral-600: 75 85 99;
+  --color-neutral-700: 38 38 38;
+  --color-neutral-800: 27 27 30;
+  --color-neutral-900: 21 20 25;
+  --color-neutral-950: 11 10 13;
   
   /* --------------------------------------------------
      ANIMATION SYSTEM
@@ -198,6 +265,9 @@
   --size-viewport-98h: 98vh;
   --size-hero-min-h: 70vh;
   --size-viewport-minus-header: calc(100vh - 80px);
+  --size-control-min-h: 42px;
+  --size-textarea-min-h: 100px;
+  --size-toggle-indicator-w: calc(50% - 0.25rem);
 }
 
 /* --------------------------------------------------

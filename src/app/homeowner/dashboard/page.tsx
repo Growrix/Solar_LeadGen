@@ -32,6 +32,7 @@ import { LiveCountdownBar } from '@/components/LiveCountdownBar';
 import Button from '@/components/ui/button';
 import HomeownerSidebar from '@/components/homeowner/HomeownerSidebar';
 import { HomeownerDashboardHeader } from '@/components/homeowner/HomeownerDashboardHeader';
+import { useHomeownerDashboardNav } from './nav-context';
 
 // --- Icon Components ---
 const SunIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>;
@@ -812,7 +813,7 @@ export default function HomeownerDashboardPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { data: session, update: updateSession } = useSession();
-  const [activePage, setActivePage] = useState('Dashboard Overview');
+  const { activePage } = useHomeownerDashboardNav();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -921,6 +922,17 @@ export default function HomeownerDashboardPage() {
       summary?.recentLeads?.[0]?.quoteData ?? null,
     [],
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handler = () => {
+      setIsMessagingModalOpen(true);
+    };
+
+    window.addEventListener('homeowner:open-messages', handler);
+    return () => window.removeEventListener('homeowner:open-messages', handler);
+  }, []);
 
   useEffect(() => {
     fetchDashboardSummary();

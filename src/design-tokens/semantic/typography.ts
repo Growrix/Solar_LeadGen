@@ -23,37 +23,43 @@ export const typography = {
   // Semantic text styles (mobile-first)
   heading: {
     1: {
-      fontSize: { DEFAULT: '24px', md: '30px', lg: '36px' } as ResponsiveFontSize, // Mobile → Tablet → Desktop
-      fontWeight: fontWeights.bold,
+      // SolarConnect: text-4xl md:text-5xl lg:text-6xl
+      fontSize: { DEFAULT: '36px', md: '48px', lg: '60px' } as ResponsiveFontSize,
+      fontWeight: fontWeights.extrabold,
       lineHeight: lineHeights.tight,
       letterSpacing: letterSpacing.tight,
     } as TextStyle,
     2: {
-      fontSize: { DEFAULT: '20px', md: '24px', lg: '30px' } as ResponsiveFontSize,
+      // SolarConnect: text-3xl md:text-4xl
+      fontSize: { DEFAULT: '30px', md: '36px', lg: '48px' } as ResponsiveFontSize,
       fontWeight: fontWeights.bold,
       lineHeight: lineHeights.tight,
       letterSpacing: letterSpacing.tight,
     } as TextStyle,
     3: {
-      fontSize: { DEFAULT: '18px', md: '20px', lg: '24px' } as ResponsiveFontSize,
-      fontWeight: fontWeights.semibold,
+      // SolarConnect: text-2xl
+      fontSize: { DEFAULT: '24px', md: '24px', lg: '30px' } as ResponsiveFontSize,
+      fontWeight: fontWeights.bold,
       lineHeight: lineHeights.snug,
     } as TextStyle,
     4: {
-      fontSize: { DEFAULT: '16px', md: '18px', lg: '20px' } as ResponsiveFontSize,
+      // SolarConnect: text-xl
+      fontSize: { DEFAULT: '20px', md: '20px', lg: '24px' } as ResponsiveFontSize,
       fontWeight: fontWeights.semibold,
       lineHeight: lineHeights.snug,
     } as TextStyle,
   },
   
   body: {
-    fontSize: { DEFAULT: '14px', lg: '16px' } as ResponsiveFontSize, // 14px mobile, 16px desktop
+    // SolarConnect: text-base
+    fontSize: { DEFAULT: '16px', lg: '16px' } as ResponsiveFontSize,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.normal,
   } as TextStyle,
   
   'body-large': {
-    fontSize: { DEFAULT: '16px', lg: '18px' } as ResponsiveFontSize,
+    // SolarConnect: text-lg / text-xl
+    fontSize: { DEFAULT: '18px', lg: '20px' } as ResponsiveFontSize,
     fontWeight: fontWeights.normal,
     lineHeight: lineHeights.relaxed,
   } as TextStyle,

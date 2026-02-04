@@ -214,8 +214,8 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
         {/* Header */}
         <div className={`grid gap-2 text-caption text-muted-foreground pb-2 border-b border-border ${
           installerCostMode 
-            ? 'grid-cols-[minmax(100px,1fr)_minmax(120px,2fr)_60px_90px_90px_50px_90px_40px]'
-            : 'grid-cols-[minmax(100px,1.5fr)_minmax(150px,3fr)_80px_120px_60px_120px_50px]'
+            ? 'grid-cols-pricing-engine-cost'
+            : 'grid-cols-pricing-engine'
         }`}>
           <div>Category</div>
           <div>Description</div>
@@ -235,8 +235,8 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
           <div key={item.id} className="space-y-1">
             <div className={`grid gap-2 items-center ${
               installerCostMode 
-                ? 'grid-cols-[minmax(100px,1fr)_minmax(120px,2fr)_60px_90px_90px_50px_90px_40px]'
-                : 'grid-cols-[minmax(100px,1.5fr)_minmax(150px,3fr)_80px_120px_60px_120px_50px]'
+                ? 'grid-cols-pricing-engine-cost'
+                : 'grid-cols-pricing-engine'
             }`}>
             <div>
               <select

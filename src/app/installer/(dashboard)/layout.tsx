@@ -5,6 +5,8 @@ import InstallerSidebar from '@/components/installer/InstallerSidebar';
 import InstallerMobileSidebarMenu from '@/components/InstallerMobileSidebarMenu';
 import InstallerBottomNavBar from '@/components/InstallerBottomNavBar';
 import { InstallerDashboardHeader } from '@/components/installer/InstallerDashboardHeader';
+import { DashboardShell } from '@/ds';
+import { cn } from '@/lib/utils';
 
 export default function InstallerDashboardLayout({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname() ?? '';
@@ -32,59 +34,59 @@ export default function InstallerDashboardLayout({ children }: { children: React
 	};
 	
 	return (
-		<div className="homeowner-dashboard-bg min-h-screen text-foreground animate-fade-in">
-			<div className={`transition-colors duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
-				{/* Desktop Sidebar - Always visible on desktop */}
-				<div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex">
-					<InstallerSidebar 
-						activePage={activePage}
-						onLogoutClick={handleLogout}
-						onHomeClick={handleHomeClick}
-						isCollapsed={isSidebarCollapsed}
-						setIsCollapsed={setIsSidebarCollapsed}
-					/>
-				</div>
-				
-				{/* Mobile Sidebar Menu */}
-				<div className="md:hidden">
-					<InstallerMobileSidebarMenu
-						isOpen={isMobileMenuOpen}
-						onClose={() => setIsMobileMenuOpen(false)}
-						activePage={activePage}
-						setActivePage={() => {}}
-						onLogoutClick={handleLogout}
-						unreadMessagesCount={3}
-						newLeadsCount={5}
-					/>
-				</div>
-				
-				{/* Main content area */}
-				<div className="flex-1 flex flex-col min-h-screen">
-					{/* Header */}
-					<div className="sticky top-0 z-20">
-						<InstallerDashboardHeader />
+		<DashboardShell
+			className="homeowner-dashboard-bg text-foreground animate-fade-in"
+			contentClassName={cn('transition-colors duration-300', isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64')}
+			sidebar={
+				<>
+					{/* Desktop Sidebar - Always visible on desktop */}
+					<div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex">
+						<InstallerSidebar
+							activePage={activePage}
+							onLogoutClick={handleLogout}
+							onHomeClick={handleHomeClick}
+							isCollapsed={isSidebarCollapsed}
+							setIsCollapsed={setIsSidebarCollapsed}
+						/>
 					</div>
 					
-					<main className="flex-1 p-3 sm:p-4 md:p-6 pb-24 sm:pb-8">
-						{children}
-					</main>
-					
-					{/* Mobile Bottom Navigation */}
+					{/* Mobile Sidebar Menu */}
 					<div className="md:hidden">
-						<InstallerBottomNavBar
+						<InstallerMobileSidebarMenu
+							isOpen={isMobileMenuOpen}
+							onClose={() => setIsMobileMenuOpen(false)}
 							activePage={activePage}
 							setActivePage={() => {}}
-							onNewBidClick={() => console.log('New bid clicked')}
-							onMenuClick={() => setIsMobileMenuOpen(true)}
-							currentPage="installerDashboard"
-							onHomeClick={handleHomeClick}
-							onDashboardClick={() => {}}
+							onLogoutClick={handleLogout}
 							unreadMessagesCount={3}
 							newLeadsCount={5}
 						/>
 					</div>
+				</>
+			}
+			header={
+				<div className="sticky top-0 z-20">
+					<InstallerDashboardHeader />
 				</div>
-			</div>
-		</div>
+			}
+			mainClassName="p-3 sm:p-4 md:p-6 pb-24 sm:pb-8"
+			footer={
+				<div className="md:hidden">
+					<InstallerBottomNavBar
+						activePage={activePage}
+						setActivePage={() => {}}
+						onNewBidClick={() => console.log('New bid clicked')}
+						onMenuClick={() => setIsMobileMenuOpen(true)}
+						currentPage="installerDashboard"
+						onHomeClick={handleHomeClick}
+						onDashboardClick={() => {}}
+						unreadMessagesCount={3}
+						newLeadsCount={5}
+					/>
+				</div>
+			}
+		>
+			{children}
+		</DashboardShell>
 	);
 }

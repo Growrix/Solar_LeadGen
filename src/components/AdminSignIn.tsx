@@ -49,7 +49,15 @@ const EyeOffIcon = () => (
  * Consistent with HomeownerSignInModal structure and styling
  * Zero hardcoded colors, uses semantic tokens only
  */
-const AdminSignIn: React.FC = () => {
+type AdminSignInProps = {
+  /**
+   * When true, renders without the fullscreen scrim/overlay.
+   * Useful when the route/page owns layout via DS shells.
+   */
+  embedded?: boolean;
+};
+
+const AdminSignIn: React.FC<AdminSignInProps> = ({ embedded = false }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,9 +108,8 @@ const AdminSignIn: React.FC = () => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in">
-      <div className="theme-card relative w-full max-w-md p-8 max-h-modal overflow-y-auto animate-slide-in-up">
+  const content = (
+    <div className="theme-card relative w-full max-w-md p-8 max-h-modal overflow-y-auto animate-slide-in-up">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-surface shadow-neu-outset rounded-2xl mx-auto mb-6 flex items-center justify-center">
             <LockIcon />
@@ -188,7 +195,7 @@ const AdminSignIn: React.FC = () => {
           >
             {loading ? (
               <div className="flex items-center justify-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-foreground border-t-transparent rounded-full animate-spin"></div>
                 <span>Signing in...</span>
               </div>
             ) : (
@@ -202,7 +209,14 @@ const AdminSignIn: React.FC = () => {
             Secure admin access only
           </p>
         </div>
-      </div>
+    </div>
+  );
+
+  if (embedded) return content;
+
+  return (
+    <div className="fixed inset-0 bg-scrim/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in">
+      {content}
     </div>
   );
 };

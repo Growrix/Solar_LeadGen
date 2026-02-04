@@ -26,6 +26,8 @@ export const layout = {
   minHeight: {
     'viewport-minus-header': 'var(--size-viewport-minus-header)',
     hero: 'var(--size-hero-min-h)',
+    control: 'var(--size-control-min-h)',
+    textarea: 'var(--size-textarea-min-h)',
   },
 } as const;
 

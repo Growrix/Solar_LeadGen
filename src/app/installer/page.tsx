@@ -9,6 +9,7 @@ import Footer from '@/components/Footer';
 import InstallerBottomNavBar from '@/components/InstallerBottomNavBar';
 import InstallerMobileSidebarMenu from '@/components/InstallerMobileSidebarMenu';
 import Button from '@/components/ui/button';
+import { PublicShell } from '@/ds';
 
 const InfoCard: React.FC<{ 
   icon: string; 
@@ -94,7 +95,7 @@ export default function InstallerHomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface text-foreground">
+    <PublicShell className="bg-surface text-foreground">
       <div className={`sticky top-0 z-30 transition-transform duration-300 ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <Header
           theme={theme}
@@ -246,6 +247,6 @@ export default function InstallerHomePage() {
         unreadMessagesCount={3}
         newLeadsCount={5}
       />
-    </div>
+    </PublicShell>
   );
 }

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Container, PublicShell } from '@/ds';
 import { 
   Home, Building, Calculator, ArrowRight, Check, X, 
   Mail, Phone, FileText, AlertCircle, CheckCircle2,
@@ -31,10 +32,10 @@ export default function ComponentLibrary() {
   ];
 
   return (
-    <main className="min-h-screen bg-background">
+    <PublicShell>
       {/* Fixed Header */}
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <Container className="py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-heading-2">Component Library</h1>
@@ -63,11 +64,11 @@ export default function ComponentLibrary() {
               </Button>
             ))}
           </div>
-        </div>
+        </Container>
       </div>
 
       {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <Container className="py-8">
         {activeTab === 'semantic' && <SemanticClassesTab />}
         {activeTab === 'containers' && <ContainersTab />}
         {activeTab === 'data-display' && <DataDisplayTab />}
@@ -78,8 +79,8 @@ export default function ComponentLibrary() {
         {activeTab === 'typography' && <TypographyTab />}
         {activeTab === 'icons' && <IconsTab />}
         {activeTab === 'spacing' && <SpacingTab />}
-      </div>
-    </main>
+      </Container>
+    </PublicShell>
   );
 }
 

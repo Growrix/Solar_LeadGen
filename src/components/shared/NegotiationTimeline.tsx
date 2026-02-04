@@ -119,10 +119,10 @@ export default function NegotiationTimeline({
               {/* Timeline Icon */}
               <div
                 className={`
-                  absolute left-[-17px] top-0
+                  absolute -left-4 top-0
                   w-8 h-8 rounded-full
                   flex items-center justify-center
-                  text-xl
+                  text-body-large
                   ${isLatest ? 'bg-primary' : 'bg-surface'}
                   border-2 border-border
                 `}

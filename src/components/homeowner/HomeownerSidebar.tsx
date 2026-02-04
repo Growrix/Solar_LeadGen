@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 
 // Icon Components
 const SunIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>;
@@ -46,6 +45,7 @@ const NavItem: React.FC<{
 // HomeownerSidebar Props
 interface HomeownerSidebarProps {
   activePage: string;
+  onNavigate: (page: string) => void;
   onLogoutClick: () => void;
   onHomeClick: () => void;
   onMessagesClick: () => void;
@@ -56,6 +56,7 @@ interface HomeownerSidebarProps {
 // HomeownerSidebar Component
 const HomeownerSidebar: React.FC<HomeownerSidebarProps> = ({ 
   activePage, 
+  onNavigate,
   onLogoutClick, 
   onHomeClick, 
   onMessagesClick, 
@@ -96,15 +97,13 @@ const HomeownerSidebar: React.FC<HomeownerSidebarProps> = ({
 
       {/* Navigation Items */}
       <nav className={`dashboard-sidebar-nav ${isCollapsed ? 'dashboard-sidebar-nav--collapsed' : 'dashboard-sidebar-nav--expanded'}`}>
-        <Link href="/homeowner/dashboard">
-          <NavItem
-            icon={<LayoutDashboardIcon />}
-            title="Dashboard Overview"
-            isActive={activePage === 'Dashboard Overview'}
-            onClick={() => {}}
-            isCollapsed={isCollapsed}
-          />
-        </Link>
+    <NavItem
+      icon={<LayoutDashboardIcon />}
+      title="Dashboard Overview"
+      isActive={activePage === 'Dashboard Overview'}
+      onClick={() => onNavigate('Dashboard Overview')}
+      isCollapsed={isCollapsed}
+    />
         <NavItem
           icon={<MessageSquareIcon />}
           title="Messages"
@@ -113,15 +112,13 @@ const HomeownerSidebar: React.FC<HomeownerSidebarProps> = ({
           badgeCount={3}
           isCollapsed={isCollapsed}
         />
-        <Link href="/homeowner/profile">
-          <NavItem
-            icon={<UserIcon />}
-            title="My Profile"
-            isActive={activePage === 'My Profile'}
-            onClick={() => {}}
-            isCollapsed={isCollapsed}
-          />
-        </Link>
+    <NavItem
+      icon={<UserIcon />}
+      title="My Profile"
+      isActive={activePage === 'My Profile'}
+      onClick={() => onNavigate('My Profile')}
+      isCollapsed={isCollapsed}
+    />
       </nav>
 
       {/* Logout Button */}

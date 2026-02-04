@@ -1,4 +1,4 @@
-const { typography, spacing, shadows, animations, borders, layout } = require('./src/design-tokens');
+const { typography, spacing, shadows, animations, borders, layout } = require('./src/ds/tokens');
 
 function toNumberPx(value) {
   if (typeof value !== 'string') return NaN;
@@ -108,6 +108,51 @@ module.exports = {
         // shadcn/ui HSL-based colors (from globals.css)
         destructive: 'hsl(var(--destructive) / <alpha-value>)',
         'destructive-foreground': 'hsl(var(--destructive-foreground) / <alpha-value>)',
+
+        // Optional centralized scales (SolarConnect compatibility)
+        // These map to CSS variables so they remain theme-driven.
+        brand: {
+          50: 'rgb(var(--color-brand-50) / <alpha-value>)',
+          100: 'rgb(var(--color-brand-100) / <alpha-value>)',
+          200: 'rgb(var(--color-brand-200) / <alpha-value>)',
+          300: 'rgb(var(--color-brand-300) / <alpha-value>)',
+          400: 'rgb(var(--color-brand-400) / <alpha-value>)',
+          500: 'rgb(var(--color-brand-500) / <alpha-value>)',
+          600: 'rgb(var(--color-brand-600) / <alpha-value>)',
+          700: 'rgb(var(--color-brand-700) / <alpha-value>)',
+          800: 'rgb(var(--color-brand-800) / <alpha-value>)',
+          900: 'rgb(var(--color-brand-900) / <alpha-value>)',
+          950: 'rgb(var(--color-brand-950) / <alpha-value>)',
+        },
+        neutral: {
+          50: 'rgb(var(--color-neutral-50) / <alpha-value>)',
+          100: 'rgb(var(--color-neutral-100) / <alpha-value>)',
+          200: 'rgb(var(--color-neutral-200) / <alpha-value>)',
+          300: 'rgb(var(--color-neutral-300) / <alpha-value>)',
+          400: 'rgb(var(--color-neutral-400) / <alpha-value>)',
+          500: 'rgb(var(--color-neutral-500) / <alpha-value>)',
+          600: 'rgb(var(--color-neutral-600) / <alpha-value>)',
+          700: 'rgb(var(--color-neutral-700) / <alpha-value>)',
+          800: 'rgb(var(--color-neutral-800) / <alpha-value>)',
+          900: 'rgb(var(--color-neutral-900) / <alpha-value>)',
+          950: 'rgb(var(--color-neutral-950) / <alpha-value>)',
+        },
+
+        // Compatibility alias for SolarConnect components.
+        // Prefer semantic keys (background/surface/foreground/accent) or `neutral-*` in new code.
+        slate: {
+          50: 'rgb(var(--color-neutral-50) / <alpha-value>)',
+          100: 'rgb(var(--color-neutral-100) / <alpha-value>)',
+          200: 'rgb(var(--color-neutral-200) / <alpha-value>)',
+          300: 'rgb(var(--color-neutral-300) / <alpha-value>)',
+          400: 'rgb(var(--color-neutral-400) / <alpha-value>)',
+          500: 'rgb(var(--color-neutral-500) / <alpha-value>)',
+          600: 'rgb(var(--color-neutral-600) / <alpha-value>)',
+          700: 'rgb(var(--color-neutral-700) / <alpha-value>)',
+          800: 'rgb(var(--color-neutral-800) / <alpha-value>)',
+          900: 'rgb(var(--color-neutral-900) / <alpha-value>)',
+          950: 'rgb(var(--color-neutral-950) / <alpha-value>)',
+        },
         
         // Custom status colors (HSL format)
         'success-hsl': 'hsl(var(--success) / <alpha-value>)',
@@ -157,12 +202,17 @@ module.exports = {
         'neu-outset-sm': 'var(--shadow-neu-outset-sm)',
         'neu-inset-sm': 'var(--shadow-neu-inset-sm)',
         'neu-outset-lg': 'var(--shadow-neu-outset-lg)',
+
+        // Optional SolarConnect-style brand glows
+        'brand-glow-sm': 'var(--shadow-brand-glow-sm)',
+        'brand-glow-md': 'var(--shadow-brand-glow-md)',
       },
 
       // Subtle interaction scales (avoid arbitrary scale-[...])
       scale: {
         98: '0.98',
         101: '1.01',
+        102: '1.02',
       },
       
       // Border radius tokens
@@ -186,14 +236,46 @@ module.exports = {
       maxHeight: {
         ...layout.maxHeight,
       },
+      width: {
+        'toggle-indicator': 'var(--size-toggle-indicator-w)',
+      },
+      height: {
+        // SolarConnect import cleanup (avoid h-[...] in migrated components)
+        'hero-headline': '200px',
+        'hero-headline-md': '240px',
+      },
       minHeight: {
         ...layout.minHeight,
+        // SolarConnect import cleanup (avoid min-h-[...] in migrated components)
+        'featured-news': '400px',
+      },
+
+      // Avoid arbitrary `grid-cols-[...]` in app code
+      gridTemplateColumns: {
+        'pricing-engine-cost': 'minmax(100px,1fr) minmax(120px,2fr) 60px 90px 90px 50px 90px 40px',
+        'pricing-engine': 'minmax(100px,1.5fr) minmax(150px,3fr) 80px 120px 60px 120px 50px',
+      },
+
+      // Compatibility: SolarConnect components commonly use `ring-offset-slate-900`
+      // Keep it theme-driven via CSS variables.
+      ringOffsetColor: {
+        'slate-900': 'rgb(var(--color-background) / 1)',
       },
       
       // Animation tokens
       transitionDuration: animations.duration,
       transitionTimingFunction: animations.easing,
-      keyframes: animations.keyframes,
+      keyframes: {
+        ...animations.keyframes,
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        kenBurns: {
+          '0%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(1.1)' },
+        },
+      },
       animation: {
         'fade-in': 'fadeIn 250ms ease-in-out',
         'fade-out': 'fadeOut 250ms ease-in-out',
@@ -201,6 +283,10 @@ module.exports = {
         'slide-out-down': 'slideOutDown 250ms ease-in-out',
         'scale-in': 'scaleIn 250ms ease-in-out',
         'scale-out': 'scaleOut 250ms ease-in-out',
+
+        // SolarConnect compatibility
+        'fade-in-up': 'fadeInUp 600ms var(--ease-out) both',
+        'ken-burns': 'kenBurns 15s ease-out forwards',
       },
       
       backgroundImage: {

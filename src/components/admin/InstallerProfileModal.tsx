@@ -100,7 +100,7 @@ export default function InstallerProfileModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] overflow-y-auto">
+    <div className="fixed inset-0 z-modal overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
         <div
@@ -123,7 +123,7 @@ export default function InstallerProfileModal({
           </div>
 
           {/* Body */}
-          <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+          <div className="px-6 py-4 max-h-modal-sm overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
@@ -378,7 +378,7 @@ export default function InstallerProfileModal({
                               <div className="flex-shrink-0 w-2 h-2 rounded-full bg-info mt-2"></div>
                               <div className="flex-1">
                                 <div className="flex items-start justify-between mb-1">
-                                  <span className={`text-body-small font-medium ${
+                                  <span className={`text-label ${
                                     log.action === 'APPROVED' ? 'text-success' :
                                     log.action === 'REJECTED' ? 'text-error' :
                                     log.action === 'REQUEST_INFO' ? 'text-warning' :

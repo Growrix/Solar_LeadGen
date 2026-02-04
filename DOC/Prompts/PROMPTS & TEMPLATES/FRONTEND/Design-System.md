@@ -38,80 +38,25 @@ Token naming convention:
 - `background`/`surface` = base layers
 - `foreground-*` = text hierarchy
 
-Universal baseline palette (Light):
-- Primary: `#1976D2` (rgb `25 118 210`)
-- Secondary: `#FF9800` (rgb `255 152 0`)
-- Background: `#F5F5F5` (rgb `245 245 245`)
-- Surface: `#FFFFFF` (rgb `255 255 255`)
-- Text Primary: `#212121` (rgb `33 33 33`)
-- Text Secondary: `#757575` (rgb `117 117 117`)
-- Error: `#D32F2F` (rgb `211 47 47`)
-- Success: `#388E3C` (rgb `56 142 60`)
-- Warning: `#FFA726` (rgb `255 167 38`)
-- Info: `#0288D1` (rgb `2 136 209`)
+Current target (ONE THEME NOW): **SolarConnect Dark**
 
-Theme tokens (target):
+This repo is currently focused on shipping **one theme** that matches the Google AI Studio SolarConnect design. Additional themes can be added later without changing component code by extending CSS variables.
 
-- **Primary**
-  - Light: `#1976D2`
-  - Dark: `#1976D2` (brand constant; hover uses darker shade)
-  - Purple: `#A78BFA` (premium variant)
+**Semantic tokens (used across the app)**
+- `background`: `#151419`
+- `surface` / elevated: `#1B1B1E`
+- `border`: `#262626`
+- `foreground` (body): `#9CA3AF`
+- `foreground-secondary` (high emphasis): `#F3F4F6`
+- `accent` (CTA + focus): `#6D3BE2`
+- `accent-foreground`: `#230F4F`
 
-- **Secondary**
-  - Light: `#FF9800`
-  - Dark: `#FFB74D` (slightly lighter for contrast)
-  - Purple: `#C4B5FD`
+**Optional scales (SolarConnect compatibility)**
+To support SolarConnect-style utilities like `bg-brand-500/20` or `text-neutral-300` without hardcoding values, the system provides optional centralized scales:
+- `brand-50..950` (purple scale)
+- `neutral-50..950` (SolarConnect slate override)
 
-- **Accent (CTA + focus)**
-  - Light: `#FF9800`
-  - Dark: `#FF9800`
-  - Purple: `#A78BFA`
-
-- **Background**
-  - Light: `#F5F5F5`
-  - Dark: `#181818`
-  - Purple: `#2C1D4D`
-
-- **Surface / Elevated**
-  - Light: `#FFFFFF`
-  - Dark: `#232323`
-  - Purple: `#3E296C`
-
-- **Border**
-  - Light: `#E0E0E0`
-  - Dark: `#333333`
-  - Purple: `#4C3383`
-
-- **Text (Hierarchy)**
-  - Light:
-    - Primary: `#212121`
-    - Secondary: `#757575`
-    - Subtle: `#9E9E9E`
-  - Dark:
-    - Primary: `#F5F5F5`
-    - Secondary: `#BDBDBD`
-    - Subtle: `#9E9E9E`
-  - Purple:
-    - Primary: `#E9E3FF`
-    - Secondary: `#CABEFF`
-    - Subtle: `#A094C2`
-
-- **Status**
-  - Light:
-    - Error: `#D32F2F`
-    - Success: `#388E3C`
-    - Warning: `#FFA726`
-    - Info: `#0288D1`
-  - Dark:
-    - Error: `#EF5350`
-    - Success: `#66BB6A`
-    - Warning: `#FFB74D`
-    - Info: `#4FC3F7`
-  - Purple:
-    - Error: `#F87171`
-    - Success: `#4ADE80`
-    - Warning: `#FACC15`
-    - Info: `#93C5FD`
+These scales must be mapped to CSS variables (theme-driven) and are optional; most of the app should continue using semantic keys (`background`, `surface`, `accent`, etc.).
 
 Rules:
 - No hardcoded hex/rgb/rgba values in components.
@@ -273,7 +218,8 @@ Rules:
 ### Theme
 
 Supported themes:
-- `dark`, `light`, `purple` (optional premium), and `system` (maps to dark/light).
+- Current shipping focus: `dark` only (SolarConnect Dark).
+- `light` / additional themes may be added later via CSS variable overrides.
 
 How theme switching works:
 - The `ThemeProvider` applies one of `theme-dark`, `theme-light`, `theme-purple` to `<html>`.

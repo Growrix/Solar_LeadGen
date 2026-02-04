@@ -1,4 +1,5 @@
 import AdminSignIn from '@/components/AdminSignIn';
+import { CenteredShell } from '@/ds';
 
 /**
  * Admin Login Page
@@ -7,5 +8,9 @@ import AdminSignIn from '@/components/AdminSignIn';
  * After successful login, redirects to /admin/dashboard
  */
 export default function AdminPage() {
-  return <AdminSignIn />;
+  return (
+    <CenteredShell>
+      <AdminSignIn embedded />
+    </CenteredShell>
+  );
 }

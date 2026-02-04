@@ -2,6 +2,18 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Gate0: DS verify (src)",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"ds:verify:src"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
 			"label": "Gate0: Typecheck",
 			"type": "shell",
 			"command": "npx",
@@ -32,11 +44,10 @@
 		{
 			"label": "Gate0: Next build",
 			"type": "shell",
-			"command": "powershell",
+			"command": "npm",
 			"args": [
-				"-NoProfile",
-				"-Command",
-				"if (Test-Path .next) { Remove-Item -Recurse -Force .next }; npm run build"
+				"run",
+				"build:gate0"
 			],
 			"isBackground": false,
 			"problemMatcher": [],
