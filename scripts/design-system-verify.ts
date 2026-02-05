@@ -177,9 +177,19 @@ function extractClassStringCandidates(filePath: string, content: string): ClassS
       return;
     }
 
-    if (ts.isBinaryExpression(expr) && expr.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    if (
+      ts.isBinaryExpression(expr) &&
+      (expr.operatorToken.kind === ts.SyntaxKind.PlusToken ||
+        expr.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+        expr.operatorToken.kind === ts.SyntaxKind.BarBarToken)
+    ) {
       collectStaticStringSegmentsFromExpression(expr.left, out);
       collectStaticStringSegmentsFromExpression(expr.right, out);
+      return;
+    }
+
+    if (ts.isNonNullExpression(expr)) {
+      collectStaticStringSegmentsFromExpression(expr.expression, out);
       return;
     }
 
@@ -199,6 +209,9 @@ function extractClassStringCandidates(filePath: string, content: string): ClassS
     if (ts.isArrayLiteralExpression(expr)) {
       for (const element of expr.elements) {
         if (ts.isExpression(element)) collectStaticStringSegmentsFromExpression(element, out);
+        if (ts.isSpreadElement(element)) {
+          collectStaticStringSegmentsFromExpression(element.expression, out);
+        }
       }
       return;
     }

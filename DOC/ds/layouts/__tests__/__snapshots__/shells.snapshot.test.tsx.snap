@@ -1,0 +1,186 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`DS layouts (snapshots) CenteredShell 1`] = `
+<div
+  class="ui-page"
+>
+  <main
+    class="ui-page-main"
+  >
+    <div
+      class="ui-band"
+    >
+      <section
+        class="ui-container ui-section ui-container--narrow"
+      >
+        <div
+          class="ui-stack"
+        >
+          <h1
+            class="text-heading-1"
+          >
+            Sign in
+          </h1>
+          <div>
+            <div>
+              Form
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+`;
+
+exports[`DS layouts (snapshots) DashboardShell (with sidebar) 1`] = `
+<div
+  class="ui-page ui-page--dashboard"
+>
+  <div
+    class="ui-band ui-band--surface ui-sticky-top"
+  >
+    <div>
+      Top
+    </div>
+  </div>
+  <main
+    class="ui-page-main"
+    id="main"
+  >
+    <div
+      class="ui-container ui-container--wide"
+    >
+      <div
+        class="ui-shell-grid ui-shell-grid--left ui-shell-grid--sidebar"
+      >
+        <aside
+          class="ui-shell-aside ui-shell-aside--left"
+        >
+          <nav>
+            Nav
+          </nav>
+        </aside>
+        <div
+          class="ui-shell-content"
+        >
+          <div>
+            Content
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+`;
+
+exports[`DS layouts (snapshots) DocsShell 1`] = `
+<div
+  class="ui-page"
+>
+  <div
+    class="ui-band ui-band--surface ui-sticky-top"
+  >
+    <div
+      class="ui-container ui-container--wide"
+    >
+      <div
+        class="ui-header-pad ui-row ui-row--between"
+      >
+        <strong>
+          Docs
+        </strong>
+        <a
+          class="ui-navlink ui-focus-ring"
+          href="#main"
+        >
+          Jump to content
+        </a>
+      </div>
+    </div>
+  </div>
+  <main
+    class="ui-page-main"
+    id="main"
+  >
+    <div
+      class="ui-container ui-container--wide"
+    >
+      <div
+        class="ui-docs-shell"
+      >
+        <aside
+          aria-label="Docs navigation"
+          class="ui-docs-nav"
+        >
+          <nav>
+            <ul
+              class="ui-docs-navlist"
+            >
+              <li>
+                <a
+                  class="ui-navlink ui-focus-ring"
+                  href="#intro"
+                >
+                  Intro
+                </a>
+              </li>
+              <li>
+                <a
+                  class="ui-navlink ui-focus-ring"
+                  href="#components"
+                >
+                  Components
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+        <div
+          class="ui-docs-content"
+        >
+          <div
+            id="intro"
+          >
+            Intro
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+`;
+
+exports[`DS layouts (snapshots) PublicShell 1`] = `
+<div
+  class="ui-page"
+>
+  <div
+    class="ui-band ui-band--surface ui-sticky-top"
+  >
+    <div
+      class="ui-container"
+    >
+      <div
+        class="ui-header-pad"
+      >
+        Header
+      </div>
+    </div>
+  </div>
+  <main
+    class="ui-page-main"
+  >
+    <div>
+      Body
+    </div>
+  </main>
+  <div
+    class="ui-band"
+  >
+    <div>
+      Footer
+    </div>
+  </div>
+</div>
+`;

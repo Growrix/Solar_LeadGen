@@ -117,13 +117,13 @@ export const Select: React.FC<SelectProps> = ({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`relative w-full min-h-control px-4 py-2.5 text-left cursor-pointer bg-background/40 border rounded-lg transition focus:outline-none${error ? 'border-error' : isOpen ? 'border-accent ring-1 ring-accent' : 'border-border/10 hover:border-border'}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        className={`relative w-full min-h-control px-4 py-2.5 text-left cursor-pointer bg-background/40 border rounded-lg transition focus:outline-none${error ? ' border-error' : isOpen ? ' border-accent ring-1 ring-accent' : ' border-border/10 hover:border-border'}
+          ${disabled ? ' opacity-50 cursor-not-allowed' : ''}
         `}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex-grow">{getDisplay()}</div>
-          <ChevronDown className={`w-4 h-4 text-foreground transition-transform${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-4 h-4 text-foreground transition-transform${isOpen ? ' rotate-180' : ''}`} />
         </div>
       </button>
 
@@ -145,7 +145,7 @@ export const Select: React.FC<SelectProps> = ({
                   role="option"
                   aria-selected={selected}
                   onClick={() => handleSelect(option.value)}
-                  className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors text-body-small${selected ? 'bg-accent/10 text-accent' : 'text-icon hover:bg-surface hover:text-foreground-secondary'}
+                  className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors text-body-small${selected ? ' bg-accent/10 text-accent' : ' text-icon hover:bg-surface hover:text-foreground-secondary'}
                   `}
                 >
                   <span>{option.label}</span>

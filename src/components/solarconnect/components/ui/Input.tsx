@@ -43,9 +43,9 @@ export const Input: React.FC<InputProps> = ({
         <input
           id={id}
           type={inputType}
-          className={`w-full bg-background/40 border border-border/10 text-foreground-secondary placeholder:text-foreground-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition disabled:opacity-50 disabled:cursor-not-allowed py-2.5${startIcon ? 'pl-10' : 'pl-4'}
-            ${endIcon || isPassword ? 'pr-10' : 'pr-4'}
-            ${error ? 'border-error focus:ring-error/50 focus:border-error' : ''}
+          className={`w-full bg-background/40 border border-border/10 text-foreground-secondary placeholder:text-foreground-tertiary rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:border-accent/50 transition disabled:opacity-50 disabled:cursor-not-allowed py-2.5 ${startIcon ? 'pl-10' : 'pl-4'}
+            ${endIcon || isPassword ? ' pr-10' : ' pr-4'}
+            ${error ? ' border-error focus-visible:ring-error/50 focus-visible:border-error' : ''}
             ${className}
           `}
           {...props}
@@ -56,7 +56,7 @@ export const Input: React.FC<InputProps> = ({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-foreground hover:text-foreground-secondary transition-colors focus:outline-none"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-foreground hover:text-foreground-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
             aria-label={ARIA_LABELS.togglePassword}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

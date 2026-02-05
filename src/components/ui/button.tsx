@@ -15,7 +15,7 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseClasses =
-    'inline-flex items-center justify-center gap-3 px-8 py-4 text-body-small tracking-wider rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-4 focus:ring-offset-background focus:ring-accent whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center gap-3 px-8 py-4 text-body-small tracking-wider rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-background whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = {
     primary: 'border border-accent bg-transparent text-accent shadow-neu-outset-sm hover:shadow-neu-inset-sm active:shadow-neu-inset-sm active:scale-95',

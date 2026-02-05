@@ -5,6 +5,7 @@ import { Phone, FileText, Gavel, CheckCircle2 } from 'lucide-react';
 import { QUOTE_OPTS_LABELS, TRUST_INDICATORS, HERO_SLIDES, HERO_CONTENT } from '../../constants/labels';
 import { Badge } from '../ui/Badge';
 import { Heading, Text } from '../ui/Typography';
+import { Container, GlassSurface, Grid } from '@/ds';
 
 export const Hero: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -33,7 +34,7 @@ export const Hero: React.FC = () => {
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className={`relative w-full h-full${index === currentSlide ? 'animate-ken-burns' : ''}`}>
+            <div className={`relative w-full h-full${index === currentSlide ? ' animate-ken-burns' : ''}`}>
               <Image
                 src={slide.image}
                 alt="Solar background"
@@ -44,23 +45,14 @@ export const Hero: React.FC = () => {
               />
               {/* Gradient Overlays */}
               <div className="absolute inset-0 bg-background/40 mix-blend-multiply" />
-              <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent from-background" />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent to-background" />
             </div>
           </div>
         ))}
-        <style>{`
-          @keyframes ken-burns {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-          }
-          .animate-ken-burns {
-            animation: ken-burns 15s ease-out forwards;
-          }
-        `}</style>
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col h-full w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      <Container className="relative z-10 flex flex-col h-full w-full pt-20">
         
         {/* Text Area - Centered in available space */}
         <div className="flex-grow flex flex-col justify-center items-center w-full">
@@ -80,8 +72,8 @@ export const Hero: React.FC = () => {
                     <div 
                       key={slide.id}
                       className={`absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center transition duration-700 transform${index === currentSlide 
-                                                ? 'opacity-100 translate-y-0 scale-100' 
-                                                : 'opacity-0 translate-y-8 scale-95 pointer-events-none'}`}
+                                                ? ' opacity-100 translate-y-0 scale-100' 
+                                                : ' opacity-0 translate-y-8 scale-95 pointer-events-none'}`}
                     >
                       <Heading level={1} className="mb-6 leading-none drop-shadow-2xl">
                         {slide.headline}
@@ -103,14 +95,14 @@ export const Hero: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`h-1.5 rounded-full transition duration-500${idx === currentSlide ? 'w-8 bg-accent' : 'w-2 bg-surface hover:bg-surface'}`}
+                  className={`h-1.5 rounded-full transition duration-500${idx === currentSlide ? ' w-8 bg-accent' : ' w-2 bg-surface hover:bg-surface'}`}
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
             </div>
 
             {/* Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+            <Grid cols={1} colsMd={3} gap="md" className="lg:gap-6">
               <QuoteOptionCard
                 index={0}
                 title={QUOTE_OPTS_LABELS.consultation.title}
@@ -138,22 +130,22 @@ export const Hero: React.FC = () => {
                 icon={FileText}
                 onClick={() => handleAction('written')}
               />
-            </div>
+            </Grid>
         </div>
 
         {/* Bottom Trust Indicators (Footer of Hero) */}
         <div className="absolute bottom-6 left-0 w-full flex justify-center z-20 pointer-events-none">
-           <div className="flex gap-4 md:gap-8 uppercase tracking-widest text-icon bg-background/40 px-6 py-2 rounded-full border shadow-lg surface-glass text-caption">
+           <GlassSurface className="flex gap-4 md:gap-8 uppercase tracking-widest text-icon bg-background/40 px-6 py-2 rounded-full border shadow-lg text-caption">
              {TRUST_INDICATORS.map((indicator, index) => (
                <span key={index} className="flex items-center gap-2">
                  <span className="w-1.5 h-1.5 rounded-full bg-accent shadow-brand-glow-md"></span>
                  {indicator}
                </span>
              ))}
-           </div>
+           </GlassSurface>
         </div>
 
-      </div>
+      </Container>
     </section>
   );
 };

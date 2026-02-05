@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sun, Menu, X, Layout } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { APP_NAME, NAV_ITEMS, UI_LABELS, ARIA_LABELS } from '../../constants/labels';
+import { Container, GlassSurface } from '@/ds';
 
 interface HeaderProps {
   onNavigate: (page: string) => void;
@@ -47,18 +48,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activePage }) => {
   };
 
   return (
-    <header 
-      className={`fixed top-0 left-0 w-full z-50 transition duration-300${isScrolled || activePage !== 'home'
-                    ? 'bg-background/90 border-b shadow-lg surface-glass' 
-                    : 'bg-transparent border-b border-transparent'}`}
+    <GlassSurface
+      as="header"
+      enabled={isScrolled || activePage !== 'home'}
+      className={`fixed top-0 left-0 w-full z-50 transition duration-300${
+        isScrolled || activePage !== 'home'
+          ? ' bg-background/90 border-b shadow-lg'
+          : ' bg-transparent border-b border-transparent'
+      }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Container>
         <div className="flex justify-between items-center h-20">
           
           {/* Logo */}
           <button 
             onClick={handleLogoClick}
-            className="flex-shrink-0 flex items-center gap-2 cursor-pointer group bg-transparent border-none p-0 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
+            className="flex-shrink-0 flex items-center gap-2 cursor-pointer group bg-transparent border-none p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
             aria-label={ARIA_LABELS.logo}
           >
             <div className="bg-accent p-1.5 rounded-full transition-transform group-hover:rotate-12">
@@ -84,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activePage }) => {
             {/* Component Library Link */}
             <button
                 onClick={() => onNavigate('components')}
-                className={`flex items-center gap-1.5 uppercase tracking-wide transition-colors border-none bg-transparent cursor-pointer focus:outline-none text-body-small${activePage === 'components' ? 'text-brand-500' : 'text-icon hover:text-accent'}`}
+              className={`flex items-center gap-1.5 uppercase tracking-wide transition-colors border-none bg-transparent cursor-pointer focus-visible:outline-none text-body-small${activePage === 'components' ? ' text-accent' : ' text-icon hover:text-accent'}`}
             >
                 <Layout className="w-4 h-4" />
                 {UI_LABELS.components}
@@ -102,14 +107,14 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activePage }) => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-icon hover:text-foreground-secondary p-2 focus:outline-none focus:ring-2 focus:ring-accent rounded-md"
+              className="text-icon hover:text-foreground-secondary p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md"
               aria-label={ARIA_LABELS.toggleMenu}
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* Mobile Navigation Dropdown */}
       {isMobileMenuOpen && (
@@ -125,23 +130,25 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, activePage }) => {
               </button>
             ))}
             <button
-                onClick={() => {
-                    onNavigate('components');
-                    setIsMobileMenuOpen(false);
-                }}
-                className="block w-full text-left px-3 py-2 rounded-md text-icon hover:text-foreground-secondary hover:bg-surface focus:outline-none focus:bg-surface text-body"
+              onClick={() => {
+                onNavigate('components');
+                setIsMobileMenuOpen(false);
+              }}
+              className="block w-full text-left px-3 py-2 rounded-md text-icon hover:text-foreground-secondary hover:bg-surface focus:outline-none focus:bg-surface text-body"
             >
-                <div className="flex items-center gap-2">
-                    <Layout className="w-4 h-4" />
-                    {UI_LABELS.components}
-                </div>
+              <div className="flex items-center gap-2">
+                <Layout className="w-4 h-4" />
+                {UI_LABELS.components}
+              </div>
             </button>
             <div className="mt-4 px-3">
-              <Button fullWidth variant="primary">{UI_LABELS.signIn}</Button>
+              <Button fullWidth variant="primary">
+                {UI_LABELS.signIn}
+              </Button>
             </div>
           </div>
         </div>
       )}
-    </header>
+    </GlassSurface>
   );
 };

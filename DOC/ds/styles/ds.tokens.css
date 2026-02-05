@@ -1,0 +1,129 @@
+@layer ds.tokens {
+  :root {
+    --ds-font-sans: var(--font-inter), Inter, Roboto, Arial, system-ui, -apple-system,
+      "Segoe UI", sans-serif;
+    --ds-font-mono: var(--font-fira-code), "Fira Code", Consolas, Monaco, "Courier New",
+      monospace;
+
+    /* Typography (baseline scale) */
+    --ds-font-size-1: 0.75rem;
+    --ds-font-size-2: 0.875rem;
+    --ds-font-size-3: 1rem;
+    --ds-font-size-4: 1.25rem;
+    --ds-font-size-5: 1.5rem;
+    --ds-font-size-6: 2rem;
+    --ds-font-size-7: 2.5rem;
+
+    --ds-font-weight-regular: 400;
+    --ds-font-weight-medium: 500;
+    --ds-font-weight-bold: 700;
+
+    --ds-line-height-tight: 1.25;
+    --ds-line-height-normal: 1.5;
+    --ds-line-height-relaxed: 1.75;
+
+    /* Spacing (4px base) */
+    --ds-space-0: 0;
+    --ds-space-1: 0.25rem;
+    --ds-space-2: 0.5rem;
+    --ds-space-3: 0.75rem;
+    --ds-space-4: 1rem;
+    --ds-space-6: 1.5rem;
+    --ds-space-7: 2rem;
+    --ds-space-8: 2.5rem;
+    --ds-space-9: 3rem;
+
+    /* Semantic spacing */
+    --ds-space-card-padding: var(--ds-space-6);
+    --ds-space-modal-padding: var(--ds-space-6);
+    --ds-space-form-gap: var(--ds-space-4);
+    --ds-space-section-margin: var(--ds-space-9);
+    --ds-space-heading-margin: var(--ds-space-4);
+    --ds-space-button-pad-x: var(--ds-space-4);
+    --ds-space-button-pad-y: var(--ds-space-2);
+    --ds-space-input-pad-x: var(--ds-space-4);
+    --ds-space-input-pad-y: var(--ds-space-2);
+    --ds-space-nav-padding: var(--ds-space-4);
+
+    /* Radii */
+    --ds-radius-default: 0.25rem;
+    --ds-radius-card: 0.5rem;
+    --ds-radius-modal: 0.5rem;
+    --ds-radius-full: 9999px;
+
+    /* Motion */
+    --ds-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ds-duration-fast: 120ms;
+    --ds-duration-normal: 200ms;
+    --ds-duration-slow: 300ms;
+
+    /* Shadows */
+    --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    /* Z-index */
+    --ds-z-modal: 1000;
+    --ds-z-drawer: 1100;
+    --ds-z-dropdown: 1050;
+    --ds-z-tooltip: 1200;
+    --ds-z-toast: 1300;
+    --ds-z-sticky: 100;
+
+    /* Semantic colors (SolarConnect Dark) */
+    --ds-color-background: #151419;
+    --ds-color-surface: #1b1b1e;
+    --ds-color-border: #262626;
+    --ds-color-foreground: #9ca3af;
+    --ds-color-foreground-secondary: #f3f4f6;
+    --ds-color-accent: #6d3be2;
+    --ds-color-accent-foreground: #230f4f;
+
+    --ds-color-primary: var(--ds-color-accent);
+    --ds-color-on-primary: var(--ds-color-foreground-secondary);
+
+    --ds-color-success: #16a34a;
+    --ds-color-warning: #f59e0b;
+    --ds-color-danger: #dc2626;
+    --ds-color-info: #2563eb;
+
+    --ds-color-focus-ring: rgba(109, 59, 226, 0.45);
+    --ds-color-overlay: rgba(0, 0, 0, 0.55);
+
+    /* Interactive states */
+    --ds-color-accent-hover: color-mix(in oklab, var(--ds-color-accent) 86%, white);
+    --ds-color-accent-active: color-mix(in oklab, var(--ds-color-accent) 78%, black);
+
+    /* Legacy aliases (kept for existing classnames) */
+    --ds-color-bg: var(--ds-color-background);
+    --ds-color-text: var(--ds-color-foreground);
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
+
+    /* Layout dimensions */
+    --ds-container-max: 64rem;
+    --ds-container-narrow: 56rem;
+    --ds-container-wide: 72rem;
+
+    /* Sizing */
+    --ds-size-hero-min-h: 28rem;
+    --ds-size-header-h: 3.5rem;
+    --ds-size-viewport-minus-header: calc(100dvh - var(--ds-size-header-h));
+
+    --ds-size-touch-target: 2.75rem;
+    --ds-size-input-min-h: var(--ds-size-touch-target);
+    --ds-size-button-min-h: var(--ds-size-touch-target);
+    --ds-size-icon-button: var(--ds-size-touch-target);
+    --ds-size-fab: 3.25rem;
+    --ds-size-tabs-h: var(--ds-size-touch-target);
+    --ds-size-bottom-nav-h: 4rem;
+
+    /* Dashboard shell sizing */
+    --ds-size-shell-left: 13rem;
+    --ds-size-shell-right: 16rem;
+    --ds-size-shell-collapsed: 4.5rem;
+
+    /* Popovers / tooltips */
+    --ds-space-popover-pad: var(--ds-space-2);
+    --ds-space-tooltip-gap: var(--ds-space-2);
+  }
+}

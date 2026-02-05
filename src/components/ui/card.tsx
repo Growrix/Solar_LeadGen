@@ -4,20 +4,21 @@ import { cn } from '@/lib/utils';
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { variant?: 'flat' | 'pressed' | 'floating' | 'compact' }
+  React.HTMLAttributes<HTMLDivElement> & { variant?: 'flat' | 'pressed' | 'floating' | 'compact' | 'glass' }
 >(({ className, variant = 'flat', ...props }, ref) => {
   const variantClasses: Record<NonNullable<typeof variant>, string> = {
-    flat: 'shadow-card',
-    pressed: 'shadow-neu-inset',
-    floating: 'shadow-neu-outset-lg',
-    compact: 'shadow-card',
+    flat: 'bg-background-alt border border-border/30 shadow-card',
+    pressed: 'bg-background-alt border border-border/30 shadow-neu-inset',
+    floating: 'bg-background-alt border border-border/30 shadow-neu-outset-lg',
+    compact: 'bg-background-alt border border-border/30 shadow-card',
+    glass: 'card-glass',
   };
 
   return (
     <div
       ref={ref}
       className={cn(
-        'rounded-card bg-background-alt text-foreground border border-border/30 transition-colors duration-300',
+        'rounded-card text-foreground transition-colors duration-300',
         variantClasses[variant],
         className
       )}

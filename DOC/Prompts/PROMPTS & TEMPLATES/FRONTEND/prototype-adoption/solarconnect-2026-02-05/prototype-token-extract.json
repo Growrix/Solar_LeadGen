@@ -1,0 +1,88 @@
+{
+  "prototype": {
+    "name": "SolarConnect",
+    "sourceRoot": "DOC/solarconnect",
+    "extractedFrom": [
+      "DOC/solarconnect/index.html (tailwind.config via CDN)",
+      "DOC/solarconnect/components/** (class patterns)",
+      "DOC/solarconnect/components/home/Hero.tsx (embedded keyframes)",
+      "DOC/solarconnect/components/home/QuoteOptionCard.tsx (embedded keyframes)"
+    ],
+    "generatedAt": "2026-02-05T00:00:00.000Z"
+  },
+  "tailwindCdnConfig": {
+    "theme": {
+      "extend": {
+        "colors": {
+          "brand": {
+            "50": "#f4f1fd",
+            "100": "#e8e2fb",
+            "200": "#d0c3f7",
+            "300": "#b09cf2",
+            "400": "#8d6eeb",
+            "500": "#6d3be2",
+            "600": "#5e2cd1",
+            "700": "#5023b3",
+            "800": "#431f94",
+            "900": "#381b7a",
+            "950": "#230f4f"
+          },
+          "slate": {
+            "50": "#FBFBFB",
+            "100": "#f3f4f6",
+            "200": "#e5e7eb",
+            "300": "#d1d5db",
+            "400": "#9ca3af",
+            "500": "#878787",
+            "600": "#4b5563",
+            "700": "#262626",
+            "800": "#1B1B1E",
+            "900": "#151419",
+            "950": "#0b0a0d"
+          }
+        },
+        "fontFamily": {
+          "sans": ["Inter", "sans-serif"]
+        }
+      }
+    }
+  },
+  "prototypePatterns": {
+    "glassSurface": {
+      "background": "bg-slate-800/90 or bg-white/10",
+      "blur": "backdrop-blur-md",
+      "border": "border border-white/10 (sometimes /5)",
+      "notes": "Used for header scrolled state, cards, newsletter input container, trust indicator pill"
+    },
+    "focusRing": {
+      "ring": "focus:ring-2 focus:ring-brand-500/50",
+      "offset": "focus:ring-offset-2 focus:ring-offset-slate-900"
+    },
+    "brandGlow": {
+      "examples": [
+        "shadow-lg shadow-brand-500/20",
+        "hover:shadow-brand-500/40",
+        "shadow-brand-500/50"
+      ]
+    },
+    "embeddedAnimations": {
+      "kenBurns": {
+        "duration": "15s",
+        "easing": "ease-out",
+        "from": "scale(1)",
+        "to": "scale(1.1)"
+      },
+      "fadeInUp": {
+        "duration": "600ms",
+        "from": "opacity:0 translateY(20px)",
+        "to": "opacity:1 translateY(0)"
+      }
+    },
+    "arbitraryValuesToTokenize": {
+      "typography": ["text-[10px]"],
+      "heights": ["h-[200px]", "md:h-[240px]"],
+      "minHeights": ["min-h-[42px]", "min-h-[100px]", "min-h-[400px]"],
+      "scales": ["scale-[1.02]"]
+    }
+  }
+}

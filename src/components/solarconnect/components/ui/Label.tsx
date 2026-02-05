@@ -12,7 +12,7 @@ export const Label: React.FC<LabelProps> = ({
 }) => {
   return (
     <label 
-      className={`block text-icon mb-1.5 text-body-small${className}`} 
+      className={`block text-icon mb-1.5 text-body-small ${className}`} 
       {...props}
     >
       {children}

@@ -5,12 +5,11 @@ import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
 import { Heading, Text } from '../ui/Typography';
 import { NEWSLETTER_CONTENT } from '../../constants/labels';
+import { GlassSurface, Section } from '@/ds';
 
 export const NewsletterSection: React.FC = () => {
   return (
-    <section className="py-24 bg-background border-t border-border relative overflow-hidden">
-        {/* Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <Section className="py-24 bg-background border-t border-border relative overflow-hidden" containerClassName="relative z-10">
             <div className="bg-gradient-to-br from-accent to-accent rounded-3xl p-8 md:p-16 text-center shadow-2xl relative overflow-hidden ring-1 ring-border/10">
                 {/* Decorative background circles */}
                 <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-accent/30 blur-3xl" />
@@ -40,7 +39,7 @@ export const NewsletterSection: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="w-full max-w-md p-6 rounded-2xl border shadow-inner surface-glass">
+                    <GlassSurface className="w-full max-w-md p-6 rounded-2xl border shadow-inner">
                         <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
                             <div>
                                 <label htmlFor="email" className="sr-only">Email address</label>
@@ -58,10 +57,9 @@ export const NewsletterSection: React.FC = () => {
                                 {NEWSLETTER_CONTENT.disclaimer}
                             </p>
                         </form>
-                    </div>
+                    </GlassSurface>
                 </div>
             </div>
-        </div>
-    </section>
+        </Section>
   );
 };

@@ -498,43 +498,200 @@ description: "Task list for BLOG pixel-perfect prototype migration"
 
 **Goal:** Align the repo to the Blueprint architecture (tokens → themes → primitives → components → shells/layouts → pages), with enforceable boundaries and drift-proof governance.
 
+### Phase SC0: SolarConnect Design System Build (Prototype SOT Adoption) (2026-02-05)
+
+**Purpose**: Treat `DOC/solarconnect/` as the visual SOT and ensure the repo’s design system (tokens/themes/primitives) can reproduce it without hardcoded styles.
+
+**SOT inputs**:
+- Prototype: `DOC/solarconnect/`
+- Mapping dictionary: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/prototype-adoption/solarconnect-2026-02-05/prototype-to-ds-mapping.md`
+- Token extract: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/prototype-adoption/solarconnect-2026-02-05/prototype-token-extract.json`
+- Audit report: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/prototype-adoption/solarconnect-2026-02-05/prototype-audit.md`
+- Universal playbook: `DOC/Prompts/PROMPTS & TEMPLATES/FRONTEND/UNIVERSAL-PROTOTYPE-TO-DESIGN-SYSTEM-SOT-ADOPTION.md`
+
+**Default rollout choice**: additive/compatibility first (no breaking changes; refactor incrementally).
+
+- [x] TSC000 Confirm SolarConnect adoption artifacts exist (mapping + token extract + audit)
+
+- [x] TSC010 Verify runtime theme tokens include SolarConnect-compatible scales + glass/motion utilities (SOT: `src/app/globals.css`)
+
+- [x] TSC020 Align semantic elevation + focus ring to theme tokens (no hardcoded RGBA)
+        - Updated: `src/design-tokens/semantic/shadows.ts` (2026-02-05)
+
+- [x] TSC030 Run enforcement + build gates after SC0 foundation changes (passed 2026-02-05)
+        - Commands: `npm run ds:verify:src`, `npm run gate0`
+        - Acceptance: both pass
+
+- [x] TSC040 Inventory SolarConnect-specific primitives missing from DS and log each as tasks (2026-02-05)
+        - Output: tasks below (TSC1xx series)
+
+- [x] TSC110 Add `Card` glass variant for SolarConnect surfaces (done 2026-02-05)
+        - File: `src/components/ui/card.tsx`
+        - Behavior: `variant="glass"` uses `card-glass` (and avoids conflicting base background/border classes)
+
+- [x] TSC120 Standardize focus styling for inputs/controls to rely on semantic focus tokens (done 2026-02-05)
+        - Default choice: keep `ring-accent` for now; add `shadow-focus` optionally via DS component variants (no breaking change)
+        - Targets: `src/components/ui/input.tsx`, `src/components/ui/button.tsx`
+
+- [x] TSC130 Add a DS-owned “Glass Surface” wrapper component (done 2026-02-05)
+        - Trigger: repeated `surface-glass` usage in SolarConnect TSX
+        - Added: `src/ds/components/GlassSurface.tsx` (exported via `src/ds/index.ts`)
+
+- [ ] TSC050 Implement missing DS primitives/components (token-driven) required by SolarConnect
+        - Examples: `Surface`, `GlassCard`, `SectionHeader`, `StatCard`, `FeatureCard` (names TBD; must be added as tasks first)
+
+- [x] TSC060 Run `solarconnect:codemod` in report-only mode and log results (2026-02-05)
+        - Command: `npm run solarconnect:codemod -- --verbose`
+        - Result: 3 files would be updated (7 class-string updates)
+        - Files:
+          - `src/components/solarconnect/components/home/QuoteOptionCard.tsx`
+          - `src/components/solarconnect/components/ui/Avatar.tsx`
+          - `src/components/solarconnect/components/ui/Tooltip.tsx`
+
+- [x] TSC141 Apply SolarConnect codemod (write) to the 3 touched files only (done 2026-02-05)
+        - Applied to:
+          - `src/components/solarconnect/components/home/QuoteOptionCard.tsx`
+          - `src/components/solarconnect/components/ui/Avatar.tsx`
+          - `src/components/solarconnect/components/ui/Tooltip.tsx`
+        - Follow-up: fixed template-literal spacing so class tokens remain separated (2026-02-05)
+        - Acceptance: only these files change; no functional behavior change intended
+
+- [x] TSC142 Run gates after codemod write batch (passed 2026-02-05)
+        - Commands: `npm run ds:verify:src`, `npm run gate0`
+
+- [x] TSC150 Remove embedded `<style>` keyframes from SolarConnect components (done 2026-02-05)
+        - Files: `src/components/solarconnect/components/home/Hero.tsx`, `src/components/solarconnect/components/home/QuoteOptionCard.tsx`
+        - Acceptance: no per-component `<style>` blocks; use global DS motion utilities instead
+
+- [x] TSC151 Add staggerable fade-in utility (done 2026-02-05)
+        - File: `src/app/globals.css`
+        - Adds: `.animate-fade-in-up-stagger` using `--stagger-delay` CSS variable
+
+- [x] TSC160 Normalize SolarConnect focus rings to semantic offsets (done 2026-02-05)
+        - Replace `focus:ring-offset-slate-900` with `focus-visible:ring-offset-background`
+        - Files: `src/components/solarconnect/components/ui/Button.tsx`, `Checkbox.tsx`, `Radio.tsx`, `Switch.tsx`
+
+- [x] TSC161 Fix template-literal class token spacing bugs (done 2026-02-05)
+        - Files: `src/components/solarconnect/components/home/Hero.tsx`, `src/components/solarconnect/components/layout/Header.tsx`
+        - Acceptance: conditional class segments include leading spaces so Tailwind tokens remain valid
+
+- [x] TSC170 Adopt DS `GlassSurface` wrapper where `surface-glass` repeats (done 2026-02-05)
+        - Files: `src/components/solarconnect/components/home/Hero.tsx`, `src/components/solarconnect/components/home/NewsletterSection.tsx`
+        - Acceptance: use `GlassSurface` instead of raw `surface-glass` string where the element is a `<div>`
+
+- [x] TSC180 Add DS `SectionHeader` component (done 2026-02-05)
+        - Location: `src/ds/components/SectionHeader.tsx` (exported via `src/ds/index.ts`)
+        - Purpose: standardize repeated section title/subtitle/action layouts in SolarConnect
+
+- [x] TSC181 Adopt DS `SectionHeader` in SolarConnect sections (done 2026-02-05)
+        - Files: `src/components/solarconnect/components/home/NewsSection.tsx`, `src/components/solarconnect/components/home/BlogSection.tsx`
+
+- [x] TSC162 Fix SolarConnect `Input` conditional class token spacing + focus-visible (done 2026-02-05)
+        - File: `src/components/solarconnect/components/ui/Input.tsx`
+        - Acceptance: no merged Tailwind tokens from missing spaces; focus styles are keyboard-safe
+
+- [x] TSC182 Upgrade DS `GlassSurface` for real-world usage (polymorphic + optional enable) (done 2026-02-05)
+        - File: `src/ds/components/GlassSurface.tsx`
+        - Add: `as` prop to render as `header|section|div|...` (default `div`)
+        - Add: `enabled?: boolean` (default `true`) so `surface-glass` can be conditionally applied
+        - Acceptance: no breaking changes to existing usages; typecheck + build pass
+
+- [x] TSC183 Adopt DS `GlassSurface` in SolarConnect header (remove raw `surface-glass`) (done 2026-02-05)
+        - File: `src/components/solarconnect/components/layout/Header.tsx`
+        - Behavior: apply glass styling only when `isScrolled || activePage !== 'home'`
+        - Acceptance: header visuals unchanged vs previous logic; no raw `surface-glass` string in the file
+
+- [x] TSC184 Adopt DS `Container` primitive for SolarConnect layout consistency (done 2026-02-05)
+        - Files:
+          - `src/components/solarconnect/components/layout/Header.tsx`
+          - `src/components/solarconnect/components/home/Hero.tsx`
+          - `src/components/solarconnect/components/home/NewsSection.tsx`
+          - `src/components/solarconnect/components/home/BlogSection.tsx`
+          - `src/components/solarconnect/components/home/NewsletterSection.tsx`
+        - Replace raw `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` wrappers with `Container`
+        - Acceptance: no visual change intended; reduces duplicated layout strings; gates pass
+
+- [x] TSC185 Add DS `Section` wrapper (standard section scaffolding + Container) (done 2026-02-05)
+        - Files: `src/ds/components/Section.tsx`, `src/ds/components/index.ts`
+        - Default: renders a `<section>` and wraps children with DS `Container`
+        - Support: `containerSize`, `containerClassName`, `withContainer` toggles
+        - Acceptance: additive only; no visual changes by itself
+
+- [x] TSC186 Adopt DS `Section` in common SolarConnect home sections (done 2026-02-05)
+        - Files:
+          - `src/components/solarconnect/components/home/NewsSection.tsx`
+          - `src/components/solarconnect/components/home/BlogSection.tsx`
+          - `src/components/solarconnect/components/home/NewsletterSection.tsx`
+        - Acceptance: no visual change intended; reduces repeated section + container scaffolding; gates pass
+
+- [x] TSC187 Align `/solarconnect` preview route composition to prototype home (done 2026-02-05)
+        - File: `src/app/solarconnect/page.tsx`
+        - Remove non-prototype placeholder sections and avoid using generic `PublicShell` wrapper
+        - Acceptance: page structure matches prototype App home: Header + Hero + Blog + News + Newsletter
+
+- [x] TSC188 Adopt DS `Grid`/`Stack` primitives in SolarConnect sections (done 2026-02-05)
+        - Files:
+          - `src/components/solarconnect/components/home/Hero.tsx`
+          - `src/components/solarconnect/components/home/BlogSection.tsx`
+          - `src/components/solarconnect/components/home/NewsSection.tsx`
+        - Acceptance: layout wrappers use DS primitives; no behavioral changes
+
+- [x] TSC163 Fix remaining SolarConnect UI `className` template spacing bugs (done 2026-02-05)
+        - Purpose: prevent merged Tailwind tokens like `gap-3mt-2` or `ease-in-outtranslate-x-6`
+        - Files:
+          - `src/components/solarconnect/components/ui/Badge.tsx`
+          - `src/components/solarconnect/components/ui/Checkbox.tsx`
+          - `src/components/solarconnect/components/ui/Divider.tsx`
+          - `src/components/solarconnect/components/ui/Label.tsx`
+          - `src/components/solarconnect/components/ui/Radio.tsx`
+          - `src/components/solarconnect/components/ui/Select.tsx`
+          - `src/components/solarconnect/components/ui/Switch.tsx`
+          - `src/components/solarconnect/components/ui/Textarea.tsx`
+        - Acceptance: all interpolated class segments include safe whitespace; no behavior changes
+
 ### Phase BP0: Governance Hardening (Prevent Drift First)
 
-- [ ] TBP000 Make design-system verifier catch computed `className` patterns
+- [x] TBP000 Make design-system verifier catch computed `className` patterns (done 2026-02-05)
         - Upgrade `scripts/design-system-verify.ts` to scan `TemplateExpression` literals and `className={...}` expressions (including `cn()`/`clsx()` args)
+        - Added support for logical `&&` / `||` patterns (common in `cn()`/computed className trees)
         - Acceptance: violations inside template strings are detected; `npm run gate0` remains green after fixes
 
-- [ ] TBP010 Add CSS scan mode for theme CSS entrypoints
+- [x] TBP010 Add CSS scan mode for theme CSS entrypoints (done 2026-02-05)
         - Scan at least `src/app/globals.css` for hardcoded `#hex`, `rgb(a)`, `white/black`, `transition: all`, and `@media`-driven typography
+        - Added: `scripts/design-system-verify-css.ts` + `npm run ds:verify:css` and wired into `gate0`
         - Acceptance: new script mode wired into `gate0` (or separate `ds:verify:css` in CI)
 
-- [ ] TBP020 Establish a single import surface for DS consumption
+- [x] TBP020 Establish a single import surface for DS consumption (done 2026-02-05)
         - Create `src/ds/index.ts` as the only supported import entry for DS consumers (`@/ds`)
         - Add a lint rule (later) to restrict direct imports from `src/design-tokens/**` in app code
 
 ### Phase BP1: DS Boundary Scaffold (`src/ds/**`)
 
-- [ ] TBP100 Create the Blueprint folder structure
+- [x] TBP100 Create the Blueprint folder structure (done 2026-02-05)
         - `src/ds/tokens`, `src/ds/themes`, `src/ds/primitives`, `src/ds/components`, `src/ds/layouts`, `src/ds/styles`, `src/ds/index.ts`
         - Start by re-exporting the existing token sources via `src/ds/tokens/*` (no behavior changes)
 
-- [ ] TBP110 Move global DS CSS under `src/ds/styles/*` (no visual change)
+- [x] TBP110 Move global DS CSS under `src/ds/styles/*` (done 2026-02-05)
         - Keep `src/app/globals.css` as the runtime entrypoint but relocate DS-owned parts behind a single import or clearly delimited section
+        - Note: Tailwind throws when a standalone CSS file contains `@layer ...` without `@tailwind ...` directives; `src/ds/styles/solarconnect-compat.css` uses plain rules (no `@layer`) and is imported from `src/app/layout.tsx`
 
 ### Phase BP2: Primitives (Layout + Typography Ownership)
 
-- [ ] TBP200 Implement layout primitives
+- [x] TBP200 Implement layout primitives (done 2026-02-05)
         - `Container`, `Stack`, `Grid`, `Spacer`, `Divider`
+        - Files: `src/ds/primitives/{container,stack,grid,spacer,divider}.tsx`
         - Acceptance: pages stop using repeated layout utilities (`container mx-auto px-* max-w-*` patterns)
 
-- [ ] TBP210 Implement typography primitives
+- [x] TBP210 Implement typography primitives (done 2026-02-05)
         - `Text`, `Heading`, `LinkText` (token-driven variants only)
+        - Files: `src/ds/primitives/{text,heading,link-text}.tsx`
         - Acceptance: no raw `text-sm|text-xl|font-semibold` outside DS primitives/components
 
 ### Phase BP3: Shells / Layouts (Pages Stop Making Decisions)
 
-- [ ] TBP300 Add shells
+- [x] TBP300 Add shells (done 2026-02-05)
         - `PublicShell`, `DashboardShell`, `CenteredShell`
+        - Files: `src/ds/layouts/{PublicShell,DashboardShell,CenteredShell}.tsx`
         - Own responsive layout, gutters, max widths, and page scaffolding
 
 - [ ] TBP310 Migrate a pilot route set

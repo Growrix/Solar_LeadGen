@@ -31,23 +31,12 @@ export const QuoteOptionCard: React.FC<QuoteOptionCardProps> = ({
   return (
     <Card 
       variant={recommended ? 'highlight' : 'glass'}
-      className={`flex flex-col p-5 md:p-6 h-full group${recommended ? ' scale-102 z-10 text-accent' : ' hover:border-accent/50 hover:bg-surface'}
+      className={`flex flex-col p-5 md:p-6 h-full group animate-fade-in-up-stagger${recommended ? ' scale-102 z-10 text-accent' : ' hover:border-accent/50 hover:bg-surface'}
       `}
       style={{ 
-        animation: `fadeInUp 0.6s ease-out forwards`,
-        animationDelay,
-        opacity: 0 
+        ['--stagger-delay' as any]: animationDelay,
       }}
     >
-      <style>
-        {`
-          @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}
-      </style>
-
       {recommended && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <Badge variant="surface" className="shadow-lg whitespace-nowrap text-micro">
