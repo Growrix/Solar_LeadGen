@@ -1,8 +1,7 @@
-'use client'
+﻿'use client'
 
 import React, { useState } from 'react';
-import { Eye, TrendingUp } from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Button, Eye, TrendingUp } from '@/ds';
 
 interface CustomerPreviewProps {
   options: QuoteOption[];
@@ -43,7 +42,7 @@ const CustomerPreview: React.FC<CustomerPreviewProps> = ({
   const selected = options.find((opt) => opt.id === selectedOption);
 
   return (
-    <div className="bg-background rounded-2xl shadow-neu-inset p-6 space-y-6">
+    <div className="bg-background rounded-2xl shadow-inner p-6 space-y-6">
       <h3 className="text-heading-5 text-foreground flex items-center gap-2">
         <Eye className="h-5 w-5 text-primary" />
         Customer Preview
@@ -67,7 +66,7 @@ const CustomerPreview: React.FC<CustomerPreviewProps> = ({
                 className={`
                   flex-1 min-w-[150px] transition-all
                   ${selectedOption === option.id
-                    ? 'px-6 py-3 rounded-lg text-body bg-primary text-background shadow-neu-inset'
+                    ? 'px-6 py-3 rounded-lg text-body bg-primary text-background shadow-inner'
                     : 'selection-btn'
                   }
                 `}

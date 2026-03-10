@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 import type { Post } from '@/types/blog';
 import BlogSidebarClient, { type SidebarCategory, type SidebarRecentPost } from './BlogSidebarClient';
 
@@ -47,7 +47,7 @@ function ArticleCard({ article, onNavigateToPost }: ArticleCardProps) {
   return (
   <article
     onClick={() => onNavigateToPost(article)}
-    className="theme-card overflow-hidden group flex flex-col cursor-pointer h-full"
+    className="bg-surface rounded-card border border-border shadow-card overflow-hidden group flex flex-col cursor-pointer h-full"
     role="button"
     tabIndex={0}
     aria-label={`Read article: ${article.title}`}
@@ -61,8 +61,8 @@ function ArticleCard({ article, onNavigateToPost }: ArticleCardProps) {
         <span className="text-caption text-primary bg-primary/10 px-3 py-1 rounded-full">{article.category}</span>
         <span className="text-caption text-muted-foreground">{article.readTime}</span>
       </div>
-      <h3 className="text-heading-4 text-foreground mb-3 leading-snug group-hover:text-primary transition-colors flex-grow">{article.title}</h3>
-      <p className="text-muted-foreground mb-4 leading-relaxed text-body-small">{article.excerpt}</p>
+      <h3 className="text-heading-4 text-foreground mb-3 group-hover:text-primary transition-colors flex-grow">{article.title}</h3>
+      <p className="text-muted-foreground mb-4 text-body-small">{article.excerpt}</p>
       <div className="flex items-center justify-between text-body-small text-muted-foreground mt-auto pt-4 border-t border-border">
         <div className="flex items-center space-x-2">
           <UserIcon />
@@ -131,7 +131,7 @@ export default function BlogIndexClient({
             <p className="text-heading-4 sm:text-heading-3 text-muted-foreground max-w-3xl mx-auto">Your definitive guide to solar energy, rebates, and technology in Australia.</p>
 
             <div className="max-w-xl mx-auto mt-10">
-              <div className="theme-card flex items-center gap-3 px-4 py-3">
+              <div className="bg-surface rounded-card border border-border shadow-card flex items-center gap-3 px-4 py-3">
                 <SearchIcon />
                 <input
                   value={searchTerm}
@@ -147,7 +147,7 @@ export default function BlogIndexClient({
         <section className="py-16 sm:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {error && (
-              <div className="theme-card p-4 mb-8">
+              <div className="bg-surface rounded-card border border-border shadow-card p-4 mb-8">
                 <div className="text-body-small text-muted-foreground">{error}</div>
               </div>
             )}
@@ -171,7 +171,7 @@ export default function BlogIndexClient({
 
                 {visibleCount < filteredArticles.length && (
                   <div className="text-center mt-16">
-                    <Button onClick={() => setVisibleCount((c) => c + ARTICLES_PER_PAGE)} variant="primary" className="px-8 py-3 text-heading-4">
+                    <Button onClick={() => setVisibleCount((c) => c + ARTICLES_PER_PAGE)} variant="primary" size="lg">
                       Load More Articles
                     </Button>
                   </div>

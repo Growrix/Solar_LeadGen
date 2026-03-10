@@ -1,8 +1,7 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { X, Edit, Check, Lock, Sun, Zap, Battery, DollarSign, Calendar, Award } from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Award, Battery, Button, Calendar, Check, DollarSign, Edit, Lock, Modal, Sun, X, Zap } from '@/ds';
 import SavingsChart from './SavingsChart';
 
 interface HomeownerPreviewModalProps {
@@ -72,12 +71,14 @@ export default function HomeownerPreviewModal({
     }).format(value);
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      ariaLabel="Bid Preview"
+      className="w-full h-full md:max-w-5xl md:h-[90vh] p-0 overflow-hidden"
     >
       <div
-        className="bg-background relative w-full h-full md:max-w-5xl md:h-[90vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg"
+        className="bg-background relative w-full h-full md:rounded-2xl flex flex-col animate-scale-in shadow-modal"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -100,7 +101,7 @@ export default function HomeownerPreviewModal({
         {/* Content */}
         <div className="flex-grow overflow-auto p-4 md:p-6 space-y-6">
           {/* System Overview */}
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4">
+          <div className="bg-surface rounded-2xl shadow-inner p-6 space-y-4">
             <h3 className="text-heading-4 text-foreground flex items-center gap-2">
               <Sun className="h-5 w-5 text-primary" />
               System Overview
@@ -128,7 +129,7 @@ export default function HomeownerPreviewModal({
           </div>
 
           {/* Pricing Breakdown */}
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4">
+          <div className="bg-surface rounded-2xl shadow-inner p-6 space-y-4">
             <h3 className="text-heading-4 text-foreground flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
               Pricing Breakdown
@@ -177,7 +178,7 @@ export default function HomeownerPreviewModal({
           </div>
 
           {/* Equipment Specifications */}
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4">
+          <div className="bg-surface rounded-2xl shadow-inner p-6 space-y-4">
             <h3 className="text-heading-4 text-foreground flex items-center gap-2">
               <Zap className="h-5 w-5 text-primary" />
               Equipment Specifications
@@ -258,7 +259,7 @@ export default function HomeownerPreviewModal({
           </div>
 
           {/* Financial Projections Graph */}
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-6">
+          <div className="bg-surface rounded-2xl shadow-inner p-6">
             <SavingsChart
               finalPrice={quoteData.total}
               annualSavings={quoteData.annualSavings}
@@ -267,7 +268,7 @@ export default function HomeownerPreviewModal({
           </div>
 
           {/* Installer Information (Masked) */}
-          <div className="bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4">
+          <div className="bg-surface rounded-2xl shadow-inner p-6 space-y-4">
             <h3 className="text-heading-4 text-foreground flex items-center gap-2">
               <Award className="h-5 w-5 text-primary" />
               Installer Information
@@ -325,6 +326,6 @@ export default function HomeownerPreviewModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

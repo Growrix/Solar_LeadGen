@@ -1,13 +1,9 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
-import { 
-  X, Award, DollarSign, TrendingUp, Calendar, Battery, Zap, 
-  CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader, XCircle 
-} from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Award, Battery, Button, Calendar, CheckCircle, ChevronDown, ChevronUp, DollarSign, Info, Loader, Star, TrendingUp, X, XCircle, Zap } from '@/ds';
 import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
 import { GetWrittenQuotesResponse } from '@/types/written-quote';
 import { LeadData } from '@/types/lead';
@@ -726,7 +722,7 @@ export default function HomeownerWrittenQuoteReviewModal({
       }}
     >
       <div 
-        className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
+        className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-modal"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -767,7 +763,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                 Retry
               </Button>
             </div>
-          ) : sortedWrittenQuotes.length === 0 ? (
+          ) : writtenQuotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Award className="h-16 w-16 text-muted mb-4" />
               <h3 className="text-heading-4 text-foreground mb-2">No Written Quotes Received Yet</h3>
@@ -1431,7 +1427,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                           </Button>
 
                           <Button
-                            variant="minimal"
+                            variant="ghost"
                             onClick={handleRequestAdminExtension}
                             disabled={isRequestingAdminExtension}
                             className="w-full"
@@ -1535,7 +1531,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                 variant="secondary"
                 onClick={handleRejectClick}
                 disabled={isRejecting}
-                className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-primary-foreground"
               >
                 {isRejecting ? (
                   <>
@@ -1583,7 +1579,7 @@ export default function HomeownerWrittenQuoteReviewModal({
                       variant="secondary"
                       onClick={handleRejectDeal}
                       disabled={isRejectingDeal}
-                      className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                      className="border-destructive text-destructive hover:bg-destructive hover:text-primary-foreground"
                     >
                       {isRejectingDeal ? (
                         <>
@@ -1660,7 +1656,7 @@ export default function HomeownerWrittenQuoteReviewModal({
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
+            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-modal"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-heading-4 text-foreground">Confirm Done Deal</h3>
@@ -1696,7 +1692,7 @@ export default function HomeownerWrittenQuoteReviewModal({
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
+            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-modal"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-heading-4 text-destructive">Reject Quote</h3>

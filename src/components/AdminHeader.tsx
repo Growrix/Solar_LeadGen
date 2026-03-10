@@ -1,6 +1,6 @@
 ﻿"use client";
 import React from 'react';
-import { ThemeSwitcher } from './ThemeSwitcher';
+import { ThemeSwitcher } from '@/ds';
 import { NotificationDropdown } from './NotificationDropdown';
 
 const AdminHeader: React.FC = () => {

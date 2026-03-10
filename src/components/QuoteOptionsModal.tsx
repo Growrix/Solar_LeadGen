@@ -1,10 +1,9 @@
-'use client'
+﻿'use client'
 
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import OTPVerificationModal from './OTPVerificationModal';
-import Button from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { Button, Card, CardContent, Modal, X } from '@/ds';
 
 // --- Icon Components (Migrated: XIcon replaced with lucide-react X) ---
 const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
@@ -35,17 +34,6 @@ const QuoteOptionsModal: React.FC<QuoteOptionsModalProps> = ({
     expiresAt: Date;
   } | null>(null);
   const [pendingQuoteType, setPendingQuoteType] = useState<'call_visit' | 'written' | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen, onClose]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -157,14 +145,13 @@ const QuoteOptionsModal: React.FC<QuoteOptionsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
-      onClick={onClose}
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      ariaLabel="Choose Your Quote Type"
+      className="w-full max-w-3xl max-h-[90vh] overflow-y-auto"
     >
-      <div 
-        className="theme-card max-w-3xl w-full p-8 relative animate-slide-in-up max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative">
         {/* Migrated: button ? shadcn Button - preserved onClick, close functionality */}
   <Button
           onClick={onClose}
@@ -184,10 +171,10 @@ const QuoteOptionsModal: React.FC<QuoteOptionsModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Call/Visit Quote Option */}
           <div 
-            className="bg-background p-6 rounded-2xl shadow-neu-outset hover:shadow-neu-outset-lg transition-colors duration-300 cursor-pointer"
+            className="bg-background p-6 rounded-2xl shadow-card hover:shadow-modal transition-colors duration-300 cursor-pointer"
             onClick={() => onSelectOption('call_visit')}
           >
-            <div className="bg-background p-4 rounded-xl shadow-neu-inset w-16 h-16 flex items-center justify-center mb-4">
+            <div className="bg-background p-4 rounded-xl shadow-inner w-16 h-16 flex items-center justify-center mb-4">
               <PhoneIcon />
             </div>
             
@@ -222,10 +209,10 @@ const QuoteOptionsModal: React.FC<QuoteOptionsModalProps> = ({
           
           {/* Written Quote Option */}
           <div 
-            className="bg-background p-6 rounded-2xl shadow-neu-outset hover:shadow-neu-outset-lg transition-colors duration-300 cursor-pointer"
+            className="bg-background p-6 rounded-2xl shadow-card hover:shadow-modal transition-colors duration-300 cursor-pointer"
             onClick={() => !isSubmitting && handleSubmitLead('written')}
           >
-            <div className="bg-background p-4 rounded-xl shadow-neu-inset w-16 h-16 flex items-center justify-center mb-4">
+            <div className="bg-background p-4 rounded-xl shadow-inner w-16 h-16 flex items-center justify-center mb-4">
               <FileTextIcon />
             </div>
             
@@ -261,18 +248,20 @@ const QuoteOptionsModal: React.FC<QuoteOptionsModalProps> = ({
 
         {/* Error Message */}
         {error && (
-          <div className="mt-6 rounded-xl p-4 shadow-neu-inset bg-destructive/10 border border-destructive/30 flex items-start gap-2">
+          <div className="mt-6 rounded-xl p-4 shadow-inner bg-destructive/10 border border-destructive/30 flex items-start gap-2">
             <AlertCircleIcon className="text-destructive flex-shrink-0 mt-0.5" />
             <p className="text-body-small text-destructive/90">{error}</p>
           </div>
         )}
         
-        <div className="theme-card mt-6 p-4 text-center">
-          <p className="text-muted-foreground text-body-small">
-            Both options connect you with our network of verified, licensed solar installers.
-            Your information is secure and will only be shared with installers you choose to engage with.
-          </p>
-        </div>
+        <Card className="mt-6 text-center">
+          <CardContent>
+            <p className="text-muted-foreground text-body-small">
+              Both options connect you with our network of verified, licensed solar installers. Your information is
+              secure and will only be shared with installers you choose to engage with.
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* OTP Verification Modal */}
@@ -290,7 +279,7 @@ const QuoteOptionsModal: React.FC<QuoteOptionsModalProps> = ({
           onResendOTP={handleResendOTP}
         />
       )}
-    </div>
+    </Modal>
   );
 };
 

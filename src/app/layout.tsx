@@ -5,6 +5,7 @@ import { ThemeProvider } from '../components/ThemeProvider'
 import LayoutContent from '../components/LayoutContent'
 import NextAuthProvider from '../components/NextAuthProvider'
 import { Toaster } from 'sonner'
+import { ThemeInitScript } from '@/ds'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +21,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" style={{ scrollBehavior: 'smooth' }}>
+      <head>
+        <ThemeInitScript />
+      </head>
       <body className={inter.className}>
         <NextAuthProvider>
           <ThemeProvider>

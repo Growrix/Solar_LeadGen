@@ -37,6 +37,8 @@
   ],
   "exclude": [
     "node_modules",
+    "DOC",
+    "DOC/**",
     "__archive__",
     "__archive__/**",
       "backup",

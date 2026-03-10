@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 
 interface VerificationData {
   installer: {
@@ -185,7 +185,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
   if (loading) {
     return (
       <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-        <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 animate-pulse">
+        <div className="bg-surface border border-border rounded-xl shadow-card p-6 animate-pulse">
           <div className="h-8 bg-muted/20 rounded w-1/3 mb-4"></div>
           <div className="h-4 bg-muted/20 rounded w-2/3"></div>
         </div>
@@ -245,7 +245,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
       </div>
 
       {/* Installer Snapshot */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Installer Information</h2>
         </div>
@@ -286,7 +286,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
 
       {/* Verification Application Details */}
       {verification ? (
-        <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-6">
+        <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-6">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h2 className="text-heading-3 text-foreground">Application Details</h2>
             <p className="text-body-small text-muted-foreground">
@@ -485,7 +485,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
 
       {/* Logo Preview */}
       {verification?.logoKey && (
-        <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+        <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h2 className="text-heading-3 text-foreground">Company Logo</h2>
           </div>
@@ -504,7 +504,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
       )}
 
       {/* Admin Notes */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Admin Notes</h2>
           <p className="text-body-small text-muted-foreground">Notes are saved with actions (approve/reject/request info)</p>
@@ -514,13 +514,13 @@ const AdminInstallerVerificationPage: React.FC = () => {
           value={adminNotes}
           onChange={(e) => setAdminNotes(e.target.value)}
           placeholder="Add internal notes about this verification application..."
-          className="w-full h-32 rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+          className="w-full h-32 rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
         />
       </div>
 
       {/* Action Buttons */}
       {verification && (
-        <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6">
+        <div className="bg-surface border border-border rounded-xl shadow-card p-6">
           <div className="flex flex-wrap gap-3">
             <Button 
               onClick={handleApprove} 
@@ -579,7 +579,7 @@ const AdminInstallerVerificationPage: React.FC = () => {
       )}
 
       {/* Activity Log */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Activity Log</h2>
         </div>

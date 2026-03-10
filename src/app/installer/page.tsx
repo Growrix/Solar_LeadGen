@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import InstallerBottomNavBar from '@/components/InstallerBottomNavBar';
 import InstallerMobileSidebarMenu from '@/components/InstallerMobileSidebarMenu';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 
 const InfoCard: React.FC<{ 
   icon: string; 
@@ -17,10 +17,10 @@ const InfoCard: React.FC<{
   children: React.ReactNode 
 }> = ({ icon, title, delay, children }) => (
   <div className="animate-fade-in-up h-full" style={{ animationDelay: delay }}>
-    <div className="theme-card h-full p-6 text-left">
+    <div className="bg-surface rounded-card border border-border shadow-card h-full p-6 text-left">
       <div className="text-heading-1 mb-4">{icon}</div>
       <h3 className="text-heading-4 text-foreground mb-2">{title}</h3>
-      <p className="text-muted text-body-small leading-relaxed">{children}</p>
+      <p className="text-muted text-body-small">{children}</p>
     </div>
   </div>
 );
@@ -164,7 +164,7 @@ export default function InstallerHomePage() {
           {/* Main Content */}
           <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
-              <h1 className="text-heading-1 md:text-heading-1 lg:text-heading-1 leading-tight mb-4 text-foreground">
+              <h1 className="text-heading-1 md:text-heading-1 lg:text-heading-1 mb-4 text-foreground">
                 Grow Smarter.
                 <span className="text-primary"> Not Harder.</span>
               </h1>

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useState } from 'react';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 
 // --- Icon Components ---
 const MailIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted-foreground"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>;
@@ -132,7 +132,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                     onChange={handleEmailChange}
                                     placeholder="Enter your email address"
                                     aria-label="Email address for newsletter"
-                                    className={`w-full pl-12 pr-4 ${variant === 'compact' ? 'py-2.5 rounded-xl' : 'py-3 rounded-2xl'} bg-background shadow-neu-inset border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 focus:shadow-neu-inset-sm transition-colors duration-300 text-foreground placeholder:text-muted-foreground`}
+                                    className={`w-full pl-12 pr-4 ${variant === 'compact' ? 'py-2.5 rounded-xl' : 'py-3 rounded-2xl'} bg-background shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 focus:shadow-inner transition-colors duration-300 text-foreground placeholder:text-muted-foreground`}
                                     disabled={status === 'loading'}
                                     autoComplete="email"
                                 />
@@ -168,7 +168,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                 ) : (
                     <div
                         role="status"
-                        className={`p-4 bg-success/10 shadow-neu-inset border border-success/30 ${variant === 'compact' ? 'rounded-xl' : 'rounded-2xl'} flex flex-col items-center justify-center gap-3 animate-fade-in ${variant === 'compact' ? '' : 'h-full'}`}
+                        className={`p-4 bg-success/10 shadow-inner border border-success/30 ${variant === 'compact' ? 'rounded-xl' : 'rounded-2xl'} flex flex-col items-center justify-center gap-3 animate-fade-in ${variant === 'compact' ? '' : 'h-full'}`}
                     >
                         <CheckCircleIcon />
                         <p className="text-success text-center">{message}</p>
@@ -194,14 +194,14 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
     return (
         <section className="py-16 sm:py-24 bg-background">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="bg-background rounded-3xl shadow-neu-outset-lg p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden">
+                <div className="bg-background rounded-3xl shadow-modal p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden">
                     {/* Decorative elements */}
                     <div className="absolute -top-16 -right-16 w-40 h-40 bg-primary/5 rounded-full blur-3xl animate-fade-in transition-colors duration-500"></div>
                     <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-primary/5 rounded-full blur-3xl animate-fade-in" style={{ animationDelay: '300ms' }}></div>
 
                     <div className="relative z-10">
                         <div className="animate-fade-in">
-                            <div className="w-20 h-20 bg-background shadow-neu-inset rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <div className="w-20 h-20 bg-background shadow-inner rounded-2xl flex items-center justify-center mx-auto mb-6">
                                 <PaperPlaneIcon />
                             </div>
                             <h2 className="text-heading-2 lg:text-heading-1 text-foreground mb-4">

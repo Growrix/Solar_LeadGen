@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import type { Post } from '../types/blog';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 
 type WpRendered = { rendered: string };
 
@@ -157,7 +157,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {error ? (
-            <div className="col-span-full bg-background rounded-2xl shadow-neu-inset p-6 text-center text-muted-foreground">
+            <div className="col-span-full bg-background rounded-2xl shadow-inner p-6 text-center text-muted-foreground">
               {error}
             </div>
           ) : null}
@@ -175,7 +175,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
             <article 
               key={index} 
               onClick={() => !loading && onNavigateToPost(article)}
-              className={`bg-background rounded-2xl shadow-neu-outset hover:shadow-neu-outset-lg overflow-hidden group transition-colors duration-300 ${
+              className={`bg-background rounded-2xl shadow-card hover:shadow-modal overflow-hidden group transition-colors duration-300 ${
                 loading ? 'opacity-60 cursor-default' : 'cursor-pointer'
               }`}
               role="button"
@@ -183,7 +183,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
               aria-label={`Read article: ${article.title}`}
               onKeyDown={(e) => !loading && e.key === 'Enter' && onNavigateToPost(article)}
             >
-              <div className="relative w-full h-44 bg-background shadow-neu-inset">
+              <div className="relative w-full h-44 bg-background shadow-inner">
                 <Image
                   src={article.image || '/images/blog-placeholder.svg'}
                   alt={article.title}
@@ -196,8 +196,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
               </div>
               <div className="p-6 lg:p-8 flex flex-col">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="inline-flex items-center gap-2 bg-background shadow-neu-inset px-3 py-1.5 rounded-xl">
-                    <div className="w-2 h-2 rounded-full bg-primary shadow-neu-inset-sm"></div>
+                  <div className="inline-flex items-center gap-2 bg-background shadow-inner px-3 py-1.5 rounded-xl">
+                    <div className="w-2 h-2 rounded-full bg-primary shadow-inner"></div>
                     <span className="text-caption text-foreground">
                       {article.category}
                     </span>
@@ -207,10 +207,10 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                   </span>
                 </div>
                 
-                <h3 className="text-heading-4 text-foreground mb-3 leading-snug group-hover:text-primary transition-colors">
+                <h3 className="text-heading-4 text-foreground mb-3 group-hover:text-primary transition-colors">
                   {article.title}
                 </h3>
-                <p className="text-body text-muted-foreground mb-5 leading-relaxed">
+                <p className="text-body text-muted-foreground mb-5">
                   {article.excerpt}
                 </p>
                 
@@ -248,7 +248,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
           <Button
             onClick={onSeeAllPostsClick}
             variant="secondary"
-            className="inline-flex items-center space-x-2 px-8 py-4"
+            size="lg"
           >
             <span>See All Posts</span>
             <ArrowRightLargeIcon />

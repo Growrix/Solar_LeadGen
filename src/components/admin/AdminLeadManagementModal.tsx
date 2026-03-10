@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * AdminLeadManagementModal Component
@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
+import { Button, Input, Modal, Textarea } from '@/ds';
 import InstallerProfileModal from '@/components/admin/InstallerProfileModal';
 import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
 import NegotiationTimeline from '@/components/shared/NegotiationTimeline';
@@ -588,39 +588,31 @@ export default function AdminLeadManagementModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
-          onClick={onClose}
-        />
-
-        {/* Modal */}
-        <div className="relative w-full max-w-none rounded-lg bg-surface shadow-neu-outset">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-heading-3 text-foreground">
-                Lead Management
-              </h2>
-              <span className="text-body-small text-muted-foreground">
-                #{lead.id.slice(0, 8)}
-              </span>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-caption ${
-                lead.status === 'APPROVED' ? 'bg-success/20 text-success' :
-                lead.status === 'PENDING_APPROVAL' ? 'bg-warning/20 text-warning' :
-                'bg-muted/20 text-muted-foreground'
-              }`}>
-                {lead.status}
-              </span>
-            </div>
-            <Button variant="ghost" onClick={onClose} className="p-2">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
+    <Modal open={isOpen} onClose={onClose} ariaLabel="Lead Management" className="w-full max-w-none p-0 overflow-hidden">
+      <div className="w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-heading-3 text-foreground">
+              Lead Management
+            </h2>
+            <span className="text-body-small text-muted-foreground">
+              #{lead.id.slice(0, 8)}
+            </span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-caption ${
+              lead.status === 'APPROVED' ? 'bg-success/20 text-success' :
+              lead.status === 'PENDING_APPROVAL' ? 'bg-warning/20 text-warning' :
+              'bg-muted/20 text-muted-foreground'
+            }`}>
+              {lead.status}
+            </span>
           </div>
+          <Button variant="ghost" onClick={onClose} className="p-2">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </Button>
+        </div>
 
           {/* Edit Mode Banner */}
           {isEditMode && (
@@ -642,11 +634,11 @@ export default function AdminLeadManagementModal({
           <div className="px-6 py-4 grid grid-cols-1 lg:grid-cols-5 lg:grid-flow-row-dense gap-6 max-h-[70vh] overflow-y-auto items-start">
 
             {/* Negotiation Window (Written Quotes) */}
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-2 lg:col-start-4">
+            <div className="p-6 rounded-lg bg-surface shadow-card space-y-4 lg:col-span-2 lg:col-start-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-heading-3 text-foreground">Negotiation Window</h3>
                 <Button
-                  variant="minimal"
+                  variant="ghost"
                   onClick={fetchWrittenQuotesForLead}
                   disabled={writtenQuotesLoading}
                 >
@@ -744,17 +736,17 @@ export default function AdminLeadManagementModal({
             </div>
             
             {/* SECTION B: Installer Assignment */}
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-3 lg:col-start-1">
+            <div className="p-6 rounded-lg bg-surface shadow-card space-y-4 lg:col-span-3 lg:col-start-1">
               <h3 className="text-heading-3 text-foreground">Installer Assignment</h3>
 
               {/* Filters */}
               <div className="space-y-3">
-                <input
+                <Input
                   type="text"
                   placeholder="Search by name, email, company, or postcode..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="form-input w-full px-4 py-3"
+                  className="w-full px-4 py-3"
                 />
 
                 <div className="space-y-3">
@@ -764,7 +756,7 @@ export default function AdminLeadManagementModal({
                       role="tab"
                       aria-selected={filterMode === 'all'}
                       onClick={() => setFilterMode('all')}
-                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'all' ? 'bg-surface shadow-neu-inset text-foreground' : 'text-muted-foreground hover:bg-muted/10 hover:text-foreground'}`}
+                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'all' ? 'bg-surface shadow-inner text-foreground' : 'text-muted-foreground hover:bg-muted/10 hover:text-foreground'}`}
                     >
                       All
                     </div>
@@ -772,7 +764,7 @@ export default function AdminLeadManagementModal({
                       role="tab"
                       aria-selected={filterMode === 'verified'}
                       onClick={() => setFilterMode('verified')}
-                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'verified' ? 'bg-surface shadow-neu-inset text-success' : 'text-muted-foreground hover:bg-muted/10 hover:text-success'}`}
+                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'verified' ? 'bg-surface shadow-inner text-success' : 'text-muted-foreground hover:bg-muted/10 hover:text-success'}`}
                     >
                       Verified
                     </div>
@@ -780,7 +772,7 @@ export default function AdminLeadManagementModal({
                       role="tab"
                       aria-selected={filterMode === 'unverified'}
                       onClick={() => setFilterMode('unverified')}
-                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'unverified' ? 'bg-surface shadow-neu-inset text-error' : 'text-muted-foreground hover:bg-muted/10 hover:text-error'}`}
+                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'unverified' ? 'bg-surface shadow-inner text-error' : 'text-muted-foreground hover:bg-muted/10 hover:text-error'}`}
                     >
                       Unverified
                     </div>
@@ -788,7 +780,7 @@ export default function AdminLeadManagementModal({
                       role="tab"
                       aria-selected={filterMode === 'assigned'}
                       onClick={() => setFilterMode('assigned')}
-                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'assigned' ? 'bg-surface shadow-neu-inset text-info' : 'text-muted-foreground hover:bg-muted/10 hover:text-info'}`}
+                      className={`px-3 py-1 rounded-md cursor-pointer text-body-small transition-colors select-none ${filterMode === 'assigned' ? 'bg-surface shadow-inner text-info' : 'text-muted-foreground hover:bg-muted/10 hover:text-info'}`}
                     >
                       Assigned {lead.assignments && lead.assignments.length > 0 && `(${lead.assignments.length})`}
                     </div>
@@ -813,7 +805,7 @@ export default function AdminLeadManagementModal({
                   {filterMode !== 'assigned' && suggestedInstallers.length > 0 && (
                     <div className="flex justify-end">
                       <Button
-                        variant="minimal"
+                        variant="ghost"
                         onClick={selectAllSuggested}
                         className="text-success"
                       >
@@ -1004,12 +996,12 @@ export default function AdminLeadManagementModal({
                 <label className="block text-body-small mb-2 text-muted-foreground">
                   Message to Selected Installers (Optional)
                 </label>
-                <textarea
+                <Textarea
                   value={bulkMessage}
                   onChange={(e) => setBulkMessage(e.target.value)}
                   placeholder="Add a message for the selected installers..."
                   rows={3}
-                  className="form-input w-full px-4 py-3"
+                  className="w-full px-4 py-3"
                 />
                 <label className="flex items-center gap-2 mt-3">
                   <input
@@ -1027,7 +1019,7 @@ export default function AdminLeadManagementModal({
 
             {/* SECTION A: Approval & Pricing */}
             {(['DRAFT', 'PENDING_APPROVAL', 'PENDING_PHONE'].includes(lead.status) || isEditMode) && (
-              <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-3 lg:col-start-1">
+              <div className="p-6 rounded-lg bg-surface shadow-card space-y-4 lg:col-span-3 lg:col-start-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-heading-3 text-foreground">Approval & Pricing</h3>
                   {lead.status === 'APPROVED' && (
@@ -1042,12 +1034,12 @@ export default function AdminLeadManagementModal({
                     <label className="block text-body-small mb-2 text-muted-foreground">
                       Lead Price (£)
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={leadPrice}
                       onChange={(e) => setLeadPrice(e.target.value)}
                       placeholder="Enter price"
-                      className="form-input w-full px-4 py-3"
+                      className="w-full px-4 py-3"
                       disabled={submitting || !!lead.purchasedAt}
                     />
                     {lead.leadPrice && (
@@ -1067,14 +1059,14 @@ export default function AdminLeadManagementModal({
                       Countdown Days (1-90)
                     </label>
                     <div className="flex gap-2">
-                      <input
+                      <Input
                         type="number"
                         min="1"
                         max="90"
                         value={countdownDays}
                         onChange={(e) => setCountdownDays(parseInt(e.target.value) || 7)}
                         placeholder="Enter expiry days"
-                        className="form-input flex-1 px-4 py-3 placeholder:text-muted-foreground"
+                        className="flex-1 px-4 py-3 placeholder:text-muted-foreground"
                         disabled={submitting}
                       />
                     </div>
@@ -1099,12 +1091,12 @@ export default function AdminLeadManagementModal({
 
                 {showRejectInput && (
                   <div className="space-y-3 pt-2 border-t border-border">
-                    <textarea
+                    <Textarea
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
                       placeholder="Reason for rejection..."
                       rows={3}
-                      className="form-input w-full px-4 py-3"
+                      className="w-full px-4 py-3"
                     />
                     <Button
                       onClick={handleRejectClick}
@@ -1120,14 +1112,14 @@ export default function AdminLeadManagementModal({
             )}
 
             {/* SECTION C: Admin Notes */}
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset space-y-4 lg:col-span-3 lg:col-start-1">
+            <div className="p-6 rounded-lg bg-surface shadow-card space-y-4 lg:col-span-3 lg:col-start-1">
               <h3 className="text-heading-3 text-foreground">Admin Notes</h3>
-              <textarea
+              <Textarea
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 placeholder="Add internal notes about this lead..."
                 rows={4}
-                className="form-input w-full px-4 py-3"
+                className="w-full px-4 py-3"
               />
             </div>
           </div>
@@ -1135,7 +1127,7 @@ export default function AdminLeadManagementModal({
           {/* Footer: Summary & Actions */}
           <div className="border-t border-border px-6 py-4 bg-surface">
             {/* Summary */}
-            <div className="mb-4 p-4 rounded-lg bg-surface shadow-neu-inset">
+            <div className="mb-4 p-4 rounded-lg bg-surface shadow-inner">
               <h4 className="text-body-small mb-2 text-foreground">Assignment Summary</h4>
               <div className="space-y-2 text-body-small">
                 <div className="flex justify-between">
@@ -1203,8 +1195,6 @@ export default function AdminLeadManagementModal({
               </Button>
             </div>
           </div>
-        </div>
-      </div>
 
       {/* Installer Profile Preview Modal */}
       {previewInstallerId && (
@@ -1217,6 +1207,7 @@ export default function AdminLeadManagementModal({
           installerId={previewInstallerId}
         />
       )}
-    </div>
+      </div>
+    </Modal>
   );
 }

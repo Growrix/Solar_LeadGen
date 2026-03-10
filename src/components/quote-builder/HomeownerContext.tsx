@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Homeowner Context Section
  * 
  * Purpose: Display homeowner requirements imported from Instant Quote
@@ -12,7 +12,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, User } from '@/ds';
 
 interface HomeownerContextProps {
   meta?: {
@@ -70,7 +70,7 @@ export default function HomeownerContext({ meta }: HomeownerContextProps) {
 
   return (
     <div className="mb-6">
-      <div className="bg-background border border-stroke rounded-lg p-4 shadow-neu-outset-lg">
+      <div className="bg-background border border-stroke rounded-lg p-4 shadow-modal">
         {/* Header */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}

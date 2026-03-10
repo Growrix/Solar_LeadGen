@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -186,7 +186,7 @@ export default function InstantQuoteCompletePage() {
   if (error && !showDetailedInfoModal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="theme-card max-w-md p-8 text-center">
+        <div className="bg-surface rounded-card border border-border shadow-card max-w-md p-8 text-center">
           <div className="w-16 h-16 bg-destructive/10 rounded-full mx-auto mb-4 flex items-center justify-center">
             <svg className="w-8 h-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

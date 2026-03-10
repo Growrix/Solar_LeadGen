@@ -10,6 +10,23 @@ function clampInt(value: string | null, fallback: number, min: number, max: numb
 
 export async function GET(request: Request) {
   try {
+    // In local dev it's common not to have WP env vars set.
+    // Instead of throwing a 500, return an empty feed so the site can run.
+    if (!process.env.WP_BASE_URL) {
+      return NextResponse.json(
+        {
+          items: [],
+          page: 1,
+          per_page: 0,
+          total: 0,
+          totalPages: 0,
+          disabled: true,
+          message: 'WP integration disabled (missing WP_BASE_URL).',
+        },
+        { status: 200 }
+      );
+    }
+
     const url = new URL(request.url);
 
     const page = clampInt(url.searchParams.get('page'), 1, 1, 1000);

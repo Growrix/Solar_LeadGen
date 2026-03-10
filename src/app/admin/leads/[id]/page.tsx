@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // ADMIN LEAD DETAIL PAGE
 // ============================================================================
 // Displays full lead details with admin actions: approve, reject, set price,
@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
-import Button from '@/components/Button';
+import { Button } from '@/ds';
 import QuoteDataDisplay from '@/components/admin/QuoteDataDisplay';
 import InstallerSelectorModal from '@/components/admin/InstallerSelectorModal';
 import AssignmentHistoryTable from '@/components/admin/AssignmentHistoryTable';
@@ -605,7 +605,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
         {/* LEFT COLUMN - Lead Details */}
         <div className="lg:col-span-1 space-y-6">
           {/* HOMEOWNER INFO */}
-          <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+          <div className="p-6 rounded-lg bg-surface shadow-card">
             <h2 className="text-heading-3 mb-4 text-foreground">
               Homeowner Information
             </h2>
@@ -656,7 +656,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
 
           {/* HOMEOWNER QUOTE QUOTA */}
           {lead.homeowner && (
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+            <div className="p-6 rounded-lg bg-surface shadow-card">
               <h2 className="text-heading-3 mb-4 text-foreground">
                 📊 Quote Request Quota
               </h2>
@@ -713,7 +713,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
           )}
 
           {/* PROJECT DETAILS */}
-          <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+          <div className="p-6 rounded-lg bg-surface shadow-card">
             <h2 className="text-heading-3 mb-4 text-foreground">
               Project Details
             </h2>
@@ -758,7 +758,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
           </div>
 
           {/* ENERGY DETAILS */}
-          <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+          <div className="p-6 rounded-lg bg-surface shadow-card">
             <h2 className="text-heading-3 mb-4 text-foreground">
               Energy Details
             </h2>
@@ -801,7 +801,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
 
           {/* PURCHASE INFORMATION (Phase 7) */}
           {lead.purchasedAt && (
-            <div className="p-6 rounded-lg bg-surface shadow-neu-inset border border-border">
+            <div className="p-6 rounded-lg bg-surface shadow-inner border border-border">
               <h2 className="text-heading-3 mb-4 text-foreground">
                 Purchase Information
               </h2>
@@ -836,7 +836,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
 
           {/* QUOTE DATA (Phase 4.5) */}
           {lead.quoteData && (
-            <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+            <div className="p-6 rounded-lg bg-surface shadow-card">
               <h2 className="text-heading-3 mb-4 text-foreground">
                 📊 Instant Quote Calculation
               </h2>
@@ -845,7 +845,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
           )}
 
           {/* TIMESTAMPS */
-          <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+          <div className="p-6 rounded-lg bg-surface shadow-card">
             <h2 className="text-heading-3 mb-4 text-foreground">
               Timeline
             </h2>
@@ -887,7 +887,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
         {/* RIGHT COLUMN - Admin Actions */}
         <div className="lg:col-span-1 space-y-6">
           {/* PHASE 24: UNIFIED LEAD MANAGEMENT BUTTON */}
-          <div className="p-6 rounded-lg bg-surface shadow-neu-outset border border-border">
+          <div className="p-6 rounded-lg bg-surface shadow-card border border-border">
             <Button
               onClick={() => setShowManagementModal(true)}
               variant="secondary"
@@ -901,7 +901,7 @@ export default function AdminLeadDetailPage({ params }: { params: { id: string }
           </div>
 
           {/* ASSIGNMENT HISTORY (Phase 7) */}
-          <div className="p-6 rounded-lg bg-surface shadow-neu-outset">
+          <div className="p-6 rounded-lg bg-surface shadow-card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-heading-3 text-foreground">
                 📋 Assignment History

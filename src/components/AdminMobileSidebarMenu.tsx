@@ -178,12 +178,12 @@ const AdminMobileSidebarMenu: React.FC<AdminMobileSidebarMenuProps> = ({
 
     return (
         <div 
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 md:hidden flex items-center justify-center p-4 animate-fade-in" 
+        className="ui-overlay md:hidden flex items-center justify-center p-4 animate-fade-in" 
             onClick={onClose}
         >
             <div 
                 onClick={e => e.stopPropagation()} 
-                className="theme-card relative w-full max-w-xs flex flex-col p-6 animate-slide-in-up"
+          className="ui-card relative w-full max-w-xs flex flex-col animate-slide-in-up"
             >
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-heading-3 text-foreground">Admin Menu</h2>

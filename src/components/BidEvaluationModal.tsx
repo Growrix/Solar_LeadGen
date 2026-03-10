@@ -1,9 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Award, DollarSign, Calendar, Battery, Zap, TrendingUp, MapPin, Home, FileText, Clock, Lock, AlertCircle, Calculator, Sun, Plug, Gauge, Grid, Car } from 'lucide-react';
+import { AlertCircle, Award, Battery, Button, Calculator, Calendar, Car, Clock, DollarSign, FileText, Gauge, GridIcon, Home, Lock, MapPin, Modal, Plug, Sun, TrendingUp, X, Zap } from '@/ds';
 import SavingsChart from './SavingsChart';
-import Button from '@/components/ui/button';
 import BiddingStatusBadge from '@/components/BiddingStatusBadge';
 
 interface Bid {
@@ -167,12 +166,14 @@ export default function BidEvaluationModal({
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      ariaLabel="Bid Evaluation"
+      className="w-full h-full md:max-w-6xl md:h-[90vh] p-0 overflow-hidden"
     >
-      <div 
-        className="bg-background relative w-full h-full md:max-w-6xl md:h-[90vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg"
+      <div
+        className="bg-background relative w-full h-full md:rounded-2xl flex flex-col animate-scale-in shadow-modal"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -215,7 +216,7 @@ export default function BidEvaluationModal({
           )}
 
           {leadData && (
-            <div className="bg-surface rounded-2xl shadow-neu-inset p-6 space-y-6">
+            <div className="bg-surface rounded-2xl shadow-inner p-6 space-y-6">
               <div className="flex items-center justify-between border-b border-border pb-4">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
@@ -383,7 +384,7 @@ export default function BidEvaluationModal({
 
               {/* ===== INSTANTQUOTE DETAILS SECTION ===== */}
               {leadData.quoteData ? (
-                <div className="bg-surface rounded-2xl shadow-neu-inset p-5 space-y-4">
+                <div className="bg-surface rounded-2xl shadow-inner p-5 space-y-4">
                   <h3 className="text-heading-4 text-foreground flex items-center gap-2 border-b border-border pb-3">
                     <FileText className="h-5 w-5 text-primary" />
                     InstantQuote Details
@@ -559,7 +560,7 @@ export default function BidEvaluationModal({
                   {(leadData.quoteData.includeVPP || leadData.quoteData.includeEVCharging || leadData.quoteData.includeSmartHome || leadData.quoteData.includeGridServices) && (
                     <div className="space-y-2">
                       <h4 className="text-label text-foreground flex items-center gap-2">
-                        <Grid className="h-4 w-4 text-primary" />
+                        <GridIcon className="h-4 w-4 text-primary" />
                         Additional Features
                       </h4>
                       <div className="flex flex-wrap gap-2">
@@ -615,7 +616,7 @@ export default function BidEvaluationModal({
 
               {/* ===== INSTANTQUOTE RESULT SECTION ===== */}
               {leadData.quoteData ? (
-                <div className="bg-surface rounded-2xl shadow-neu-inset p-5 space-y-4">
+                <div className="bg-surface rounded-2xl shadow-inner p-5 space-y-4">
                   <h3 className="text-heading-4 text-foreground flex items-center gap-2 border-b border-border pb-3">
                     <Calculator className="h-5 w-5 text-primary" />
                     InstantQuote Result
@@ -787,9 +788,9 @@ export default function BidEvaluationModal({
               {displayBids.map((bid) => (
                 <div
                   key={bid.id}
-                  className={`bg-surface rounded-2xl shadow-neu-inset p-6 space-y-4 border-2 transition-all ${
+                  className={`bg-surface rounded-2xl shadow-inner p-6 space-y-4 border-2 transition-all ${
                     bid.isYourBid 
-                      ? 'border-primary/50 shadow-neu-outset' 
+                      ? 'border-primary/50 shadow-card' 
                       : 'border-transparent hover:border-border'
                   }`}
                 >
@@ -904,7 +905,7 @@ export default function BidEvaluationModal({
                     </Button>
                   ) : (
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       className="w-full"
                       disabled
                     >
@@ -938,6 +939,6 @@ export default function BidEvaluationModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

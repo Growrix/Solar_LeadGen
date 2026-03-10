@@ -28,7 +28,7 @@ function hexToRgba(hex: string, alpha: number): string {
 
 /**
  * Get CSS variable value from root element
- * @param varName CSS variable name (e.g.,"--color-primary")
+ * @param varName CSS variable name (e.g.,"--ds-color-accent-rgb")
  * @returns RGB string or fallback value
  */
 function getCSSVariable(varName: string, fallback: string = '255 255 255'): string {
@@ -82,31 +82,37 @@ export function useChartColors() {
       // SSR fallback
       return {
         primary: '#FFFFFF',
-        secondary: '#14B8A6',
-        tertiary: '#9CA3AF',
-        success: '#22C55E',
-        warning: '#EAB308',
-        error: '#EF4444',
-        grid: '#2C2C2C',
+        secondary: '#60A5FA',
+        tertiary: '#F59E0B',
+        success: '#16A34A',
+        warning: '#F59E0B',
+        error: '#DC2626',
+        grid: '#262626',
         axis: '#6B7280',
-        text: '#F5F5F5',
+        text: '#F3F4F6',
       };
     }
     
-    // Read from CSS variables (theme-adaptive)
-    const primaryRgb = getCSSVariable('--color-primary', '255 255 255');
-    const foregroundRgb = getCSSVariable('--color-foreground', '245 245 245');
-    const borderRgb = getCSSVariable('--color-border', '44 44 44');
+    // Read from DS CSS variables (theme-adaptive)
+    const primaryRgb = getCSSVariable('--ds-color-accent-rgb', '109 59 226');
+    const secondaryRgb = getCSSVariable('--ds-color-info-rgb', '37 99 235');
+    const tertiaryRgb = getCSSVariable('--ds-color-warning-rgb', '245 158 11');
+    const successRgb = getCSSVariable('--ds-color-success-rgb', '22 163 74');
+    const warningRgb = getCSSVariable('--ds-color-warning-rgb', '245 158 11');
+    const errorRgb = getCSSVariable('--ds-color-danger-rgb', '220 38 38');
+    const foregroundRgb = getCSSVariable('--ds-color-foreground-secondary-rgb', '243 244 246');
+    const axisRgb = getCSSVariable('--ds-color-foreground-rgb', '156 163 175');
+    const borderRgb = getCSSVariable('--ds-color-border-rgb', '38 38 38');
     
     return {
       primary: rgbToHex(primaryRgb),
-      secondary: '#14B8A6', // Teal - consistent across themes
-      tertiary: '#9CA3AF',  // Gray - consistent across themes
-      success: isDark ? '#4ADE80' : '#16A34A',   // Green
-      warning: isDark ? '#FACC15' : '#CA8A04',   // Yellow
-      error: isDark ? '#F87171' : '#DC2626',     // Red
+      secondary: rgbToHex(secondaryRgb),
+      tertiary: rgbToHex(tertiaryRgb),
+      success: rgbToHex(successRgb),
+      warning: rgbToHex(warningRgb),
+      error: rgbToHex(errorRgb),
       grid: rgbToHex(borderRgb),
-      axis: isDark ? '#6B7280' : '#9CA3AF',
+      axis: rgbToHex(axisRgb),
       text: rgbToHex(foregroundRgb),
     };
   });
@@ -115,19 +121,25 @@ export function useChartColors() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    const primaryRgb = getCSSVariable('--color-primary', '255 255 255');
-    const foregroundRgb = getCSSVariable('--color-foreground', '245 245 245');
-    const borderRgb = getCSSVariable('--color-border', '44 44 44');
+    const primaryRgb = getCSSVariable('--ds-color-accent-rgb', '109 59 226');
+    const secondaryRgb = getCSSVariable('--ds-color-info-rgb', '37 99 235');
+    const tertiaryRgb = getCSSVariable('--ds-color-warning-rgb', '245 158 11');
+    const successRgb = getCSSVariable('--ds-color-success-rgb', '22 163 74');
+    const warningRgb = getCSSVariable('--ds-color-warning-rgb', '245 158 11');
+    const errorRgb = getCSSVariable('--ds-color-danger-rgb', '220 38 38');
+    const foregroundRgb = getCSSVariable('--ds-color-foreground-secondary-rgb', '243 244 246');
+    const axisRgb = getCSSVariable('--ds-color-foreground-rgb', '156 163 175');
+    const borderRgb = getCSSVariable('--ds-color-border-rgb', '38 38 38');
     
     setColors({
       primary: rgbToHex(primaryRgb),
-      secondary: '#14B8A6', // Teal
-      tertiary: '#9CA3AF',  // Gray
-      success: isDark ? '#4ADE80' : '#16A34A',
-      warning: isDark ? '#FACC15' : '#CA8A04',
-      error: isDark ? '#F87171' : '#DC2626',
+      secondary: rgbToHex(secondaryRgb),
+      tertiary: rgbToHex(tertiaryRgb),
+      success: rgbToHex(successRgb),
+      warning: rgbToHex(warningRgb),
+      error: rgbToHex(errorRgb),
       grid: rgbToHex(borderRgb),
-      axis: isDark ? '#6B7280' : '#9CA3AF',
+      axis: rgbToHex(axisRgb),
       text: rgbToHex(foregroundRgb),
     });
   }, [theme, isDark]);

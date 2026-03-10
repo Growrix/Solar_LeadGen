@@ -2,22 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import SavingsChart from '../SavingsChart';
-import Button from '@/components/ui/button';
-import { 
-  Loader2, 
-  MapPin, 
-  DollarSign, 
-  ArrowRight, 
-  Home, 
-  Zap, 
-  Calculator, 
-  CheckCircle2, 
-  AlertCircle, 
-  Battery, 
-  ArrowLeft, 
-  Building,
-  Info
-} from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Battery, Building, Button, Calculator, CheckCircle2, DollarSign, Home, Info, Input, Loader2, MapPin, Select, Zap } from '@/ds';
 
 const InfoTooltip = ({ text }: { text: string }) => (
     <span className="ml-1 inline-flex items-center" title={text}>
@@ -744,12 +729,12 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
           onClick={() => setQuoteType('residential')}
           className={`flex items-center space-x-3 p-4 rounded-2xl border transition-colors duration-200 ${
             quoteType === 'residential'
-              ? 'border-primary/50 bg-background shadow-neu-outset'
-              : 'border-border bg-background shadow-neu-inset hover:shadow-neu-inset-sm'
+              ? 'border-primary/50 bg-background shadow-card'
+              : 'border-border bg-background shadow-inner hover:shadow-inner'
           }`}
           aria-pressed={quoteType === 'residential'}
         >
-          <div className={`p-2 rounded-xl transition-colors ${quoteType === 'residential' ? 'bg-background shadow-neu-inset text-primary' : 'bg-background shadow-neu-inset text-muted-foreground'}`}>
+          <div className={`p-2 rounded-xl transition-colors ${quoteType === 'residential' ? 'bg-background shadow-inner text-primary' : 'bg-background shadow-inner text-muted-foreground'}`}>
             <Home className="h-5 w-5" />
           </div>
           <div className="text-left">
@@ -762,12 +747,12 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
           onClick={() => setQuoteType('commercial')}
           className={`flex items-center space-x-3 p-4 rounded-2xl border transition-colors duration-200 ${
             quoteType === 'commercial'
-              ? 'border-primary/50 bg-background shadow-neu-outset'
-              : 'border-border bg-background shadow-neu-inset hover:shadow-neu-inset-sm'
+              ? 'border-primary/50 bg-background shadow-card'
+              : 'border-border bg-background shadow-inner hover:shadow-inner'
           }`}
           aria-pressed={quoteType === 'commercial'}
         >
-          <div className={`p-2 rounded-xl transition-colors ${quoteType === 'commercial' ? 'bg-background shadow-neu-inset text-primary' : 'bg-background shadow-neu-inset text-muted-foreground'}`}>
+          <div className={`p-2 rounded-xl transition-colors ${quoteType === 'commercial' ? 'bg-background shadow-inner text-primary' : 'bg-background shadow-inner text-muted-foreground'}`}>
             <Building className="h-5 w-5" />
           </div>
           <div className="text-left">
@@ -779,7 +764,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
 
       {/* Form Section */}
       {!showResults && (
-        <div className="theme-card p-4 sm:p-8 lg:p-12">
+        <div className="bg-surface rounded-card border border-border shadow-card p-4 sm:p-8 lg:p-12">
           <h2 className="text-heading-2 text-foreground mb-8">Quote Request Details</h2>
           <form noValidate className="space-y-10">
             {/* Section 1: Property Location */}
@@ -831,13 +816,13 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                     State *
                     <InfoTooltip text="Different states have varying solar rebates, feed-in tariffs, and weather conditions." />
                   </label>
-                    <select 
+                  <Select 
                     id="state"
                     name="state" 
                     value={formData.state} 
                     onChange={(e) => handleInputChange('state', e.target.value)} 
                     onBlur={handleBlur} 
-                    className={`form-select w-full ${errors.state ? 'border-destructive' : ''}`}
+                    className={`w-full ${errors.state ? 'border-destructive' : ''}`}
                     aria-required="true"
                     aria-describedby={errors.state ? 'state-error' : undefined}
                   >
@@ -850,7 +835,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                     <option value="TAS">Tasmania</option>
                     <option value="ACT">Australian Capital Territory</option>
                     <option value="NT">Northern Territory</option>
-                  </select>
+                  </Select>
                   {errors.state && <p id="state-error" className="text-destructive text-caption mt-1" role="alert">{errors.state}</p>}
                 </div>
                 <div>
@@ -858,12 +843,12 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                     Electricity Retailer (Optional)
                     <InfoTooltip text="Knowing your retailer helps provide more accurate tariff estimates." />
                   </label>
-                    <select 
+                  <Select 
                     id="retailer"
                     name="retailer" 
                     value={formData.retailer} 
                     onChange={(e) => handleInputChange('retailer', e.target.value)} 
-                    className="form-select w-full"
+                    className="w-full"
                   >
                     <option value="">Select retailer (optional)</option>
                     <option value="origin">Origin Energy</option>
@@ -874,7 +859,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                     <option value="ergon">Ergon Energy (QLD)</option>
                     <option value="synergy">Synergy (WA)</option>
                     <option value="other">Other</option>
-                  </select>
+                  </Select>
                 </div>
                 <div className="md:col-span-2">
                   <fieldset className="p-4 bg-surface/30 rounded-xl">
@@ -950,7 +935,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                             </div>
                           </div>
                           {electricityUsageType === 'monthly' && (
-                            <input 
+                            <Input 
                               type="number" 
                               name="electricityValue" 
                               value={electricityValue} 
@@ -959,7 +944,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                               placeholder="e.g., 800" 
                               min="50"
                               max="5000"
-                              className={`form-select w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
+                              className={`w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
                               aria-describedby="monthly-kwh-help"
                             />
                           )}
@@ -984,7 +969,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                             </div>
                           </div>
                           {electricityUsageType === 'quarterly' && (
-                            <input 
+                            <Input 
                               type="number" 
                               name="electricityValue" 
                               value={electricityValue} 
@@ -993,7 +978,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                               placeholder="e.g., 600" 
                               min="150"
                               max="6000"
-                              className={`form-select w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
+                              className={`w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
                               aria-describedby="quarterly-bill-help"
                             />
                           )}
@@ -1023,7 +1008,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       Override System Size (Optional)
                       <InfoTooltip text="Specify a custom system size if you have specific requirements or roof limitations." />
                     </label>
-                    <input 
+                    <Input 
                       id="systemSizeOverride"
                       type="number" 
                       name="systemSizeOverride" 
@@ -1034,7 +1019,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       step="0.1"
                       min="1"
                       max={quoteType === 'residential' ? '30' : '100'}
-                      className={`form-select w-full ${errors.systemSizeOverride ? 'border-destructive' : ''}`}
+                      className={`w-full ${errors.systemSizeOverride ? 'border-destructive' : ''}`}
                       aria-describedby={errors.systemSizeOverride ? 'system-override-error' : 'system-override-help'}
                     />
                     {errors.systemSizeOverride && <p id="system-override-error" className="text-destructive text-caption mt-1" role="alert">{errors.systemSizeOverride}</p>}
@@ -1082,12 +1067,12 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       Panel Orientation *
                       <InfoTooltip text="North-facing panels generate the most electricity in Australia. Other orientations are still viable." />
                     </label>
-                    <select 
+                    <Select 
                       id="panelOrientation"
                       name="panelOrientation" 
                       value={formData.panelOrientation} 
                       onChange={(e) => handleInputChange('panelOrientation', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                       aria-describedby="orientation-help"
                     >
                       <option value="north">🧭 North (Best - 100%)</option>
@@ -1098,7 +1083,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       <option value="southeast">🧭 Southeast (82%)</option>
                       <option value="southwest">🧭 Southwest (82%)</option>
                       <option value="south">🧭 South (68%)</option>
-                    </select>
+                    </Select>
                     <p id="orientation-help" className="text-caption text-subtle mt-1">Percentages show relative performance vs. north-facing</p>
                   </div>
                   <div>
@@ -1106,50 +1091,50 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       Roof Tilt *
                       <InfoTooltip text="Optimal tilt is usually 20-35? in Australia. Flat roofs can use tilt frames." />
                     </label>
-                    <select 
+                    <Select 
                       id="roofTilt"
                       name="roofTilt" 
                       value={formData.roofTilt} 
                       onChange={(e) => handleInputChange('roofTilt', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="flat">📐 Flat (0-10° - 92%)</option>
                       <option value="low">📐 Low Pitch (10-20° - 96%)</option>
                       <option value="optimal">📐 Optimal (20-35° - 100%)</option>
                       <option value="steep">📐 Steep (35°+ - 94%)</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <label htmlFor="shadingLevel" className="block text-subtle text-label mb-2">
                       Shading Level *
                       <InfoTooltip text="Even partial shading can significantly impact solar performance. Consider power optimizers for shaded areas." />
                     </label>
-                    <select 
+                    <Select 
                       id="shadingLevel"
                       name="shadingLevel" 
                       value={formData.shadingLevel} 
                       onChange={(e) => handleInputChange('shadingLevel', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="none">☀️ No Shade (100%)</option>
                       <option value="minimal">🌤️ Minimal Shade (&lt;10% - 95%)</option>
                       <option value="partial">⛅ Partial Shade (10-25% - 85%)</option>
                       <option value="moderate">🌥️ Moderate Shade (25-50% - 70%)</option>
                       <option value="heavy">☁️ Heavy Shade (50%+ - 50%)</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <label htmlFor="roofType" className="block text-subtle text-label mb-2">
                       Roof Material *
                       <InfoTooltip text="Different roof materials affect installation cost and method. Tile roofs typically cost more to install." />
                     </label>
-                    <select 
+                    <Select 
                       id="roofType"
                       name="roofType" 
                       value={formData.roofType} 
                       onChange={(e) => handleInputChange('roofType', e.target.value)} 
                       onBlur={handleBlur} 
-                      className={`form-select w-full ${errors.roofType ? 'border-destructive' : ''}`}
+                      className={`w-full ${errors.roofType ? 'border-destructive' : ''}`}
                       aria-required="true"
                       aria-describedby={errors.roofType ? 'roof-type-error' : undefined}
                     >
@@ -1159,7 +1144,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       <option value="flat">🏢 Flat Roof (Membrane)</option>
                       <option value="slate">🏛️ Slate</option>
                       <option value="other">❓ Other</option>
-                    </select>
+                    </Select>
                     {errors.roofType && <p id="roof-type-error" className="text-destructive text-caption mt-1" role="alert">{errors.roofType}</p>}
                   </div>
                   <div>
@@ -1167,12 +1152,12 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       Panel Brand Preference (Optional)
                       <InfoTooltip text="Premium brands like Sunpower and LG offer higher efficiency but cost more. Good value brands include Trina and JA Solar." />
                     </label>
-                    <select 
+                    <Select 
                       id="panelBrand"
                       name="panelBrand" 
                       value={formData.panelBrand} 
                       onChange={(e) => handleInputChange('panelBrand', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="">No preference</option>
                       <option value="tier1">🥇 Tier 1 Brands (Premium)</option>
@@ -1182,7 +1167,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                       <option value="ja-solar">🌟 JA Solar (Value)</option>
                       <option value="jinko">💫 Jinko Solar (Value)</option>
                       <option value="canadian">🍁 Canadian Solar (Value)</option>
-                    </select>
+                    </Select>
                   </div>
                   {quoteType === 'residential' && (
                     <div>
@@ -1190,18 +1175,18 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                         Energy Usage Pattern *
                         <InfoTooltip text="When you use most electricity affects self-consumption and battery sizing recommendations." />
                       </label>
-                      <select 
+                      <Select 
                         id="usagePattern"
                         name="usagePattern" 
                         value={formData.usagePattern} 
                         onChange={(e) => handleInputChange('usagePattern', e.target.value)} 
-                        className="form-select w-full"
+                        className="w-full"
                       >
                         <option value="spread">⏰ Evenly Spread (Day & Night)</option>
                         <option value="daytime">🌅 Mainly Daytime (Business Hours)</option>
                         <option value="evening">🌃 Mainly Evenings/Weekends</option>
                         <option value="night">🌙 Mainly Overnight (Shift Workers)</option>
-                      </select>
+                      </Select>
                     </div>
                   )}
                 </div>
@@ -1479,7 +1464,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                     </div>
                     
                     {/* Battery Features */}
-                    <div className="p-4 bg-background shadow-neu-inset rounded-2xl border border-border">
+                    <div className="p-4 bg-background shadow-inner rounded-2xl border border-border">
                       <h4 className="text-label text-foreground mb-3">
                         🔧 Advanced Battery Features
                       </h4>
@@ -1551,7 +1536,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
               </fieldset>
             
             {/* Error Message */}
-            {errors.general && (<div className="mt-6 bg-destructive/10 shadow-neu-inset border border-destructive/30 rounded-2xl p-4 flex items-center space-x-3"><AlertCircle className="h-5 w-5" /><p className="text-destructive text-body-small">{errors.general}</p></div>)}
+            {errors.general && (<div className="mt-6 bg-destructive/10 shadow-inner border border-destructive/30 rounded-2xl p-4 flex items-center space-x-3"><AlertCircle className="h-5 w-5" /><p className="text-destructive text-body-small">{errors.general}</p></div>)}
             
             {/* Submit Button */}
             <div className="flex justify-end mt-8">
@@ -1768,7 +1753,7 @@ const SimplifiedQuoteForm: React.FC<SimplifiedQuoteFormProps> = ({
                 <div className="detail-card">
                   <div className="text-center">
                     <p className="performance-item-label">Estimated Out-of-Pocket Cost</p>
-                    <p className="text-heading-1 md:text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
+                    <p className="text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
                   </div>
                   <div className="mt-6 pt-6 border-t border-border">
                     <h3 className="detail-card-header justify-center">Cost Breakdown</h3>

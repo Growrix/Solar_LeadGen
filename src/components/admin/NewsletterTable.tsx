@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import Button from '@/components/Button';
+import { Button, Input } from '@/ds';
 
 // Icon Components
 const MailIcon = () => (
@@ -82,17 +82,17 @@ export default function NewsletterTable() {
       {/* Header with Stats */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="grid grid-cols-3 gap-4 flex-1">
-          <div className="theme-card p-4">
+          <div className="bg-surface rounded-card border border-border shadow-card p-4">
             <p className="text-body-small text-muted-foreground mb-1">Total</p>
             <p className="text-heading-2 text-foreground">{subscribers.length}</p>
           </div>
-          <div className="theme-card p-4">
+          <div className="bg-surface rounded-card border border-border shadow-card p-4">
             <p className="text-body-small text-muted-foreground mb-1">Active</p>
             <p className="text-heading-2 text-success">
               {subscribers.filter(s => s.isActive).length}
             </p>
           </div>
-          <div className="theme-card p-4">
+          <div className="bg-surface rounded-card border border-border shadow-card p-4">
             <p className="text-body-small text-muted-foreground mb-1">Unsubscribed</p>
             <p className="text-heading-2 text-error">
               {subscribers.filter(s => !s.isActive).length}
@@ -111,21 +111,21 @@ export default function NewsletterTable() {
       </div>
 
       {/* Search Bar */}
-      <div className="theme-card p-4">
+      <div className="bg-surface rounded-card border border-border shadow-card p-4">
         <div className="flex items-center gap-3">
           <MailIcon />
-          <input
+          <Input
             type="text"
             placeholder="Search by email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="form-input flex-1 rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground"
+            className="flex-1 rounded-xl bg-surface text-foreground shadow-inner border border-border px-4 py-3 placeholder:text-muted-foreground"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="theme-card overflow-hidden">
+      <div className="bg-surface rounded-card border border-border shadow-card overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
             <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent mb-4"></div>

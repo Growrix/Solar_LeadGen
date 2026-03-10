@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 
 // --- Icon Components with Semantic Colors ---
 const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
@@ -160,7 +160,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="theme-card p-6 animate-pulse">
+        <div className="bg-surface rounded-card border border-border shadow-card p-6 animate-pulse">
           <div className="flex items-center space-x-4">
             <div className="w-24 h-24 bg-muted rounded-full"></div>
             <div className="flex-1 space-y-2">
@@ -182,7 +182,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
         </div>
         <p className="text-error/80 mt-2">{error}</p>
         {/* Migrated: button → shadcn Button - preserved onClick, error handling */}
-  <Button onClick={() => window.location.reload()} variant="minimal" className="mt-4">
+        <Button onClick={() => window.location.reload()} variant="ghost" className="mt-4">
           Retry
         </Button>
       </div>
@@ -214,7 +214,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
       )}
 
       {/* Profile Picture Section */}
-      <div className="theme-card p-6">
+      <div className="bg-surface rounded-card border border-border shadow-card p-6">
         <h2 className="text-heading-3 text-foreground mb-4">Profile Picture</h2>
         <div className="flex items-center space-x-6">
           <div className="relative">
@@ -236,12 +236,12 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
             <p className="text-body-small text-muted-foreground">{displayEmail}</p>
             {isEditing && (
               <div className="mt-3 flex space-x-2">
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleImageUpload} 
-                  accept="image/jpeg,image/png,image/gif,image/webp" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="hidden"
                 />
                 {/* Migrated: buttons → shadcn Button - preserved onClick, disabled, upload/remove logic */}
                 <Button
@@ -253,9 +253,9 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
                 </Button>
                 {formData.image && (
                   <Button
-                    onClick={handleRemoveImage} 
-                    disabled={isSaving} 
-                    variant="destructive"
+                    onClick={handleRemoveImage}
+                    disabled={isSaving}
+                    variant="danger"
                   >
                     Remove
                   </Button>
@@ -270,7 +270,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
       </div>
 
       {/* Personal Information Section */}
-      <div className="theme-card p-6">
+      <div className="bg-surface rounded-card border border-border shadow-card p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-heading-3 text-foreground">Personal Information</h2>
           {/* Migrated: button → shadcn Button - preserved onClick, edit mode toggle */}
@@ -406,7 +406,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
               <Button
                 onClick={handleCancel} 
                 disabled={isSaving} 
-                variant="outline"
+                variant="ghost"
               >
                 Cancel
               </Button>
@@ -416,7 +416,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
       </div>
 
       {/* Security Section */}
-      <div className="theme-card p-6">
+      <div className="bg-surface rounded-card border border-border shadow-card p-6">
         <h2 className="text-heading-3 text-foreground mb-4">Security</h2>
         <div className="space-y-4">
           <div>
@@ -476,7 +476,7 @@ export default function ProfileManagement({ onDeleteClick }: ProfileManagementPr
           {/* Migrated: button → shadcn Button - preserved onClick, delete action */}
           <Button
             onClick={onDeleteClick} 
-            variant="destructive"
+            variant="danger"
           >
             <AlertTriangleIcon />
             Delete Account

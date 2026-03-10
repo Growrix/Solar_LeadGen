@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from"react";
-import { ThemeSwitcher } from"@/components/ThemeSwitcher";
+import { ThemeSwitcher } from"@/ds";
 import { NotificationDropdown } from"@/components/NotificationDropdown";
 import { Search as SearchIcon, HelpCircle as HelpCircleIcon } from"lucide-react";
 

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useEffect, useCallback } from 'react';
 import QuoteBuilderModal from './QuoteBuilderModal';
@@ -6,7 +6,7 @@ import WrittenQuoteBuilderModal from './WrittenQuoteBuilderModal';
 import BidEvaluationModal from './BidEvaluationModal';
 import BiddingStatusBadge from './BiddingStatusBadge';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
-import Button from '@/components/ui/button';
+import { Button, Input, Modal, Select } from '@/ds';
 import QuoteDataDisplay from '@/components/admin/QuoteDataDisplay';
 
 // --- Icon Components ---
@@ -202,111 +202,87 @@ const StripeUnlockModal: React.FC<{
   if (!isOpen || !lead) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="theme-card relative w-full max-w-md mx-4 p-6">
-        <Button 
-          onClick={onClose}
-          variant="minimal"
-          className="absolute top-4 right-4 p-2"
-        >
+    <Modal open={isOpen} onClose={onClose} closeOnOverlayClick className="max-w-md w-full">
+      <div className="relative p-6">
+        <Button onClick={onClose} variant="ghost" className="absolute top-4 right-4 p-2">
           <XIcon />
         </Button>
 
-        <div className="text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CreditCardIcon className="h-8 w-8 text-primary" />
-          </div>
-          
-          <h3 className="text-heading-3 text-foreground mb-2">
-            Unlock Lead Contact
-          </h3>
-          
-          <p className="text-muted-foreground mb-6">
-            Unlock contact details for this call/visit lead in {lead.location.suburb}, {lead.location.state}
-          </p>
-
-          {/* Lead Summary */}
-          <div className="bg-surface/50 shadow-neu-inset rounded-lg p-4 mb-6 text-left border border-border">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-body-small text-muted-foreground">Location:</span>
-              <span className="text-body-small text-foreground">
-                {lead.location.suburb}, {lead.location.postcode}
-              </span>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-body-small text-muted-foreground">System Size:</span>
-              <span className="text-body-small text-foreground">{lead.systemDetails.estimatedSize}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-body-small text-muted-foreground">Unlock Price:</span>
-              <span className="text-heading-4 text-primary">${lead.unlockPrice}</span>
-            </div>
-          </div>
-
-          {paymentStatus === 'idle' && (
-            <div className="space-y-4">
-              <div className="text-body-small text-muted-foreground">
-                Credit Balance: <span className="text-foreground">
-                  ${installer.creditBalance}
-                </span>
-              </div>
-              
-              {installer.creditBalance >= lead.unlockPrice ? (
-                <Button
-                  onClick={handlePayment}
-                  disabled={isProcessing}
-                  variant="primary"
-                  className="w-full py-3"
-                >
-                  {isProcessing ? 'Processing...' : `Pay $${lead.unlockPrice} to Unlock`}
-                </Button>
-              ) : (
-                <div className="space-y-3">
-                  <div className="text-body-small text-destructive">
-                    Insufficient credit balance. Please top up your account.
-                  </div>
-                  <Button 
-                    disabled 
-                    variant="secondary"
-                    className="w-full py-3 cursor-not-allowed"
-                  >
-                    Insufficient Credits
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {paymentStatus === 'processing' && (
-            <div className="text-center">
-              <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Processing payment...</p>
-            </div>
-          )}
-
-          {paymentStatus === 'success' && (
-            <div className="text-center">
-              <CheckCircleIcon className="h-12 w-12 text-success mx-auto mb-4" />
-              <p className="text-success">Payment successful!</p>
-              <p className="text-body-small text-muted-foreground mt-2">
-                Contact details are now unlocked
-              </p>
-            </div>
-          )}
-
-          {paymentStatus === 'error' && (
-            <div className="text-center">
-              <AlertCircleIcon className="h-12 w-12 text-destructive mx-auto mb-4" />
-              <p className="text-destructive">Payment failed</p>
-              <p className="text-body-small text-muted-foreground mt-2">
-                Please try again or contact support
-              </p>
-            </div>
-          )}
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CreditCardIcon className="h-8 w-8 text-primary" />
         </div>
+
+        <h3 className="text-heading-3 text-foreground mb-2">Unlock Lead Contact</h3>
+
+        <p className="text-muted-foreground mb-6">
+          Unlock contact details for this call/visit lead in {lead.location.suburb}, {lead.location.state}
+        </p>
+
+        {/* Lead Summary */}
+        <div className="bg-surface/50 shadow-inner rounded-lg p-4 mb-6 text-left border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-body-small text-muted-foreground">Location:</span>
+            <span className="text-body-small text-foreground">
+              {lead.location.suburb}, {lead.location.postcode}
+            </span>
+          </div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-body-small text-muted-foreground">System Size:</span>
+            <span className="text-body-small text-foreground">{lead.systemDetails.estimatedSize}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-body-small text-muted-foreground">Unlock Price:</span>
+            <span className="text-heading-4 text-primary">${lead.unlockPrice}</span>
+          </div>
+        </div>
+
+        {paymentStatus === 'idle' && (
+          <div className="space-y-4">
+            <div className="text-body-small text-muted-foreground">
+              Credit Balance: <span className="text-foreground">${installer.creditBalance}</span>
+            </div>
+
+            {installer.creditBalance >= lead.unlockPrice ? (
+              <Button onClick={handlePayment} disabled={isProcessing} variant="primary" className="w-full py-3">
+                {isProcessing ? 'Processing...' : `Pay $${lead.unlockPrice} to Unlock`}
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-body-small text-destructive">
+                  Insufficient credit balance. Please top up your account.
+                </div>
+                <Button disabled variant="secondary" className="w-full py-3 cursor-not-allowed">
+                  Insufficient Credits
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {paymentStatus === 'processing' && (
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Processing payment...</p>
+          </div>
+        )}
+
+        {paymentStatus === 'success' && (
+          <div className="text-center">
+            <CheckCircleIcon className="h-12 w-12 text-success mx-auto mb-4" />
+            <p className="text-success">Payment successful!</p>
+            <p className="text-body-small text-muted-foreground mt-2">Contact details are now unlocked</p>
+          </div>
+        )}
+
+        {paymentStatus === 'error' && (
+          <div className="text-center">
+            <AlertCircleIcon className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <p className="text-destructive">Payment failed</p>
+            <p className="text-body-small text-muted-foreground mt-2">Please try again or contact support</p>
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 };
 
@@ -319,8 +295,11 @@ const ViewDetailsModal: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-surface rounded-lg border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ boxShadow: 'var(--shadow-outset-lg)' }} onClick={(e) => e.stopPropagation()}>
+    <Modal open={isOpen} onClose={onClose} closeOnOverlayClick className="max-w-2xl w-full">
+      <div
+        className="bg-surface rounded-lg border border-border max-h-[90vh] overflow-y-auto"
+        style={{ boxShadow: 'var(--shadow-outset-lg)' }}
+      >
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
           <h2 className="text-heading-3 text-foreground">Lead Details</h2>
@@ -355,7 +334,7 @@ const ViewDetailsModal: React.FC<{
           </div>
 
           {/* Contact Information */}
-          <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+          <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
             <h3 className="text-heading-4 text-foreground mb-3">Contact Information</h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -383,7 +362,7 @@ const ViewDetailsModal: React.FC<{
           </div>
 
           {/* Property Details */}
-          <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+          <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
             <h3 className="text-heading-4 text-foreground mb-3">Property Details</h3>
             <div className="space-y-2">
               {lead.address && (
@@ -421,7 +400,7 @@ const ViewDetailsModal: React.FC<{
 
           {/* Energy Details */}
           {(lead.energyBill !== null || lead.desiredOffset !== null || lead.batteryRequired !== null || lead.timeframe) && (
-            <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+            <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
               <h3 className="text-heading-4 text-foreground mb-3">Energy Details</h3>
               <div className="space-y-2">
                 {lead.energyBill !== null && lead.billType && (
@@ -455,7 +434,7 @@ const ViewDetailsModal: React.FC<{
           )}
 
           {/* Lead Metadata */}
-          <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+          <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
             <h3 className="text-heading-4 text-foreground mb-3">Lead Information</h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -488,7 +467,7 @@ const ViewDetailsModal: React.FC<{
           </div>
 
           {/* Timeline/Timestamps */}
-          <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+          <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
             <h3 className="text-heading-4 text-foreground mb-3">Timeline</h3>
             <div className="space-y-2">
               {lead.createdAt && (
@@ -518,7 +497,7 @@ const ViewDetailsModal: React.FC<{
 
           {/* InstantQuote Data */}
           {lead.quoteData && (
-            <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+            <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
               <h3 className="text-heading-4 text-foreground mb-3">?? Instant Quote Calculation</h3>
               <QuoteDataDisplay quoteData={lead.quoteData} />
             </div>
@@ -526,7 +505,7 @@ const ViewDetailsModal: React.FC<{
 
           {/* Homeowner Additional Notes */}
           {lead.additionalNotes && (
-            <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+            <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
               <h3 className="text-heading-4 text-foreground mb-2">Homeowner Notes</h3>
               <p className="text-body-small text-foreground whitespace-pre-wrap">{lead.additionalNotes}</p>
             </div>
@@ -534,7 +513,7 @@ const ViewDetailsModal: React.FC<{
 
           {/* Notes (if available) */}
           {lead.notes && (
-            <div className="bg-surface rounded-lg shadow-neu-inset border border-border p-4">
+            <div className="bg-surface rounded-lg shadow-inner border border-border p-4">
               <h3 className="text-heading-4 text-foreground mb-2">Notes</h3>
               <p className="text-body-small text-muted-foreground">{lead.notes}</p>
             </div>
@@ -552,7 +531,7 @@ const ViewDetailsModal: React.FC<{
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
@@ -641,7 +620,7 @@ const LeadCard: React.FC<{
 
   return (
     <>
-      <div className={`theme-card border-l-4 ${getPriorityColor()} p-6 transition-colors duration-200 ${isPurchasedByAnother ? 'opacity-50' : ''}`}>
+      <div className={`bg-surface rounded-card border border-border shadow-card border-l-4 ${getPriorityColor()} p-6 transition-colors duration-200 ${isPurchasedByAnother ? 'opacity-50' : ''}`}>
       
       {/* T196: Winner banner - shown when installer won but hasn't paid yet */}
       {isWinner && !isPaid && (
@@ -967,7 +946,7 @@ const LeadCard: React.FC<{
 
       {/* T197 & T13I-3 & Phase 13W.2: Contact Info (if unlocked AND paid for bidding/written leads) */}
       {((isUnlockedByInstaller && (lead.type !== 'bidding' || isPaid)) || isWrittenQuotePurchased) && (
-        <div className="bg-success/10 border border-success/20 rounded-lg p-4 mb-4 shadow-neu-inset">
+        <div className="bg-success/10 border border-success/20 rounded-lg p-4 mb-4 shadow-inner">
           <div className="flex items-center space-x-2 mb-2">
             <UnlockIcon className="h-4 w-4 text-success" />
             <span className="text-label text-success">
@@ -1520,7 +1499,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="theme-card p-4">
+        <div className="bg-surface rounded-card border border-border shadow-card p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-small text-muted-foreground">Marketplace</p>
@@ -1532,7 +1511,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
           </div>
         </div>
 
-        <div className="theme-card p-4">
+        <div className="bg-surface rounded-card border border-border shadow-card p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-small text-muted-foreground">In Progress</p>
@@ -1544,7 +1523,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
           </div>
         </div>
 
-        <div className="theme-card p-4">
+        <div className="bg-surface rounded-card border border-border shadow-card p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-small text-muted-foreground">Purchased</p>
@@ -1556,7 +1535,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
           </div>
         </div>
 
-        <div className="theme-card p-4">
+        <div className="bg-surface rounded-card border border-border shadow-card p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-small text-muted-foreground">Rejected</p>
@@ -1570,7 +1549,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="theme-card p-4">
+      <div className="bg-surface rounded-card border border-border shadow-card p-4">
         <div className="flex flex-wrap gap-2">
           <Button
             variant={activeTab === 'marketplace' ? 'primary' : 'secondary'}
@@ -1651,62 +1630,62 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
       </div>
 
       {/* Filters and Search */}
-      <div className="theme-card p-6">
+      <div className="bg-surface rounded-card border border-border shadow-card p-6">
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               type="text"
               placeholder="Search by location, system size, or property type..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="form-input w-full pl-10 pr-4 py-2 rounded-xl bg-surface text-foreground shadow-neu-inset border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-surface text-foreground shadow-inner border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           {/* Filters */}
           <div className="flex flex-wrap gap-3">
-            <select
+            <Select
               value={filters.leadType}
               onChange={(e) => setFilters(prev => ({ ...prev, leadType: e.target.value as any }))}
-              className="form-input px-3 py-2 rounded-xl bg-surface text-foreground shadow-neu-inset border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 rounded-xl bg-surface text-foreground shadow-inner border border-border focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Types</option>
               <option value="call_visit">Call/Visit</option>
               <option value="written">Written</option>
               <option value="bidding">Competitive Bidding</option>
-            </select>
+            </Select>
 
-            <select
+            <Select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value as any }))}
-              className="form-input px-3 py-2 rounded-xl bg-surface text-foreground shadow-neu-inset border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 rounded-xl bg-surface text-foreground shadow-inner border border-border focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Status</option>
               <option value="new">New</option>
               <option value="unlocked">Unlocked</option>
               <option value="submitted">Submitted</option>
-            </select>
+            </Select>
 
-            <input
+            <Input
               type="text"
               placeholder="Postcode"
               value={filters.postcode}
               onChange={(e) => setFilters(prev => ({ ...prev, postcode: e.target.value }))}
-              className="form-input w-24 px-3 py-2 rounded-xl bg-surface text-foreground shadow-neu-inset border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-24 px-3 py-2 rounded-xl bg-surface text-foreground shadow-inner border border-border placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
 
-            <select
+            <Select
               value={filters.dateRange}
               onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value as any }))}
-              className="form-input px-3 py-2 rounded-xl bg-surface text-foreground shadow-neu-inset border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-3 py-2 rounded-xl bg-surface text-foreground shadow-inner border border-border focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Time</option>
               <option value="today">Today</option>
               <option value="week">This Week</option>
               <option value="month">This Month</option>
-            </select>
+            </Select>
           </div>
         </div>
       </div>
@@ -1718,7 +1697,7 @@ const InstallerLeadFeed: React.FC<InstallerLeadFeedProps> = ({
             <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full"></div>
           </div>
         ) : filteredLeads.length === 0 ? (
-          <div className="theme-card text-center py-12">
+          <div className="bg-surface rounded-card border border-border shadow-card text-center py-12">
             <AlertCircleIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-heading-4 text-foreground mb-2">
               No leads found

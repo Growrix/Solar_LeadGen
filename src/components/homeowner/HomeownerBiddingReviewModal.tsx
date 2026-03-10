@@ -1,11 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Award, DollarSign, TrendingUp, Calendar, Battery, Zap, 
-  CheckCircle, Star, ChevronDown, ChevronUp, Info, Loader 
-} from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Award, Battery, Button, Calendar, CheckCircle, ChevronDown, ChevronUp, DollarSign, FullScreenModal, Info, Loader, Modal, Star, TrendingUp, X, Zap } from '@/ds';
 import { GetBidsResponse } from '@/types/bid';
 import { LeadData } from '@/types/lead';
 import HomeownerInstantQuoteDetails from '@/components/quote-builder/HomeownerInstantQuoteDetails';
@@ -209,30 +205,25 @@ export default function HomeownerBiddingReviewModal({
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-neu-outset-lg"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
-          <div>
-            <h2 className="text-heading-3 text-foreground">Review Solar Bids</h2>
-            <p className="text-body-small text-muted-foreground mt-1">
-              {propertyAddress} • {bids.length} bid{bids.length !== 1 ? 's' : ''} received
-            </p>
+    <>
+      <FullScreenModal open={isOpen} onClose={onClose}>
+        <div className="bg-background relative w-full h-full md:max-w-[95vw] md:h-[95vh] md:rounded-2xl flex flex-col animate-fade-in shadow-modal">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 md:p-6 border-b border-border">
+            <div>
+              <h2 className="text-heading-3 text-foreground">Review Solar Bids</h2>
+              <p className="text-body-small text-muted-foreground mt-1">
+                {propertyAddress} • {bids.length} bid{bids.length !== 1 ? 's' : ''} received
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-surface rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-surface rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
 
         {/* Body - 2 Column Layout */}
         <div className="flex-grow overflow-auto p-4 md:p-6">
@@ -789,12 +780,18 @@ export default function HomeownerBiddingReviewModal({
             )}
           </div>
         </div>
-      </div>
+        </div>
+      </FullScreenModal>
 
       {/* Confirmation Modal */}
-      {showConfirmation && selectedBid && (
-        <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4">
-          <div className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg">
+      <Modal
+        open={!!(showConfirmation && selectedBid)}
+        onClose={() => setShowConfirmation(false)}
+        closeOnOverlayClick={false}
+        className="max-w-md w-full"
+      >
+        {selectedBid ? (
+          <div className="space-y-4">
             <h3 className="text-heading-4 text-foreground">Confirm Winning Bid Selection</h3>
             <p className="text-body text-muted-foreground">
               Are you sure you want to select <strong className="text-foreground">{selectedBid.installerName}</strong> as the winning installer?
@@ -803,26 +800,17 @@ export default function HomeownerBiddingReviewModal({
               This action will notify the installer and unlock their contact details for you.
             </p>
             <div className="flex items-center gap-3 pt-4">
-              <Button 
-                variant="secondary" 
-                onClick={() => setShowConfirmation(false)}
-                className="flex-1"
-              >
+              <Button variant="secondary" onClick={() => setShowConfirmation(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                onClick={handleConfirmSelection}
-                disabled={isSelecting}
-                className="flex-1"
-              >
+              <Button variant="primary" onClick={handleConfirmSelection} disabled={isSelecting} className="flex-1">
                 {isSelecting ? 'Confirming...' : 'Confirm Selection'}
               </Button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        ) : null}
+      </Modal>
+    </>
   );
 }
 

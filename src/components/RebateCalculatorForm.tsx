@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
+import { Button, Input, Select } from '@/ds';
 
 // -------------------------
 // Improved Rebate Calculator (React)
@@ -250,7 +250,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
-      <div className="theme-card p-6 sm:p-8 shadow-xl">
+      <div className="bg-surface rounded-card border border-border shadow-card p-6 sm:p-8">
         <div className="space-y-10">
             <fieldset>
             <legend className="text-heading-3 text-foreground mb-6">Location & System</legend>
@@ -260,10 +260,10 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                     <MapPin />
                     <span>Postcode *</span>
                 </label>
-                <input 
+                <Input 
                     id="postcode"
                     type="text"
-                    className={`form-input w-full px-4 py-3 ${errors.postcode ? 'border-destructive ring-red-500' : 'focus:border-primary focus:ring-primary'}`}
+                  className={`w-full px-4 py-3 ${errors.postcode ? 'border-destructive ring-red-500' : 'focus:border-primary focus:ring-primary'}`}
                     value={inputs.postcode} 
                     onChange={(e) => handleInput('postcode', e.target.value)} 
                     onBlur={(e) => setErrors({ ...errors, postcode: validatePostcode(e.target.value) })} 
@@ -285,11 +285,11 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
             Include Battery Storage
           </label>
           <div className={`info-section flex items-center w-full ${inputs.includeBattery ? 'border-primary/50' : ''}`} style={{ minHeight: '48px' }}>
-            <input
+            <Input
               type="text"
               tabIndex={-1}
               readOnly
-              className="form-input w-full px-4 py-3 pointer-events-none bg-transparent border-none shadow-none text-foreground text-body-small placeholder:text-foreground/70 focus:ring-0 focus:outline-none"
+              className="w-full px-4 py-3 pointer-events-none bg-transparent border-none shadow-none text-foreground text-body-small placeholder:text-foreground/70 focus:ring-0 focus:outline-none"
               value={inputs.includeBattery ? 'Battery Included' : 'Solar Only'}
               aria-label="Battery status"
               style={{marginBottom: 0}}
@@ -317,27 +317,27 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                     <label htmlFor="systemSize" className="block text-muted-foreground text-label mb-2">
                         System Size (kW) *
                     </label>
-                    <select 
+                    <Select 
                         id="systemSize"
                         value={inputs.systemSizeKw} 
                         onChange={(e) => handleInput('systemSizeKw', parseFloat(e.target.value))} 
-                        className="form-select w-full"
+                      className="w-full"
                     >
                         {[3, 4, 5, 6, 6.6, 7, 8, 9, 10, 11, 12, 13.2, 15, 20].map(s => (
                         <option key={s} value={s}>
                             {s} kW{s === 6.6 ? ' (most popular)' : ''}
                         </option>
                         ))}
-                    </select>
+                    </Select>
                     </div>
 
                     <div>
                     <label htmlFor="batterySize" className="block text-muted-foreground text-label mb-2">
                         Battery Size (kWh)
                     </label>
-                    <input 
+                    <Input 
                         id="batterySize"
-                        className={`form-input w-full px-4 py-3 ${!inputs.includeBattery ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-3 ${!inputs.includeBattery ? 'opacity-50 cursor-not-allowed' : ''}`}
                         type="number" 
                         value={inputs.batterySizeKwh} 
                         onChange={(e) => handleInput('batterySizeKwh', Math.max(0, parseFloat(e.target.value || '0')))} 
@@ -357,9 +357,9 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                 <label htmlFor="installationYear" className="block text-muted-foreground text-label mb-2">
                     Planned Installation Year *
                 </label>
-                <select 
+                <Select 
                     id="installationYear"
-                    className="form-select w-full"
+                  className="w-full"
                     value={inputs.installationYear} 
                     onChange={(e) => handleInput('installationYear', parseInt(e.target.value || `${currentYear}`))}
                 >
@@ -368,53 +368,53 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                         {currentYear + i}{i === 0 ? ' (This year)' : ''}
                     </option>
                     ))}
-                </select>
+                </Select>
                 </div>
 
                 <div>
                 <label htmlFor="propertyStatus" className="block text-muted-foreground text-label mb-2">
                     Property Status *
                 </label>
-                <select 
+                <Select 
                     id="propertyStatus"
-                    className="form-select w-full"
+                  className="w-full"
                     value={inputs.ownerOccupier ? 'owner' : 'renter'} 
                     onChange={(e) => handleInput('ownerOccupier', e.target.value === 'owner')}
                 >
                     <option value="owner">Owner-occupier</option>
                     <option value="renter">Investor / Landlord</option>
-                </select>
+                </Select>
                 </div>
 
                 <div>
                 <label htmlFor="householdIncome" className="block text-muted-foreground text-label mb-2">
                     Combined Household Income *
                 </label>
-                <select 
+                <Select 
                     id="householdIncome"
-                    className="form-select w-full"
+                  className="w-full"
                     value={inputs.householdIncome} 
                     onChange={(e) => handleInput('householdIncome', parseInt(e.target.value || '0'))}
                 >
                     <option value={40000}>Under $75,000</option>
                     <option value={80000}>$75k - $180k</option>
                     <option value={200000}>Over $180k</option>
-                </select>
+                </Select>
                 </div>
 
                 <div>
                 <label htmlFor="propertyValue" className="block text-muted-foreground text-label mb-2">
                     Property Value (Victoria only) *
                 </label>
-                <select 
+                <Select 
                     id="propertyValue"
-                    className="form-select w-full"
+                  className="w-full"
                     value={inputs.propertyValue} 
                     onChange={(e) => handleInput('propertyValue', parseInt(e.target.value || '0'))}
                 >
                     <option value={600000}>Under $3M</option>
                     <option value={3500000}>Over $3M</option>
-                </select>
+                </Select>
                 </div>
             </div>
             </fieldset>
@@ -447,7 +447,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
 
       {showModal && result && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8 animate-fade-in" onClick={() => setShowModal(false)}>
-                <div className="theme-card relative w-full max-w-2xl p-6 sm:p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-2xl p-6 sm:p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-6">
                       <h2 className="text-heading-2 text-foreground">Your Rebate Estimate</h2>
                       <Button 
@@ -463,9 +463,9 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
                     <div className="space-y-6">
                         {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="theme-card rounded-2xl p-6 border border-border text-center"><h3 className="text-body-small text-muted-foreground">Total Rebate</h3><p className="text-heading-1 text-accent mt-1">{formatCurrency(result.totalRebate)}</p></div>
-              <div className="theme-card rounded-2xl p-6 border border-border text-center"><h3 className="text-body-small text-muted-foreground">Federal Rebate (STC)</h3><p className="text-heading-1 text-success mt-1">{formatCurrency(result.federalSTCValue)}</p></div>
-              <div className="theme-card rounded-2xl p-6 border border-border text-center"><h3 className="text-body-small text-muted-foreground">State & Battery</h3><p className="text-heading-1 text-info mt-1">{formatCurrency(result.stateSolar + result.batteryTotal)}</p></div>
+              <div className="bg-surface rounded-card border border-border shadow-card p-6 text-center"><h3 className="text-body-small text-muted-foreground">Total Rebate</h3><p className="text-heading-1 text-accent mt-1">{formatCurrency(result.totalRebate)}</p></div>
+              <div className="bg-surface rounded-card border border-border shadow-card p-6 text-center"><h3 className="text-body-small text-muted-foreground">Federal Rebate (STC)</h3><p className="text-heading-1 text-success mt-1">{formatCurrency(result.federalSTCValue)}</p></div>
+              <div className="bg-surface rounded-card border border-border shadow-card p-6 text-center"><h3 className="text-body-small text-muted-foreground">State & Battery</h3><p className="text-heading-1 text-info mt-1">{formatCurrency(result.stateSolar + result.batteryTotal)}</p></div>
             </div>
 
                         {/* Eligibility Notes */}

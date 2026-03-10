@@ -1,0 +1,17 @@
+@layer ds.theme {
+  :root {
+    color-scheme: dark;
+  }
+
+  html.theme-dark {
+    color-scheme: dark;
+  }
+
+  html.theme-light {
+    color-scheme: light;
+  }
+
+  html.theme-purple {
+    color-scheme: dark;
+  }
+}

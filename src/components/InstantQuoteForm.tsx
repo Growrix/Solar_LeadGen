@@ -1,24 +1,9 @@
-
+﻿
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
 import SavingsChart from './SavingsChart';
-import Button from '@/components/ui/button';
-import { 
-  Loader2, 
-  MapPin, 
-  DollarSign, 
-  ArrowRight, 
-  Home, 
-  Zap, 
-  Calculator, 
-  CheckCircle2, 
-  AlertCircle, 
-  Battery, 
-  ArrowLeft, 
-  Building,
-  Info
-} from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Battery, Building, Button, Calculator, CheckCircle2, DollarSign, Home, Info, Input, Loader2, MapPin, Select, Zap } from '@/ds';
 
 const InfoTooltip = ({ text }: { text: string }) => (
     <span className="ml-1 inline-flex items-center" title={text}>
@@ -774,12 +759,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
               onClick={() => setQuoteType('residential')}
               className={`flex items-center space-x-3 p-4 rounded-2xl border transition-colors duration-200 ${
                   quoteType === 'residential'
-                  ? 'border-primary/50 bg-background shadow-neu-outset'
-                  : 'border-border bg-background shadow-neu-inset hover:shadow-neu-inset-sm'
+                  ? 'border-primary/50 bg-background shadow-card'
+                  : 'border-border bg-background shadow-inner hover:shadow-inner'
               }`}
               aria-pressed={quoteType === 'residential'}
           >
-              <div className={`p-2 rounded-xl transition-colors ${quoteType === 'residential' ? 'bg-background shadow-neu-inset text-primary' : 'bg-background shadow-neu-inset text-muted-foreground'}`}>
+              <div className={`p-2 rounded-xl transition-colors ${quoteType === 'residential' ? 'bg-background shadow-inner text-primary' : 'bg-background shadow-inner text-muted-foreground'}`}>
                   <Home className="h-5 w-5" />
               </div>
               <div className="text-left">
@@ -792,12 +777,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
               onClick={() => setQuoteType('commercial')}
               className={`flex items-center space-x-3 p-4 rounded-2xl border transition-colors duration-200 ${
                   quoteType === 'commercial'
-                  ? 'border-primary/50 bg-background shadow-neu-outset'
-                  : 'border-border bg-background shadow-neu-inset hover:shadow-neu-inset-sm'
+                  ? 'border-primary/50 bg-background shadow-card'
+                  : 'border-border bg-background shadow-inner hover:shadow-inner'
               }`}
               aria-pressed={quoteType === 'commercial'}
           >
-              <div className={`p-2 rounded-xl transition-colors ${quoteType === 'commercial' ? 'bg-background shadow-neu-inset text-primary' : 'bg-background shadow-neu-inset text-muted-foreground'}`}>
+              <div className={`p-2 rounded-xl transition-colors ${quoteType === 'commercial' ? 'bg-background shadow-inner text-primary' : 'bg-background shadow-inner text-muted-foreground'}`}>
                   <Building className="h-5 w-5" />
               </div>
               <div className="text-left">
@@ -814,8 +799,8 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
                   ${currentStep === step
                     ? 'theme-light:bg-black theme-light:text-foreground-secondary theme- theme- theme-purple:bg-accent theme-purple:text-accent-foreground'
-                    : 'bg-surface text-foreground shadow-neu-inset'}
-                  ${currentStep === step ? 'shadow-neu-outset' : ''}
+                    : 'bg-surface text-foreground shadow-inner'}
+                  ${currentStep === step ? 'shadow-card' : ''}
                 `}
               >
                 {step === 3 && quoteResult ? (
@@ -828,8 +813,8 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                 <div
                   className={`w-12 h-1 rounded-full transition-colors ${
                     currentStep > step
-                      ? 'bg-primary shadow-neu-inset-sm'
-                      : 'bg-background shadow-neu-inset'
+                      ? 'bg-primary shadow-inner'
+                      : 'bg-background shadow-inner'
                   }`}
                 ></div>
               )}
@@ -838,7 +823,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
         </div>
       </div>
 
-      <div className="theme-card p-4 sm:p-8 lg:p-12">
+      <div className="bg-surface rounded-card border border-border shadow-card p-4 sm:p-8 lg:p-12">
         {currentStep === 1 && (
           <div className="animate-fade-in" role="tabpanel" aria-labelledby="step-1" id="step-1-content">
             <h2 className="text-heading-2 text-foreground mb-6">Step 1: Your Property Details</h2>
@@ -890,13 +875,13 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     State *
                     <InfoTooltip text="Different states have varying solar rebates, feed-in tariffs, and weather conditions." />
                   </label>
-                  <select 
+                  <Select 
                     id="state"
                     name="state" 
                     value={formData.state} 
                     onChange={(e) => handleInputChange('state', e.target.value)} 
                     onBlur={handleBlur} 
-                    className={`form-select w-full ${errors.state ? 'border-destructive' : ''}`}
+                    className={`w-full ${errors.state ? 'border-destructive' : ''}`}
                     aria-required="true"
                     aria-describedby={errors.state ? 'state-error' : undefined}
                   >
@@ -909,7 +894,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     <option value="TAS">Tasmania</option>
                     <option value="ACT">Australian Capital Territory</option>
                     <option value="NT">Northern Territory</option>
-                  </select>
+                  </Select>
                   {errors.state && <p id="state-error" className="text-destructive text-caption mt-1" role="alert">{errors.state}</p>}
                 </div>
                 
@@ -918,12 +903,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     Electricity Retailer (Optional)
                     <InfoTooltip text="Knowing your retailer helps provide more accurate tariff estimates." />
                   </label>
-                  <select 
+                  <Select 
                     id="retailer"
                     name="retailer" 
                     value={formData.retailer} 
                     onChange={(e) => handleInputChange('retailer', e.target.value)} 
-                    className="form-select w-full"
+                    className="w-full"
                   >
                     <option value="">Select retailer (optional)</option>
                     <option value="origin">Origin Energy</option>
@@ -934,7 +919,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     <option value="ergon">Ergon Energy (QLD)</option>
                     <option value="synergy">Synergy (WA)</option>
                     <option value="other">Other</option>
-                  </select>
+                  </Select>
                 </div>
                 
                 <div className="md:col-span-2">
@@ -962,7 +947,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       <label htmlFor="existingSystemSize" className="block text-subtle text-label mb-2">
                         Existing System Size (kW) *
                       </label>
-                      <input 
+                      <Input 
                         id="existingSystemSize"
                         type="number" 
                         name="existingSystemSize" 
@@ -973,7 +958,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         step="0.5"
                         min="0.5"
                         max="100"
-                        className={`form-select w-full ${errors.existingSystemSize ? 'border-destructive' : ''}`}
+                        className={`w-full ${errors.existingSystemSize ? 'border-destructive' : ''}`}
                         aria-required={formData.hasExistingSystem}
                         aria-describedby={errors.existingSystemSize ? 'existing-size-error' : undefined}
                       />
@@ -1025,7 +1010,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         </div>
                       </div>
                       {electricityUsageType === 'monthly' && (
-                        <input 
+                        <Input 
                           type="number" 
                           name="electricityValue" 
                           value={electricityValue} 
@@ -1034,7 +1019,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           placeholder="e.g., 800" 
                           min="50"
                           max="5000"
-                          className={`form-select w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
+                          className={`w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
                           aria-describedby="monthly-kwh-help"
                         />
                       )}
@@ -1060,7 +1045,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         </div>
                       </div>
                       {electricityUsageType === 'quarterly' && (
-                        <input 
+                        <Input 
                           type="number" 
                           name="electricityValue" 
                           value={electricityValue} 
@@ -1069,7 +1054,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           placeholder="e.g., 600" 
                           min="150"
                           max="6000"
-                          className={`form-select w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
+                          className={`w-full mt-3 ${errors.electricityValue ? 'border-destructive' : ''}`}
                           aria-describedby="quarterly-bill-help"
                         />
                       )}
@@ -1103,7 +1088,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     Override System Size (Optional)
                     <InfoTooltip text="Specify a custom system size if you have specific requirements or roof limitations." />
                   </label>
-                  <input 
+                  <Input 
                     id="systemSizeOverride"
                     type="number" 
                     name="systemSizeOverride" 
@@ -1114,7 +1099,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     step="0.1"
                     min="1"
                     max={quoteType === 'residential' ? '30' : '100'}
-                    className={`form-select w-full ${errors.systemSizeOverride ? 'border-destructive' : ''}`}
+                    className={`w-full ${errors.systemSizeOverride ? 'border-destructive' : ''}`}
                     aria-describedby={errors.systemSizeOverride ? 'system-override-error' : 'system-override-help'}
                   />
                   {errors.systemSizeOverride && <p id="system-override-error" className="text-destructive text-caption mt-1" role="alert">{errors.systemSizeOverride}</p>}
@@ -1150,8 +1135,32 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
               {/* Commercial Specific Inputs */}
               {quoteType === 'commercial' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
-                    <div><label className="block text-subtle text-label mb-2">Peak Demand (kW)</label><input type="number" name="peakDemand" value={formData.peakDemand} onChange={(e) => handleInputChange('peakDemand', e.target.value)} onBlur={handleBlur} placeholder="e.g. 50" className={`form-select w-full ${errors.peakDemand ? 'border-destructive' : ''}`}/>{errors.peakDemand && <p className="text-destructive text-caption mt-1">{errors.peakDemand}</p>}</div>
-                    <div><label className="block text-subtle text-label mb-2">Project Priority</label><select name="projectPriority" value={formData.projectPriority} onChange={(e) => handleInputChange('projectPriority', e.target.value)} className="form-select w-full"><option value="reduce_bills">Reduce Energy Bills</option><option value="reduce_demand">Reduce Demand Charges</option><option value="max_roi">Maximize ROI</option></select></div>
+                    <div>
+                      <label className="block text-subtle text-label mb-2">Peak Demand (kW)</label>
+                      <Input
+                        type="number"
+                        name="peakDemand"
+                        value={formData.peakDemand}
+                        onChange={(e) => handleInputChange('peakDemand', e.target.value)}
+                        onBlur={handleBlur}
+                        placeholder="e.g. 50"
+                        className={`w-full ${errors.peakDemand ? 'border-destructive' : ''}`}
+                      />
+                      {errors.peakDemand && <p className="text-destructive text-caption mt-1">{errors.peakDemand}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-subtle text-label mb-2">Project Priority</label>
+                      <Select
+                        name="projectPriority"
+                        value={formData.projectPriority}
+                        onChange={(e) => handleInputChange('projectPriority', e.target.value)}
+                        className="w-full"
+                      >
+                        <option value="reduce_bills">Reduce Energy Bills</option>
+                        <option value="reduce_demand">Reduce Demand Charges</option>
+                        <option value="max_roi">Maximize ROI</option>
+                      </Select>
+                    </div>
                     <div className="info-section md:col-span-2 flex items-center justify-between"><p className="text-foreground">Is it a three-phase power supply?</p><button onClick={() => handleInputChange('isThreePhase', !formData.isThreePhase)} className={`toggle-switch toggle-switch-md ${formData.isThreePhase ? 'toggle-switch-on' : 'toggle-switch-off'}`}><span className={`toggle-knob toggle-knob-md ${formData.isThreePhase ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/></button></div>
                 </div>
               )}
@@ -1168,12 +1177,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Panel Orientation *
                       <InfoTooltip text="North-facing panels generate the most electricity in Australia. Other orientations are still viable." />
                     </label>
-                    <select 
+                    <Select 
                       id="panelOrientation"
                       name="panelOrientation" 
                       value={formData.panelOrientation} 
                       onChange={(e) => handleInputChange('panelOrientation', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                       aria-describedby="orientation-help"
                     >
                       <option value="north">🧭 North (Best - 100%)</option>
@@ -1184,7 +1193,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       <option value="southeast">🧭 Southeast (82%)</option>
                       <option value="southwest">🧭 Southwest (82%)</option>
                       <option value="south">🧭 South (68%)</option>
-                    </select>
+                    </Select>
                     <p id="orientation-help" className="text-caption text-subtle mt-1">Percentages show relative performance vs. north-facing</p>
                   </div>
                   
@@ -1193,18 +1202,18 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Roof Tilt *
                       <InfoTooltip text="Optimal tilt is usually 20-35° in Australia. Flat roofs can use tilt frames." />
                     </label>
-                    <select 
+                    <Select 
                       id="roofTilt"
                       name="roofTilt" 
                       value={formData.roofTilt} 
                       onChange={(e) => handleInputChange('roofTilt', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="flat">📐 Flat (0-10° - 92%)</option>
                       <option value="low">📐 Low Pitch (10-20° - 96%)</option>
                       <option value="optimal">📐 Optimal (20-35° - 100%)</option>
                       <option value="steep">📐 Steep (35°+ - 94%)</option>
-                    </select>
+                    </Select>
                   </div>
                   
                   <div>
@@ -1212,19 +1221,19 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Shading Level *
                       <InfoTooltip text="Even partial shading can significantly impact solar performance. Consider power optimizers for shaded areas." />
                     </label>
-                    <select 
+                    <Select 
                       id="shadingLevel"
                       name="shadingLevel" 
                       value={formData.shadingLevel} 
                       onChange={(e) => handleInputChange('shadingLevel', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="none">☀️ No Shade (100%)</option>
                       <option value="minimal">🌤️ Minimal Shade (&lt;10% - 95%)</option>
                       <option value="partial">⛅ Partial Shade (10-25% - 85%)</option>
                       <option value="moderate">🌥️ Moderate Shade (25-50% - 70%)</option>
                       <option value="heavy">☁️ Heavy Shade (50%+ - 50%)</option>
-                    </select>
+                    </Select>
                   </div>
                   
                   <div>
@@ -1232,13 +1241,13 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Roof Material *
                       <InfoTooltip text="Different roof materials affect installation cost and method. Tile roofs typically cost more to install." />
                     </label>
-                    <select 
+                    <Select 
                       id="roofType"
                       name="roofType" 
                       value={formData.roofType} 
                       onChange={(e) => handleInputChange('roofType', e.target.value)} 
                       onBlur={handleBlur} 
-                      className={`form-select w-full ${errors.roofType ? 'border-destructive' : ''}`}
+                      className={`w-full ${errors.roofType ? 'border-destructive' : ''}`}
                       aria-required="true"
                       aria-describedby={errors.roofType ? 'roof-type-error' : undefined}
                     >
@@ -1248,7 +1257,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       <option value="flat">🏢 Flat Roof (Membrane)</option>
                       <option value="slate">🏛️ Slate</option>
                       <option value="other">❓ Other</option>
-                    </select>
+                    </Select>
                     {errors.roofType && <p id="roof-type-error" className="text-destructive text-caption mt-1" role="alert">{errors.roofType}</p>}
                   </div>
                   
@@ -1258,12 +1267,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Panel Brand Preference (Optional)
                       <InfoTooltip text="Premium brands like Sunpower and LG offer higher efficiency but cost more. Good value brands include Trina and JA Solar." />
                     </label>
-                    <select 
+                    <Select 
                       id="panelBrand"
                       name="panelBrand" 
                       value={formData.panelBrand} 
                       onChange={(e) => handleInputChange('panelBrand', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="">No preference</option>
                       <option value="tier1">🥇 Tier 1 Brands (Premium)</option>
@@ -1273,7 +1282,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       <option value="ja-solar">🌟 JA Solar (Value)</option>
                       <option value="jinko">💫 Jinko Solar (Value)</option>
                       <option value="canadian">🍁 Canadian Solar (Value)</option>
-                    </select>
+                    </Select>
                   </div>
                   
                   {quoteType === 'residential' && (
@@ -1282,18 +1291,18 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         Energy Usage Pattern *
                         <InfoTooltip text="When you use most electricity affects self-consumption and battery sizing recommendations." />
                       </label>
-                      <select 
+                      <Select 
                         id="usagePattern"
                         name="usagePattern" 
                         value={formData.usagePattern} 
                         onChange={(e) => handleInputChange('usagePattern', e.target.value)} 
-                        className="form-select w-full"
+                        className="w-full"
                       >
                         <option value="spread">⏰ Evenly Spread (Day & Night)</option>
                         <option value="daytime">🌅 Mainly Daytime (Business Hours)</option>
                         <option value="evening">🌃 Mainly Evenings/Weekends</option>
                         <option value="night">🌙 Mainly Overnight (Shift Workers)</option>
-                      </select>
+                      </Select>
                     </div>
                   )}
                 </div>
@@ -1350,13 +1359,13 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Budget Range *
                       <InfoTooltip text="This helps us recommend appropriate system sizes and component quality levels." />
                     </label>
-                    <select 
+                    <Select 
                       id="budgetRange"
                       name="budgetRange" 
                       value={formData.budgetRange} 
                       onChange={(e) => handleInputChange('budgetRange', e.target.value)} 
                       onBlur={handleBlur} 
-                      className={`form-select w-full ${errors.budgetRange ? 'border-destructive' : ''}`}
+                      className={`w-full ${errors.budgetRange ? 'border-destructive' : ''}`}
                       aria-required="true"
                       aria-describedby={errors.budgetRange ? 'budget-error' : undefined}
                     >
@@ -1365,7 +1374,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                       <option value="no-limit">💎 Budget not a concern</option>
-                    </select>
+                    </Select>
                     {errors.budgetRange && <p id="budget-error" className="text-destructive text-caption mt-1" role="alert">{errors.budgetRange}</p>}
                   </div>
                   
@@ -1374,19 +1383,19 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Tariff Plan (Optional)
                       <InfoTooltip text="Your tariff type affects savings calculations. Time-of-use tariffs can benefit from battery storage." />
                     </label>
-                    <select 
+                    <Select 
                       id="tariffPlan"
                       name="tariffPlan" 
                       value={formData.tariffPlan} 
                       onChange={(e) => handleInputChange('tariffPlan', e.target.value)} 
-                      className="form-select w-full"
+                      className="w-full"
                     >
                       <option value="">Select tariff type</option>
                       <option value="flat">📊 Flat Rate (Single rate all day)</option>
                       <option value="tou">⏰ Time of Use (Peak/Off-peak)</option>
                       <option value="demand">⚡ Demand Tariff (Peak demand charges)</option>
                       <option value="controlled">🔌 Controlled Load (Hot water)</option>
-                    </select>
+                    </Select>
                   </div>
                   
                   <div>
@@ -1394,7 +1403,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Your Electricity Rate (c/kWh)
                       <InfoTooltip text="Found on your electricity bill. Typical rates: NSW 28-35c, VIC 25-30c, QLD 25-30c, SA 35-45c." />
                     </label>
-                    <input 
+                    <Input 
                       id="customRetailRate"
                       type="number" 
                       name="customRetailRate" 
@@ -1404,7 +1413,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       min="15"
                       max="60"
                       step="0.1"
-                      className="form-select w-full"
+                      className="w-full"
                       aria-describedby="retail-rate-help"
                     />
                     <p id="retail-rate-help" className="text-caption text-subtle mt-1">Leave blank to use state average</p>
@@ -1415,7 +1424,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       Feed-in Tariff (c/kWh)
                       <InfoTooltip text="What you're paid for excess solar exported to the grid. Varies by retailer and state." />
                     </label>
-                    <input 
+                    <Input 
                       id="customFeedInRate"
                       type="number" 
                       name="customFeedInRate" 
@@ -1425,7 +1434,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       min="0"
                       max="25"
                       step="0.1"
-                      className="form-select w-full"
+                      className="w-full"
                       aria-describedby="feed-in-help"
                     />
                     <p id="feed-in-help" className="text-caption text-subtle mt-1">Typical range: 6-12c/kWh</p>
@@ -1479,12 +1488,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           Battery Capacity *
                           <InfoTooltip text="Battery capacity determines how much energy you can store. Larger batteries provide more backup power and energy independence." />
                         </label>
-                        <select 
+                        <Select 
                           id="batteryCapacity"
                           name="batteryCapacity" 
                           value={formData.batteryCapacity} 
                           onChange={(e) => handleInputChange('batteryCapacity', e.target.value)} 
-                          className="form-select w-full"
+                          className="w-full"
                         >
                           <option value="">Select capacity</option>
                           <option value="5">🔋 5 kWh (Small - Emergency backup)</option>
@@ -1494,13 +1503,13 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           <option value="16">🔋 16 kWh (Large)</option>
                           <option value="20">🔋 20 kWh (Extra Large)</option>
                           <option value="custom">⚙️ Custom Size</option>
-                        </select>
+                        </Select>
                         
                         {formData.batteryCapacity === 'custom' && (
-                          <input 
+                          <Input 
                             type="number" 
                             placeholder="Enter capacity in kWh" 
-                            className={`form-select w-full mt-2`}
+                            className="w-full mt-2"
                             min="3"
                             max="100"
                             step="0.5"
@@ -1514,12 +1523,12 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           Battery Brand Preference
                           <InfoTooltip text="Different brands offer varying warranties, features, and pricing. Tesla and LG are premium options." />
                         </label>
-                        <select 
+                        <Select 
                           id="batteryBrand"
                           name="batteryBrand" 
                           value={formData.batteryBrand} 
                           onChange={(e) => handleInputChange('batteryBrand', e.target.value)} 
-                          className="form-select w-full"
+                          className="w-full"
                         >
                           <option value="">No brand preference</option>
                           <option value="tesla">🚗 Tesla Powerwall (Premium)</option>
@@ -1530,7 +1539,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           <option value="fronius">☀️ Fronius Solar Battery</option>
                           <option value="sungrow">🌟 Sungrow SBR</option>
                           <option value="pylontech">⚡ Pylontech (Value)</option>
-                        </select>
+                        </Select>
                       </div>
                       
                       <div>
@@ -1538,18 +1547,18 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           Backup Power Priority
                           <InfoTooltip text="What's most important to keep running during outages? This affects battery and inverter specifications." />
                         </label>
-                        <select 
+                        <Select 
                           id="backupCritical"
                           name="backupCritical" 
                           value={formData.backupCritical} 
                           onChange={(e) => handleInputChange('backupCritical', e.target.value)} 
-                          className="form-select w-full"
+                          className="w-full"
                         >
                           <option value="essential">🏠 Essential circuits only (lights, fridge)</option>
                           <option value="partial">🔌 Partial home backup</option>
                           <option value="whole">🏡 Whole home backup</option>
                           <option value="none">❌ No backup requirements</option>
-                        </select>
+                        </Select>
                       </div>
                       
                       <div>
@@ -1557,23 +1566,23 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                           Primary Battery Purpose
                           <InfoTooltip text="Different purposes optimize battery sizing and configuration differently." />
                         </label>
-                        <select 
+                        <Select 
                           id="batteryUsage"
                           name="batteryUsage" 
                           value={formData.batteryUsage} 
                           onChange={(e) => handleInputChange('batteryUsage', e.target.value)} 
-                          className="form-select w-full"
+                          className="w-full"
                         >
                           <option value="self-consumption">🏠 Maximize self-consumption</option>
                           <option value="backup">⚡ Emergency backup power</option>
                           <option value="arbitrage">📈 Peak shaving / Time shifting</option>
                           <option value="independence">🌍 Energy independence</option>
-                        </select>
+                        </Select>
                       </div>
                     </div>
                     
                     {/* Battery Features */}
-                    <div className="p-4 bg-background shadow-neu-inset rounded-2xl border border-border">
+                    <div className="p-4 bg-background shadow-inner rounded-2xl border border-border">
                       <h4 className="text-label text-foreground mb-3">
                         🔧 Advanced Battery Features
                       </h4>
@@ -1644,7 +1653,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                 )}
               </fieldset>
             </div>
-            {errors.general && (<div className="mt-6 bg-destructive/10 shadow-neu-inset border border-destructive/30 rounded-2xl p-4 flex items-center space-x-3"><AlertCircle /><p className="text-destructive text-body-small">{errors.general}</p></div>)}
+            {errors.general && (<div className="mt-6 bg-destructive/10 shadow-inner border border-destructive/30 rounded-2xl p-4 flex items-center space-x-3"><AlertCircle /><p className="text-destructive text-body-small">{errors.general}</p></div>)}
             {/* Migrated: buttons → shadcn Button - only default and secondary variants */}
             <div className="flex justify-between mt-8">
               <Button onClick={handlePrevStep} variant="secondary">

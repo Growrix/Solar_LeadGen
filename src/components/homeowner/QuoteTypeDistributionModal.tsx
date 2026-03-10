@@ -1,6 +1,6 @@
 ﻿
 'use client';
-import Button from '@/components/ui/button';
+import { Button, Modal } from '@/ds';
 
 import { useState, useEffect } from 'react';
 
@@ -113,8 +113,12 @@ export default function QuoteTypeDistributionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface shadow-neu-outset rounded-2xl border border-border max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      className="max-w-2xl w-full p-0 overflow-hidden shadow-card"
+    >
+      <div className="max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
           <div>
@@ -148,7 +152,7 @@ export default function QuoteTypeDistributionModal({
           </div>
 
           {/* Call or Site Visit Quotes Section */}
-          <div className="theme-card p-6 space-y-4">
+          <div className="bg-surface rounded-card border border-border shadow-card p-6 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
@@ -170,10 +174,10 @@ export default function QuoteTypeDistributionModal({
                   <button
                     key={num}
                     onClick={() => handleCallVisitChange(num)}
-                    className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
+                    className={`w-12 h-12 rounded-lg font-medium transition-colors ${
                       callVisitCount === num
-                        ? 'bg-white text-foreground-inverted shadow-md scale-105'
-                        : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                        : 'bg-surface shadow-inner text-foreground hover:shadow-card'
                     }`}
                   >
                     {num}
@@ -184,7 +188,7 @@ export default function QuoteTypeDistributionModal({
           </div>
 
           {/* Written Quotes Section */}
-          <div className="theme-card p-6 space-y-4">
+          <div className="bg-surface rounded-card border border-border shadow-card p-6 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
@@ -206,10 +210,10 @@ export default function QuoteTypeDistributionModal({
                   <button
                     key={num}
                     onClick={() => handleWrittenQuoteChange(num)}
-                    className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
+                    className={`w-12 h-12 rounded-lg font-medium transition-colors ${
                       writtenQuoteCount === num
-                        ? 'bg-white text-foreground-inverted shadow-md scale-105'
-                        : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
+                        : 'bg-surface shadow-inner text-foreground hover:shadow-card'
                     }`}
                   >
                     {num}
@@ -220,7 +224,7 @@ export default function QuoteTypeDistributionModal({
           </div>
 
           {/* Phase 13S.2: Competitive Bidding Section (Dynamic Limit) */}
-          <div className="theme-card p-6 space-y-4 border-2 border-warning">
+          <div className="bg-surface rounded-card shadow-card p-6 space-y-4 border-2 border-warning">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-heading-4 text-foreground flex items-center gap-2">
@@ -255,12 +259,12 @@ export default function QuoteTypeDistributionModal({
                     key={num}
                     onClick={() => handleBiddingChange(num)}
                     disabled={remainingBiddingQuota === 0 && num > 0}
-                    className={`w-12 h-12 rounded-lg font-semibold transition-colors ${
+                    className={`w-12 h-12 rounded-lg font-medium transition-colors ${
                       biddingCount === num
-                        ? 'bg-white text-foreground-inverted shadow-md scale-105'
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105'
                         : remainingBiddingQuota === 0 && num > 0
                         ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
-                        : 'bg-surface shadow-neu-inset text-foreground hover:shadow-neu-outset'
+                        : 'bg-surface shadow-inner text-foreground hover:shadow-card'
                     }`}
                   >
                     {num}
@@ -337,6 +341,6 @@ export default function QuoteTypeDistributionModal({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

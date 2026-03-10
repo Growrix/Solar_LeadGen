@@ -20,7 +20,7 @@ import {
   MessageSquare,  // NEW_MESSAGE
   ClipboardCheck, // LEAD_ASSIGNED
   Info            // SYSTEM
-} from 'lucide-react';
+} from '@/ds';
 import { useNotifications } from '@/lib/hooks/usePusher';
 import { resolveRoute, validateRouteKey, RouteKey, RouteParams } from '@/lib/notifications/route-resolver';
 

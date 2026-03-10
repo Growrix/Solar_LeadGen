@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
+import { Button, Card, CardContent, Modal } from '@/ds';
 
 interface InstallerProfileModalProps {
   isOpen: boolean;
@@ -100,30 +100,22 @@ export default function InstallerProfileModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
-          onClick={onClose}
-        />
+    <Modal open={isOpen} onClose={onClose} ariaLabel="Installer Profile Preview" className="w-full max-w-4xl p-0 overflow-hidden">
+      <div className="w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="text-heading-3 text-foreground">
+            Installer Profile Preview
+          </h2>
+          <Button variant="ghost" onClick={onClose} className="p-2">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </Button>
+        </div>
 
-        {/* Modal */}
-        <div className="relative w-full max-w-4xl rounded-lg bg-surface shadow-neu-outset">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <h2 className="text-heading-3 text-foreground">
-              Installer Profile Preview
-            </h2>
-            <Button variant="ghost" onClick={onClose} className="p-2">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
-          </div>
-
-          {/* Body */}
-          <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+        {/* Body */}
+        <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
@@ -138,40 +130,41 @@ export default function InstallerProfileModal({
             ) : data ? (
               <div className="space-y-6">
                 {/* Account Information */}
-                <div className="rounded-lg bg-surface shadow-neu-inset p-5 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-heading-3 text-foreground">
-                        {data.verification?.companyName || data.installer.companyName || 'Company Name Not Available'}
-                      </h3>
-                      <p className="text-body-small text-muted-foreground mt-1">
-                        Account ID: {data.installer.id}
-                      </p>
+                <Card>
+                  <CardContent className="p-5 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-heading-3 text-foreground">
+                          {data.verification?.companyName || data.installer.companyName || 'Company Name Not Available'}
+                        </h3>
+                        <p className="text-body-small text-muted-foreground mt-1">
+                          Account ID: {data.installer.id}
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {data.installer.installerVerified && data.verification ? (
+                          <span className="inline-flex items-center px-3 py-1 rounded text-caption bg-success/20 text-success">
+                            ✓ Verified
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-3 py-1 rounded text-caption bg-warning/20 text-warning">
+                            ⚠️ Unverified
+                          </span>
+                        )}
+                        {data.verification && (
+                          <span className={`inline-flex items-center px-3 py-1 rounded text-caption ${
+                            data.verification.status === 'APPROVED' ? 'bg-success/20 text-success' :
+                            data.verification.status === 'PENDING' ? 'bg-warning/20 text-warning' :
+                            data.verification.status === 'REJECTED' ? 'bg-error/20 text-error' :
+                            'bg-info/20 text-info'
+                          }`}>
+                            {data.verification.status}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      {data.installer.installerVerified && data.verification ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded text-caption bg-success/20 text-success">
-                          ✓ Verified
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-3 py-1 rounded text-caption bg-warning/20 text-warning">
-                          ⚠️ Unverified
-                        </span>
-                      )}
-                      {data.verification && (
-                        <span className={`inline-flex items-center px-3 py-1 rounded text-caption ${
-                          data.verification.status === 'APPROVED' ? 'bg-success/20 text-success' :
-                          data.verification.status === 'PENDING' ? 'bg-warning/20 text-warning' :
-                          data.verification.status === 'REJECTED' ? 'bg-error/20 text-error' :
-                          'bg-info/20 text-info'
-                        }`}>
-                          {data.verification.status}
-                        </span>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-body-small">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-body-small">
                     <div>
                       <p className="text-muted-foreground">Email:</p>
                       <p className="text-foreground">{data.installer.email}</p>
@@ -198,13 +191,15 @@ export default function InstallerProfileModal({
                       <p className="text-foreground">{data.installer.name || 'Not set'}</p>
                     </div>
                   </div>
-                </div>
+                  </CardContent>
+                </Card>
 
                 {/* Verification Details */}
                 {data.verification && (
                   <>
                     {/* Company Information */}
-                    <div className="rounded-lg bg-surface shadow-neu-inset p-5 space-y-4">
+                    <Card>
+                      <CardContent className="p-5 space-y-4">
                       <h4 className="text-heading-4 text-foreground">Company Information</h4>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-body-small">
@@ -256,10 +251,12 @@ export default function InstallerProfileModal({
                           <p className="text-body-small text-foreground mt-1">{data.verification.companyDescription}</p>
                         </div>
                       )}
-                    </div>
+                      </CardContent>
+                    </Card>
 
                     {/* Services & Areas */}
-                    <div className="rounded-lg bg-surface shadow-neu-inset p-5 space-y-4">
+                    <Card>
+                      <CardContent className="p-5 space-y-4">
                       <h4 className="text-heading-4 text-foreground">Services & Coverage</h4>
                       
                       {data.verification.services.length > 0 && (
@@ -309,11 +306,13 @@ export default function InstallerProfileModal({
                           </div>
                         </div>
                       )}
-                    </div>
+                      </CardContent>
+                    </Card>
 
                     {/* Documents */}
                     {(data.documentUrls.licenseDocUrl || data.documentUrls.abnDocUrl || data.documentUrls.logoUrl) && (
-                      <div className="rounded-lg bg-surface shadow-neu-inset p-5 space-y-4">
+                      <Card>
+                        <CardContent className="p-5 space-y-4">
                         <h4 className="text-heading-4 text-foreground">Documents</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                           {data.documentUrls.licenseDocUrl && (
@@ -354,7 +353,8 @@ export default function InstallerProfileModal({
                             </div>
                           )}
                         </div>
-                      </div>
+                        </CardContent>
+                      </Card>
                     )}
 
                     {/* Admin Notes */}
@@ -367,7 +367,8 @@ export default function InstallerProfileModal({
 
                     {/* Verification Logs */}
                     {data.logs.length > 0 && (
-                      <div className="rounded-lg bg-surface shadow-neu-inset p-5 space-y-4">
+                      <Card>
+                        <CardContent className="p-5 space-y-4">
                         <h4 className="text-heading-4 text-foreground">Verification History</h4>
                         <div className="space-y-3">
                           {data.logs.map((log) => (
@@ -404,7 +405,8 @@ export default function InstallerProfileModal({
                             </div>
                           ))}
                         </div>
-                      </div>
+                        </CardContent>
+                      </Card>
                     )}
                   </>
                 )}
@@ -432,8 +434,7 @@ export default function InstallerProfileModal({
               </Button>
             </div>
           </div>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

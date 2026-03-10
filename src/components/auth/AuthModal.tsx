@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useRef } from 'react';
 import { XIcon } from '@/components/icons/auth';
@@ -110,7 +110,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
       <div
         ref={modalRef}
-        className={`theme-card relative w-full ${maxWidthClasses[maxWidth]} p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up ${className}`}
+        className={`bg-surface rounded-card border border-border shadow-card relative w-full ${maxWidthClasses[maxWidth]} p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}

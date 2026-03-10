@@ -1,8 +1,7 @@
-'use client'
+﻿'use client'
 
 import React from 'react';
-import { FileCheck, Upload } from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Button, FileCheck, Input, Upload } from '@/ds';
 
 interface ComplianceDocsProps {
   docs: ComplianceDoc[];
@@ -61,7 +60,7 @@ const ComplianceDocs: React.FC<ComplianceDocsProps> = ({
   const status = getMandatoryStatus();
 
   return (
-    <div className="bg-background rounded-2xl shadow-neu-inset p-6 space-y-6">
+    <div className="bg-background rounded-2xl shadow-inner p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-heading-5 text-foreground flex items-center gap-2">
           <FileCheck className="h-5 w-5 text-primary" />
@@ -99,12 +98,12 @@ const ComplianceDocs: React.FC<ComplianceDocsProps> = ({
             <label className="text-label text-foreground block mb-2">
               CEC Accreditation #
             </label>
-            <input
+            <Input
               type="text"
               value={cecAccreditation || ''}
               onChange={(e) => onUpdate({ cecAccreditation: e.target.value })}
               placeholder="e.g. A1234567"
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
             />
           </div>
 
@@ -112,12 +111,12 @@ const ComplianceDocs: React.FC<ComplianceDocsProps> = ({
             <label className="text-label text-foreground block mb-2">
               Electrical Licence #
             </label>
-            <input
+            <Input
               type="text"
               value={electricalLicence || ''}
               onChange={(e) => onUpdate({ electricalLicence: e.target.value })}
               placeholder="e.g. VIC123456"
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
             />
           </div>
 
@@ -125,12 +124,12 @@ const ComplianceDocs: React.FC<ComplianceDocsProps> = ({
             <label className="text-label text-foreground block mb-2">
               Insurance Policy #
             </label>
-            <input
+            <Input
               type="text"
               value={insurance || ''}
               onChange={(e) => onUpdate({ insurance: e.target.value })}
               placeholder="e.g. INS-98765"
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
             />
           </div>
         </div>
@@ -213,7 +212,7 @@ const ComplianceDocs: React.FC<ComplianceDocsProps> = ({
                     <span className="text-caption text-muted-foreground">
                       {new Date(doc.uploadedAt).toLocaleDateString()}
                     </span>
-                    <Button variant="minimal" className="h-8 w-8 p-0">
+                    <Button variant="icon" className="h-8 w-8 p-0">
                       <Upload className="h-4 w-4" />
                     </Button>
                   </div>

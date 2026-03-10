@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 import VerificationModal from '@/components/installer/VerificationModal';
 import ContactVerificationModal from '@/components/homeowner/ContactVerificationModal';
 import OTPVerificationModal from '@/components/OTPVerificationModal';
@@ -461,7 +461,7 @@ const InstallerProfilePage: React.FC = () => {
     return (
       <>
         <div className="space-y-6">
-          <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 animate-pulse">
+          <div className="bg-surface border border-border rounded-xl shadow-card p-6 animate-pulse">
             <div className="h-8 bg-muted/20 rounded w-1/3 mb-4"></div>
             <div className="h-4 bg-muted/20 rounded w-2/3"></div>
           </div>
@@ -555,7 +555,7 @@ const InstallerProfilePage: React.FC = () => {
       )}
       
       {showSuccessToast && (
-        <div className="fixed top-4 right-4 bg-success text-foreground px-4 py-3 rounded-lg shadow-neu-outset z-50 flex items-center gap-2">
+        <div className="fixed top-4 right-4 bg-success text-foreground px-4 py-3 rounded-lg shadow-card z-50 flex items-center gap-2">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
@@ -564,7 +564,7 @@ const InstallerProfilePage: React.FC = () => {
       )}
       
       {/* F8: Operational Status Toggle - Always show for demo */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-4 flex items-center justify-between">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`w-3 h-3 rounded-full ${operationalStatus === 'ACTIVE' ? 'bg-success' : operationalStatus === 'PAUSED' ? 'bg-warning' : 'bg-error'}`} />
           <div>
@@ -606,7 +606,7 @@ const InstallerProfilePage: React.FC = () => {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           {/* Avatar */}
-          <div className="w-20 h-20 rounded-full bg-surface shadow-neu-inset flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-surface shadow-inner flex items-center justify-center">
             {user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt={user.name || 'User'} className="w-full h-full rounded-full object-cover" />
@@ -658,7 +658,7 @@ const InstallerProfilePage: React.FC = () => {
 
       {/* Contact Verification */}
       {!user.phoneVerified && (
-        <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+        <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h2 className="text-heading-3 text-foreground">Contact Verification</h2>
           </div>
@@ -681,7 +681,7 @@ const InstallerProfilePage: React.FC = () => {
       )}
 
       {/* Company Details */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Company Details</h2>
         </div>
@@ -704,7 +704,7 @@ const InstallerProfilePage: React.FC = () => {
                   onChange={(e) => setEditedPhone(e.target.value)}
                   placeholder="+61 4XX XXX XXX"
                   disabled={isSaving}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
                 />
                 {phoneChanged && !phoneVerificationComplete && (
                   <p className="text-body-small text-warning mt-1 flex items-center gap-1">
@@ -745,7 +745,7 @@ const InstallerProfilePage: React.FC = () => {
                 type="text"
                 value={editableVerification?.companyName || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, companyName: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             ) : (
               <p className="text-body text-foreground">{verification?.companyName || 'Not provided'}</p>
@@ -760,7 +760,7 @@ const InstallerProfilePage: React.FC = () => {
                 type="text"
                 value={editableVerification?.representativeName || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, representativeName: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             ) : (
               <p className="text-body text-foreground">{verification?.representativeName || 'Not provided'}</p>
@@ -775,7 +775,7 @@ const InstallerProfilePage: React.FC = () => {
                 type="text"
                 value={editableVerification?.designation || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, designation: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             ) : (
               <p className="text-body text-foreground">{verification?.designation || 'Not provided'}</p>
@@ -789,7 +789,7 @@ const InstallerProfilePage: React.FC = () => {
                 rows={3}
                 value={editableVerification?.address || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, address: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Street address, city, state, postcode"
               />
             ) : (
@@ -804,7 +804,7 @@ const InstallerProfilePage: React.FC = () => {
                 type="text"
                 value={editableVerification?.abnOrLicense || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, abnOrLicense: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             ) : (
               <p className="text-body text-foreground">{verification?.abnOrLicense || 'Not provided'}</p>
@@ -821,7 +821,7 @@ const InstallerProfilePage: React.FC = () => {
                   const val = e.target.value === '' ? undefined : parseInt(e.target.value);
                   setEditableVerification((prev: any) => ({ ...prev!, establishedYear: val }));
                 }}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 min="1900"
                 max={new Date().getFullYear()}
               />
@@ -840,7 +840,7 @@ const InstallerProfilePage: React.FC = () => {
                   const val = e.target.value === '' ? undefined : parseInt(e.target.value);
                   setEditableVerification((prev: any) => ({ ...prev!, employeeCount: val }));
                 }}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 min="1"
               />
             ) : (
@@ -855,7 +855,7 @@ const InstallerProfilePage: React.FC = () => {
                 type="url"
                 value={editableVerification?.website || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, website: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="https://www.example.com"
               />
             ) : (
@@ -869,7 +869,7 @@ const InstallerProfilePage: React.FC = () => {
               <textarea
                 value={editableVerification?.companyDescription || ''}
                 onChange={(e) => setEditableVerification((prev: any) => ({ ...prev!, companyDescription: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 rows={4}
                 placeholder="Tell us about your company..."
               />
@@ -881,7 +881,7 @@ const InstallerProfilePage: React.FC = () => {
       </div>
 
       {/* F6: Social Media Links - Always show */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Social Media</h2>
         </div>
@@ -897,7 +897,7 @@ const InstallerProfilePage: React.FC = () => {
                     ...prev!, 
                     socialLinks: { ...prev!.socialLinks, facebook: e.target.value } 
                   }))}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="https://facebook.com/yourpage"
                 />
               ) : (
@@ -915,7 +915,7 @@ const InstallerProfilePage: React.FC = () => {
                     ...prev!, 
                     socialLinks: { ...prev!.socialLinks, instagram: e.target.value } 
                   }))}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="https://instagram.com/yourpage"
                 />
               ) : (
@@ -933,7 +933,7 @@ const InstallerProfilePage: React.FC = () => {
                     ...prev!, 
                     socialLinks: { ...prev!.socialLinks, linkedin: e.target.value } 
                   }))}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="https://linkedin.com/company/yourcompany"
                 />
               ) : (
@@ -951,7 +951,7 @@ const InstallerProfilePage: React.FC = () => {
                     ...prev!, 
                     socialLinks: { ...prev!.socialLinks, youtube: e.target.value } 
                   }))}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="https://youtube.com/@yourchannel"
                 />
               ) : (
@@ -962,7 +962,7 @@ const InstallerProfilePage: React.FC = () => {
       </div>
 
       {/* Services & Areas */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Services & Coverage</h2>
         </div>
@@ -1076,7 +1076,7 @@ const InstallerProfilePage: React.FC = () => {
                     const uniqueCodes = Array.from(new Set(codes));
                     setEditableVerification((prev: any) => ({ ...prev!, postcodes: uniqueCodes }));
                   }}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="2000, 2001, 2010"
                 />
                 <p className="text-caption text-muted-foreground">
@@ -1094,7 +1094,7 @@ const InstallerProfilePage: React.FC = () => {
       </div>
 
       {/* F6: Documents Upload Section - Always show */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Documents & Logo</h2>
           <p className="text-body-small text-muted-foreground mt-1">Upload or update your business documents</p>
@@ -1115,7 +1115,7 @@ const InstallerProfilePage: React.FC = () => {
                       const generatedKey = `license-${Date.now()}-${file.name}`;
                       setEditableVerification((prev: any) => ({ ...prev!, licenseDocKey: generatedKey }));
                     }}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <p className="text-caption text-muted-foreground">Accepted: PDF/JPG/PNG</p>
                   {(editableVerification?.licenseDocKey || verification?.licenseDocKey) && (
@@ -1123,7 +1123,7 @@ const InstallerProfilePage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-border rounded-xl p-4 text-center bg-surface shadow-neu-inset">
+                <div className="border-2 border-dashed border-border rounded-xl p-4 text-center bg-surface shadow-inner">
                   <svg className="mx-auto h-10 w-10 text-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
@@ -1148,7 +1148,7 @@ const InstallerProfilePage: React.FC = () => {
                       const generatedKey = `abn-${Date.now()}-${file.name}`;
                       setEditableVerification((prev: any) => ({ ...prev!, abnDocKey: generatedKey }));
                     }}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <p className="text-caption text-muted-foreground">Accepted: PDF/JPG/PNG</p>
                   {(editableVerification?.abnDocKey || verification?.abnDocKey) && (
@@ -1156,7 +1156,7 @@ const InstallerProfilePage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-border rounded-xl p-4 text-center bg-surface shadow-neu-inset">
+                <div className="border-2 border-dashed border-border rounded-xl p-4 text-center bg-surface shadow-inner">
                   <svg className="mx-auto h-10 w-10 text-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
@@ -1181,7 +1181,7 @@ const InstallerProfilePage: React.FC = () => {
                       const generatedKey = `logo-${Date.now()}-${file.name}`;
                       setEditableVerification((prev: any) => ({ ...prev!, logoKey: generatedKey }));
                     }}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <p className="text-caption text-muted-foreground">Accepted: JPG/PNG</p>
                   {(editableVerification?.logoKey || verification?.logoKey) && (
@@ -1189,7 +1189,7 @@ const InstallerProfilePage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-border rounded-xl p-4 text-center bg-surface shadow-neu-inset">
+                <div className="border-2 border-dashed border-border rounded-xl p-4 text-center bg-surface shadow-inner">
                   <svg className="mx-auto h-10 w-10 text-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -1204,7 +1204,7 @@ const InstallerProfilePage: React.FC = () => {
       </div>
 
       {/* F7: Change Password Section */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <div>
             <h2 className="text-heading-3 text-foreground">Security</h2>
@@ -1223,7 +1223,7 @@ const InstallerProfilePage: React.FC = () => {
                 type={showCurrentPassword ? "text" : "password"}
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 pr-12 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 pr-12 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Enter current password"
               />
               <button
@@ -1261,7 +1261,7 @@ const InstallerProfilePage: React.FC = () => {
                 type={showNewPassword ? "text" : "password"}
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 pr-12 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 pr-12 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Enter new password"
               />
               <button
@@ -1307,7 +1307,7 @@ const InstallerProfilePage: React.FC = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 value={passwordData.confirmPassword}
                 onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 pr-12 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 pr-12 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Confirm new password"
               />
               <button
@@ -1345,7 +1345,7 @@ const InstallerProfilePage: React.FC = () => {
       </div>
 
       {/* Notification Preferences */}
-      <div className="bg-surface border border-border rounded-xl shadow-neu-outset p-6 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-card p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-3">
           <h2 className="text-heading-3 text-foreground">Notification Preferences</h2>
         </div>
@@ -1435,7 +1435,7 @@ const InstallerProfilePage: React.FC = () => {
 
       {/* Sticky Action Bar */}
       {isEditingProfile && (
-        <div className="sticky bottom-0 bg-surface border-t border-border p-4 flex items-center justify-end gap-4 shadow-neu-outset z-10">
+        <div className="sticky bottom-0 bg-surface border-t border-border p-4 flex items-center justify-end gap-4 shadow-card z-10">
           <Button 
             variant="secondary" 
             onClick={() => {

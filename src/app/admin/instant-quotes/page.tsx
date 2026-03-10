@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // GUEST INSTANT QUOTES ADMIN PAGE
 // ============================================================================
 // This page displays all guest instant quote submissions with real-time metrics,
@@ -10,7 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import SavingsChart from '@/components/SavingsChart';
-import Button from '@/components/ui/button';
+import { Button, Input, Select } from '@/ds';
 
 // ============================================================================
 // ICON COMPONENTS
@@ -369,7 +369,7 @@ export default function GuestInstantQuotesPage() {
         {/* Metrics Dashboard */}
         {metrics && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-surface shadow-neu-outset rounded-xl p-6 border border-border">
+            <div className="bg-surface shadow-card rounded-xl p-6 border border-border">
               <div className="text-muted-foreground text-body-small mb-1">Total Quotes</div>
               <div className="text-heading-1 text-foreground">{metrics.totalQuotes || 0}</div>
               <div className="text-caption text-muted-foreground mt-1">
@@ -377,21 +377,21 @@ export default function GuestInstantQuotesPage() {
               </div>
             </div>
             
-            <div className="bg-surface shadow-neu-outset rounded-xl p-6 border border-border">
+            <div className="bg-surface shadow-card rounded-xl p-6 border border-border">
               <div className="text-muted-foreground text-body-small mb-1">Avg System Size</div>
               <div className="text-heading-1 text-foreground">
                 {metrics.avgSystemSize ? metrics.avgSystemSize.toFixed(1) : '0.0'} <span className="text-heading-4">kW</span>
               </div>
             </div>
             
-            <div className="bg-surface shadow-neu-outset rounded-xl p-6 border border-border">
+            <div className="bg-surface shadow-card rounded-xl p-6 border border-border">
               <div className="text-muted-foreground text-body-small mb-1">Avg Final Price</div>
               <div className="text-heading-1 text-foreground">
                 {formatCurrency(metrics.avgFinalPrice || 0)}
               </div>
             </div>
             
-            <div className="bg-surface shadow-neu-outset rounded-xl p-6 border border-border">
+            <div className="bg-surface shadow-card rounded-xl p-6 border border-border">
               <div className="text-muted-foreground text-body-small mb-1">Conversion Rate</div>
               <div className="text-heading-1 text-foreground">
                 {((metrics.conversionRate || 0) * 100).toFixed(1)}%
@@ -401,7 +401,7 @@ export default function GuestInstantQuotesPage() {
         )}
 
         {/* Filters */}
-        <div className="bg-surface shadow-neu-outset rounded-xl p-4 border border-border mb-6">
+        <div className="bg-surface shadow-card rounded-xl p-4 border border-border mb-6">
           <div className="flex items-center gap-2 mb-3">
             <FilterIcon />
             <h2 className="text-heading-4 text-foreground">Filters</h2>
@@ -409,10 +409,10 @@ export default function GuestInstantQuotesPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-body-small text-muted-foreground mb-1">State</label>
-              <select
+              <Select
                 value={stateFilter}
                 onChange={(e) => setStateFilter(e.target.value)}
-                className="form-input w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground"
+                className="w-full rounded-xl bg-surface text-foreground shadow-inner border border-border px-4 py-3 placeholder:text-muted-foreground"
               >
                 <option value="all">All States</option>
                 <option value="NSW">NSW</option>
@@ -423,44 +423,44 @@ export default function GuestInstantQuotesPage() {
                 <option value="TAS">TAS</option>
                 <option value="ACT">ACT</option>
                 <option value="NT">NT</option>
-              </select>
+              </Select>
             </div>
             
             <div>
               <label className="block text-body-small text-muted-foreground mb-1">Quote Type</label>
-              <select
+              <Select
                 value={quoteTypeFilter}
                 onChange={(e) => setQuoteTypeFilter(e.target.value)}
-                className="form-input w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground"
+                className="w-full rounded-xl bg-surface text-foreground shadow-inner border border-border px-4 py-3 placeholder:text-muted-foreground"
               >
                 <option value="all">All Types</option>
                 <option value="residential">Residential</option>
                 <option value="commercial">Commercial</option>
-              </select>
+              </Select>
             </div>
             
             <div>
               <label className="block text-body-small text-muted-foreground mb-1">Date Range</label>
-              <select
+              <Select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="form-input w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground"
+                className="w-full rounded-xl bg-surface text-foreground shadow-inner border border-border px-4 py-3 placeholder:text-muted-foreground"
               >
                 <option value="all">All Time</option>
                 <option value="24h">Last 24 Hours</option>
                 <option value="7d">Last 7 Days</option>
                 <option value="30d">Last 30 Days</option>
-              </select>
+              </Select>
             </div>
             
             <div>
               <label className="block text-body-small text-muted-foreground mb-1">Search</label>
-              <input
+              <Input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Postcode or location..."
-                className="form-input w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground"
+                className="w-full rounded-xl bg-surface text-foreground shadow-inner border border-border px-4 py-3 placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -468,14 +468,14 @@ export default function GuestInstantQuotesPage() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-surface shadow-neu-outset border border-error rounded-xl p-4 mb-6">
+          <div className="bg-surface shadow-card border border-error rounded-xl p-4 mb-6">
             <p className="text-error">{error}</p>
           </div>
         )}
 
         {/* Loading State */}
         {loading && (
-          <div className="bg-surface shadow-neu-outset rounded-xl p-12 border border-border text-center">
+          <div className="bg-surface shadow-card rounded-xl p-12 border border-border text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             <p className="mt-4 text-muted-foreground">Loading quotes...</p>
           </div>
@@ -483,7 +483,7 @@ export default function GuestInstantQuotesPage() {
 
         {/* Quotes Table */}
         {!loading && quotes && quotes.length > 0 && (
-          <div className="bg-surface shadow-neu-outset rounded-xl border border-border overflow-hidden">
+          <div className="bg-surface shadow-card rounded-xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-surface border-b border-border">
@@ -570,7 +570,7 @@ export default function GuestInstantQuotesPage() {
 
         {/* Empty State */}
         {!loading && quotes && quotes.length === 0 && (
-          <div className="bg-surface shadow-neu-outset rounded-xl p-12 border border-border text-center">
+          <div className="bg-surface shadow-card rounded-xl p-12 border border-border text-center">
             <CalculatorIcon />
             <p className="mt-4 text-muted-foreground">No quotes found matching your filters</p>
           </div>
@@ -619,7 +619,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface shadow-neu-outset rounded-2xl border border-border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface shadow-card rounded-2xl border border-border max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between">
           <h2 className="text-heading-2 text-foreground">Quote Details</h2>
@@ -634,7 +634,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
 
         <div className="p-6 space-y-8">
           {/* Meta Information Badge */}
-          <div className="bg-surface shadow-neu-inset rounded-xl p-5 border border-primary/30">
+          <div className="bg-surface shadow-inner rounded-xl p-5 border border-primary/30">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-caption text-primary mb-1">📅 Submitted</div>
@@ -664,7 +664,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
           </div>
 
           {/* STEP 1: Property Details - Form Style */}
-          <div className="bg-surface shadow-neu-outset rounded-xl border border-border p-6">
+          <div className="bg-surface shadow-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-primary text-foreground-secondary flex items-center justify-center text-heading-4">
                 1
@@ -678,7 +678,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <label className="block text-muted-foreground text-label mb-2">
                   📍 Postcode *
                 </label>
-                <div className="w-full bg-surface shadow-neu-inset border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
+                <div className="w-full bg-surface shadow-inner border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
                   {quote.postcode}
                 </div>
               </div>
@@ -688,7 +688,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <label className="block text-muted-foreground text-label mb-2">
                   📍 Location (Suburb) *
                 </label>
-                <div className="w-full bg-surface shadow-neu-inset border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
+                <div className="w-full bg-surface shadow-inner border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
                   {quote.location}
                 </div>
               </div>
@@ -698,7 +698,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <label className="block text-muted-foreground text-label mb-2">
                   State *
                 </label>
-                <div className="w-full bg-surface shadow-neu-inset border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
+                <div className="w-full bg-surface shadow-inner border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
                   {quote.state === 'NSW' ? 'New South Wales' : 
                    quote.state === 'VIC' ? 'Victoria' : 
                    quote.state === 'QLD' ? 'Queensland' : 
@@ -715,7 +715,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <label className="block text-muted-foreground text-label mb-2">
                   Electricity Retailer
                 </label>
-                <div className="w-full bg-surface shadow-neu-inset border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
+                <div className="w-full bg-surface shadow-inner border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
                   {quote.retailer || 'Not specified'}
                 </div>
               </div>
@@ -742,7 +742,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
           </div>
 
           {/* STEP 2: Energy & System Details - Form Style */}
-          <div className="bg-surface shadow-neu-outset rounded-xl border border-border p-6">
+          <div className="bg-surface shadow-card rounded-xl border border-border p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-primary text-foreground-secondary flex items-center justify-center text-heading-4">
                 2
@@ -816,7 +816,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                     <label className="block text-muted-foreground text-label mb-2">
                       Three Phase Supply
                     </label>
-                    <div className={`border-2 rounded-xl px-4 py-3 text-center ${quote.isThreePhase ? 'bg-surface/50 border-success text-success' : 'bg-surface shadow-neu-inset border-border text-foreground'}`}>
+                    <div className={`border-2 rounded-xl px-4 py-3 text-center ${quote.isThreePhase ? 'bg-surface/50 border-success text-success' : 'bg-surface shadow-inner border-border text-foreground'}`}>
                       {quote.isThreePhase ? '✅ Yes' : '❌ No'}
                     </div>
                   </div>
@@ -844,7 +844,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                   <label className="block text-muted-foreground text-label mb-2">
                     Panel Orientation *
                   </label>
-                  <div className="w-full bg-surface shadow-neu-inset border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground capitalize">
+                  <div className="w-full bg-surface shadow-inner border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground capitalize">
                     {quote.panelOrientation}
                   </div>
                 </div>
@@ -852,7 +852,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                   <label className="block text-muted-foreground text-label mb-2">
                     Roof Type *
                   </label>
-                  <div className="w-full bg-surface shadow-neu-inset border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground capitalize">
+                  <div className="w-full bg-surface shadow-inner border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground capitalize">
                     {quote.roofType}
                   </div>
                 </div>
@@ -860,7 +860,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                   <label className="block text-muted-foreground text-label mb-2">
                     Roof Tilt
                   </label>
-                  <div className="w-full bg-surface shadow-neu-inset border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
+                  <div className="w-full bg-surface shadow-inner border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
                     {quote.roofTilt}
                   </div>
                 </div>
@@ -868,7 +868,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                   <label className="block text-muted-foreground text-label mb-2">
                     Shading Level
                   </label>
-                  <div className="w-full bg-surface shadow-neu-inset border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
+                  <div className="w-full bg-surface shadow-inner border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
                     {quote.shadingLevel}
                   </div>
               </div>
@@ -877,7 +877,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                     <label className="block text-muted-foreground text-label mb-2">
                       Usage Pattern
                     </label>
-                    <div className="w-full bg-surface shadow-neu-inset border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
+                    <div className="w-full bg-surface shadow-inner border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
                       {quote.usagePattern}
                     </div>
                   </div>
@@ -887,7 +887,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                     <label className="block text-muted-foreground text-label mb-2">
                       Budget Range *
                     </label>
-                    <div className="w-full bg-surface shadow-neu-inset border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
+                    <div className="w-full bg-surface shadow-inner border-2 border-primary/30 rounded-xl px-4 py-3 text-foreground">
                       {quote.budgetRange}
                     </div>
                   </div>
@@ -897,7 +897,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                     <label className="block text-muted-foreground text-label mb-2">
                       Tariff Plan
                     </label>
-                    <div className="w-full bg-surface shadow-neu-inset border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
+                    <div className="w-full bg-surface shadow-inner border-2 border-border rounded-xl px-4 py-3 text-foreground capitalize">
                       {quote.tariffPlan}
                     </div>
                   </div>
@@ -947,7 +947,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                         <label className="block text-muted-foreground text-label mb-2">
                           Custom Retail Rate
                         </label>
-                        <div className="bg-surface shadow-neu-inset border-2 border-info rounded-xl px-4 py-3 text-foreground">
+                        <div className="bg-surface shadow-inner border-2 border-info rounded-xl px-4 py-3 text-foreground">
                           {quote.customRetailRate}¢/kWh
                         </div>
                       </div>
@@ -957,7 +957,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                         <label className="block text-muted-foreground text-label mb-2">
                           Custom Feed-In Rate
                         </label>
-                        <div className="bg-surface shadow-neu-inset border-2 border-success rounded-xl px-4 py-3 text-foreground">
+                        <div className="bg-surface shadow-inner border-2 border-success rounded-xl px-4 py-3 text-foreground">
                           {quote.customFeedInRate}¢/kWh
                         </div>
                       </div>
@@ -969,7 +969,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
           </div>
 
           {/* Battery Configuration */}
-          <div className="bg-surface shadow-neu-outset rounded-xl border border-border p-6">
+          <div className="bg-surface shadow-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-heading-3 text-foreground flex items-center gap-2">
                 <span className="text-heading-2">🔋</span> Battery Storage Options
@@ -1037,7 +1037,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                       <label className="block text-muted-foreground text-label mb-2">
                         VPP Participation
                       </label>
-                      <div className={`border-2 rounded-xl px-4 py-3 text-center ${quote.includeVPP ? 'bg-surface/50 border-success text-success' : 'bg-surface shadow-neu-inset border-border text-foreground'}`}>
+                      <div className={`border-2 rounded-xl px-4 py-3 text-center ${quote.includeVPP ? 'bg-surface/50 border-success text-success' : 'bg-surface shadow-inner border-border text-foreground'}`}>
                         {quote.includeVPP ? '✅ Yes' : '❌ No'}
                       </div>
                     </div>
@@ -1053,7 +1053,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
 
           {/* Smart Features */}
           {(quote.includeEVCharging || quote.includeSmartHome || quote.includeGridServices || quote.includeOptimizers || quote.includeMicroinverters) && (
-            <div className="bg-surface shadow-neu-outset rounded-xl border border-border p-6">
+            <div className="bg-surface shadow-card rounded-xl border border-border p-6">
               <h3 className="text-heading-3 text-foreground mb-6 flex items-center gap-2">
                 <span className="text-heading-2">✨</span> Additional Smart Features
               </h3>
@@ -1119,15 +1119,15 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
 
           {/* Additional Roof Arrays */}
           {quote.additionalArrays && Array.isArray(quote.additionalArrays) && quote.additionalArrays.length > 0 && (
-            <div className="bg-surface shadow-neu-outset rounded-xl border border-border p-6">
+            <div className="bg-surface shadow-card rounded-xl border border-border p-6">
               <h3 className="text-heading-3 text-foreground mb-4 flex items-center gap-2">
                 <span className="text-heading-2">📐</span> Additional Roof Arrays
               </h3>
-              <div className="bg-surface shadow-neu-inset rounded-xl p-4 border border-border">
+              <div className="bg-surface shadow-inner rounded-xl p-4 border border-border">
                 <p className="text-body-small text-muted-foreground mb-3">
                   Complex roof layout with {quote.additionalArrays.length} additional array(s):
                 </p>
-                <pre className="text-caption bg-surface shadow-neu-inset p-4 rounded-lg overflow-auto border border-border font-mono">
+                <pre className="text-caption bg-surface shadow-inner p-4 rounded-lg overflow-auto border border-border font-mono">
                   {JSON.stringify(quote.additionalArrays, null, 2)}
                 </pre>
               </div>
@@ -1180,7 +1180,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <span className="text-heading-2 mr-2">⚡</span>
                 System Specifications
               </h4>
-              <div className="bg-surface shadow-neu-outset border border-border rounded-xl p-6">
+              <div className="bg-surface shadow-card border border-border rounded-xl p-6">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                   <div>
                     <div className="text-body-small text-muted-foreground mb-1">System Size</div>
@@ -1234,7 +1234,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <span className="text-heading-2 mr-2">🌞</span>
                 Energy Performance
               </h4>
-              <div className="bg-surface shadow-neu-outset border border-border rounded-xl p-6">
+              <div className="bg-surface shadow-card border border-border rounded-xl p-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
                     <div className="text-body-small text-muted-foreground mb-1">Annual Generation</div>
@@ -1270,7 +1270,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <span className="text-heading-2 mr-2">📊</span>
                 Financial Projections
               </h4>
-              <div className="bg-surface shadow-neu-outset border border-border rounded-xl p-6">
+              <div className="bg-surface shadow-card border border-border rounded-xl p-6">
                 <SavingsChart
                   finalPrice={quote.results.finalPrice}
                   annualSavings={quote.results.annualSavings}
@@ -1285,7 +1285,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
                 <span className="text-heading-2 mr-2">💰</span>
                 Cost Breakdown
               </h4>
-              <div className="bg-surface shadow-neu-outset border border-border rounded-xl p-6">
+              <div className="bg-surface shadow-card border border-border rounded-xl p-6">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">Total System Cost</span>
@@ -1326,7 +1326,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
             </div>
 
             {/* Disclaimers */}
-            <div className="bg-surface shadow-neu-inset rounded-xl p-6 text-body-small text-muted-foreground">
+            <div className="bg-surface shadow-inner rounded-xl p-6 text-body-small text-muted-foreground">
               <h5 className="text-foreground mb-3">Important Notes:</h5>
               <ul className="space-y-2 list-disc list-inside">
                 <li>This is an indicative quote only. Final pricing subject to site inspection.</li>
@@ -1342,7 +1342,7 @@ function QuoteDetailsModal({ quote, onClose }: QuoteDetailsModalProps) {
           {quote.userAgent && (
             <div>
               <h3 className="text-heading-4 text-foreground mb-2">Technical Details</h3>
-              <div className="text-caption font-mono text-muted-foreground bg-surface shadow-neu-inset p-3 rounded">
+              <div className="text-caption font-mono text-muted-foreground bg-surface shadow-inner p-3 rounded">
                 {quote.userAgent}
               </div>
             </div>

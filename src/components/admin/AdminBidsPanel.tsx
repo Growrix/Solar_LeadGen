@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CheckCircle, XCircle, Flag, MessageSquare, Award, DollarSign, Star, Phone, Mail, Building } from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Award, Building, Button, Card, CardContent, CheckCircle, DollarSign, Flag, Mail, MessageSquare, Phone, Star, Textarea, XCircle } from '@/ds';
 import BiddingStatusBadge from '@/components/BiddingStatusBadge';
 
 interface AdminBid {
@@ -124,33 +123,35 @@ export default function AdminBidsPanel({
   return (
     <div className="space-y-6">
       {/* Header Stats */}
-      <div className="bg-surface rounded-2xl shadow-neu-inset p-6">
-        <h3 className="text-heading-4 text-foreground mb-4">
-          Bid Management: {propertyAddress}
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-background rounded-xl p-4">
-            <p className="text-caption text-muted-foreground mb-1">Total Bids</p>
-            <p className="text-heading-3 text-foreground">{stats.total}</p>
+      <Card>
+        <CardContent className="p-6">
+          <h3 className="text-heading-4 text-foreground mb-4">
+            Bid Management: {propertyAddress}
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-background rounded-xl p-4">
+              <p className="text-caption text-muted-foreground mb-1">Total Bids</p>
+              <p className="text-heading-3 text-foreground">{stats.total}</p>
+            </div>
+            <div className="bg-background rounded-xl p-4">
+              <p className="text-caption text-muted-foreground mb-1">Shortlisted</p>
+              <p className="text-heading-3 text-success">{stats.shortlisted}</p>
+            </div>
+            <div className="bg-background rounded-xl p-4">
+              <p className="text-caption text-muted-foreground mb-1">Rejected</p>
+              <p className="text-heading-3 text-error">{stats.rejected}</p>
+            </div>
+            <div className="bg-background rounded-xl p-4">
+              <p className="text-caption text-muted-foreground mb-1">Contact Requests</p>
+              <p className="text-heading-3 text-warning">{stats.contactRequests}</p>
+            </div>
+            <div className="bg-background rounded-xl p-4">
+              <p className="text-caption text-muted-foreground mb-1">Flagged</p>
+              <p className="text-heading-3 text-error">{stats.flagged}</p>
+            </div>
           </div>
-          <div className="bg-background rounded-xl p-4">
-            <p className="text-caption text-muted-foreground mb-1">Shortlisted</p>
-            <p className="text-heading-3 text-success">{stats.shortlisted}</p>
-          </div>
-          <div className="bg-background rounded-xl p-4">
-            <p className="text-caption text-muted-foreground mb-1">Rejected</p>
-            <p className="text-heading-3 text-error">{stats.rejected}</p>
-          </div>
-          <div className="bg-background rounded-xl p-4">
-            <p className="text-caption text-muted-foreground mb-1">Contact Requests</p>
-            <p className="text-heading-3 text-warning">{stats.contactRequests}</p>
-          </div>
-          <div className="bg-background rounded-xl p-4">
-            <p className="text-caption text-muted-foreground mb-1">Flagged</p>
-            <p className="text-heading-3 text-error">{stats.flagged}</p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Info Banner */}
       <div className="bg-info/10 border border-info/20 rounded-xl p-4">
@@ -162,19 +163,21 @@ export default function AdminBidsPanel({
 
       {/* Bids Table */}
       {sortedBids.length === 0 ? (
-        <div className="bg-surface rounded-2xl shadow-neu-inset p-12 text-center">
-          <Award className="h-16 w-16 text-muted mx-auto mb-4" />
-          <h3 className="text-heading-4 text-foreground mb-2">No Bids Submitted</h3>
-          <p className="text-body text-muted-foreground">
-            Waiting for installers to submit their quotes.
-          </p>
-        </div>
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Award className="h-16 w-16 text-muted mx-auto mb-4" />
+            <h3 className="text-heading-4 text-foreground mb-2">No Bids Submitted</h3>
+            <p className="text-body text-muted-foreground">
+              Waiting for installers to submit their quotes.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {sortedBids.map((bid) => (
-            <div
+            <Card
               key={bid.id}
-              className={`bg-surface rounded-2xl shadow-neu-inset p-6 border-2 transition-all ${
+              className={`border-2 transition-all ${
                 bid.flagged
                   ? 'border-error/50'
                   : bid.status === 'shortlisted'
@@ -184,6 +187,7 @@ export default function AdminBidsPanel({
                   : 'border-transparent'
               }`}
             >
+              <CardContent className="p-6">
               {/* Installer Header */}
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
                 <div className="flex-1">
@@ -360,7 +364,7 @@ export default function AdminBidsPanel({
                       {actionInProgress === bid.id ? 'Shortlisting...' : 'Shortlist'}
                     </Button>
                     <Button
-                      variant="destructive"
+                      variant="ghost"
                       onClick={() => handleReject(bid.id)}
                       disabled={actionInProgress === bid.id}
                     >
@@ -372,7 +376,7 @@ export default function AdminBidsPanel({
 
                 {bid.status === 'shortlisted' && (
                   <Button
-                    variant="destructive"
+                    variant="danger"
                     onClick={() => handleReject(bid.id)}
                     disabled={actionInProgress === bid.id}
                   >
@@ -394,7 +398,7 @@ export default function AdminBidsPanel({
 
                 {!bid.flagged ? (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => setFlaggingBid(bid.id)}
                   >
                     <Flag className="h-4 w-4 mr-2" />
@@ -402,7 +406,7 @@ export default function AdminBidsPanel({
                   </Button>
                 ) : (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => handleUnflag(bid.id)}
                     disabled={actionInProgress === bid.id}
                   >
@@ -418,15 +422,15 @@ export default function AdminBidsPanel({
                   <label className="text-body-small text-foreground block mb-2">
                     Reason for flagging this bid:
                   </label>
-                  <textarea
+                  <Textarea
                     value={flagReason}
                     onChange={(e) => setFlagReason(e.target.value)}
-                    className="form-input w-full px-4 py-3 mb-3 min-h-[80px]"
+                    className="w-full px-4 py-3 mb-3 min-h-[80px]"
                     placeholder="E.g., Suspiciously low price, unverified company, quality concerns..."
                   />
                   <div className="flex gap-2">
                     <Button
-                      variant="destructive"
+                      variant="danger"
                       onClick={() => handleFlag(bid.id)}
                       disabled={!flagReason.trim() || actionInProgress === bid.id}
                     >
@@ -434,7 +438,7 @@ export default function AdminBidsPanel({
                       Confirm Flag
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       onClick={() => {
                         setFlaggingBid(null);
                         setFlagReason('');
@@ -445,7 +449,8 @@ export default function AdminBidsPanel({
                   </div>
                 </div>
               )}
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

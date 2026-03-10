@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -32,7 +32,7 @@ export default function BlogSidebarClient({
 
   return (
     <aside className="space-y-6">
-      <section className="theme-card p-5">
+      <section className="bg-surface rounded-card border border-border shadow-card p-5">
         <h3 className="text-heading-4 text-foreground mb-4">Categories</h3>
         <div className="flex flex-col gap-2">
           <Link
@@ -61,7 +61,7 @@ export default function BlogSidebarClient({
         </div>
       </section>
 
-      <section className="theme-card p-5">
+      <section className="bg-surface rounded-card border border-border shadow-card p-5">
         <h3 className="text-heading-4 text-foreground mb-4">Recent Posts</h3>
         <div className="flex flex-col gap-3">
           {recentPosts.map((p) => (
@@ -76,7 +76,7 @@ export default function BlogSidebarClient({
         </div>
       </section>
 
-      <section className="theme-card p-5">
+      <section className="bg-surface rounded-card border border-border shadow-card p-5">
         <h3 className="text-heading-4 text-foreground mb-2">Newsletter</h3>
         <p className="text-body-small text-muted-foreground mb-4">Get new posts and solar updates in your inbox.</p>
         <NewsletterSignup variant="compact" />

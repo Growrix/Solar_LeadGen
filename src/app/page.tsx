@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -690,8 +690,8 @@ export default function Home() {
           
           {/* Calculator Switcher */}
           <div className="flex justify-center mb-8">
-            <div className="relative w-full max-w-md bg-background shadow-neu-inset p-2 rounded-full flex border border-border">
-              <div className={`absolute top-2 bottom-2 left-2 w-[calc(50%-0.25rem)] rounded-full bg-background shadow-neu-outset transition-transform duration-300 ease-in-out transform ${
+            <div className="relative w-full max-w-md bg-background shadow-inner p-2 rounded-full flex border border-border">
+              <div className={`absolute top-2 bottom-2 left-2 w-[calc(50%-0.25rem)] rounded-full bg-background shadow-card transition-transform duration-300 ease-in-out transform ${
                 activeCalculator === 'quote' ? 'translate-x-0' : 'translate-x-full'
               }`}></div>
 

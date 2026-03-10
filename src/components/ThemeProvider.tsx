@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+import { applyTheme, DEFAULT_THEME, resolveTheme, THEME_STORAGE_KEY } from '@/ds';
 
 export type Theme = 'dark' | 'light' | 'purple' | 'system';
 
@@ -20,20 +21,29 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   // Load theme from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('solarmatch-theme') as Theme;
-    if (savedTheme && ['dark', 'light', 'purple', 'system'].includes(savedTheme)) {
-      setTheme(savedTheme);
-      document.documentElement.className = `theme-${savedTheme}`;
-    } else {
-      // Default to dark theme
-      document.documentElement.className = 'theme-dark';
+    const raw = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+
+    if (raw === 'system') {
+      setTheme('system');
+      applyTheme(DEFAULT_THEME);
+      return;
     }
+
+    const resolved = resolveTheme(raw);
+    setTheme(resolved);
+    applyTheme(resolved);
   }, []);
 
   const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme);
-    localStorage.setItem('solarmatch-theme', newTheme);
-    document.documentElement.className = `theme-${newTheme}`;
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+
+    if (newTheme === 'system') {
+      applyTheme(DEFAULT_THEME);
+      return;
+    }
+
+    applyTheme(newTheme);
   };
 
   return (

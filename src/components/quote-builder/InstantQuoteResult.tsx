@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { Calculator, AlertCircle } from 'lucide-react';
+import { AlertCircle, Calculator } from '@/ds';
 import SavingsChart from '../SavingsChart';
 
 interface InstantQuoteResults {
@@ -61,7 +61,7 @@ interface InstantQuoteResultProps {
 
 const InstantQuoteResult: React.FC<InstantQuoteResultProps> = ({ quoteData }) => {
   return (
-    <div className="bg-surface rounded-2xl shadow-neu-inset p-5 space-y-4">
+    <div className="bg-surface rounded-2xl shadow-inner p-5 space-y-4">
       <h3 className="text-heading-4 text-foreground flex items-center gap-2 border-b border-border pb-3">
         <Calculator className="h-5 w-5 text-primary" />
         InstantQuote Result

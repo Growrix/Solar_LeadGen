@@ -1,9 +1,8 @@
-'use client'
+﻿'use client'
 
 import React from 'react';
-import { Home, Upload } from 'lucide-react';
 import { ROOF_TYPES, ORIENTATIONS, SHADING_LEVELS, PHASE_TYPES } from './Presets';
-import Button from '@/components/ui/button';
+import { Button, Home, Input, Select, Textarea, Upload } from '@/ds';
 
 interface RoofSiteDetailsProps {
   roofType: string;
@@ -72,7 +71,7 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
   };
 
   return (
-    <div className="bg-background rounded-2xl shadow-neu-inset p-6 space-y-6">
+    <div className="bg-background rounded-2xl shadow-inner p-6 space-y-6">
       <h3 className="text-heading-5 text-foreground flex items-center gap-2">
         <Home className="h-5 w-5 text-primary" />
         Roof & Site Details
@@ -84,10 +83,10 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
           <label className="text-label text-foreground block mb-2">
             Roof Type
           </label>
-          <select
+          <Select
             value={roofType}
             onChange={(e) => onUpdate({ roofType: e.target.value })}
-            className="form-select w-full px-4 py-3"
+            className="w-full"
           >
             <option value="">Select type...</option>
             {ROOF_TYPES.map((type) => (
@@ -95,20 +94,20 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
                 {type.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
           <label className="text-label text-foreground block mb-2">
             Roof Pitch (degrees)
           </label>
-          <input
+          <Input
             type="number"
             min="0"
             max="90"
             value={pitchDeg}
             onChange={(e) => onUpdate({ pitchDeg: parseFloat(e.target.value) || 0 })}
-            className="form-input w-full px-4 py-3"
+            className="w-full px-4 py-3"
             placeholder="e.g. 22"
           />
         </div>
@@ -117,13 +116,13 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
           <label className="text-label text-foreground block mb-2">
             Number of Arrays
           </label>
-          <input
+          <Input
             type="number"
             min="1"
             max="10"
             value={arrays}
             onChange={(e) => onUpdate({ arrays: parseInt(e.target.value) || 1 })}
-            className="form-input w-full px-4 py-3"
+            className="w-full px-4 py-3"
           />
         </div>
       </div>
@@ -154,17 +153,17 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
         <label className="text-label text-foreground block mb-2">
           Shading Level
         </label>
-        <select
+        <Select
           value={shadingLevel}
           onChange={(e) => onUpdate({ shadingLevel: parseFloat(e.target.value) })}
-          className="form-select w-full px-4 py-3"
+          className="w-full"
         >
           {SHADING_LEVELS.map((level) => (
             <option key={level.value} value={level.value}>
               {level.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Row 4: Metering & Switchboard */}
@@ -176,24 +175,24 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
             <label className="text-label text-foreground block mb-2">
               Phase Type
             </label>
-            <select
+            <Select
               value={phaseType}
               onChange={(e) => onUpdate({ phaseType: e.target.value })}
-              className="form-select w-full px-4 py-3"
+              className="w-full"
             >
               {PHASE_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">
               Distance to Switchboard (m)
             </label>
-            <input
+            <Input
               type="number"
               min="0"
               max="100"
@@ -201,7 +200,7 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
               onChange={(e) =>
                 onUpdate({ distanceToSwitchboardM: parseFloat(e.target.value) || 0 })
               }
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 15"
             />
           </div>
@@ -239,11 +238,11 @@ const RoofSiteDetails: React.FC<RoofSiteDetailsProps> = ({
         <label className="text-label text-foreground block mb-2">
           Site Notes
         </label>
-        <textarea
+        <Textarea
           value={notes}
           onChange={(e) => onUpdate({ notes: e.target.value })}
           rows={4}
-          className="form-input w-full px-4 py-3 resize-none"
+          className="w-full px-4 py-3 resize-none"
           placeholder="Any special considerations, access issues, or site-specific requirements..."
         />
       </div>

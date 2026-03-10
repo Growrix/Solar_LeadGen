@@ -1,7 +1,7 @@
 ﻿'use client';
 
-import React, { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Button, Modal } from '@/ds';
 
 // --- Icon Components ---
 const CheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
@@ -62,30 +62,18 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
     onClose();
   };
   
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  // Modal shell is handled by DS Modal; keep component state reset via handleClose.
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in" onClick={handleClose}>
-      <div 
-        className="theme-card max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-in-up"
-        onClick={e => e.stopPropagation()}
-      >
+    <Modal
+      open={isOpen}
+      onClose={handleClose}
+      ariaLabel="Become a Partner"
+      className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-0"
+    >
+      <div>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
             <h2 className="text-heading-2 text-foreground">Become a Partner</h2>
@@ -107,10 +95,10 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
                   <div key={q.id}>
                     <label className="block text-muted-foreground text-label mb-3">{q.icon}{q.label}</label>
                     <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => handleInputChange(q.id as keyof FormData, 'yes')} className={`eligibility-button p-3 rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-neu-inset ${formData[q.id as keyof FormData] === 'yes' ? 'selected-yes border-2 border-emerald-500 bg-emerald-500/10 text-emerald-500' : 'bg-surface/50 text-muted-foreground hover:bg-surface'}`}>
+                      <button onClick={() => handleInputChange(q.id as keyof FormData, 'yes')} className={`eligibility-button p-3 rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-inner ${formData[q.id as keyof FormData] === 'yes' ? 'selected-yes border-2 border-emerald-500 bg-emerald-500/10 text-emerald-500' : 'bg-surface/50 text-muted-foreground hover:bg-surface'}`}>
                         <CheckCircle /> <span className="text-label">Yes</span>
                       </button>
-                      <button onClick={() => handleInputChange(q.id as keyof FormData, 'no')} className={`eligibility-button p-3 rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-neu-inset ${formData[q.id as keyof FormData] === 'no' ? 'selected-no border-2 border-destructive bg-error/10 text-destructive' : 'bg-surface/50 text-muted-foreground hover:bg-surface'}`}>
+                      <button onClick={() => handleInputChange(q.id as keyof FormData, 'no')} className={`eligibility-button p-3 rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-inner ${formData[q.id as keyof FormData] === 'no' ? 'selected-no border-2 border-destructive bg-error/10 text-destructive' : 'bg-surface/50 text-muted-foreground hover:bg-surface'}`}>
                         <XCircle /> <span className="text-label">No</span>
                       </button>
                     </div>
@@ -134,8 +122,8 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
             <div className="text-center animate-fade-in">
               <div className="w-20 h-20 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6"><XCircle /></div>
               <h3 className="text-heading-2 text-foreground mb-4">Not Eligible</h3>
-              <p className="text-muted-foreground mb-8 leading-relaxed">Unfortunately, your company doesn&apos;t meet our current eligibility requirements. To join our partner network, you must be a CEC-accredited installer with an ABN providing services in Australia.</p>
-              <div className="bg-error/10 shadow-neu-inset border border-destructive/30 rounded-xl p-6 mb-8">
+              <p className="text-muted-foreground mb-8">Unfortunately, your company doesn&apos;t meet our current eligibility requirements. To join our partner network, you must be a CEC-accredited installer with an ABN providing services in Australia.</p>
+              <div className="bg-error/10 shadow-inner border border-destructive/30 rounded-xl p-6 mb-8">
                 <h4 className="text-destructive mb-3 flex items-center justify-center space-x-2"><AlertCircle /><span>Requirements Not Met</span></h4>
                 <ul className="text-destructive text-body-small space-y-2 text-left">
                   {formData.cecAccredited !== 'yes' && <li>• CEC accreditation required</li>}
@@ -144,13 +132,13 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
                 </ul>
               </div>
               <div className="space-y-4">
-                <button onClick={resetForm} className="bg-surface hover:bg-surface-hover text-foreground px-6 py-3 rounded-xl shadow-neu-outset transition-colors">Try Again</button>
+                <button onClick={resetForm} className="bg-surface hover:bg-surface-hover text-foreground px-6 py-3 rounded-xl shadow-card transition-colors">Try Again</button>
               </div>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

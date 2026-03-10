@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React, { useEffect } from 'react';
 import SimplifiedQuoteForm from './SimplifiedQuoteForm';
@@ -50,7 +50,7 @@ const SimplifiedQuoteFormModal: React.FC<SimplifiedQuoteFormModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="theme-card relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 animate-slide-in-up max-h-[95vh] overflow-y-auto"
+        className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 animate-slide-in-up max-h-[95vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">

@@ -1,8 +1,8 @@
-
+﻿
 'use client';
 
 import React from 'react';
-import Button from '@/components/ui/button';
+import { Button, Modal } from '@/ds';
 
 // --- Icon Components ---
 const XIcon = () => (
@@ -49,26 +49,14 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   const handleContactSupport = () => {
     window.location.href = 'mailto:support@solarmatch.com.au?subject=Request%20Additional%20Quote%20Limit';
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/50 backdrop-blur-sm animate-fade-in"
-      onClick={handleBackdropClick}
-    >
-      <div
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="card bg-surface shadow-neu-outset-md text-foreground">
+    <Modal open={isOpen} onClose={onClose} className="max-w-2xl w-full p-0 overflow-hidden">
+      <div className="relative w-full max-h-[90vh] overflow-y-auto animate-slide-in-up">
+        <div className="card bg-surface shadow-card-md text-foreground">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -170,7 +158,7 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
         </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

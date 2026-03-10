@@ -16,6 +16,7 @@
 'use client';
 
 import React from 'react';
+import { Modal } from '@/ds';
 
 // Icon components
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
@@ -83,15 +84,8 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
-      style={{ zIndex: 1400 }}
-      onClick={onClose}
-    >
-      <div 
-        className="bg-surface rounded-xl shadow-modal w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal open={isOpen} onClose={onClose} className="max-w-4xl w-full p-0 overflow-hidden">
+      <div className="bg-surface rounded-xl shadow-modal w-full max-h-[90vh] flex flex-col overflow-hidden animate-slide-in-up">
         {/* Header - Fixed at top */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-surface flex-shrink-0">
           <div>
@@ -426,7 +420,7 @@ const LeadPreviewModal: React.FC<LeadPreviewModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

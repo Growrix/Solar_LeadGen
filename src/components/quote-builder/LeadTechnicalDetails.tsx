@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { MapPin, DollarSign, Home, Lock, Clock, Battery } from 'lucide-react';
+import { Battery, Clock, DollarSign, Home, Lock, MapPin } from '@/ds';
 
 interface Lead {
   id: string | number;
@@ -105,7 +105,7 @@ const LeadTechnicalDetails: React.FC<LeadTechnicalDetailsProps> = ({ lead, isPur
   }
 
   return (
-    <div className="bg-surface rounded-2xl shadow-neu-inset p-6 space-y-6">
+    <div className="bg-surface rounded-2xl shadow-inner p-6 space-y-6">
       <div className="flex items-center justify-between border-b border-border pb-4">
         <h3 className="text-heading-4 text-foreground flex items-center gap-2">
           <Home className="h-5 w-5 text-primary" />

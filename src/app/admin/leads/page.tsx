@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme, type Theme } from '@/components/ThemeProvider';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
-import Button from '@/components/Button';
+import { Button, Input, Select } from '@/ds';
 
 interface Lead {
   id: string;
@@ -190,17 +190,17 @@ export default function AdminLeadsPage() {
       )}
 
       {/* Search & Filters */}
-      <div className="bg-surface rounded-2xl shadow-neu-outset p-6 mb-6">
+      <div className="bg-surface rounded-2xl shadow-card p-6 mb-6">
         <form className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
           <div className="flex-1 flex flex-col gap-2 min-w-[220px]">
             <label className="block text-body-small text-foreground">Search Leads</label>
             <div className="relative">
-              <input
+              <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by homeowner name, email, or quote ID..."
-                className="form-input w-full h-12 pl-10 pr-10 rounded-2xl shadow-neu-inset text-body"
+                className="w-full h-12 pl-10 pr-10 rounded-2xl shadow-inner text-body"
               />
               <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -221,10 +221,10 @@ export default function AdminLeadsPage() {
 
           <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
             <label className="block text-body-small text-foreground">Status</label>
-            <select
+            <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="form-select w-full h-12 rounded-2xl shadow-neu-inset text-body"
+              className="w-full h-12 rounded-2xl shadow-inner text-body"
             >
               <option value="ALL">All Statuses</option>
               <option value="DRAFT">Draft</option>
@@ -234,30 +234,30 @@ export default function AdminLeadsPage() {
               <option value="PURCHASED">Purchased</option>
               <option value="REJECTED">Rejected</option>
               <option value="EXPIRED">Expired</option>
-            </select>
+            </Select>
           </div>
 
           <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
             <label className="block text-body-small text-foreground">Verification</label>
-            <select
+            <Select
               value={verificationFilter}
               onChange={(e) => setVerificationFilter(e.target.value)}
-              className="form-select w-full h-12 rounded-2xl shadow-neu-inset text-body"
+              className="w-full h-12 rounded-2xl shadow-inner text-body"
             >
               <option value="ALL">All</option>
               <option value="VERIFIED">Verified Only</option>
               <option value="UNVERIFIED">Unverified Only</option>
-            </select>
+            </Select>
           </div>
 
           <div className="flex-1 flex flex-col gap-2 min-w-[180px]">
             <label className="block text-body-small text-foreground">Postcode</label>
-            <input
+            <Input
               type="text"
               value={postcodeFilter}
               onChange={(e) => setPostcodeFilter(e.target.value)}
               placeholder="e.g., SW1A"
-              className="form-input w-full h-12 rounded-2xl shadow-neu-inset text-body pl-4 placeholder:text-left placeholder:text-muted-foreground"
+              className="w-full h-12 rounded-2xl shadow-inner text-body pl-4 placeholder:text-left placeholder:text-muted-foreground"
             />
           </div>
 
@@ -291,10 +291,10 @@ export default function AdminLeadsPage() {
 
       {/* Table & Pagination */}
       {(!loading && filteredAndSearchedLeads.length > 0) && (
-        <div className="bg-surface rounded-2xl shadow-neu-outset overflow-hidden">
+        <div className="bg-surface rounded-2xl shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-surface shadow-neu-inset">
+              <thead className="bg-surface shadow-inner">
                 <tr>
                   <th className="px-6 py-3 text-left text-caption text-muted-foreground uppercase tracking-wider">Homeowner</th>
                   <th className="px-6 py-3 text-left text-caption text-muted-foreground uppercase tracking-wider">Location</th>
@@ -443,7 +443,7 @@ export default function AdminLeadsPage() {
 
       {/* Empty State */}
       {!loading && filteredAndSearchedLeads.length === 0 && (
-        <div className="bg-surface shadow-neu-inset rounded-2xl p-12 text-center">
+        <div className="bg-surface shadow-inner rounded-2xl p-12 text-center">
           <svg
             className="mx-auto h-12 w-12 text-muted-foreground mb-4"
             fill="none"

@@ -15,7 +15,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './InstallersTable.module.css';
 import Image from 'next/image';
-import Button from '@/components/ui/button';
+import { Button, Card, CardContent, Input, Select } from '@/ds';
 
 // F15: InstallerVerification data structure
 interface InstallerVerification {
@@ -133,20 +133,21 @@ const InstallersTable: React.FC = () => {
 
 
       {/* Filters */}
-      <div className="theme-card p-4 sm:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="md:col-span-1">
             <label htmlFor="search" className="block text-body-small text-foreground mb-2">
               Search
             </label>
-            <input
+            <Input
               type="text"
               id="search"
               placeholder="Email, name, phone, company..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="form-input w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full"
             />
           </div>
 
@@ -155,16 +156,16 @@ const InstallersTable: React.FC = () => {
             <label htmlFor="phoneVerified" className="block text-body-small text-foreground mb-2">
               Phone Verified
             </label>
-            <select
+            <Select
               id="phoneVerified"
               value={phoneVerifiedFilter}
               onChange={(e) => setPhoneVerifiedFilter(e.target.value)}
-              className="form-select w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full"
             >
               <option value="all">All</option>
               <option value="true">Verified</option>
               <option value="false">Not Verified</option>
-            </select>
+            </Select>
           </div>
 
           {/* Installer Verified Filter */}
@@ -172,22 +173,23 @@ const InstallersTable: React.FC = () => {
             <label htmlFor="installerVerified" className="block text-body-small text-foreground mb-2">
               Installer Verified
             </label>
-            <select
+            <Select
               id="installerVerified"
               value={installerVerifiedFilter}
               onChange={(e) => setInstallerVerifiedFilter(e.target.value)}
-              className="form-select w-full rounded-xl bg-surface text-foreground shadow-neu-inset border border-border px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full"
             >
               <option value="all">All</option>
               <option value="true">Verified</option>
               <option value="false">Not Verified</option>
-            </select>
+            </Select>
           </div>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Table */}
-      <div className="theme-card overflow-hidden">
+      <Card className="overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
@@ -213,7 +215,7 @@ const InstallersTable: React.FC = () => {
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-surface shadow-neu-inset border-b border-border">
+                <thead className="bg-surface border-b border-border">
                   <tr>
                     <th className="px-6 py-3 text-left text-caption text-muted-foreground uppercase tracking-wider">
                       Company / Contact
@@ -301,11 +303,11 @@ const InstallersTable: React.FC = () => {
                         <div className="flex flex-col gap-1">
                           <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.phoneVerified === true ? 'text-success' : 'text-error'}`}> 
                             <span className={`inline-block w-2 h-2 rounded-full ${installer.phoneVerified === true ? 'bg-success' : 'bg-error'}`}></span>
-                            {installer.phoneVerified === true ? <span>&#10003; Phone</span> : <span>&#10007; Phone</span>}
+                            {installer.phoneVerified === true ? <span>✓ Phone</span> : <span>✗ Phone</span>}
                           </span>
                           <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.installerVerified === true ? 'text-success' : 'text-error'}`}> 
                             <span className={`inline-block w-2 h-2 rounded-full ${installer.installerVerified === true ? 'bg-success' : 'bg-error'}`}></span>
-                            {installer.installerVerified === true ? <span>&#10003; Installer</span> : <span>&#10007; Installer</span>}
+                            {installer.installerVerified === true ? <span>✓ Installer</span> : <span>✗ Installer</span>}
                           </span>
                         </div>
                       </td>
@@ -401,11 +403,11 @@ const InstallersTable: React.FC = () => {
                       <div className="flex gap-1">
                         <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.phoneVerified === true ? 'text-success' : 'text-error'}`}> 
                           <span className={`inline-block w-2 h-2 rounded-full ${installer.phoneVerified === true ? 'bg-success' : 'bg-error'}`}></span>
-                          {installer.phoneVerified === true ? <span>&#10003; Phone</span> : <span>&#10007; Phone</span>}
+                          {installer.phoneVerified === true ? <span>✓ Phone</span> : <span>✗ Phone</span>}
                         </span>
                         <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.installerVerified === true ? 'text-success' : 'text-error'}`}> 
                           <span className={`inline-block w-2 h-2 rounded-full ${installer.installerVerified === true ? 'bg-success' : 'bg-error'}`}></span>
-                          {installer.installerVerified === true ? <span>&#10003; Installer</span> : <span>&#10007; Installer</span>}
+                          {installer.installerVerified === true ? <span>✓ Installer</span> : <span>✗ Installer</span>}
                         </span>
                       </div>
                     </div>
@@ -438,23 +440,23 @@ const InstallersTable: React.FC = () => {
             </div>
           </>
         )}
-      </div>
+      </Card>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="theme-card flex items-center justify-between px-4 py-3 border-t border-border sm:px-6 rounded-lg">
+        <div className="bg-surface rounded-card border border-border shadow-card flex items-center justify-between px-4 py-3 border-t border-border sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <Button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              variant="outline"
+              variant="ghost"
             >
               Previous
             </Button>
             <Button
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              variant="outline"
+              variant="ghost"
               className="ml-3"
             >
               Next
@@ -473,7 +475,7 @@ const InstallersTable: React.FC = () => {
                 <Button
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  variant="minimal"
+                  variant="ghost"
                   className="px-3"
                 >
                   <span className="sr-only">Previous</span>
@@ -486,7 +488,7 @@ const InstallersTable: React.FC = () => {
                   <Button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    variant={currentPage === page ? 'primary' : 'minimal'}
+                    variant={currentPage === page ? 'primary' : 'ghost'}
                     className="px-4"
                   >
                     {page}
@@ -496,7 +498,7 @@ const InstallersTable: React.FC = () => {
                 <Button
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  variant="minimal"
+                  variant="ghost"
                   className="px-3"
                 >
                   <span className="sr-only">Next</span>

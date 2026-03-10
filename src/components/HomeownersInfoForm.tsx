@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
+import { Button, Modal } from '@/ds';
 
 // --- Icon Components (matching HomeownerSignInModal SOT) ---
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
@@ -116,26 +116,22 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
+    <Modal
+      open={isOpen}
+      onClose={handleClose}
+      className="relative w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-in-up"
+      ariaLabel="Contact information"
     >
-      <div 
-        className="theme-card relative w-full max-w-md p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
+      <button
+        onClick={handleClose}
+        className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
+        aria-label="Close"
       >
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
-          aria-label="Close"
-        >
-          <XIcon />
-        </button>
+        <XIcon />
+      </button>
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-surface shadow-neu-outset rounded-2xl mx-auto mb-6 flex items-center justify-center">
+          <div className="w-16 h-16 bg-surface shadow-card rounded-2xl mx-auto mb-6 flex items-center justify-center">
             <UserIcon />
           </div>
           <h2 className="text-heading-2 text-foreground mb-2">
@@ -147,7 +143,7 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
         </div>
         
         {error && (
-          <div className="bg-destructive/10 shadow-neu-inset border border-destructive/30 rounded-2xl p-4 mb-6">
+          <div className="bg-destructive/10 shadow-inner border border-destructive/30 rounded-2xl p-4 mb-6">
             <div className="flex items-start space-x-3">
               <AlertTriangleIcon />
               <div>
@@ -173,7 +169,7 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full bg-surface shadow-neu-inset border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+              className="w-full bg-surface shadow-inner border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
               placeholder="John Smith"
               required
               disabled={loading}
@@ -194,7 +190,7 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              className="w-full bg-surface shadow-neu-inset border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+              className="w-full bg-surface shadow-inner border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
               placeholder="0412 345 678"
               required
               disabled={loading}
@@ -218,7 +214,7 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
               name="address"
               value={formData.address}
               onChange={handleInputChange}
-              className="w-full bg-surface shadow-neu-inset border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+              className="w-full bg-surface shadow-inner border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
               placeholder="123 Main Street, Sydney NSW 2000"
               required
               disabled={loading}
@@ -244,8 +240,7 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
             Your information will only be shared with verified solar installers you choose to engage with.
           </p>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Button from '@/components/ui/button';
+import { Button, Card, CardContent, Input, Select } from '@/ds';
 
 // --- Icon Components ---
 const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>;
@@ -269,12 +269,12 @@ export default function AdminHomeownersList() {
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
           <SearchIcon />
         </div>
-        <input
+        <Input
           type="text"
           value={searchInput}
           onChange={handleSearchChange}
           placeholder="Search by name, email, phone, or postcode..."
-          className="w-full pl-10 pr-4 py-3 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground placeholder:text-muted-foreground"
+          className="w-full pl-10"
         />
       </div>
 
@@ -311,19 +311,20 @@ export default function AdminHomeownersList() {
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="bg-surface shadow-neu-inset border border-border rounded-lg p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Postcode Filter */}
             <div>
               <label className="block text-body-small text-muted-foreground mb-2">
                 Postcode
               </label>
-              <input
+              <Input
                 type="text"
                 value={filters.postcode}
                 onChange={(e) => handleFilterChange('postcode', e.target.value)}
                 placeholder="e.g. SW1A"
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full"
               />
             </div>
 
@@ -332,15 +333,15 @@ export default function AdminHomeownersList() {
               <label className="block text-body-small text-muted-foreground mb-2">
                 Status
               </label>
-              <select
+              <Select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full"
               >
                 <option value="">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-              </select>
+              </Select>
             </div>
 
             {/* Date From */}
@@ -348,11 +349,11 @@ export default function AdminHomeownersList() {
               <label className="block text-body-small text-muted-foreground mb-2">
                 Registered From
               </label>
-              <input
+              <Input
                 type="date"
                 value={filters.from}
                 onChange={(e) => handleFilterChange('from', e.target.value)}
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full"
               />
             </div>
 
@@ -361,14 +362,14 @@ export default function AdminHomeownersList() {
               <label className="block text-body-small text-muted-foreground mb-2">
                 Registered To
               </label>
-              <input
+              <Input
                 type="date"
                 value={filters.to}
                 onChange={(e) => handleFilterChange('to', e.target.value)}
-                className="w-full px-3 py-2 bg-surface shadow-neu-inset border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="w-full"
               />
             </div>
-          </div>
+            </div>
 
           {/* Clear Filters */}
           {hasActiveFilters && (
@@ -382,14 +383,17 @@ export default function AdminHomeownersList() {
               </button>
             </div>
           )}
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-surface shadow-neu-outset border border-error rounded-lg p-4">
-          <p className="text-error">{error}</p>
-        </div>
+        <Card className="border border-error">
+          <CardContent className="p-4">
+            <p className="text-error">{error}</p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Loading State */}
@@ -402,7 +406,8 @@ export default function AdminHomeownersList() {
 
       {/* Empty State */}
       {!isLoading && homeowners.length === 0 && (
-        <div className="bg-surface rounded-lg border border-border p-12 text-center">
+        <Card>
+          <CardContent className="p-12 text-center">
           <div className="text-muted-foreground mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -412,12 +417,13 @@ export default function AdminHomeownersList() {
           <p className="text-muted-foreground">
             {hasActiveFilters ? 'Try adjusting your search or filters' : 'No homeowners have registered yet'}
           </p>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Table */}
       {!isLoading && homeowners.length > 0 && (
-        <div className="bg-surface rounded-lg border border-border overflow-hidden">
+        <Card className="overflow-hidden">
           {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
@@ -748,7 +754,7 @@ export default function AdminHomeownersList() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Pagination */}
@@ -764,7 +770,7 @@ export default function AdminHomeownersList() {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-3 py-1.5 bg-surface shadow-neu-inset border border-border rounded-lg text-body-small focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
+                className="px-3 py-1.5 bg-surface shadow-inner border border-border rounded-lg text-body-small focus:ring-2 focus:ring-blue-500 focus:border-transparent text-foreground"
               >
                 <option value="10">10</option>
                 <option value="25">25</option>

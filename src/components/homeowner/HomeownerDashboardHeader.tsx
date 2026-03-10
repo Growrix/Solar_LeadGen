@@ -2,9 +2,8 @@
 
 import React, { useState } from"react";
 import Image from"next/image";
-import { ThemeSwitcher } from"@/components/ThemeSwitcher";
+import { HelpCircle as HelpCircleIcon, Search as SearchIcon, ThemeSwitcher } from"@/ds";
 import { NotificationDropdown } from"@/components/NotificationDropdown";
-import { Search as SearchIcon, HelpCircle as HelpCircleIcon } from"lucide-react";
 
 interface HomeownerDashboardHeaderProps {
   pageTitle: string;

@@ -1,5 +1,5 @@
-import React from 'react';
-import Button from '@/components/ui/button';
+﻿import React from 'react';
+import { Button } from '@/ds';
 
 interface RequestMoreQuotesCTAProps {
   remaining: number;
@@ -31,10 +31,10 @@ const RequestMoreQuotesCTA: React.FC<RequestMoreQuotesCTAProps> = ({
 
   return (
   <section
-    className={`bg-background rounded-card p-5 sm:p-6 shadow-neu-outset transition-colors duration-200 hover:shadow-neu-inset focus-within:shadow-neu-inset ${className}`}
+    className={`bg-background rounded-card p-5 sm:p-6 shadow-card transition-colors duration-200 hover:shadow-inner focus-within:shadow-inner ${className}`}
     tabIndex={-1}
   >
-  <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 shadow-neu-inset rounded-lg p-3 bg-background/80">
+  <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 shadow-inner rounded-lg p-3 bg-background/80">
         <div>
           <p className="text-caption uppercase tracking-wide text-muted-foreground">Quote Requests</p>
           <h2 className="text-heading-3 text-foreground">

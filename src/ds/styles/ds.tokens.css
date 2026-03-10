@@ -1,0 +1,364 @@
+@layer ds.tokens {
+  :root {
+    /* Yahoo-like typography (fonts via Google/Next self-hosting; palette unchanged) */
+    --ds-font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      Arial, sans-serif;
+    --ds-font-display: var(--font-display), var(--ds-font-sans);
+    --ds-font-mono: var(--font-fira-code), "Fira Code", Consolas, Monaco, "Courier New",
+      monospace;
+
+    /* Typography (Yahoo-like scale) */
+    --ds-font-size-1: 0.625rem; /* 10px */
+    --ds-font-size-2: 0.8125rem; /* 13px */
+    --ds-font-size-3: 1rem; /* 16px */
+    --ds-font-size-4: 1.125rem; /* 18px */
+    --ds-font-size-5: 1.25rem; /* 20px */
+    --ds-font-size-6: 1.875rem; /* 30px */
+    --ds-font-size-7: 2rem; /* 32px */
+
+    --ds-font-weight-regular: 400;
+    --ds-font-weight-book: 450;
+    --ds-font-weight-medium: 500;
+    --ds-font-weight-demibold: 550;
+    --ds-font-weight-semibold: 600;
+    --ds-font-weight-bold: 700;
+
+    --ds-line-height-tight: 1.2;
+    --ds-line-height-section: 1.2778;
+    --ds-line-height-meta: 1.4;
+    --ds-line-height-normal: 1.5;
+    --ds-line-height-relaxed: 1.75;
+
+    --ds-letter-spacing-tight: -0.02em;
+    --ds-letter-spacing-loose: 0.02em;
+
+    /* Spacing (4px base) */
+    --ds-space-0: 0;
+    --ds-space-1: 0.25rem;
+    --ds-space-2: 0.5rem;
+    --ds-space-3: 0.75rem;
+    --ds-space-4: 1rem;
+    --ds-space-6: 1.5rem;
+    --ds-space-7: 2rem;
+    --ds-space-8: 2.5rem;
+    --ds-space-9: 3rem;
+
+    /* Semantic spacing */
+    --ds-space-card-padding: var(--ds-space-6);
+    --ds-space-modal-padding: var(--ds-space-6);
+    --ds-space-form-gap: var(--ds-space-4);
+    --ds-space-section-margin: var(--ds-space-9);
+    --ds-space-heading-margin: var(--ds-space-4);
+    --ds-space-button-pad-x: var(--ds-space-4);
+    --ds-space-button-pad-y: var(--ds-space-2);
+    --ds-space-input-pad-x: var(--ds-space-4);
+    --ds-space-input-pad-y: var(--ds-space-2);
+    --ds-space-nav-padding: var(--ds-space-4);
+
+    /* Radii */
+    --ds-radius-default: 0.25rem;
+    --ds-radius-card: 0.5rem;
+    --ds-radius-modal: 0.5rem;
+    --ds-radius-full: 9999px;
+
+    /* Radius scale aliases (used by existing component CSS) */
+    --ds-radius-sm: var(--ds-radius-default);
+    --ds-radius-1: var(--ds-radius-default);
+    --ds-radius-2: var(--ds-radius-default);
+    --ds-radius-3: var(--ds-radius-card);
+
+    /* Motion */
+    --ds-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ds-duration-fast: 120ms;
+    --ds-duration-normal: 200ms;
+    --ds-duration-slow: 300ms;
+
+    /* Shadows */
+    --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    /* Z-index */
+    --ds-z-modal: 1000;
+    --ds-z-drawer: 1100;
+    --ds-z-dropdown: 1050;
+    --ds-z-tooltip: 1200;
+    --ds-z-toast: 1300;
+    --ds-z-sticky: 100;
+
+    /* Semantic colors (SolarConnect Dark) */
+    /*
+      Pro-grade structure:
+      - Palette tokens: scale-able building blocks (neutral/brand/status)
+      - Semantic tokens: what components should consume
+      - Theme selectors (html.theme-*) override palette + semantic mapping
+    */
+
+    /* Palette: neutrals (default = dark theme baseline) */
+    --ds-palette-neutral-0: #ffffff;
+    --ds-palette-neutral-50: #f3f4f6;
+    --ds-palette-neutral-100: #e5e7eb;
+    --ds-palette-neutral-200: #d1d5db;
+    --ds-palette-neutral-300: #cbd5e1;
+    --ds-palette-neutral-400: #9ca3af;
+    --ds-palette-neutral-500: #6b7280;
+    --ds-palette-neutral-600: #4b5563;
+    --ds-palette-neutral-700: #374151;
+    --ds-palette-neutral-800: #262626;
+    --ds-palette-neutral-850: #1b1b1e;
+    --ds-palette-neutral-900: #151419;
+    --ds-palette-neutral-950: #0b0b0c;
+
+    /* Palette: brand (default accent) */
+    --ds-palette-brand-50: #f4f0ff;
+    --ds-palette-brand-100: #e7dcff;
+    --ds-palette-brand-200: #cebaff;
+    --ds-palette-brand-300: #b18cff;
+    --ds-palette-brand-400: #9156ff;
+    --ds-palette-brand-500: #7b42f2;
+    --ds-palette-brand-600: #6d3be2;
+    --ds-palette-brand-700: #5c2fc6;
+    --ds-palette-brand-800: #452291;
+    --ds-palette-brand-900: #2e1660;
+    --ds-palette-brand-950: #230f4f;
+
+    /* Palette: status base (kept minimal; scale can expand later) */
+    --ds-palette-success-600: #16a34a;
+    --ds-palette-warning-600: #f59e0b;
+    --ds-palette-danger-600: #dc2626;
+    --ds-palette-info-600: #2563eb;
+
+    /* Semantic colors (default = dark) */
+    --ds-color-background: var(--ds-palette-neutral-900);
+    --ds-color-surface: var(--ds-palette-neutral-850);
+    --ds-color-border: var(--ds-palette-neutral-800);
+    --ds-color-foreground: var(--ds-palette-neutral-400);
+    --ds-color-foreground-secondary: var(--ds-palette-neutral-50);
+    --ds-color-accent: var(--ds-palette-brand-600);
+    --ds-color-accent-foreground: var(--ds-palette-brand-950);
+
+    --ds-color-primary: var(--ds-color-accent);
+    --ds-color-on-primary: var(--ds-color-foreground-secondary);
+
+    --ds-color-success: var(--ds-palette-success-600);
+    --ds-color-warning: var(--ds-palette-warning-600);
+    --ds-color-danger: var(--ds-palette-danger-600);
+    --ds-color-info: var(--ds-palette-info-600);
+
+    /* RGB helpers (space-separated, for use with rgb(var(--x) / a)) */
+    --ds-color-background-rgb: 21 20 25;
+    --ds-color-surface-rgb: 27 27 30;
+    --ds-color-border-rgb: 38 38 38;
+    --ds-color-foreground-rgb: 156 163 175;
+    --ds-color-foreground-secondary-rgb: 243 244 246;
+    --ds-color-on-primary-rgb: 243 244 246;
+    --ds-color-accent-rgb: 109 59 226;
+    --ds-color-success-rgb: 22 163 74;
+    --ds-color-warning-rgb: 245 158 11;
+    --ds-color-danger-rgb: 220 38 38;
+    --ds-color-info-rgb: 37 99 235;
+
+    /* Effects */
+    --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.45);
+    --ds-color-overlay: rgb(0 0 0 / 0.55);
+
+    /* Interactive states */
+    --ds-color-accent-hover: color-mix(in oklab, var(--ds-color-accent) 86%, white);
+    --ds-color-accent-active: color-mix(in oklab, var(--ds-color-accent) 78%, black);
+
+    /* Legacy aliases (kept for existing classnames) */
+    --ds-color-bg: var(--ds-color-background);
+    --ds-color-text: var(--ds-color-foreground);
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
+
+    /* Internal aliases used by some DS styles */
+    --ds-color-fg: var(--ds-color-foreground-secondary);
+    --ds-color-fg-muted: var(--ds-color-text-muted);
+
+    /* Layout dimensions */
+    --ds-container-max: 64rem;
+    --ds-container-narrow: 56rem;
+    --ds-container-wide: 72rem;
+
+    /* Sizing */
+    --ds-size-hero-min-h: 28rem;
+     /* Header band height (used for sticky offsets + viewport calculations).
+       Matches shells that use .ui-header-pad (padding-block: --ds-space-4)
+       around a row of controls that are at least --ds-size-touch-target tall. */
+     --ds-size-header-h: calc(var(--ds-size-touch-target) + var(--ds-space-4) + var(--ds-space-4));
+    --ds-size-viewport-minus-header: calc(100dvh - var(--ds-size-header-h));
+
+    --ds-size-touch-target: 2.75rem;
+    --ds-size-input-min-h: var(--ds-size-touch-target);
+    --ds-size-button-min-h: var(--ds-size-touch-target);
+    --ds-size-icon-button: var(--ds-size-touch-target);
+    --ds-size-fab: 3.25rem;
+    --ds-size-tabs-h: var(--ds-size-touch-target);
+    --ds-size-bottom-nav-h: 4rem;
+
+    /* Media / masonry layout sizing */
+    --ds-size-media-cell-sm: 6.5rem;
+    --ds-size-media-cell-md: 8rem;
+    --ds-size-media-cell-lg: 10rem;
+
+    --ds-size-masonry-col-sm: 14rem;
+    --ds-size-masonry-col-md: 18rem;
+    --ds-size-masonry-col-lg: 22rem;
+
+    /* Parallax strength (multiplied by a unitless progress value) */
+    --ds-size-parallax-strength-sm: 0.75rem;
+    --ds-size-parallax-strength-md: 1.25rem;
+    --ds-size-parallax-strength-lg: 1.75rem;
+
+    /* Device preview sizing (used by component-library previews) */
+    --ds-size-device-phone-w: 24.375rem; /* 390px */
+    --ds-size-device-phone-h: 52.75rem; /* 844px */
+
+    /* Virtualized list sizing */
+    --ds-size-virtual-list-h: 22rem;
+
+    /* Dashboard shell sizing */
+    --ds-size-shell-left: 13rem;
+    --ds-size-shell-right: 16rem;
+    --ds-size-shell-collapsed: 4.5rem;
+
+    /* Popovers / tooltips */
+    --ds-space-popover-pad: var(--ds-space-2);
+    --ds-space-tooltip-gap: var(--ds-space-2);
+  }
+
+  /* Theme: light (semantic + palette overrides) */
+  html.theme-light {
+    --ds-palette-neutral-0: #ffffff;
+    --ds-palette-neutral-50: #f9fafb;
+    --ds-palette-neutral-100: #f3f4f6;
+    --ds-palette-neutral-200: #e5e7eb;
+    --ds-palette-neutral-300: #d1d5db;
+    --ds-palette-neutral-400: #9ca3af;
+    --ds-palette-neutral-500: #6b7280;
+    --ds-palette-neutral-600: #4b5563;
+    --ds-palette-neutral-700: #374151;
+    --ds-palette-neutral-800: #1f2937;
+    --ds-palette-neutral-850: #111827;
+    --ds-palette-neutral-900: #0f172a;
+    --ds-palette-neutral-950: #020617;
+
+    --ds-color-background: #ffffff;
+    --ds-color-surface: #ffffff;
+    --ds-color-border: #e5e7eb;
+    --ds-color-foreground: #374151;
+    --ds-color-foreground-secondary: #111827;
+
+    --ds-color-accent: var(--ds-palette-brand-600);
+    --ds-color-accent-foreground: #ffffff;
+    --ds-color-on-primary: #ffffff;
+
+    --ds-color-overlay: rgb(0 0 0 / 0.35);
+
+    --ds-color-background-rgb: 255 255 255;
+    --ds-color-surface-rgb: 255 255 255;
+    --ds-color-border-rgb: 229 231 235;
+    --ds-color-foreground-rgb: 55 65 81;
+    --ds-color-foreground-secondary-rgb: 17 24 39;
+    --ds-color-on-primary-rgb: 255 255 255;
+  }
+
+  /* Theme: purple (example variant; keeps dark surfaces, shifts brand scale) */
+  html.theme-purple {
+    --ds-palette-brand-50: #faf5ff;
+    --ds-palette-brand-100: #f3e8ff;
+    --ds-palette-brand-200: #e9d5ff;
+    --ds-palette-brand-300: #d8b4fe;
+    --ds-palette-brand-400: #c084fc;
+    --ds-palette-brand-500: #a855f7;
+    --ds-palette-brand-600: #9333ea;
+    --ds-palette-brand-700: #7e22ce;
+    --ds-palette-brand-800: #6b21a8;
+    --ds-palette-brand-900: #581c87;
+    --ds-palette-brand-950: #3b0764;
+
+    --ds-color-accent-rgb: 147 51 234;
+  }
+
+  /* Density + platform knobs (scopable per page via a wrapper) */
+  :where(html[data-density="compact"], [data-density="compact"]) {
+    --ds-space-card-padding: var(--ds-space-4);
+    --ds-space-modal-padding: var(--ds-space-4);
+    --ds-space-form-gap: var(--ds-space-3);
+    --ds-space-section-margin: var(--ds-space-8);
+    --ds-space-nav-padding: var(--ds-space-3);
+  }
+
+  /* Visual variants (token-first; component styles may optionally respond) */
+  :where(html[data-visual="glass"], [data-visual="glass"]) {
+    --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --ds-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.18);
+  }
+
+  :where(html[data-visual="neumorph"], [data-visual="neumorph"]) {
+    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.18);
+    --ds-shadow-md: 0 14px 38px rgba(0, 0, 0, 0.28);
+  }
+
+  :where(html[data-visual="sleek"], [data-visual="sleek"]) {
+    --ds-shadow-sm: none;
+    --ds-shadow-md: none;
+    --ds-radius-default: 0.375rem;
+    --ds-radius-card: 0.5rem;
+  }
+
+  /* Platform presets (scopable per page via a wrapper) */
+  :where(html[data-platform="mobile"], [data-platform="mobile"]) {
+     /* Helios-style app surface (mobile-only)
+       Keeps desktop classic by scoping to data-platform. */
+     --ds-color-background: #020617; /* slate-950 */
+     --ds-color-surface: #0f172a; /* slate-900 */
+     --ds-color-border: #1e293b; /* slate-800 */
+     --ds-color-overlay: rgb(2 6 23 / 0.8);
+
+     /* App-like text hierarchy (prototype uses light text + muted gray) */
+     --ds-color-foreground: #f8fafc; /* slate-50 */
+     --ds-color-foreground-secondary: #ffffff;
+     --ds-color-text-muted: #64748b; /* slate-500 */
+
+     /* Accent (prototype red) */
+     --ds-color-accent: #ef4444; /* red-500 */
+     --ds-color-accent-foreground: #7f1d1d; /* red-900-ish for mixes */
+     --ds-color-on-primary: #ffffff;
+     --ds-color-accent-rgb: 239 68 68;
+
+    --ds-color-background-rgb: 2 6 23;
+    --ds-color-surface-rgb: 15 23 42;
+    --ds-color-border-rgb: 30 41 59;
+    --ds-color-foreground-rgb: 248 250 252;
+    --ds-color-foreground-secondary-rgb: 255 255 255;
+    --ds-color-on-primary-rgb: 255 255 255;
+
+     /* Common surfaces used by hover/secondary states */
+     --ds-color-surface-2: #1e293b; /* slate-800 */
+
+    /* App-like mobile typography: smaller headings, clearer body text.
+       Scoped to data-platform so desktop remains classic. */
+    --ds-font-size-1: 0.75rem; /* 12px */
+    --ds-font-size-2: 0.875rem; /* 14px */
+    --ds-font-size-3: 1rem; /* 16px */
+    --ds-font-size-4: 1.125rem; /* 18px */
+    --ds-font-size-5: 1.125rem; /* 18px */
+    --ds-font-size-6: 1.375rem; /* 22px */
+    --ds-font-size-7: 1.75rem; /* 28px */
+
+    /* App-like spacing + shape */
+    --ds-space-card-padding: var(--ds-space-4);
+    --ds-space-modal-padding: var(--ds-space-4);
+    --ds-space-form-gap: var(--ds-space-3);
+    --ds-space-nav-padding: var(--ds-space-3);
+
+    --ds-radius-default: 0.5rem;
+    --ds-radius-card: 0.75rem;
+    --ds-radius-modal: 0.75rem;
+
+    --ds-size-touch-target: 3rem;
+    --ds-size-bottom-nav-h: 4.25rem;
+    --ds-size-tabs-h: var(--ds-size-touch-target);
+  }
+}

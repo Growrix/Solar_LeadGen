@@ -1,4 +1,4 @@
-
+﻿
 
 
 import React from 'react';
@@ -32,12 +32,12 @@ const Footer: React.FC<FooterProps> = ({ onBecomePartnerClick, onPartnerSignInCl
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-3 mb-6">
-              <div className="bg-background shadow-neu-inset p-3 rounded-xl">
+              <div className="bg-background shadow-inner p-3 rounded-xl">
                 <Sun />
               </div>
               <span className="text-heading-3 text-foreground">SolarMatch</span>
             </div>
-            <p className="text-body text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-body text-muted-foreground mb-8">
               Australia&apos;s trusted platform for connecting homeowners with verified solar installers. 
               Get quotes, calculate rebates, and go solar with confidence.
             </p>

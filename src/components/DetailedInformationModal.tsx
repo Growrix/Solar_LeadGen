@@ -1,8 +1,7 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useEffect } from 'react';
-import Button from '@/components/ui/button';
-import { X, User, Phone, MapPin } from 'lucide-react';
+import { Button, MapPin, Phone, User, X } from '@/ds';
 
 interface DetailedInformationModalProps {
   isOpen: boolean;
@@ -184,7 +183,7 @@ const DetailedInformationModal: React.FC<DetailedInformationModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="theme-card relative w-full max-w-lg p-8 animate-slide-in-up"
+        className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-lg p-8 animate-slide-in-up"
         onClick={(e) => e.stopPropagation()}
       >
         <Button

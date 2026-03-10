@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { FileText, Zap, Sun, Battery, Plug, Grid, Gauge, Car } from 'lucide-react';
+import { Battery, Car, FileText, Gauge, GridIcon, Plug, Sun, Zap } from '@/ds';
 
 interface InstantQuoteResults {
   quoteType: 'residential' | 'commercial';
@@ -65,7 +65,7 @@ const HomeownerInstantQuoteDetails: React.FC<HomeownerInstantQuoteDetailsProps> 
   batteryRequired 
 }) => {
   return (
-    <div className="bg-surface rounded-2xl shadow-neu-inset p-5 space-y-4">
+    <div className="bg-surface rounded-2xl shadow-inner p-5 space-y-4">
       <h3 className="text-heading-4 text-foreground flex items-center gap-2 border-b border-border pb-3">
         <FileText className="h-5 w-5 text-primary" />
         InstantQuote Details
@@ -241,7 +241,7 @@ const HomeownerInstantQuoteDetails: React.FC<HomeownerInstantQuoteDetailsProps> 
       {(quoteData.includeVPP || quoteData.includeEVCharging || quoteData.includeSmartHome || quoteData.includeGridServices) && (
         <div className="space-y-2">
           <h4 className="text-label text-foreground flex items-center gap-2">
-            <Grid className="h-4 w-4 text-primary" />
+            <GridIcon className="h-4 w-4 text-primary" />
             Additional Features
           </h4>
           <div className="flex flex-wrap gap-2">

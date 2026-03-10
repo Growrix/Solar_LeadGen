@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import Button from '@/components/ui/button';
+import { Button } from '@/ds';
 
 // --- Icon Components ---
 const XIcon = () => (
@@ -11,7 +11,7 @@ const XIcon = () => (
 );
 
 const CheckCircleIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-success bg-surface rounded-full shadow-neu-inset">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-16 w-16 text-success bg-surface rounded-full shadow-inner">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
     <polyline points="22 4 12 14.01 9 11.01" />
   </svg>
@@ -63,7 +63,7 @@ const FirstQuoteSuccessModal: React.FC<FirstQuoteSuccessModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className="theme-card relative w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-in-up"
+        className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-in-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -77,7 +77,7 @@ const FirstQuoteSuccessModal: React.FC<FirstQuoteSuccessModalProps> = ({
 
         {/* Success Icon */}
         <div className="flex flex-col items-center justify-center pt-8 pb-6">
-          <div className="bg-background p-4 rounded-xl shadow-neu-inset flex items-center justify-center w-20 h-20 mb-4">
+          <div className="bg-background p-4 rounded-xl shadow-inner flex items-center justify-center w-20 h-20 mb-4">
             <CheckCircleIcon />
           </div>
           <h2 className="text-heading-1 text-foreground mt-4 mb-2">
@@ -89,7 +89,7 @@ const FirstQuoteSuccessModal: React.FC<FirstQuoteSuccessModalProps> = ({
         </div>
 
         {/* Remaining Balance Card */}
-        <div className="mx-6 mb-6 p-6 bg-surface rounded-xl border border-border shadow-neu-outset">
+        <div className="mx-6 mb-6 p-6 bg-surface rounded-xl border border-border shadow-card">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-heading-4 text-foreground mb-1">
@@ -113,7 +113,7 @@ const FirstQuoteSuccessModal: React.FC<FirstQuoteSuccessModalProps> = ({
         {/* Information Cards */}
         <div className="mx-6 mb-6 space-y-4">
           {/* Verification Benefits */}
-          <div className="p-5 bg-surface rounded-xl border border-success/30 shadow-neu-outset">
+          <div className="p-5 bg-surface rounded-xl border border-success/30 shadow-card">
             <div className="flex items-start space-x-3">
               <div className="mt-0.5">
                 <ShieldCheckIcon />

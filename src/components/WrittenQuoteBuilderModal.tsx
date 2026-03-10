@@ -1,11 +1,9 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { useSession } from 'next-auth/react';
-import Button from '@/components/ui/button';
 import { LiveCountdownBarCompact } from '@/components/LiveCountdownBar';
-import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download, Check } from 'lucide-react';
+import { Button, Check, ChevronDown, ChevronUp, Download, Eye, FileText, Info, Modal, Save, Send, X } from '@/ds';
 import { calcQuoteTotals, DEFAULT_ASSUMPTIONS, QuoteInputs } from '@/utils/quoteCalculator';
 import { parseBudgetRange } from '@/lib/mappers/instant-to-bid';
 import SavingsChart from './SavingsChart';
@@ -837,13 +835,6 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
   // Effects
   useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  useEffect(() => {
     setIsMounted(true);
   }, []);
 
@@ -851,16 +842,6 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     if (!isOpen) return;
     lastAutosavedSnapshotRef.current = null;
   }, [isOpen, lead?.id, mode]);
-
-  // UI-only: prevent background scroll while modal is open
-  useEffect(() => {
-    if (!isOpen || !isMounted) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOpen, isMounted]);
 
   // Fetch full lead data from API (same pattern as BidEvaluationModal)
   useEffect(() => {
@@ -1356,14 +1337,16 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
     budgetRange && 
     currentTotals.total > budgetRange.max * 1.1; // Show if >10% over budget
 
-  return createPortal(
-    <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1400] flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      ariaLabel={mode === 'quote' ? 'Written Quote Builder' : `Quote Builder: ${lead.name}`}
+      className="w-full h-full md:max-w-[98vw] md:max-h-[98vh] p-0 overflow-hidden"
     >
       <div
         ref={modalRef}
-        className="bg-background relative w-full h-full md:max-w-[98vw] md:max-h-[98vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg overflow-hidden"
+        className="bg-background relative w-full h-full md:rounded-2xl flex flex-col animate-scale-in shadow-modal overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Draft Restoration Banner */}
@@ -1388,7 +1371,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             </div>
             <Button
               onClick={() => setIsBudgetHintDismissed(true)}
-              variant="minimal"
+              variant="ghost"
               className="p-1 text-accent hover:text-accent/80"
             >
               <X className="h-4 w-4" />
@@ -1447,7 +1430,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
               </Button>
               <Button
                 onClick={() => alert('Save Draft clicked')}
-                variant="minimal"
+                variant="ghost"
                 className="flex-1 md:flex-initial px-4 py-2"
               >
                 <Save className="h-4 w-4" /> Save Draft
@@ -1458,6 +1441,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                     setIsPreviewModalOpen(true);
                     return;
                   }
+
                   handleSubmit();
                 }}
                 disabled={isSubmitting}
@@ -1471,7 +1455,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
               </Button>
               <Button
                 onClick={onClose}
-                variant="minimal"
+                variant="ghost"
                 className="hidden md:flex p-2"
               >
                 <X className="h-4 w-4" />
@@ -1721,7 +1705,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                                 variant="secondary"
                                 onClick={handleRejectDeal}
                                 disabled={isRejectingDeal}
-                                className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                                className="w-full border-destructive text-destructive hover:bg-destructive hover:text-primary-foreground"
                               >
                                 {isRejectingDeal ? 'Rejecting...' : 'Reject Deal'}
                               </Button>
@@ -1774,7 +1758,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                                 : 'Extend by 2 days (one-time)'}
                             </Button>
                             <Button
-                              variant="minimal"
+                              variant="ghost"
                               onClick={handleRequestAdminExtension}
                               disabled={isRequestingAdminExtension}
                               className="w-full"
@@ -1787,7 +1771,7 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                             variant="secondary"
                             onClick={handleRejectNegotiationClick}
                             disabled={isRejectingNegotiation}
-                            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                            className="w-full border-destructive text-destructive hover:bg-destructive hover:text-primary-foreground"
                           >
                             {isRejectingNegotiation ? 'Rejecting...' : 'Reject Quote'}
                           </Button>
@@ -1913,7 +1897,6 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
             </div>
           </div>
         </div>
-      </div>
 
       {/* Bid Evaluation Modal */}
       {lead && (
@@ -1983,19 +1966,19 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
 
       {/* Done Deal Confirmation Modal */}
       {showDoneDealConfirmation && negotiationQuote && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
-          onClick={(e) => e.stopPropagation()}
+        <Modal
+          open={showDoneDealConfirmation}
+          onClose={() => setShowDoneDealConfirmation(false)}
+          ariaLabel="Confirm Done Deal"
+          className="w-full max-w-md"
         >
-          <div
-            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="space-y-4">
             <h3 className="text-heading-4 text-foreground">Confirm Done Deal</h3>
             <p className="text-body text-muted-foreground">
-              Are you sure you want to proceed with the final price of <span className="text-foreground">${getLastOfferAmount(negotiationQuote).toLocaleString()}</span>?
+              Are you sure you want to proceed with the final price of{' '}
+              <span className="text-foreground">${getLastOfferAmount(negotiationQuote).toLocaleString()}</span>?
             </p>
-            
+
             <div className="flex items-center gap-3 pt-4">
               <Button
                 variant="secondary"
@@ -2014,19 +1997,17 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
               </Button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* Reject Negotiation Confirmation Modal */}
       {showRejectNegotiationConfirmation && negotiationQuote && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[1410] flex items-center justify-center p-4"
-          onClick={(e) => e.stopPropagation()}
+        <Modal
+          open={showRejectNegotiationConfirmation}
+          onClose={() => setShowRejectNegotiationConfirmation(false)}
+          ariaLabel="Reject Quote"
+          className="w-full max-w-md"
         >
-          <div
-            className="bg-background rounded-2xl p-6 max-w-md w-full space-y-4 shadow-neu-outset-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
             <h3 className="text-heading-4 text-destructive">Reject Quote</h3>
             <p className="text-body text-muted-foreground">
               Are you sure you want to reject this negotiation?
@@ -2095,11 +2076,11 @@ const WrittenQuoteBuilderModal: React.FC<WrittenQuoteBuilderModalProps> = ({
                 {isRejectingNegotiation ? 'Rejecting...' : 'Confirm Reject'}
               </Button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
-    </div>
-  , document.body);
+      </div>
+    </Modal>
+  );
 };
 
 // Collapsible Section Component

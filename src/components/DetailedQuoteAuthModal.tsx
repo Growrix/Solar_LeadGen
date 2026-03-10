@@ -97,7 +97,7 @@ const DetailedQuoteAuthModal: React.FC<DetailedQuoteAuthModalProps> = ({ isOpen,
       onClick={onClose}
     >
       <div
-        className="theme-card relative w-full max-w-lg p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto"
+        className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-lg p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button

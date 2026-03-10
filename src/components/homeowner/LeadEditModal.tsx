@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LeadEditModal Component
  * 
  * Purpose: Modal for editing existing leads (before admin approval)
@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Modal } from '@/ds';
 import SimplifiedQuoteForm from './SimplifiedQuoteForm';
 
 // Icon components
@@ -161,14 +162,8 @@ export default function LeadEditModal({
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8 animate-fade-in"
-      onClick={handleCancel}
-    >
-      <div 
-        className="theme-card relative w-full max-w-5xl p-4 sm:p-6 lg:p-8 animate-slide-in-up max-h-[95vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Modal open={isOpen} onClose={handleCancel} className="max-w-5xl w-full p-0 overflow-hidden">
+      <div className="bg-surface rounded-card border border-border shadow-card relative w-full p-4 sm:p-6 lg:p-8 animate-slide-in-up max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-surface border-b border-border px-6 py-4 flex items-center justify-between rounded-t-lg -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 mb-6">
           <div>
@@ -239,6 +234,6 @@ export default function LeadEditModal({
           isLoading={isLoading}
         />
       </div>
-    </div>
+    </Modal>
   );
 }

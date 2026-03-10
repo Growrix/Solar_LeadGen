@@ -1,8 +1,8 @@
-'use client'
+﻿'use client'
 
 import React from 'react';
-import { Zap, Plus, Minus } from 'lucide-react';
 import { SYSTEM_TYPES } from './Presets';
+import { Input, Minus, Plus, Select, Zap } from '@/ds';
 
 interface SystemSelectionProps {
   systemType: string;
@@ -38,7 +38,7 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
   };
 
   return (
-    <div className="bg-background rounded-2xl shadow-neu-inset p-6">
+    <div className="bg-background rounded-2xl shadow-inner p-6">
       <h3 className="text-heading-5 text-foreground flex items-center gap-2 mb-6">
         <Zap className="h-5 w-5 text-primary" />
         System Selection
@@ -47,14 +47,14 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
         {/* Project Type */}
         <div className="flex-1 min-w-[160px]">
           <label className="text-label text-foreground block mb-2">Project Type</label>
-          <select
+          <Select
             value={projectType}
             onChange={(e) => onUpdate({ projectType: e.target.value })}
-            className="form-select w-full px-4 py-3"
+            className="w-full"
           >
             <option value="Residential">Residential</option>
             <option value="Commercial">Commercial</option>
-          </select>
+          </Select>
           {prefilledFields.includes('system.projectType') && (
             <p className="text-caption text-muted-foreground mt-1">
               Prefilled from homeowner Instant Quote
@@ -64,17 +64,17 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
         {/* System Type */}
         <div className="flex-1 min-w-[200px]">
           <label className="text-label text-foreground block mb-2">System Type</label>
-          <select
+          <Select
             value={systemType}
             onChange={(e) => onUpdate({ systemType: e.target.value })}
-            className="form-select w-full px-4 py-3"
+            className="w-full"
           >
             {SYSTEM_TYPES.map((type) => (
               <option key={type.value} value={type.value}>
                 {type.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         {/* System Size */}
         <div className="flex-1 min-w-[140px]">
@@ -88,14 +88,14 @@ const SystemSelection: React.FC<SystemSelectionProps> = ({
             >
               <Minus className="h-4 w-4" />
             </button>
-            <input
+            <Input
               type="number"
               min="0"
               max="100"
               step="0.1"
               value={systemSize}
               onChange={(e) => handleSizeChange(parseFloat(e.target.value) || 0)}
-              className="form-input max-w-[100px] px-4 py-3"
+              className="max-w-[100px] px-4 py-3"
             />
             <button
               type="button"

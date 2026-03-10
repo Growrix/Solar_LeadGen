@@ -1,8 +1,7 @@
-'use client'
+﻿'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import Button from '@/components/ui/button';
-import { X, Save, Send, Eye, FileText, ChevronDown, ChevronUp, Info, Download } from 'lucide-react';
+import { Button, ChevronDown, ChevronUp, Download, Eye, FileText, Info, Modal, Save, Send, X } from '@/ds';
 import { calcQuoteTotals, DEFAULT_ASSUMPTIONS, QuoteInputs } from '@/utils/quoteCalculator';
 import { parseBudgetRange } from '@/lib/mappers/instant-to-bid';
 import SavingsChart from './SavingsChart';
@@ -260,14 +259,6 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
       }
     ];
   };
-
-  // Effects
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   // Fetch full lead data from API (same pattern as BidEvaluationModal)
   useEffect(() => {
@@ -704,13 +695,15 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
     currentTotals.total > budgetRange.max * 1.1; // Show if >10% over budget
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4 animate-fade-in"
-      onClick={onClose}
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      ariaLabel={mode === 'bid' ? 'Bid Builder' : `Quote Builder: ${lead.name}`}
+      className="w-full h-full md:max-w-[98vw] md:max-h-[98vh] p-0 overflow-hidden"
     >
       <div
         ref={modalRef}
-        className="bg-background relative w-full h-full md:max-w-[98vw] md:max-h-[98vh] md:rounded-2xl flex flex-col animate-scale-in shadow-neu-outset-lg overflow-hidden"
+        className="bg-background relative w-full h-full md:rounded-2xl flex flex-col animate-scale-in shadow-modal overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Draft Restoration Banner */}
@@ -735,7 +728,7 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
             </div>
             <Button
               onClick={() => setIsBudgetHintDismissed(true)}
-              variant="minimal"
+              variant="ghost"
               className="p-1 text-accent hover:text-accent/80"
             >
               <X className="h-4 w-4" />
@@ -791,7 +784,7 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
               </Button>
               <Button
                 onClick={() => alert('Save Draft clicked')}
-                variant="minimal"
+                variant="ghost"
                 className="flex-1 md:flex-initial px-4 py-2"
               >
                 <Save className="h-4 w-4" /> Save Draft
@@ -809,7 +802,7 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
               </Button>
               <Button
                 onClick={onClose}
-                variant="minimal"
+                variant="ghost"
                 className="hidden md:flex p-2"
               >
                 <X className="h-4 w-4" />
@@ -1005,7 +998,6 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
             </div>
           </div>
         </div>
-      </div>
 
       {/* Bid Evaluation Modal */}
       {lead && (
@@ -1072,7 +1064,8 @@ const QuoteBuilderModal: React.FC<QuoteBuilderModalProps> = ({
           isSubmitting={isSubmitting}
         />
       )}
-    </div>
+      </div>
+    </Modal>
   );
 };
 

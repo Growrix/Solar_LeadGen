@@ -371,17 +371,18 @@ export default function LayoutContent({ children }: LayoutContentProps) {
   const isGuestPage = pathname === '/' || pathname?.startsWith('/blog');
 
   return (
-    <>
+    <div className="ui-page">
       {/* Only show main site header/topbar on non-installer, non-homeowner, and non-admin routes */}
       {!isInstallerRoute && !isHomeownerRoute && !isAdminRoute && (
-        <div className={`sticky top-0 z-30 transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div
+          className={`ui-sticky-top transition-transform duration-300 ease-in-out ${
+            isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+          }`}
+        >
           {!isLoggedIn && (
-            <TopBar 
-              onBecomePartnerClick={handleBecomePartner}
-              onPartnerSignInClick={handlePartnerSignIn}
-            />
+            <TopBar onBecomePartnerClick={handleBecomePartner} onPartnerSignInClick={handlePartnerSignIn} />
           )}
-          <HeaderMenu 
+          <HeaderMenu
             isLoggedIn={isLoggedIn}
             onLoginClick={handleLoginClick}
             onSignupClick={handleSignupClick}
@@ -395,7 +396,7 @@ export default function LayoutContent({ children }: LayoutContentProps) {
         </div>
       )}
 
-      {children}
+      <div className="ui-page-main">{children}</div>
 
       {/* Installer Modals */}
       <InstallerEligibilityModal 
@@ -483,6 +484,6 @@ export default function LayoutContent({ children }: LayoutContentProps) {
           onSignupClick={handleSignupClick}
         />
       ) : null}
-    </>
+    </div>
   );
 }

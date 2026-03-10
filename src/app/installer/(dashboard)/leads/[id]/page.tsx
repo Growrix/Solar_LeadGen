@@ -16,18 +16,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
-  PhoneIcon,
-  EnvelopeIcon,
-  MapPinIcon,
-  HomeIcon,
-  BoltIcon,
-  CurrencyPoundIcon,
-  CalendarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  ArrowLeftIcon,
-  ChatBubbleLeftIcon
-} from '@heroicons/react/24/outline';
+  Button,
+  Card,
+  Icon,
+  Skeleton,
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Home,
+  Mail,
+  MessageSquare,
+  Phone,
+  Zap,
+} from '@/ds';
 
 interface Lead {
   id: string;
@@ -146,14 +149,18 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="min-h-screen py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-slate-200 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              <div className="h-64 bg-slate-200 rounded-lg"></div>
-              <div className="h-48 bg-slate-200 rounded-lg"></div>
+          <div className="space-y-4">
+            <div className="max-w-sm mb-2">
+              <Skeleton lines={1} />
             </div>
+            <Card className="p-6">
+              <Skeleton lines={10} />
+            </Card>
+            <Card className="p-6">
+              <Skeleton lines={8} />
+            </Card>
           </div>
         </div>
       </div>
@@ -162,15 +169,16 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
 
   if (error || !lead) {
     return (
-      <div className="min-h-screen bg-slate-50 py-8">
+      <div className="min-h-screen py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button
+          <Button
             onClick={handleBack}
-            className="mb-6 flex items-center text-muted hover:text-foreground"
+            variant="text"
+            className="mb-6 inline-flex items-center"
           >
-            <ArrowLeftIcon className="h-5 w-5 mr-2" />
+            <Icon icon={ArrowLeft} size="md" className="mr-2" aria-hidden />
             Back to Leads
-          </button>
+          </Button>
           <div className="bg-error/10 border border-error rounded-lg p-6">
             <p className="text-error">
               {error || 'Lead not found'}
@@ -182,16 +190,17 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
-        <button
+        <Button
           onClick={handleBack}
-          className="mb-6 flex items-center text-muted hover:text-foreground transition-colors"
+          variant="text"
+          className="mb-6 inline-flex items-center"
         >
-          <ArrowLeftIcon className="h-5 w-5 mr-2" />
+          <Icon icon={ArrowLeft} size="md" className="mr-2" aria-hidden />
           Back to Purchased Leads
-        </button>
+        </Button>
 
         {/* Header */}
         <div className="mb-6">
@@ -205,7 +214,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                   {lead?.quoteType?.replace('_', ' ') || 'Unknown'}
                 </span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-body-small bg-success/20 text-success">
-                  <CheckCircleIcon className="h-4 w-4 mr-1" />
+                  <Icon icon={CheckCircle} size="sm" className="mr-1" aria-hidden />
                   Purchased
                 </span>
               </div>
@@ -217,21 +226,21 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                 onClick={handleCall}
                 className="flex items-center px-4 py-2 bg-success text-foreground-secondary rounded-lg hover:bg-success transition-colors"
               >
-                <PhoneIcon className="h-5 w-5 mr-2" />
+                <Icon icon={Phone} size="md" className="mr-2" aria-hidden />
                 Call
               </button>
               <button
                 onClick={handleEmail}
                 className="flex items-center px-4 py-2 bg-primary text-foreground-secondary rounded-lg hover:bg-primary transition-colors"
               >
-                <EnvelopeIcon className="h-5 w-5 mr-2" />
+                <Icon icon={Mail} size="md" className="mr-2" aria-hidden />
                 Email
               </button>
               <button
                 onClick={handleMessage}
                 className="flex items-center px-4 py-2 bg-accent text-foreground-secondary rounded-lg hover:bg-accent/90 transition-colors"
               >
-                <ChatBubbleLeftIcon className="h-5 w-5 mr-2" />
+                <Icon icon={MessageSquare} size="md" className="mr-2" aria-hidden />
                 Message
               </button>
             </div>
@@ -312,7 +321,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                         Property Type
                       </div>
                       <div className="flex items-center text-foreground">
-                        <HomeIcon className="h-5 w-5 mr-2 text-muted" />
+                        <Icon icon={Home} size="md" className="mr-2 text-muted" aria-hidden />
                         {lead.quoteData.propertyType}
                       </div>
                     </div>
@@ -384,7 +393,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                         System Size
                       </div>
                       <div className="flex items-center text-foreground">
-                        <BoltIcon className="h-5 w-5 mr-2 text-warning" />
+                        <Icon icon={Zap} size="md" className="mr-2 text-warning" aria-hidden />
                         <span className="text-heading-2">{lead.quoteData.systemSize}</span>
                         <span className="ml-1 text-body-small">kW</span>
                       </div>
@@ -547,7 +556,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                     Purchase Price
                   </div>
                   <div className="flex items-center">
-                    <CurrencyPoundIcon className="h-6 w-6 text-brand-600 mr-2" />
+                    <Icon icon={DollarSign} size="lg" className="text-brand-600 mr-2" aria-hidden />
                     <span className="text-heading-1 text-foreground">
                       {lead.leadPrice || 50}
                     </span>
@@ -559,7 +568,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                       Purchased On
                     </div>
                     <div className="flex items-center text-foreground">
-                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      <Icon icon={Calendar} size="sm" className="mr-2" aria-hidden />
                       {new Date(lead.purchasedAt).toLocaleDateString('en-GB', {
                         day: 'numeric',
                         month: 'long',
@@ -611,7 +620,7 @@ export default function LeadDetailPage({ params }: { params: { id: string } }) {
                   Installation Urgency
                 </h2>
                 <div className="flex items-center">
-                  <ClockIcon className="h-5 w-5 text-accent mr-2" />
+                  <Icon icon={Clock} size="md" className="text-accent mr-2" aria-hidden />
                   <span className="text-foreground">
                     {lead.quoteData.installationUrgency}
                   </span>

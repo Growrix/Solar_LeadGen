@@ -123,7 +123,7 @@ export default async function BlogPostBySlugPage({ params }: BlogPostPageProps) 
 
                 <div className="prose prose-lg max-w-none space-y-6">
                   {excerpt ? <p className="text-heading-3 text-muted-foreground">{excerpt}</p> : null}
-                  <div className="text-foreground leading-relaxed" dangerouslySetInnerHTML={{ __html: post.content?.rendered ?? '' }} />
+                  <div className="text-foreground" dangerouslySetInnerHTML={{ __html: post.content?.rendered ?? '' }} />
                 </div>
               </div>
 

@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/button';
+import { Button, Card, Input } from '@/ds';
 
 // --- Icon Components (matching SOT) ---
 const LockIcon = () => (
@@ -102,9 +102,9 @@ const AdminSignIn: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in">
-      <div className="theme-card relative w-full max-w-md p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up">
+      <Card className="relative w-full max-w-md p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-surface shadow-neu-outset rounded-2xl mx-auto mb-6 flex items-center justify-center">
+          <div className="w-16 h-16 bg-surface shadow-card rounded-2xl mx-auto mb-6 flex items-center justify-center">
             <LockIcon />
           </div>
           <h2 className="text-heading-2 text-foreground mb-2">Admin Login</h2>
@@ -112,7 +112,7 @@ const AdminSignIn: React.FC = () => {
         </div>
 
         {error && (
-          <div className="bg-destructive/10 shadow-neu-inset border border-destructive/30 rounded-2xl p-4 mb-6">
+          <div className="bg-destructive/10 shadow-inner border border-destructive/30 rounded-2xl p-4 mb-6">
             <div className="flex items-start space-x-3">
               <AlertTriangleIcon />
               <div>
@@ -124,7 +124,7 @@ const AdminSignIn: React.FC = () => {
         )}
 
         {success && (
-          <div className="bg-success/10 shadow-neu-inset border border-success/30 rounded-2xl p-4 mb-6">
+          <div className="bg-success/10 shadow-inner border border-success/30 rounded-2xl p-4 mb-6">
             <div className="flex items-center space-x-3">
               <CheckCircleIcon />
               <p className="text-success text-body-small">{success}</p>
@@ -141,13 +141,13 @@ const AdminSignIn: React.FC = () => {
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
                 </svg>
               </div>
-              <input
+              <Input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Admin email"
-                className="form-input w-full pl-11 pr-4 py-3"
+                className="w-full pl-11 pr-4 py-3"
                 required
               />
             </div>
@@ -161,22 +161,23 @@ const AdminSignIn: React.FC = () => {
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
               </div>
-              <input
+              <Input
                 type={showPassword ?"text" :"password"}
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Password"
-                className="form-input w-full pl-11 pr-12 py-3"
+                className="w-full pl-11 pr-12 py-3"
                 required
               />
-              <button
+              <Button
                 type="button"
+                variant="icon"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-subtle hover:text-foreground transition-colors"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-subtle hover:text-foreground transition-colors h-8 w-8"
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -184,7 +185,8 @@ const AdminSignIn: React.FC = () => {
             type="submit"
             variant="secondary"
             disabled={loading || !!success}
-            className="w-full px-5 py-3"
+            size="lg"
+            className="ui-w-full"
           >
             {loading ? (
               <div className="flex items-center justify-center space-x-2">
@@ -202,7 +204,7 @@ const AdminSignIn: React.FC = () => {
             Secure admin access only
           </p>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

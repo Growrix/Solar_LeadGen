@@ -116,8 +116,8 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // DEBUG: Print token size (only in development, never expose token contents)
-      if (process.env.NODE_ENV === 'development') {
+      // DEBUG: Print token size (only when explicitly enabled, never expose token contents)
+      if (process.env.NODE_ENV === 'development' && process.env.NEXTAUTH_DEBUG === 'true') {
         try {
           const tokenString = JSON.stringify(token);
           console.log('[JWT DEBUG] Token size:', tokenString.length, 'bytes');

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import InstallerLeadFeed from '@/components/InstallerLeadFeed';
 import InstallerMessagingModal from '@/components/InstallerMessagingModal';
+import { Button, Spinner } from '@/ds';
 import type { AssignedLead } from '@/types/installer';
 import type { Lead, InstallerProfile } from '@/components/InstallerLeadFeed';
 
@@ -267,7 +268,9 @@ export default function InstallerLeadsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+          <div className="flex justify-center mb-4">
+            <Spinner size="lg" label="Loading your assigned leads" />
+          </div>
           <p className="text-foreground-muted">Loading your assigned leads...</p>
         </div>
       </div>
@@ -279,12 +282,9 @@ export default function InstallerLeadsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-error mb-4">⚠️ {error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-accent text-white rounded-lg hover:opacity-90"
-          >
+          <Button onClick={() => window.location.reload()} variant="primary">
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );

@@ -19,7 +19,7 @@ interface QuoteDataDisplayProps {
 export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDataDisplayProps) {
   if (!quoteData) {
     return (
-      <div className={`rounded-lg border border-warning bg-surface shadow-neu-outset p-4 ${className}`}>
+      <div className={`rounded-lg border border-warning bg-surface shadow-card p-4 ${className}`}>
         <p className="text-body-small text-warning">
           ⚠️ No quote data available. This lead was created before Phase 4.5 implementation.
         </p>
@@ -43,7 +43,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
     <div className={`space-y-6 ${className}`}>
       {/* System Design Section */}
       {quoteData.recommendedSystemSize && (
-        <div className="rounded-lg border border-border bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-border bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             💡 System Design
           </h3>
@@ -82,7 +82,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
 
       {/* Financial Details Section */}
       {(quoteData.upfrontCost || quoteData.finalCost || quoteData.annualSavings) && (
-        <div className="rounded-lg border border-border bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-border bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             💰 Financial Details
           </h3>
@@ -141,7 +141,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
 
       {/* Battery Details Section */}
       {(quoteData.batteryIncluded || quoteData.batteryModel || quoteData.batteryCapacity) && (
-        <div className="rounded-lg border border-border bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-border bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             🔋 Battery Details
           </h3>
@@ -184,7 +184,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
 
       {/* Property & Roof Details */}
       {(quoteData.roofTilt || quoteData.panelOrientation || quoteData.shadingLevel) && (
-        <div className="rounded-lg border border-border bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-border bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             🏠 Property Details
           </h3>
@@ -227,7 +227,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
 
       {/* Environmental Impact */}
       {(quoteData.co2OffsetAnnual || quoteData.treesEquivalent || quoteData.annualGeneration) && (
-        <div className="rounded-lg border border-success bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-success bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             🌱 Environmental Impact
           </h3>
@@ -262,7 +262,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
 
       {/* Additional Preferences */}
       {(quoteData.includeVPP || quoteData.includeEVCharging || quoteData.includeOptimizers || quoteData.includeMicroinverters) && (
-        <div className="rounded-lg border border-border bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-border bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             ⚙️ Additional Preferences
           </h3>
@@ -293,7 +293,7 @@ export default function QuoteDataDisplay({ quoteData, className = '' }: QuoteDat
 
       {/* Retailer & Tariff Details */}
       {(quoteData.retailer || quoteData.tariffPlan) && (
-        <div className="rounded-lg border border-border bg-surface shadow-neu-outset p-6">
+        <div className="rounded-lg border border-border bg-surface shadow-card p-6">
           <h3 className="text-heading-4 text-foreground mb-4">
             ⚡ Retailer & Tariff
           </h3>

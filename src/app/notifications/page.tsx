@@ -11,7 +11,7 @@ import {
   XCircle, 
   CheckCircle,
   Loader2
-} from "lucide-react";
+} from "@/ds";
 import { resolveRoute } from "@/lib/notifications/route-resolver";
 import { getNotificationText } from "@/lib/notifications/message-catalog";
 

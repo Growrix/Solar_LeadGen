@@ -1,10 +1,8 @@
-'use client'
+﻿'use client'
 
 import React, { useState } from 'react';
-import { Package, Upload, Plus, Trash2 } from 'lucide-react';
 import { INVERTER_TYPES, BATTERY_CHEMISTRY, ADDON_OPTIONS } from './Presets';
-import Button from '@/components/ui/button';
-import FlexibleComboBox from '@/components/ui/FlexibleComboBox';
+import { Autocomplete, Button, Input, Package, Plus, Trash2, Upload } from '@/ds';
 
 interface ProductConfigurationProps {
   panels: PanelConfig;
@@ -133,7 +131,7 @@ const ProductConfiguration: React.FC<ProductConfigurationProps> = ({
   };
 
   return (
-    <div className="bg-background rounded-2xl shadow-neu-inset p-6 space-y-6">
+    <div className="bg-background rounded-2xl shadow-inner p-6 space-y-6">
       <h3 className="text-heading-5 text-foreground flex items-center gap-2">
         <Package className="h-5 w-5 text-primary" />
         Product Configuration
@@ -144,90 +142,96 @@ const ProductConfiguration: React.FC<ProductConfigurationProps> = ({
         <h4 className="text-body text-foreground">Solar Panels</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <FlexibleComboBox
-            label="Brand"
-            value={panels.brand}
-            onChange={(value) => handlePanelUpdate('brand', value)}
-            options={[
-              { value: 'Trina Solar', label: 'Trina Solar' },
-              { value: 'JinkoSolar', label: 'JinkoSolar' },
-              { value: 'Canadian Solar', label: 'Canadian Solar' },
-              { value: 'LONGi', label: 'LONGi' },
-              { value: 'JA Solar', label: 'JA Solar' },
-              { value: 'Risen Energy', label: 'Risen Energy' },
-              { value: 'Seraphim', label: 'Seraphim' },
-              { value: 'Suntech', label: 'Suntech' }
-            ]}
-            placeholder="Select or type panel brand"
-          />
+          <div>
+            <label className="text-label text-foreground block mb-2">Brand</label>
+            <Autocomplete
+              value={panels.brand}
+              onValueChange={(value) => handlePanelUpdate('brand', value)}
+              options={[
+                { id: 'Trina Solar', label: 'Trina Solar' },
+                { id: 'JinkoSolar', label: 'JinkoSolar' },
+                { id: 'Canadian Solar', label: 'Canadian Solar' },
+                { id: 'LONGi', label: 'LONGi' },
+                { id: 'JA Solar', label: 'JA Solar' },
+                { id: 'Risen Energy', label: 'Risen Energy' },
+                { id: 'Seraphim', label: 'Seraphim' },
+                { id: 'Suntech', label: 'Suntech' }
+              ]}
+              placeholder="Select or type panel brand"
+              label="Panel brand"
+            />
+          </div>
 
-          <FlexibleComboBox
-            label="Model"
-            value={panels.model}
-            onChange={(value) => handlePanelUpdate('model', value)}
-            options={[
-              { value: 'Vertex S+ 430W', label: 'Vertex S+ 430W (Trina)' },
-              { value: 'Tiger Neo 440W', label: 'Tiger Neo 440W (JinkoSolar)' },
-              { value: 'HiKu6 450W', label: 'HiKu6 450W (Canadian Solar)' },
-              { value: 'Hi-MO 5 435W', label: 'Hi-MO 5 435W (LONGi)' },
-              { value: 'DeepBlue 3.0 425W', label: 'DeepBlue 3.0 425W (JA Solar)' },
-              { value: 'Titan 420W', label: 'Titan 420W (Risen Energy)' }
-            ]}
-            placeholder="Select or type panel model"
-          />
+          <div>
+            <label className="text-label text-foreground block mb-2">Model</label>
+            <Autocomplete
+              value={panels.model}
+              onValueChange={(value) => handlePanelUpdate('model', value)}
+              options={[
+                { id: 'Vertex S+ 430W', label: 'Vertex S+ 430W (Trina)', value: 'Vertex S+ 430W' },
+                { id: 'Tiger Neo 440W', label: 'Tiger Neo 440W (JinkoSolar)', value: 'Tiger Neo 440W' },
+                { id: 'HiKu6 450W', label: 'HiKu6 450W (Canadian Solar)', value: 'HiKu6 450W' },
+                { id: 'Hi-MO 5 435W', label: 'Hi-MO 5 435W (LONGi)', value: 'Hi-MO 5 435W' },
+                { id: 'DeepBlue 3.0 425W', label: 'DeepBlue 3.0 425W (JA Solar)', value: 'DeepBlue 3.0 425W' },
+                { id: 'Titan 420W', label: 'Titan 420W (Risen Energy)', value: 'Titan 420W' }
+              ]}
+              placeholder="Select or type panel model"
+              label="Panel model"
+            />
+          </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Wattage (W)</label>
-            <input
+            <Input
               type="number"
               value={panels.wattage}
               onChange={(e) => handlePanelUpdate('wattage', parseFloat(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 430"
             />
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Efficiency (%)</label>
-            <input
+            <Input
               type="number"
               step="0.1"
               value={panels.efficiency}
               onChange={(e) => handlePanelUpdate('efficiency', parseFloat(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 21.5"
             />
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Quantity</label>
-            <input
+            <Input
               type="number"
               value={panels.qty}
               onChange={(e) => handlePanelUpdate('qty', parseInt(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 16"
             />
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Product Warranty (yrs)</label>
-            <input
+            <Input
               type="number"
               value={panels.productWarranty}
               onChange={(e) => handlePanelUpdate('productWarranty', parseInt(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 12"
             />
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Performance Warranty (yrs)</label>
-            <input
+            <Input
               type="number"
               value={panels.performanceWarranty}
               onChange={(e) => handlePanelUpdate('performanceWarranty', parseInt(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 25"
             />
           </div>
@@ -258,76 +262,85 @@ const ProductConfiguration: React.FC<ProductConfigurationProps> = ({
         <h4 className="text-body text-foreground">Inverter</h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <FlexibleComboBox
-            label="Brand"
-            value={inverter.brand}
-            onChange={(value) => handleInverterUpdate('brand', value)}
-            options={[
-              { value: 'Fronius', label: 'Fronius' },
-              { value: 'SolarEdge', label: 'SolarEdge' },
-              { value: 'Sungrow', label: 'Sungrow' },
-              { value: 'Huawei', label: 'Huawei' },
-              { value: 'GoodWe', label: 'GoodWe' },
-              { value: 'Enphase', label: 'Enphase' },
-              { value: 'SMA', label: 'SMA' },
-              { value: 'Growatt', label: 'Growatt' }
-            ]}
-            placeholder="Select or type inverter brand"
-          />
+          <div>
+            <label className="text-label text-foreground block mb-2">Brand</label>
+            <Autocomplete
+              value={inverter.brand}
+              onValueChange={(value) => handleInverterUpdate('brand', value)}
+              options={[
+                { id: 'Fronius', label: 'Fronius' },
+                { id: 'SolarEdge', label: 'SolarEdge' },
+                { id: 'Sungrow', label: 'Sungrow' },
+                { id: 'Huawei', label: 'Huawei' },
+                { id: 'GoodWe', label: 'GoodWe' },
+                { id: 'Enphase', label: 'Enphase' },
+                { id: 'SMA', label: 'SMA' },
+                { id: 'Growatt', label: 'Growatt' }
+              ]}
+              placeholder="Select or type inverter brand"
+              label="Inverter brand"
+            />
+          </div>
 
-          <FlexibleComboBox
-            label="Model"
-            value={inverter.model}
-            onChange={(value) => handleInverterUpdate('model', value)}
-            options={[
-              { value: 'Primo GEN24', label: 'Primo GEN24 (Fronius)' },
-              { value: 'HD-Wave SE5000', label: 'HD-Wave SE5000 (SolarEdge)' },
-              { value: 'SH5K', label: 'SH5K (Sungrow)' },
-              { value: 'SUN2000-5KTL', label: 'SUN2000-5KTL (Huawei)' },
-              { value: 'GW5000-EH', label: 'GW5000-EH (GoodWe)' },
-              { value: 'IQ8+', label: 'IQ8+ (Enphase)' }
-            ]}
-            placeholder="Select or type inverter model"
-          />
+          <div>
+            <label className="text-label text-foreground block mb-2">Model</label>
+            <Autocomplete
+              value={inverter.model}
+              onValueChange={(value) => handleInverterUpdate('model', value)}
+              options={[
+                { id: 'Primo GEN24', label: 'Primo GEN24 (Fronius)', value: 'Primo GEN24' },
+                { id: 'HD-Wave SE5000', label: 'HD-Wave SE5000 (SolarEdge)', value: 'HD-Wave SE5000' },
+                { id: 'SH5K', label: 'SH5K (Sungrow)', value: 'SH5K' },
+                { id: 'SUN2000-5KTL', label: 'SUN2000-5KTL (Huawei)', value: 'SUN2000-5KTL' },
+                { id: 'GW5000-EH', label: 'GW5000-EH (GoodWe)', value: 'GW5000-EH' },
+                { id: 'IQ8+', label: 'IQ8+ (Enphase)', value: 'IQ8+' }
+              ]}
+              placeholder="Select or type inverter model"
+              label="Inverter model"
+            />
+          </div>
 
-          <FlexibleComboBox
-            label="Type"
-            value={inverter.type}
-            onChange={(value) => handleInverterUpdate('type', value)}
-            options={INVERTER_TYPES}
-            placeholder="Select or type inverter type"
-          />
+          <div>
+            <label className="text-label text-foreground block mb-2">Type</label>
+            <Autocomplete
+              value={inverter.type}
+              onValueChange={(value) => handleInverterUpdate('type', value)}
+              options={INVERTER_TYPES.map((o) => ({ id: o.value, label: o.label, value: o.value }))}
+              placeholder="Select or type inverter type"
+              label="Inverter type"
+            />
+          </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Capacity (kW)</label>
-            <input
+            <Input
               type="number"
               step="0.1"
               value={inverter.capacityKw}
               onChange={(e) => handleInverterUpdate('capacityKw', parseFloat(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 5.0"
             />
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">MPPTs</label>
-            <input
+            <Input
               type="number"
               value={inverter.mppts}
               onChange={(e) => handleInverterUpdate('mppts', parseInt(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 2"
             />
           </div>
 
           <div>
             <label className="text-label text-foreground block mb-2">Warranty (yrs)</label>
-            <input
+            <Input
               type="number"
               value={inverter.warranty}
               onChange={(e) => handleInverterUpdate('warranty', parseInt(e.target.value) || 0)}
-              className="form-input w-full px-4 py-3"
+              className="w-full px-4 py-3"
               placeholder="e.g. 10"
             />
           </div>
@@ -358,78 +371,87 @@ const ProductConfiguration: React.FC<ProductConfigurationProps> = ({
 
         {includeBattery && battery && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FlexibleComboBox
-              label="Brand"
-              value={battery.brand}
-              onChange={(value) => handleBatteryUpdate('brand', value)}
-              options={[
-                { value: 'Tesla', label: 'Tesla' },
-                { value: 'LG Chem', label: 'LG Chem' },
-                { value: 'BYD', label: 'BYD' },
-                { value: 'Sungrow', label: 'Sungrow' },
-                { value: 'Huawei', label: 'Huawei' },
-                { value: 'Sonnen', label: 'Sonnen' },
-                { value: 'Alpha ESS', label: 'Alpha ESS' },
-                { value: 'Pylontech', label: 'Pylontech' }
-              ]}
-              placeholder="Select or type battery brand"
-            />
+            <div>
+              <label className="text-label text-foreground block mb-2">Brand</label>
+              <Autocomplete
+                value={battery.brand}
+                onValueChange={(value) => handleBatteryUpdate('brand', value)}
+                options={[
+                  { id: 'Tesla', label: 'Tesla' },
+                  { id: 'LG Chem', label: 'LG Chem' },
+                  { id: 'BYD', label: 'BYD' },
+                  { id: 'Sungrow', label: 'Sungrow' },
+                  { id: 'Huawei', label: 'Huawei' },
+                  { id: 'Sonnen', label: 'Sonnen' },
+                  { id: 'Alpha ESS', label: 'Alpha ESS' },
+                  { id: 'Pylontech', label: 'Pylontech' }
+                ]}
+                placeholder="Select or type battery brand"
+                label="Battery brand"
+              />
+            </div>
 
-            <FlexibleComboBox
-              label="Model"
-              value={battery.model}
-              onChange={(value) => handleBatteryUpdate('model', value)}
-              options={[
-                { value: 'Powerwall 2', label: 'Powerwall 2 (Tesla)' },
-                { value: 'Powerwall 3', label: 'Powerwall 3 (Tesla)' },
-                { value: 'RESU10H', label: 'RESU10H (LG Chem)' },
-                { value: 'Battery-Box Premium HVS', label: 'Battery-Box HVS (BYD)' },
-                { value: 'SBR096', label: 'SBR096 (Sungrow)' },
-                { value: 'LUNA2000', label: 'LUNA2000 (Huawei)' },
-                { value: 'SonnenBatterie 10', label: 'SonnenBatterie 10' }
-              ]}
-              placeholder="Select or type battery model"
-            />
+            <div>
+              <label className="text-label text-foreground block mb-2">Model</label>
+              <Autocomplete
+                value={battery.model}
+                onValueChange={(value) => handleBatteryUpdate('model', value)}
+                options={[
+                  { id: 'Powerwall 2', label: 'Powerwall 2 (Tesla)', value: 'Powerwall 2' },
+                  { id: 'Powerwall 3', label: 'Powerwall 3 (Tesla)', value: 'Powerwall 3' },
+                  { id: 'RESU10H', label: 'RESU10H (LG Chem)', value: 'RESU10H' },
+                  { id: 'Battery-Box Premium HVS', label: 'Battery-Box HVS (BYD)', value: 'Battery-Box Premium HVS' },
+                  { id: 'SBR096', label: 'SBR096 (Sungrow)', value: 'SBR096' },
+                  { id: 'LUNA2000', label: 'LUNA2000 (Huawei)', value: 'LUNA2000' },
+                  { id: 'SonnenBatterie 10', label: 'SonnenBatterie 10', value: 'SonnenBatterie 10' }
+                ]}
+                placeholder="Select or type battery model"
+                label="Battery model"
+              />
+            </div>
 
             <div>
               <label className="text-label text-foreground block mb-2">Usable Capacity (kWh)</label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
                 value={battery.usableKwh}
                 onChange={(e) => handleBatteryUpdate('usableKwh', parseFloat(e.target.value) || 0)}
-                className="form-input w-full px-4 py-3"
+                className="w-full px-4 py-3"
                 placeholder="e.g. 13.5"
               />
             </div>
 
             <div>
               <label className="text-label text-foreground block mb-2">Power Output (kW)</label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
                 value={battery.powerKw}
                 onChange={(e) => handleBatteryUpdate('powerKw', parseFloat(e.target.value) || 0)}
-                className="form-input w-full px-4 py-3"
+                className="w-full px-4 py-3"
                 placeholder="e.g. 5.0"
               />
             </div>
 
-            <FlexibleComboBox
-              label="Chemistry"
-              value={battery.chemistry}
-              onChange={(value) => handleBatteryUpdate('chemistry', value)}
-              options={BATTERY_CHEMISTRY}
-              placeholder="Select or type chemistry"
-            />
+            <div>
+              <label className="text-label text-foreground block mb-2">Chemistry</label>
+              <Autocomplete
+                value={battery.chemistry}
+                onValueChange={(value) => handleBatteryUpdate('chemistry', value)}
+                options={BATTERY_CHEMISTRY.map((o) => ({ id: o.value, label: o.label, value: o.value }))}
+                placeholder="Select or type chemistry"
+                label="Battery chemistry"
+              />
+            </div>
 
             <div>
               <label className="text-label text-foreground block mb-2">Warranty (yrs)</label>
-              <input
+              <Input
                 type="number"
                 value={battery.warranty}
                 onChange={(e) => handleBatteryUpdate('warranty', parseInt(e.target.value) || 0)}
-                className="form-input w-full px-4 py-3"
+                className="w-full px-4 py-3"
                 placeholder="e.g. 10"
               />
             </div>
@@ -533,23 +555,23 @@ const ProductConfiguration: React.FC<ProductConfigurationProps> = ({
               <div key={addon.key} className="grid grid-cols-12 gap-3 items-center">
                 <div className="col-span-4 text-body-small text-foreground">{addon.label}</div>
                 <div className="col-span-2">
-                  <input
+                  <Input
                     type="number"
                     min="1"
                     value={addon.qty}
                     onChange={(e) => updateAddon(addon.key, 'qty', parseInt(e.target.value) || 1)}
-                    className="form-input w-full px-3 py-2 text-center text-body-small"
+                    className="w-full px-3 py-2 text-center text-body-small"
                   />
                 </div>
                 <div className="col-span-2">
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     value={addon.unitPrice}
                     onChange={(e) =>
                       updateAddon(addon.key, 'unitPrice', parseFloat(e.target.value) || 0)
                     }
-                    className="form-input w-full px-3 py-2 text-right text-body-small"
+                    className="w-full px-3 py-2 text-right text-body-small"
                   />
                 </div>
                 <div className="col-span-2 text-right text-body-small text-foreground">

@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Button from '@/components/ui/button';
+import { Button, Modal } from '@/ds';
 import { z } from 'zod';
 import { useMultiFileUpload } from '@/hooks/useFileUpload';
 
@@ -206,17 +206,6 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
     }
   };
 
-  // Close on ESC
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [open, onClose]);
-
   // Reset on open
   useEffect(() => {
     if (open) {
@@ -228,17 +217,13 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-modal flex items-center justify-center px-4 py-6"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="verification-modal-title"
+    <Modal
+      open={open}
+      onClose={onClose}
+      ariaLabelledBy="verification-modal-title"
+      className="w-full max-w-4xl max-h-[90vh] overflow-y-auto p-0"
     >
-      <div
-        className="bg-surface border border-border rounded-xl shadow-neu-outset max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div>
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-border px-6 py-4 flex items-center justify-between z-10">
           <div>
@@ -264,7 +249,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
         <div className="px-6 py-6 space-y-8">
           
           {/* Section 1: Company & Representative */}
-          <div className="bg-surface border border-border rounded-xl p-6 shadow-neu-inset space-y-4">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-inner space-y-4">
             <div className="border-b border-border pb-3">
               <h3 className="text-heading-4 text-foreground">Company & Representative</h3>
               <p className="text-body-small text-muted-foreground">Primary contact and company information</p>
@@ -284,7 +269,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="text"
                 value={formData.companyName || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Solar Solutions Pty Ltd"
               />
               {errors.companyName && <p className="text-error text-body-small mt-1">{errors.companyName}</p>}
@@ -299,7 +284,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="text"
                 value={formData.representativeName || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, representativeName: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="John Smith"
               />
               {errors.representativeName && <p className="text-error text-body-small mt-1">{errors.representativeName}</p>}
@@ -314,7 +299,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="text"
                 value={formData.designation || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Managing Director"
               />
               {errors.designation && <p className="text-error text-body-small mt-1">{errors.designation}</p>}
@@ -329,7 +314,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="email"
                 value={formData.email || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="contact@solarsolutions.com.au"
               />
               {errors.email && <p className="text-error text-body-small mt-1">{errors.email}</p>}
@@ -344,7 +329,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="tel"
                 value={formData.phone || ''}
                 onChange={(e) => handlePhoneChange(e.target.value)}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="+61 4XX XXX XXX"
               />
               {errors.phone && <p className="text-error text-body-small mt-1">{errors.phone}</p>}
@@ -362,7 +347,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 rows={3}
                 value={formData.address || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Street address, city, state, postcode"
               />
               {errors.address && <p className="text-error text-body-small mt-1">{errors.address}</p>}
@@ -373,7 +358,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
           </div>
 
           {/* Section 2: Business Legal Information */}
-          <div className="bg-surface border border-border rounded-xl p-6 shadow-neu-inset space-y-4">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-inner space-y-4">
             <div className="border-b border-border pb-3">
               <h3 className="text-heading-4 text-foreground">Business Legal Information</h3>
               <p className="text-body-small text-muted-foreground">Company registration and legal details</p>
@@ -393,7 +378,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="text"
                 value={formData.abnOrLicense || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, abnOrLicense: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="12 345 678 901"
               />
               {errors.abnOrLicense && <p className="text-error text-body-small mt-1">{errors.abnOrLicense}</p>}
@@ -409,7 +394,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                   type="number"
                   value={formData.establishedYear || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, establishedYear: parseInt(e.target.value) }))}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="2020"
                   min="1900"
                   max={new Date().getFullYear()}
@@ -426,7 +411,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                   type="number"
                   value={formData.employeeCount || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, employeeCount: parseInt(e.target.value) }))}
-                  className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                   placeholder="5"
                   min="1"
                 />
@@ -447,7 +432,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
               />
               <div 
                 onClick={() => licenseFileRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-xl p-6 text-center bg-surface shadow-neu-inset hover:border-primary transition-colors cursor-pointer"
+                className="border-2 border-dashed border-border rounded-xl p-6 text-center bg-surface shadow-inner hover:border-primary transition-colors cursor-pointer"
               >
                 {uploadStates.license?.uploading ? (
                   <>
@@ -504,7 +489,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
               />
               <div 
                 onClick={() => abnFileRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-xl p-6 text-center bg-surface shadow-neu-inset hover:border-primary transition-colors cursor-pointer"
+                className="border-2 border-dashed border-border rounded-xl p-6 text-center bg-surface shadow-inner hover:border-primary transition-colors cursor-pointer"
               >
                 {uploadStates.abn?.uploading ? (
                   <>
@@ -550,7 +535,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
           </div>
 
           {/* Section 3: Services & Coverage */}
-          <div className="bg-surface border border-border rounded-xl p-6 shadow-neu-inset space-y-4">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-inner space-y-4">
             <div className="border-b border-border pb-3">
               <h3 className="text-heading-4 text-foreground">Services & Coverage</h3>
               <p className="text-body-small text-muted-foreground">Service offerings and areas covered</p>
@@ -626,7 +611,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                   const codes = inputValue.split(',').map(c => c.trim()).filter(Boolean);
                   setFormData(prev => ({ ...prev, postcodes: codes }));
                 }}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="2000, 2001, 2010"
               />
               
@@ -655,7 +640,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
           </div>
 
           {/* Section 4: Additional Information */}
-          <div className="bg-surface border border-border rounded-xl p-6 shadow-neu-inset space-y-4">
+          <div className="bg-surface border border-border rounded-xl p-6 shadow-inner space-y-4">
             <div className="border-b border-border pb-3">
               <h3 className="text-heading-4 text-foreground">Additional Information</h3>
               <p className="text-body-small text-muted-foreground">Website, social media, and company details</p>
@@ -670,7 +655,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 type="url"
                 value={formData.website || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="https://www.solarsolutions.com.au"
               />
               {errors.website && <p className="text-error text-body-small mt-1">{errors.website}</p>}
@@ -696,7 +681,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                       ...prev, 
                       socialLinks: { ...prev.socialLinks, facebook: e.target.value } 
                     }))}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="https://facebook.com/yourpage"
                   />
                 </div>
@@ -715,7 +700,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                       ...prev, 
                       socialLinks: { ...prev.socialLinks, instagram: e.target.value } 
                     }))}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="https://instagram.com/yourpage"
                   />
                 </div>
@@ -734,7 +719,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                       ...prev, 
                       socialLinks: { ...prev.socialLinks, linkedin: e.target.value } 
                     }))}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="https://linkedin.com/company/yourcompany"
                   />
                 </div>
@@ -753,7 +738,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                       ...prev, 
                       socialLinks: { ...prev.socialLinks, youtube: e.target.value } 
                     }))}
-                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full rounded-xl bg-surface border border-border px-4 py-2 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="https://youtube.com/@yourchannel"
                   />
                 </div>
@@ -768,7 +753,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
                 id="companyDescription"
                 value={formData.companyDescription || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, companyDescription: e.target.value }))}
-                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-neu-inset focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full rounded-xl bg-surface border border-border px-4 py-3 text-foreground shadow-inner focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Tell us about your company, experience, and what sets you apart..."
                 rows={4}
               />
@@ -787,7 +772,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
               />
               <div 
                 onClick={() => logoFileRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-xl p-6 text-center bg-surface shadow-neu-inset hover:border-primary transition-colors cursor-pointer"
+                className="border-2 border-dashed border-border rounded-xl p-6 text-center bg-surface shadow-inner hover:border-primary transition-colors cursor-pointer"
               >
                 {uploadStates.logo?.uploading ? (
                   <>
@@ -854,7 +839,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({ open, onClose, on
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

@@ -1,8 +1,7 @@
-'use client'
+﻿'use client'
 
 import React from 'react';
-import { DollarSign, Plus, Trash2, MapPin } from 'lucide-react';
-import Button from '@/components/ui/button';
+import { Button, DollarSign, Input, MapPin, Plus, Select, Trash2 } from '@/ds';
 import { getSTCZoneFromPostcode, calculateSTCCount, DEEMING_FACTORS, STCZone } from '@/utils/stcZones';
 
 interface PricingEngineProps {
@@ -190,7 +189,7 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
   };
 
   return (
-    <div className="bg-background rounded-2xl shadow-neu-inset p-6 space-y-6">
+    <div className="bg-background rounded-2xl shadow-inner p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-heading-5 text-foreground flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-primary" />
@@ -239,41 +238,41 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                 : 'grid-cols-[minmax(100px,1.5fr)_minmax(150px,3fr)_80px_120px_60px_120px_50px]'
             }`}>
             <div>
-              <select
+              <Select
                 value={item.category}
                 onChange={(e) => updateLineItem(item.id, 'category', e.target.value)}
-                className="form-select w-full px-3 py-2 text-body-small"
+                className="w-full px-3 py-2 text-body-small"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div>
-              <input
+              <Input
                 type="text"
                 value={item.description}
                 onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
                 placeholder="Description"
-                className={`form-input w-full px-3 py-2 text-body-small ${!item.description.trim() && item.description !== '' ? 'border-error' : ''}`}
+                className={`w-full px-3 py-2 text-body-small ${!item.description.trim() && item.description !== '' ? 'border-error' : ''}`}
               />
             </div>
 
             <div>
-              <input
+              <Input
                 type="number"
                 min="1"
                 value={item.qty}
                 onChange={(e) => updateLineItem(item.id, 'qty', parseInt(e.target.value) || 1)}
-                className={`form-input w-full px-3 py-2 text-center text-body-small ${item.qty <= 0 ? 'border-error' : ''}`}
+                className={`w-full px-3 py-2 text-center text-body-small ${item.qty <= 0 ? 'border-error' : ''}`}
               />
             </div>
 
             <div>
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="0.01"
@@ -281,13 +280,13 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                 onChange={(e) =>
                   updateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)
                 }
-                className={`form-input w-full px-3 py-2 text-right text-body-small ${item.unitPrice <= 0 ? 'border-error' : ''}`}
+                className={`w-full px-3 py-2 text-right text-body-small ${item.unitPrice <= 0 ? 'border-error' : ''}`}
               />
             </div>
 
             {installerCostMode && (
               <div>
-                <input
+                <Input
                   type="number"
                   min="0"
                   step="0.01"
@@ -295,7 +294,7 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                   onChange={(e) =>
                     updateLineItem(item.id, 'costCOGS', parseFloat(e.target.value) || 0)
                   }
-                  className="form-input w-full px-3 py-2 text-right text-body-small"
+                  className="w-full px-3 py-2 text-right text-body-small"
                 />
               </div>
             )}
@@ -365,12 +364,12 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                   <MapPin className="h-4 w-4" />
                   Postcode (for zone detection)
                 </label>
-                <input
+                <Input
                   type="text"
                   maxLength={4}
                   value={stc.postcode || ''}
                   onChange={(e) => handlePostcodeChange(e.target.value)}
-                  className="form-input w-full px-3 py-2"
+                  className="w-full px-3 py-2"
                   placeholder="e.g. 3000"
                 />
                 <p className="text-caption text-muted-foreground mt-1">
@@ -388,16 +387,16 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                   <label className="text-caption text-muted-foreground block mb-2">
                     STC Zone
                   </label>
-                  <select
+                  <Select
                     value={stc.zone}
                     onChange={(e) => onUpdate({ stc: { ...stc, zone: e.target.value } })}
-                    className="form-select w-full px-3 py-2"
+                    className="w-full px-3 py-2"
                   >
                     <option value="Zone 1">Zone 1</option>
                     <option value="Zone 2">Zone 2</option>
                     <option value="Zone 3">Zone 3</option>
                     <option value="Zone 4">Zone 4</option>
-                  </select>
+                  </Select>
                   <p className="text-caption text-muted-foreground mt-1">
                     Manual override available
                   </p>
@@ -407,14 +406,14 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                   <label className="text-caption text-muted-foreground block mb-2">
                     STC Count
                   </label>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     value={stc.stcCount}
                     onChange={(e) =>
                       onUpdate({ stc: { ...stc, stcCount: parseInt(e.target.value) || 0 } })
                     }
-                    className="form-input w-full px-3 py-2"
+                    className="w-full px-3 py-2"
                     placeholder="e.g. 90"
                   />
                   <p className="text-caption text-muted-foreground mt-1">
@@ -426,7 +425,7 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                   <label className="text-caption text-muted-foreground block mb-2">
                     STC Price ($)
                   </label>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="0.01"
@@ -434,7 +433,7 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                     onChange={(e) =>
                       onUpdate({ stc: { ...stc, stcPrice: parseFloat(e.target.value) || 0 } })
                     }
-                    className="form-input w-full px-3 py-2"
+                    className="w-full px-3 py-2"
                     placeholder="e.g. 40"
                   />
                   <p className="text-caption text-muted-foreground mt-1">
@@ -464,14 +463,14 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                 <label className="text-caption text-muted-foreground block mb-2">
                   Rebate Amount ($)
                 </label>
-                <input
+                <Input
                   type="number"
                   min="0"
                   value={vic.rebateAmount}
                   onChange={(e) =>
                     onUpdate({ vic: { ...vic, rebateAmount: parseFloat(e.target.value) || 0 } })
                   }
-                  className="form-input w-full md:w-1/3 px-3 py-2"
+                  className="w-full md:w-1/3 px-3 py-2"
                   placeholder="e.g. 1400"
                 />
               </div>
@@ -536,17 +535,17 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
             {discounts.map((discount) => (
               <div key={discount.id} className="grid grid-cols-12 gap-3 items-center">
                 <div className="col-span-7">
-                  <input
+                  <Input
                     type="text"
                     value={discount.label}
                     onChange={(e) => updateDiscount(discount.id, 'label', e.target.value)}
                     placeholder="Discount description"
-                    className="form-input w-full px-3 py-2 text-body-small"
+                    className="w-full px-3 py-2 text-body-small"
                   />
                 </div>
 
                 <div className="col-span-3">
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="0.01"
@@ -554,7 +553,7 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
                     onChange={(e) =>
                       updateDiscount(discount.id, 'amount', parseFloat(e.target.value) || 0)
                     }
-                    className="form-input w-full px-3 py-2 text-right text-body-small"
+                    className="w-full px-3 py-2 text-right text-body-small"
                   />
                 </div>
 
@@ -587,13 +586,13 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Solar Yield (kWh/kW/day)
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="0.1"
                 value={assumptions.yield_kWh_per_kW_per_day}
                 onChange={(e) => onUpdateAssumptions({ yield_kWh_per_kW_per_day: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 4.2"
               />
               <p className="text-caption text-muted-foreground mt-1">
@@ -605,14 +604,14 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Self-Consumption Ratio
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="1"
                 step="0.05"
                 value={assumptions.selfConsumption}
                 onChange={(e) => onUpdateAssumptions({ selfConsumption: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 0.5"
               />
               <p className="text-caption text-muted-foreground mt-1">
@@ -624,13 +623,13 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Retail Price ($/kWh)
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="0.01"
                 value={assumptions.retailPrice}
                 onChange={(e) => onUpdateAssumptions({ retailPrice: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 0.30"
               />
               <p className="text-caption text-muted-foreground mt-1">
@@ -647,13 +646,13 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Feed-in Tariff ($/kWh)
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="0.01"
                 value={assumptions.feedInTariff}
                 onChange={(e) => onUpdateAssumptions({ feedInTariff: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 0.08"
               />
               <p className="text-caption text-muted-foreground mt-1">
@@ -670,13 +669,13 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Annual OPEX ($/year)
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="10"
                 value={assumptions.annualOpex}
                 onChange={(e) => onUpdateAssumptions({ annualOpex: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 0"
               />
               <p className="text-caption text-muted-foreground mt-1">
@@ -688,14 +687,14 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Panel Degradation (%/year)
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="5"
                 step="0.1"
                 value={assumptions.degradationPercentPerYear}
                 onChange={(e) => onUpdateAssumptions({ degradationPercentPerYear: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 0.5"
               />
               <p className="text-caption text-muted-foreground mt-1">
@@ -707,14 +706,14 @@ const PricingEngine: React.FC<PricingEngineProps> = ({
               <label className="text-caption text-muted-foreground block mb-2">
                 Electricity Escalation (%/year)
               </label>
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="20"
                 step="0.5"
                 value={assumptions.escalationPercentPerYear}
                 onChange={(e) => onUpdateAssumptions({ escalationPercentPerYear: parseFloat(e.target.value) || 0 })}
-                className="form-input w-full px-3 py-2"
+                className="w-full px-3 py-2"
                 placeholder="e.g. 3.0"
               />
               <p className="text-caption text-muted-foreground mt-1">
