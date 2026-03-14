@@ -12,6 +12,12 @@ export function applyTheme(theme: ThemeName) {
     if (cls.startsWith(THEME_CLASS_PREFIX)) root.classList.remove(cls);
   }
   root.classList.add(`${THEME_CLASS_PREFIX}${theme}`);
+
+  if (theme === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
 }
 
 export function readStoredTheme(): ThemeName | null {

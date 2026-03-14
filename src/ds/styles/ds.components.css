@@ -3970,6 +3970,8 @@
   border-radius: var(--ds-radius-full);
   background: var(--ds-color-surface);
   border: 1px solid var(--ds-color-border);
+  transition: background-color var(--ds-duration-slow) var(--ds-ease-standard),
+    border-color var(--ds-duration-slow) var(--ds-ease-standard);
 }
 
 .theme-pill__indicator {
@@ -3981,7 +3983,8 @@
   border-radius: var(--ds-radius-full);
   background: var(--ds-color-foreground-secondary);
   box-shadow: var(--ds-shadow-sm);
-  transition: transform var(--ds-duration-slow) var(--ds-ease-standard);
+  transition: transform var(--ds-duration-slow) var(--ds-ease-standard),
+    background-color var(--ds-duration-slow) var(--ds-ease-standard);
   pointer-events: none;
 }
 

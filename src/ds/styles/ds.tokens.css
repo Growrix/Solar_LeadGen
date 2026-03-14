@@ -133,7 +133,7 @@
     --ds-color-border: var(--ds-palette-neutral-200);
     --ds-color-foreground: var(--ds-palette-neutral-500);
     --ds-color-foreground-secondary: var(--ds-palette-neutral-800);
-    --ds-color-accent: var(--ds-palette-brand-500);
+    --ds-color-accent: var(--ds-palette-neutral-950);
     --ds-color-accent-foreground: var(--ds-palette-neutral-0);
 
     --ds-color-primary: var(--ds-color-accent);
@@ -154,7 +154,7 @@
     --ds-color-foreground-rgb: 82 82 82;
     --ds-color-foreground-secondary-rgb: 26 26 26;
     --ds-color-on-primary-rgb: 255 255 255;
-    --ds-color-accent-rgb: 228 108 26;
+    --ds-color-accent-rgb: 10 10 10;
     --ds-color-success-rgb: 22 163 74;
     --ds-color-warning-rgb: 245 158 11;
     --ds-color-danger-rgb: 220 38 38;
@@ -237,16 +237,16 @@
     --ds-color-border: #27272a;
     --ds-color-foreground: #a1a1aa;
     --ds-color-foreground-secondary: #f4f4f5;
-    --ds-color-accent: var(--ds-palette-brand-500);
-    --ds-color-accent-foreground: #ffffff;
-    --ds-color-on-primary: #f4f4f5;
+    --ds-color-accent: #ffffff;
+    --ds-color-accent-foreground: #000000;
+    --ds-color-on-primary: #000000;
     --ds-color-background-rgb: 0 0 0;
     --ds-color-surface-rgb: 15 15 15;
     --ds-color-border-rgb: 39 39 42;
     --ds-color-foreground-rgb: 161 161 170;
     --ds-color-foreground-secondary-rgb: 244 244 245;
-    --ds-color-on-primary-rgb: 244 244 245;
-    --ds-color-accent-rgb: 228 108 26;
+    --ds-color-on-primary-rgb: 0 0 0;
+    --ds-color-accent-rgb: 255 255 255;
     --ds-color-overlay: rgb(0 0 0 / 0.6);
     --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 72%, var(--ds-color-background));
     --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 65%, var(--ds-color-background));
