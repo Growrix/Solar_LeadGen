@@ -2,10 +2,6 @@
 
 import * as React from "react";
 
-import { Button } from "../../primitives/Button";
-import { DropdownMenu, DropdownMenuButton } from "./DropdownMenu";
-import { Icon } from "./Icon";
-import { Check, Sun, Zap } from "../../icons";
 import { THEMES, type ThemeName } from "../../themes/registry";
 import { applyTheme, readStoredTheme, storeTheme } from "../../themes/theme";
 
@@ -35,56 +31,31 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
     applyTheme(next);
   };
 
-  const themeCount = THEMES.length;
-  const canToggle = themeCount === 2;
-  const canChoose = themeCount > 2;
-
-  const nextToggleTheme = React.useMemo<ThemeName | null>(() => {
-    if (!canToggle) return null;
-    const other = THEMES.find((t) => t.name !== theme);
-    return (other?.name ?? null) as ThemeName | null;
-  }, [canToggle, theme]);
-
-  const triggerIcon = theme === "purple" ? Zap : Sun;
-  const ariaLabel = canToggle
-    ? `Toggle theme${nextToggleTheme ? ` (switch to ${nextToggleTheme})` : ""}`
-    : "Change theme";
-
-  const trigger = (
-    <Button
-      size="sm"
-      variant="secondary"
-      className={className}
-      aria-label={ariaLabel}
-      onClick={
-        canToggle
-          ? () => {
-              if (nextToggleTheme) set(nextToggleTheme);
-            }
-          : undefined
-      }
-      disabled={themeCount <= 1}
-    >
-      <Icon icon={triggerIcon} size="sm" aria-hidden />
-    </Button>
-  );
-
-  if (!canChoose) return trigger;
+  const activeIndex = THEMES.findIndex((t) => t.name === theme);
 
   return (
-    <div className={cx("ui-row", className)}>
-      <DropdownMenu trigger={trigger}>
-        {THEMES.map((t) => {
-          const active = t.name === theme;
-          return (
-            <DropdownMenuButton key={t.name} onClick={() => set(t.name)} aria-current={active ? "true" : undefined}>
-              <span className="ui-flex-1 ui-min-w-0">{t.label}</span>
-              {active ? <Icon icon={Check} size="sm" aria-hidden /> : null}
-            </DropdownMenuButton>
-          );
-        })}
-      </DropdownMenu>
+    <div className={cx("theme-pill", className)} role="radiogroup" aria-label="Theme">
+      <span
+        className="theme-pill__indicator"
+        style={{
+          transform: `translateX(${activeIndex * 100}%)`,
+        }}
+      />
+      {THEMES.map((t) => {
+        const active = t.name === theme;
+        return (
+          <button
+            key={t.name}
+            role="radio"
+            aria-checked={active}
+            className={cx("theme-pill__option", active && "theme-pill__option--active")}
+            onClick={() => set(t.name)}
+            type="button"
+          >
+            {t.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
-

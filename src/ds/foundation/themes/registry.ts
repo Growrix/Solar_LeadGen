@@ -7,12 +7,12 @@ export type ThemeDefinition = {
 };
 
 export const ALL_THEMES: ThemeDefinition[] = [
-  { name: "dark", label: "Dark", colorScheme: "dark" },
   { name: "light", label: "Light", colorScheme: "light" },
+  { name: "dark", label: "Dark", colorScheme: "dark" },
   { name: "purple", label: "Purple", colorScheme: "dark" },
 ];
 
-export const THEMES: ThemeDefinition[] = ALL_THEMES.filter((theme) => theme.name === "light");
+export const THEMES: ThemeDefinition[] = ALL_THEMES.filter((theme) => theme.name === "light" || theme.name === "dark");
 
 export const DEFAULT_THEME: ThemeName = "light";
 
