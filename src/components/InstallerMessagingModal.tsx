@@ -117,7 +117,7 @@ const InstallerMessagingModal: React.FC<InstallerMessagingModalProps> = ({ isOpe
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="ui-overlay--dim animate-fade-in" onClick={onClose} />
       <div className="relative w-full max-w-6xl h-[90vh] mx-4 bg-surface rounded-none sm:rounded-2xl shadow-2xl animate-scale-in overflow-hidden flex" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
         <div className="md:hidden absolute top-4 left-4 z-10">{!showMobileInbox && <button onClick={() => setShowMobileInbox(true)} className="p-2 rounded-lg bg-surface"><ArrowLeftIcon /></button>}</div>
         <button onClick={onClose} className="absolute top-4 right-4 z-10 p-2 rounded-lg hover:bg-surface"><XIcon /></button>
@@ -165,7 +165,7 @@ const InstallerMessagingModal: React.FC<InstallerMessagingModalProps> = ({ isOpe
                   </div>
                 </div>
               ))}
-              {activeConv.isTyping && <div className="flex justify-start"><div className="bg-surface px-4 py-3 rounded-2xl"><div className="flex space-x-1"><div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" /><div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} /><div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} /></div></div></div>}
+              {activeConv.isTyping && <div className="flex justify-start"><div className="bg-surface px-4 py-3 rounded-2xl"><div className="flex space-x-1"><div className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" /><div className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} /><div className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} /></div></div></div>}
             </div>
             <div className="p-4 bg-surface border-t border-border">
               <div className="flex items-end space-x-2">
@@ -173,13 +173,13 @@ const InstallerMessagingModal: React.FC<InstallerMessagingModalProps> = ({ isOpe
                   <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())} placeholder="Type your message..." rows={1} className="w-full px-4 py-3 pr-20 bg-surface rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary text-body-small" />
                   <div className="absolute right-2 bottom-2 flex items-center space-x-1"><button className="p-1.5 rounded-lg text-muted"><SmileIcon /></button><button onClick={() => fileInputRef.current?.click()} className="p-1.5 rounded-lg text-muted"><PaperclipIcon /></button></div>
                 </div>
-                <button onClick={handleSendMessage} disabled={!newMessage.trim()} className={`p-3 rounded-xl ${newMessage.trim() ? 'bg-primary text-foreground-secondary' : 'bg-gray-200 text-muted'}`}><SendIcon /></button>
+                <button onClick={handleSendMessage} disabled={!newMessage.trim()} className={`p-3 rounded-xl ${newMessage.trim() ? 'bg-primary text-foreground-secondary' : 'bg-muted/30 text-muted'}`}><SendIcon /></button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">{["Quote attached.","Does that time work?","Happy to help!","Let me know if you have questions."].map(reply => <button key={reply} onClick={() => setNewMessage(reply)} className="px-3 py-1.5 text-body-small bg-surface text-muted rounded-full">{reply}</button>)}</div>
               <input ref={fileInputRef} type="file" multiple className="hidden" />
             </div>
           </>
-        ) : (<div className="flex-1 flex items-center justify-center bg-surface"><div className="text-center"><div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4"><MenuIcon /></div><h3 className="text-heading-4 text-foreground">Select a Conversation</h3><p className="text-muted">Choose a homeowner to start messaging</p></div></div>)}
+        ) : (<div className="flex-1 flex items-center justify-center bg-surface"><div className="text-center"><div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4"><MenuIcon /></div><h3 className="text-heading-4 text-foreground">Select a Conversation</h3><p className="text-muted">Choose a homeowner to start messaging</p></div></div>)}
         </div>
       </div>
     </div>

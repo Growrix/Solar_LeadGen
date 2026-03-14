@@ -765,4 +765,108 @@
       display: none;
     }
   }
+
+  /* ─── T007: Overlay contract ─── */
+  /**
+   * ui-overlay
+   * Full-screen modal overlay backdrop. Replaces ad-hoc bg-black/80 backdrop patterns.
+   */
+  .ui-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--ds-z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /**
+   * ui-overlay--dim
+   * Lighter 50% opacity overlay for sheet-style drawers and non-blocking overlays.
+   */
+  .ui-overlay--dim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--ds-z-modal);
+    transition: opacity var(--ds-duration-normal) var(--ds-ease-standard);
+  }
+
+  /**
+   * ui-skeleton
+   * Animated loading placeholder. Replaces ad-hoc bg-slate-200 skeleton patterns.
+   */
+  .ui-skeleton {
+    background: color-mix(in oklab, var(--ds-color-surface), var(--ds-color-border) 40%);
+    border-radius: var(--ds-radius-default);
+    animation: ui-skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes ui-skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ─── T007: Semantic contracts for info-section, cost/performance labels, panel-surface ─── */
+
+  /**
+   * info-section
+   * A themed surface used for grouping related form fields or data rows.
+   * Replaces ad-hoc bg-gray-50/border-gray-200 patterns in feature components.
+   */
+  .info-section {
+    background: var(--ds-color-surface-2, var(--ds-color-surface));
+    border: 1px solid var(--ds-color-border);
+    border-radius: var(--ds-radius-default);
+    padding: var(--ds-space-4);
+  }
+
+  /**
+   * cost-item-label
+   * Label for a cost or savings row in financial result cards.
+   */
+  .cost-item-label {
+    font-size: var(--ds-font-size-2);
+    font-weight: var(--ds-font-weight-medium);
+    color: var(--ds-color-fg-muted, var(--ds-color-text));
+    letter-spacing: var(--ds-letter-spacing-loose);
+    text-transform: uppercase;
+  }
+
+  /**
+   * performance-item-label
+   * Label for a performance metric row in result cards.
+   */
+  .performance-item-label {
+    font-size: var(--ds-font-size-2);
+    font-weight: var(--ds-font-weight-medium);
+    color: var(--ds-color-fg-muted, var(--ds-color-text));
+  }
+
+  /**
+   * performance-item-value
+   * Value text for a performance metric row.
+   */
+  .performance-item-value {
+    font-size: var(--ds-font-size-2);
+    font-weight: var(--ds-font-weight-semibold);
+    color: var(--ds-color-text);
+  }
+
+  /**
+   * panel-surface
+   * Generic elevated surface for feature panels (e.g. sidebar panels, info boxes).
+   */
+  .panel-surface {
+    background: var(--ds-color-surface);
+    border: 1px solid var(--ds-color-border);
+    border-radius: var(--ds-radius-card);
+    padding: var(--ds-space-6);
+    box-shadow: var(--ds-shadow-sm);
+  }
 }

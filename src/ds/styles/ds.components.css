@@ -3847,3 +3847,117 @@
   background-image: none !important;
   border-color: transparent !important;
 }
+
+/* ─── T007: Toggle Switch Semantic Contracts ─── */
+/**
+ * toggle-switch
+ * A pill-shaped toggle control. Size and state are applied via modifier classes.
+ * Used in SimplifiedQuoteForm, InstantQuoteForm.
+ */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: var(--ds-radius-full);
+  cursor: pointer;
+  transition: background var(--ds-duration-normal) var(--ds-ease-standard),
+    border-color var(--ds-duration-normal) var(--ds-ease-standard);
+  border: 2px solid transparent;
+}
+
+.toggle-switch-sm {
+  width: 2rem;
+  height: 1.125rem;
+}
+
+.toggle-switch-md {
+  width: 2.75rem;
+  height: 1.5rem;
+}
+
+.toggle-switch-on {
+  background: var(--ds-color-accent);
+  border-color: var(--ds-color-accent);
+}
+
+.toggle-switch-off {
+  background: var(--ds-color-border);
+  border-color: var(--ds-color-border);
+}
+
+/**
+ * toggle-knob
+ * The circular indicator inside a toggle-switch.
+ */
+.toggle-knob {
+  position: absolute;
+  border-radius: var(--ds-radius-full);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform var(--ds-duration-normal) var(--ds-ease-standard);
+  will-change: transform;
+}
+
+.toggle-knob-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.toggle-knob-md {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.toggle-knob-off-sm {
+  transform: translateX(0.0625rem);
+}
+
+.toggle-knob-on-sm {
+  transform: translateX(0.9375rem);
+}
+
+.toggle-knob-off-md {
+  transform: translateX(0.0625rem);
+}
+
+.toggle-knob-on-md {
+  transform: translateX(1.25rem);
+}
+
+/* ─── T007: Detail Card Semantic Contracts ─── */
+/**
+ * detail-card
+ * A themed card used for result/detail displays (e.g. SavingsChart, financial projections).
+ */
+.detail-card {
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-card);
+  padding: var(--ds-space-6);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+/**
+ * detail-card-header
+ * Heading row inside a detail-card.
+ */
+.detail-card-header {
+  font-size: var(--ds-font-size-4);
+  font-weight: var(--ds-font-weight-semibold);
+  color: var(--ds-color-text);
+  line-height: var(--ds-line-height-tight);
+}
+
+/* ─── T007: Neu Card Stub ─── */
+/**
+ * neu-card
+ * Neumorphic card stub — reserved for future use.
+ * Currently not in active component use.
+ */
+.neu-card {
+  background: var(--ds-color-surface);
+  border-radius: var(--ds-radius-card);
+  box-shadow: var(--ds-shadow-sm);
+  padding: var(--ds-space-6);
+}

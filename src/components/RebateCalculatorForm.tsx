@@ -446,7 +446,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
       </div>
 
       {showModal && result && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-8 animate-fade-in" onClick={() => setShowModal(false)}>
+            <div className="ui-overlay px-4 py-8 animate-fade-in" onClick={() => setShowModal(false)}>
                 <div className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-2xl p-6 sm:p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-6">
                       <h2 className="text-heading-2 text-foreground">Your Rebate Estimate</h2>

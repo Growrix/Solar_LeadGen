@@ -136,7 +136,7 @@ const InstallerMobileSidebarMenu: React.FC<InstallerMobileSidebarMenuProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 md:hidden flex items-center justify-center p-4 animate-fade-in" 
+      className="ui-overlay md:hidden p-4 animate-fade-in" 
       onClick={onClose}
     >
       <div 

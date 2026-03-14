@@ -1,8 +1,69 @@
 # Design System - Source of Truth (SOT)
 **Purpose**: Complete reference for the neumorphic design system  
 **Date**: November 4, 2025 (Updated - Post Homeowner Dashboard Audit)  
+**Last Updated**: 2026-03-14 (Centralized DS Styling Migration — T033)  
 **Status**: Active Standard  
 **Theme**: Multi-Theme System (Dark, Light, Purple)
+
+---
+
+## UPDATED 2026-03-14: Centralized DS Styling Migration Rules
+
+### DS Export Boundary Rule
+
+`src/ds/index.ts` exports only **DS-owned assets**:
+
+- Primitives (Button, Input, Card, Modal, etc.)
+- Shared components (EmptyState, Skeleton, DataTable, etc.)
+- Layouts (Section, Grid, Stack, etc.)
+- Theme / runtime helpers (ThemeProvider, ThemeInitScript, AppChrome, PlatformPresetScript)
+- Icons
+
+**Feature-specific components MUST NOT be exported from `@/ds`:**
+- Quote forms, OTP flows, result widgets → `src/components/`
+- Any domain-specific modal → `src/components/`
+
+**Test**: If removing a component from `src/ds/index.ts` only breaks one feature's import, it belongs in `src/components/`.
+
+### Approved DS Semantic Contracts (added 2026-03-14)
+
+All of the following are defined in `src/ds/styles/`:
+
+| Class | File | Purpose |
+|---|---|---|
+| `.ui-overlay` | `ds.utilities.css` | Full modal overlay (bg-black/80) |
+| `.ui-overlay--dim` | `ds.utilities.css` | 50% dim overlay for drawers |
+| `.ui-skeleton` | `ds.utilities.css` | Loading placeholder animation |
+| `.info-section` | `ds.utilities.css` | Grouped field/data surface |
+| `.cost-item-label` | `ds.utilities.css` | Cost row label |
+| `.performance-item-label` | `ds.utilities.css` | Performance row label |
+| `.performance-item-value` | `ds.utilities.css` | Performance row value |
+| `.panel-surface` | `ds.utilities.css` | Elevated panel surface |
+| `.toggle-switch` | `ds.components.css` | Pill toggle container |
+| `.toggle-knob` | `ds.components.css` | Toggle knob/thumb |
+| `.detail-card` | `ds.components.css` | Result/detail card |
+| `.detail-card-header` | `ds.components.css` | Heading inside detail-card |
+| `.neu-card` | `ds.components.css` | Neumorphic card stub |
+
+### Root Visual-Mode Authority
+
+`PlatformPresetScript` is wired into `src/app/layout.tsx` (inside `<head>`).
+
+Sets on mobile (≤ 48rem):
+- `html[data-platform="mobile"]`
+- `html[data-density="compact"]`
+- `html[data-visual="sleek"]`
+
+### Verification Procedure for Component Trees
+
+For every migrated component tree:
+
+1. `npx tsc -p tsconfig.gate.json --noEmit` → 0 errors
+2. Run `npx tsx scripts/ds-migration-audit.ts` → 0 barrel violations
+3. Grep for undefined semantic class names → 0 gaps
+4. Grep for `bg-gray-|bg-slate-|bg-black` in component files → 0 raw color classes
+5. `npx prisma validate` → no schema errors
+6. Dev server starts and compiles homepage cleanly
 
 ---
 

@@ -298,7 +298,7 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+        className="ui-overlay--dim animate-fade-in"
         onClick={onClose}
       />
       
@@ -311,7 +311,7 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
           {!showMobileInbox && (
             <button
               onClick={() => setShowMobileInbox(true)}
-              className="p-2 rounded-lg bg-surface hover:bg-gray-200 transition-colors"
+              className="p-2 rounded-lg bg-surface hover:bg-surface-hover transition-colors"
             >
               <ArrowLeftIcon />
             </button>
@@ -593,9 +593,9 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
                   <div className="flex justify-start">
                     <div className="bg-surface px-4 py-3 rounded-2xl rounded-bl-md border border-border">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-foreground-muted rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -635,13 +635,13 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
                     <div className="absolute right-2 bottom-2 flex items-center space-x-1">
                       <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="p-1.5 rounded-lg text-muted hover:text-muted hover:bg-gray-200 transition-colors"
+                        className="p-1.5 rounded-lg text-muted hover:text-muted hover:bg-surface-hover transition-colors"
                       >
                         <SmileIcon />
                       </button>
                       <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-1.5 rounded-lg text-muted hover:text-muted hover:bg-gray-200 transition-colors"
+                        className="p-1.5 rounded-lg text-muted hover:text-muted hover:bg-surface-hover transition-colors"
                       >
                         <PaperclipIcon />
                       </button>
@@ -654,7 +654,7 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
                     className={`p-3 rounded-xl transition-colors ${
                       newMessage.trim()
                         ? 'bg-primary text-foreground-secondary hover:bg-primary/90 shadow-sm'
-                        : 'bg-gray-200 text-muted cursor-not-allowed'
+                        : 'bg-muted/30 text-muted cursor-not-allowed'
                     }`}
                   >
                     <SendIcon />
@@ -667,7 +667,7 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
                     <button
                       key={reply}
                       onClick={() => setNewMessage(reply)}
-                      className="px-3 py-1.5 text-body-small bg-surface text-muted rounded-full hover:bg-gray-200 transition-colors"
+                      className="px-3 py-1.5 text-body-small bg-surface text-muted rounded-full hover:bg-surface-hover transition-colors"
                     >
                       {reply}
                     </button>
@@ -689,7 +689,7 @@ const InstantMessagingModal: React.FC<InstantMessagingModalProps> = ({ isOpen, o
             /* No Conversation Selected */
             <div className="flex-1 flex items-center justify-center bg-surface">
               <div className="text-center">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
                   <MenuIcon />
                 </div>
                 <h3 className="text-heading-4 text-foreground mb-2">

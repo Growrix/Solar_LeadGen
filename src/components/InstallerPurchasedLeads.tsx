@@ -100,9 +100,9 @@ export default function InstallerPurchasedLeads() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+        <div className="h-8 bg-muted/30 rounded w-1/3 mb-6"></div>
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-48 bg-slate-200 rounded-lg"></div>
+          <div key={i} className="h-48 bg-muted/30 rounded-lg"></div>
         ))}
       </div>
     );
@@ -263,7 +263,7 @@ export default function InstallerPurchasedLeads() {
                   </button>
                   <button
                     onClick={() => handleViewDetails(lead.id)}
-                    className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-slate-600 hover:bg-surface text-foreground-secondary rounded-lg transition-colors"
+                    className="flex-1 lg:flex-none flex items-center justify-center space-x-2 px-4 py-2 bg-foreground-secondary hover:bg-surface text-foreground-secondary rounded-lg transition-colors"
                   >
                     <EyeIcon className="h-5 w-5" />
                     <span>View Details</span>

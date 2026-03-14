@@ -1,7 +1,8 @@
 ﻿'use client';
 
 import React from 'react';
-import { AlertCircle, Calculator, SavingsChart } from '@/ds';
+import { AlertCircle, Calculator } from '@/ds';
+import SavingsChart from '@/components/SavingsChart';
 
 interface InstantQuoteResults {
   quoteType: 'residential' | 'commercial';

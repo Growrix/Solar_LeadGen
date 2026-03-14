@@ -149,10 +149,10 @@ export default function InstallerMarketplace() {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-slate-200 rounded w-1/3 mb-6"></div>
+        <div className="h-8 bg-muted/30 rounded w-1/3 mb-6"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-64 bg-slate-200 rounded-lg"></div>
+            <div key={i} className="h-64 bg-muted/30 rounded-lg"></div>
           ))}
         </div>
       </div>
@@ -203,7 +203,7 @@ export default function InstallerMarketplace() {
             className={`px-4 py-2 rounded-lg text-body-small transition-colors ${
               filter === filterType
                 ? 'bg-primary text-foreground-secondary'
-                : 'bg-surface text-foreground border border-border hover:bg-slate-50'
+                : 'bg-surface text-foreground border border-border hover:bg-surface-hover'
             }`}
           >
             {filterType.replace('_', ' ')}
@@ -279,7 +279,7 @@ export default function InstallerMarketplace() {
                   disabled={purchasing === lead.id || !session?.user?.installerVerified}
                   className={`w-full py-3 px-4 rounded-lg transition-colors ${
                     !session?.user?.installerVerified
-                      ? 'bg-slate-300 text-muted cursor-not-allowed'
+                      ? 'bg-muted/40 text-muted cursor-not-allowed'
                       : purchasing === lead.id
                       ? 'bg-blue-400 text-foreground-secondary cursor-wait'
                       : 'bg-primary hover:bg-primary text-foreground-secondary'

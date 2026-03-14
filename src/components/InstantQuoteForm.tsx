@@ -798,7 +798,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
                   ${currentStep === step
-                    ? 'theme-light:bg-black theme-light:text-foreground-secondary theme- theme- theme-purple:bg-accent theme-purple:text-accent-foreground'
+                    ? 'bg-foreground text-background'
                     : 'bg-surface text-foreground shadow-inner'}
                   ${currentStep === step ? 'shadow-card' : ''}
                 `}
