@@ -1,6 +1,6 @@
 @layer ds.theme {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   html.theme-dark {

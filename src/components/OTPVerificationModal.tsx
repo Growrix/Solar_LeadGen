@@ -11,7 +11,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Modal } from '@/ds';
+import { Button, Modal, Pressable } from '@/ds';
 
 // --- Icon Components ---
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
@@ -278,13 +278,13 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
       className="relative w-full max-w-md animate-scale-in"
       ariaLabel="Verify your phone"
     >
-      <button
+      <Pressable
         onClick={onClose}
         className="absolute top-4 right-4 text-muted hover:text-foreground transition-colors p-2 rounded-lg"
         aria-label="Close"
       >
         <XIcon />
-      </button>
+      </Pressable>
 
         {/* Icon */}
         <div className="flex justify-center mb-6">
@@ -376,7 +376,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               Resend available in {resendCooldown}s
             </p>
           ) : (
-            <button
+            <Pressable
               onClick={handleResend}
               disabled={!canResend || isVerifying}
               className={`text-label ${
@@ -386,7 +386,7 @@ const OTPVerificationModal: React.FC<OTPVerificationModalProps> = ({
               } transition-colors`}
             >
               {isResending ? 'Sending...' : 'Didn\'t receive a code? Resend'}
-            </button>
+            </Pressable>
           )}
         </div>
 

@@ -1,0 +1,2 @@
+[     333ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/webpack/768c7ed4f33e8366.webpack.hot-update.json:0
+[  127971ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/_next/static/webpack/56af9c15a46d1fdb.webpack.hot-update.json:0

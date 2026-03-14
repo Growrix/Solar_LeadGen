@@ -1,6 +1,6 @@
 ﻿
 'use client';
-import { Button, Modal } from '@/ds';
+import { Button, Modal, Pressable } from '@/ds';
 
 import { useState, useEffect } from 'react';
 
@@ -129,12 +129,12 @@ export default function QuoteTypeDistributionModal({
               Choose how many quotes of each type you want to request
             </p>
           </div>
-          <button
+          <Pressable
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <XIcon />
-          </button>
+          </Pressable>
         </div>
 
         {/* Content */}
@@ -171,7 +171,7 @@ export default function QuoteTypeDistributionModal({
               </label>
               <div className="flex gap-2">
                 {[0, 1, 2, 3, 4].map((num) => (
-                  <button
+                  <Pressable
                     key={num}
                     onClick={() => handleCallVisitChange(num)}
                     className={`w-12 h-12 rounded-lg font-medium transition-colors ${
@@ -179,9 +179,10 @@ export default function QuoteTypeDistributionModal({
                         ? 'bg-primary text-primary-foreground shadow-md scale-105'
                         : 'bg-surface shadow-inner text-foreground hover:shadow-card'
                     }`}
+                    aria-pressed={callVisitCount === num}
                   >
                     {num}
-                  </button>
+                  </Pressable>
                 ))}
               </div>
             </div>
@@ -207,7 +208,7 @@ export default function QuoteTypeDistributionModal({
               </label>
               <div className="flex gap-2">
                 {[0, 1, 2, 3, 4].map((num) => (
-                  <button
+                  <Pressable
                     key={num}
                     onClick={() => handleWrittenQuoteChange(num)}
                     className={`w-12 h-12 rounded-lg font-medium transition-colors ${
@@ -215,9 +216,10 @@ export default function QuoteTypeDistributionModal({
                         ? 'bg-primary text-primary-foreground shadow-md scale-105'
                         : 'bg-surface shadow-inner text-foreground hover:shadow-card'
                     }`}
+                    aria-pressed={writtenQuoteCount === num}
                   >
                     {num}
-                  </button>
+                  </Pressable>
                 ))}
               </div>
             </div>
@@ -255,7 +257,7 @@ export default function QuoteTypeDistributionModal({
               </label>
               <div className="flex gap-2">
                 {Array.from({ length: remainingBiddingQuota + 1 }, (_, i) => i).map((num) => (
-                  <button
+                  <Pressable
                     key={num}
                     onClick={() => handleBiddingChange(num)}
                     disabled={remainingBiddingQuota === 0 && num > 0}
@@ -266,9 +268,10 @@ export default function QuoteTypeDistributionModal({
                         ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                         : 'bg-surface shadow-inner text-foreground hover:shadow-card'
                     }`}
+                    aria-pressed={biddingCount === num}
                   >
                     {num}
-                  </button>
+                  </Pressable>
                 ))}
               </div>
             </div>

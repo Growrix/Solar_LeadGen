@@ -5,7 +5,7 @@
 
 'use client';
 
-import { type Theme } from '@/components/ThemeProvider';
+import { type Theme } from '@/ds';
 
 interface ThemeSwitcherProps {
   theme: Theme;

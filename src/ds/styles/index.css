@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer ds.tokens, ds.theme, ds.base, ds.utilities, ds.components;
 
 @import "./ds.tokens.css";

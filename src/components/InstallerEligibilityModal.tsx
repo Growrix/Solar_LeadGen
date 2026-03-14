@@ -1,16 +1,7 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
-import { Button, Modal } from '@/ds';
-
-// --- Icon Components ---
-const CheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-const XCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>;
-const Building = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline h-4 w-4 mr-2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="9" x2="9" y1="22" y2="4"/><line x1="15" x2="15" y1="22" y2="4"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-const FileText = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline h-4 w-4 mr-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>;
-const MapPin = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline h-4 w-4 mr-2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-const ArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
-const AlertCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
+import { AlertCircle, ArrowRight, Building, Button, CheckCircle, CloseButton, FileText, MapPin, Modal, XCircle } from '@/ds';
 
 interface EligibilityFormProps {
   isOpen: boolean;
@@ -23,6 +14,12 @@ interface FormData {
   hasABN: string;
   providesInstallation: string;
 }
+
+const ELIGIBILITY_QUESTIONS: Array<{ id: keyof FormData; label: string; Icon: typeof FileText }> = [
+  { id: 'cecAccredited', label: 'Are you a CEC-accredited installer? *', Icon: FileText },
+  { id: 'hasABN', label: 'Do you have an ABN (Australian Business Number)? *', Icon: Building },
+  { id: 'providesInstallation', label: 'Do you provide installation services in Australia? *', Icon: MapPin },
+];
 
 const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onClose, onEligible }) => {
   const [formData, setFormData] = useState<FormData>({
@@ -79,7 +76,7 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
             <h2 className="text-heading-2 text-foreground">Become a Partner</h2>
             <p className="text-muted-foreground">Step 1: Check your eligibility</p>
           </div>
-          <button onClick={handleClose} className="text-subtle hover:text-foreground transition-colors p-2 rounded-lg -mr-2"><XCircle /></button>
+          <CloseButton onClick={handleClose} className="-mr-2 text-subtle hover:text-foreground" />
         </div>
 
         <div className="p-6">
@@ -87,20 +84,35 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
             <div className="animate-fade-in">
               <h3 className="text-heading-3 text-foreground mb-6">Eligibility Requirements</h3>
               <div className="space-y-6">
-                {[
-                  { id: 'cecAccredited', label: 'Are you a CEC-accredited installer? *', icon: <FileText /> },
-                  { id: 'hasABN', label: 'Do you have an ABN (Australian Business Number)? *', icon: <Building /> },
-                  { id: 'providesInstallation', label: 'Do you provide installation services in Australia? *', icon: <MapPin /> }
-                ].map(q => (
-                  <div key={q.id}>
-                    <label className="block text-muted-foreground text-label mb-3">{q.icon}{q.label}</label>
+                {ELIGIBILITY_QUESTIONS.map(({ id, label, Icon }) => (
+                  <div key={id}>
+                    <label className="block text-muted-foreground text-label mb-3">
+                      <span className="inline-flex items-center gap-2">
+                        <Icon className="h-4 w-4" />
+                        <span>{label}</span>
+                      </span>
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => handleInputChange(q.id as keyof FormData, 'yes')} className={`eligibility-button p-3 rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-inner ${formData[q.id as keyof FormData] === 'yes' ? 'selected-yes border-2 border-emerald-500 bg-emerald-500/10 text-emerald-500' : 'bg-surface/50 text-muted-foreground hover:bg-surface'}`}>
-                        <CheckCircle /> <span className="text-label">Yes</span>
-                      </button>
-                      <button onClick={() => handleInputChange(q.id as keyof FormData, 'no')} className={`eligibility-button p-3 rounded-xl transition-colors flex items-center justify-center space-x-2 shadow-inner ${formData[q.id as keyof FormData] === 'no' ? 'selected-no border-2 border-destructive bg-error/10 text-destructive' : 'bg-surface/50 text-muted-foreground hover:bg-surface'}`}>
-                        <XCircle /> <span className="text-label">No</span>
-                      </button>
+                      <Button
+                        type="button"
+                        onClick={() => handleInputChange(id, 'yes')}
+                        variant="secondary"
+                        aria-pressed={formData[id] === 'yes'}
+                        className={`w-full justify-center ${formData[id] === 'yes' ? 'ui-button--toggle border-success/30 bg-success/10 text-success' : 'text-muted-foreground'}`}
+                      >
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="text-label">Yes</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => handleInputChange(id, 'no')}
+                        variant="secondary"
+                        aria-pressed={formData[id] === 'no'}
+                        className={`w-full justify-center ${formData[id] === 'no' ? 'ui-button--toggle border-error/30 bg-error/10 text-error' : 'text-muted-foreground'}`}
+                      >
+                        <XCircle className="h-5 w-5" />
+                        <span className="text-label">No</span>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -120,11 +132,11 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
 
           {eligibilityStatus === 'ineligible' && (
             <div className="text-center animate-fade-in">
-              <div className="w-20 h-20 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6"><XCircle /></div>
+              <div className="w-20 h-20 bg-error/20 rounded-full flex items-center justify-center mx-auto mb-6"><XCircle className="h-8 w-8" /></div>
               <h3 className="text-heading-2 text-foreground mb-4">Not Eligible</h3>
               <p className="text-muted-foreground mb-8">Unfortunately, your company doesn&apos;t meet our current eligibility requirements. To join our partner network, you must be a CEC-accredited installer with an ABN providing services in Australia.</p>
               <div className="bg-error/10 shadow-inner border border-destructive/30 rounded-xl p-6 mb-8">
-                <h4 className="text-destructive mb-3 flex items-center justify-center space-x-2"><AlertCircle /><span>Requirements Not Met</span></h4>
+                <h4 className="text-destructive mb-3 flex items-center justify-center space-x-2"><AlertCircle className="h-5 w-5" /><span>Requirements Not Met</span></h4>
                 <ul className="text-destructive text-body-small space-y-2 text-left">
                   {formData.cecAccredited !== 'yes' && <li>• CEC accreditation required</li>}
                   {formData.hasABN !== 'yes' && <li>• Valid ABN required</li>}
@@ -132,7 +144,7 @@ const InstallerEligibilityModal: React.FC<EligibilityFormProps> = ({ isOpen, onC
                 </ul>
               </div>
               <div className="space-y-4">
-                <button onClick={resetForm} className="bg-surface hover:bg-surface-hover text-foreground px-6 py-3 rounded-xl shadow-card transition-colors">Try Again</button>
+                <Button onClick={resetForm} variant="secondary">Try Again</Button>
               </div>
             </div>
           )}

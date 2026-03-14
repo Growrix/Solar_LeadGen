@@ -505,6 +505,82 @@
     text-align: center;
   }
 
+  .ui-section-title {
+    font-family: var(--ds-font-sans);
+    font-size: var(--ds-font-size-6);
+    font-weight: var(--ds-font-weight-demibold);
+    line-height: var(--ds-line-height-tight);
+    letter-spacing: var(--ds-letter-spacing-tight);
+  }
+
+  @media (min-width: 64rem) {
+    .ui-section-title {
+      font-size: var(--ds-font-size-7);
+      font-weight: var(--ds-font-weight-bold);
+    }
+  }
+
+  .ui-hero-title {
+    font-family: var(--ds-font-sans);
+    font-size: var(--ds-font-size-6);
+    font-weight: var(--ds-font-weight-bold);
+    line-height: var(--ds-line-height-tight);
+    letter-spacing: var(--ds-letter-spacing-tight);
+  }
+
+  @media (min-width: 40rem) {
+    .ui-hero-title {
+      font-size: var(--ds-font-size-7);
+    }
+  }
+
+  .ui-hero-subtitle {
+    font-family: var(--ds-font-sans);
+    font-size: var(--ds-font-size-3);
+    line-height: var(--ds-line-height-normal);
+  }
+
+  @media (min-width: 40rem) {
+    .ui-hero-subtitle {
+      font-family: var(--ds-font-display);
+      font-size: var(--ds-font-size-4);
+      font-weight: var(--ds-font-weight-bold);
+      line-height: var(--ds-line-height-section);
+    }
+  }
+
+  .ui-hero-stat-value {
+    font-family: var(--ds-font-display);
+    font-size: var(--ds-font-size-4);
+    font-weight: var(--ds-font-weight-bold);
+    line-height: var(--ds-line-height-section);
+  }
+
+  @media (min-width: 40rem) {
+    .ui-hero-stat-value {
+      font-family: var(--ds-font-sans);
+      font-size: var(--ds-font-size-6);
+      font-weight: var(--ds-font-weight-demibold);
+      line-height: var(--ds-line-height-tight);
+      letter-spacing: var(--ds-letter-spacing-tight);
+    }
+  }
+
+  .ui-hero-stat-label {
+    font-size: var(--ds-font-size-1);
+    font-weight: var(--ds-font-weight-book);
+    line-height: var(--ds-line-height-meta);
+    letter-spacing: var(--ds-letter-spacing-loose);
+  }
+
+  @media (min-width: 40rem) {
+    .ui-hero-stat-label {
+      font-size: var(--ds-font-size-2);
+      line-height: var(--ds-line-height-normal);
+      letter-spacing: normal;
+    }
+  }
+
   .ui-hero {
     min-height: var(--ds-size-hero-min-h);
     display: grid;

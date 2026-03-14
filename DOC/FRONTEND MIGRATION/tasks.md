@@ -293,6 +293,143 @@ description: "DS-only frontend migration task list (SOT)"
 
 ---
 
+## Phase 10: User Story 8 - Path A DS-only consolidation (Public Homepage First) (Priority: P1)
+
+**Goal**: Make the public homepage use DS primitives/components for all interactive + layout primitives (Path A), then use the same approach for the rest of the app.
+
+**Scope (this phase)**:
+- Public homepage route: `src/app/page.tsx`
+- Homepage sections/components used by that route:
+  - `src/components/Hero.tsx`
+  - `src/components/Footer.tsx`
+  - `src/components/BlogSection.tsx`
+  - `src/components/NewsletterSignup.tsx`
+  - Homepage quote / auth / verification modals opened from homepage (captured in logic audit)
+
+**Hard Rules**:
+- Follow `specs/007-migration-and-build/plan.md` for each migrated component (13-step workflow)
+- UI ONLY: do not change business logic, state variables, event handlers, API calls, auth flows, or validation rules
+- DS-only primitives: interactive elements should use DS primitives (`Button`, `LinkText`, `Input`, `Modal`, etc.) instead of bespoke Tailwind button/link styling
+
+**Independent Test**:
+- Homepage renders and all homepage flows still work (Quote flow + modals)
+- Repo search yields no `@/components/Button` imports
+- Gate0 tasks: Typecheck + Next build
+
+### Implementation for User Story 8
+
+- [ ] T080 [US8] Gate0 health check before homepage work:
+  - Run Gate0 Typecheck + Next build tasks
+
+- [ ] T081 [US8] Create logic audit report for public homepage:
+  - Create: `DOC/FRONTEND MIGRATION/audits/T080-logic-audit-public-homepage.md`
+  - Include: route, component list, user flows, modal open/close triggers, API calls used
+
+- [ ] T082 [US8] Homepage component inventory (evidence-based):
+  - Document the component tree imported by `src/app/page.tsx`
+  - Identify which components already use DS primitives and which still use bespoke Tailwind primitives
+
+- [ ] T083 [US8] Pre-migration verification (homepage components):
+  - Run SOT verification commands (6 scans) for each component being migrated
+
+- [ ] T084 [US8] Migrate public homepage chrome components to DS primitives (UI-only):
+  - `src/components/Footer.tsx`
+
+- [ ] T085 [US8] Migrate remaining public homepage sections to DS primitives (UI-only), if gaps remain:
+  - `src/components/Hero.tsx`
+  - `src/components/BlogSection.tsx`
+  - `src/components/NewsletterSignup.tsx`
+
+- [ ] T086 [US8] Post-migration verification (must be clean for migrated files):
+  - All 6 SOT verification commands return 0 matches
+
+- [ ] T087 [US8] Manual UI verification for homepage:
+  - Themes: Dark + Light + Purple
+  - Responsive: 320 / 375 / 768 / 1024 / 1440
+  - Accessibility: keyboard focus + contrast
+  - Functionality: quote flow + modal open/close parity
+
+- [ ] T088 [US8] Build validation:
+  - `npx tsc --noEmit`
+  - `npm run build`
+
+- [ ] T089 [US8] Capture audit snapshot (after homepage Path A):
+  - Add report: `DOC/FRONTEND MIGRATION/audits/US8_homepage_pathA_status.md`
+  - Include: what changed, what remains, and next components to migrate
+
+---
+
+## Phase 11: User Story 9 - DS Visual Redesign + Single Active Theme (Priority: P1)
+
+**Goal**: Redesign the DS visual language to match the new warm, editorial, product-style direction, keep only one active theme for now, and apply the upgraded DS to homepage top bar auth/modals without changing logic.
+
+**Scope (this phase)**:
+- DS foundation and theme runtime:
+  - `src/ds/styles/ds.tokens.css`
+  - `src/ds/styles/ds.theme.css`
+  - `src/ds/styles/ds.components.css`
+  - `src/ds/foundation/themes/registry.ts`
+  - `src/ds/foundation/themes/theme.ts`
+  - `src/ds/foundation/themes/ThemeInitScript.tsx`
+  - `src/ds/components/shared/ThemeSwitcher.tsx`
+- Top bar auth/modals that must inherit the upgraded DS:
+  - `src/components/TopBar.tsx`
+  - `src/components/InstallerEligibilityModal.tsx`
+  - `src/components/InstallerSignInModal.tsx`
+  - `src/components/InstallerSignupModal.tsx`
+
+**Hard Rules**:
+- Follow `src/ds/DS_instruciton.md`
+- No hardcoded design values in feature files; visual changes must live in DS tokens/styles
+- Keep multi-theme infrastructure possible for later, but expose/use only one active theme now
+- UI ONLY: do not change auth logic, routing, state flow, API calls, or validation logic
+
+**Independent Test**:
+- Homepage top bar auth/modals render with the new DS visual system
+- Only one active theme is available in runtime/UI
+- Gate0 tasks: Typecheck + Next build
+
+### Implementation for User Story 9
+
+- [ ] T100 [US9] Create deep DS audit for visual redesign + single-theme rollout:
+  - Create: `DOC/FRONTEND MIGRATION/audits/T100-ds-visual-redesign-audit.md`
+  - Include: theme runtime, token baseline, component style gaps, screenshot design direction, affected surfaces
+
+- [ ] T101 [US9] Simplify DS theme runtime to one active theme while preserving future multi-theme support:
+  - `src/ds/foundation/themes/registry.ts`
+  - `src/ds/foundation/themes/theme.ts`
+  - `src/ds/foundation/themes/ThemeInitScript.tsx`
+  - `src/ds/components/shared/ThemeSwitcher.tsx`
+
+- [ ] T102 [US9] Redesign DS tokens for the new warm-light visual system:
+  - `src/ds/styles/ds.tokens.css`
+  - `src/ds/styles/ds.theme.css`
+  - Introduce tokenized surface, border, accent, shadow, radius, and overlay refinements
+
+- [ ] T103 [US9] Redesign DS primitives/components for stronger visual identity:
+  - `src/ds/styles/ds.components.css`
+  - Upgrade `ui-button`, `ui-input`, `ui-search`, `ui-modal`, `ui-auth-*` styles to a richer product look
+
+- [ ] T104 [US9] Align homepage top bar installer auth surfaces to the redesigned DS (UI-only):
+  - `src/components/TopBar.tsx`
+  - `src/components/InstallerEligibilityModal.tsx`
+  - `src/components/InstallerSignInModal.tsx`
+  - `src/components/InstallerSignupModal.tsx`
+
+- [ ] T105 [US9] Verification for redesigned DS surfaces:
+  - Verify top bar modal and auth forms have clear button/input affordances
+  - Verify only one active theme is exposed in runtime/UI
+
+- [ ] T106 [US9] Build validation:
+  - `npx tsc --noEmit`
+  - `npm run build`
+
+- [ ] T107 [US9] Capture status snapshot after DS redesign pass:
+  - Update: `DOC/FRONTEND MIGRATION/audits/US8_homepage_pathA_status.md`
+  - Summarize DS changes, modal/form improvements, and remaining redesign work
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -301,8 +438,4 @@ description: "DS-only frontend migration task list (SOT)"
 - **Foundational (Phase 2)**: Completed
 - **User Stories (Phase 3+)**: Execute sequentially (US1 → US2 → US3 → US4 → US5 → US6 → US7)
 
-### Within Each User Story
 
-- Follow `specs/007-migration-and-build/plan.md` for each component migration
-- Verify logic parity (UI-only)
-- Keep Gate0 tasks green throughout

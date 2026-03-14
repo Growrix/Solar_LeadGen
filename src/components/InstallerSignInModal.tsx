@@ -2,17 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { Button, Input } from '@/ds';
-
-// --- Icon Components ---
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
-
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-);
+import { Alert, AlertTriangle, Button, CheckCircle2, CloseButton, Eye, EyeOff, Input, Lock, Mail, Modal, User } from '@/ds';
 
 const GoogleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" className="h-5 w-5">
@@ -29,10 +19,6 @@ const AppleIcon = () => (
   </svg>
 );
 
-const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-success flex-shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
-const AlertTriangleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
-const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
-const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>;
 
 interface InstallerSignInProps {
   isOpen: boolean;
@@ -72,22 +58,9 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
   };
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleClose();
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'hidden';
-    } else {
-        // Reset form state when modal is closed externally
-        resetForm();
+    if (!isOpen) {
+      resetForm();
     }
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'auto';
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -145,30 +118,13 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
     setError(null);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 animate-fade-in"
-      onClick={handleClose}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div 
-        className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-md p-8 max-h-[90vh] overflow-y-auto animate-slide-in-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
-          aria-label="Close"
-        >
-          <XIcon />
-        </button>
+    <Modal open={isOpen} onClose={handleClose} ariaLabel="Installer sign in" className="ui-modal__panel--auth">
+        <CloseButton onClick={handleClose} className="absolute top-4 right-4 text-subtle hover:text-foreground" />
 
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-surface shadow-card rounded-2xl mx-auto mb-6 flex items-center justify-center">
-            <UserIcon />
+        <div className="ui-auth-header">
+          <div className="ui-auth-icon">
+            <User className="h-8 w-8 text-primary" />
           </div>
           <h2 className="text-heading-2 text-foreground mb-2">
             Welcome Back
@@ -179,27 +135,18 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
         </div>
         
         {error && (
-          <div className="bg-destructive/10 shadow-inner border border-destructive/30 rounded-2xl p-4 mb-6">
-            <div className="flex items-start space-x-3">
-              <AlertTriangleIcon />
-              <div>
-                <p className="text-destructive text-body-small mb-1">Sign In Error</p>
-                <p className="text-destructive text-body-small">{error}</p>
-              </div>
-            </div>
-          </div>
+          <Alert tone="danger" title="Sign In Error" icon={<AlertTriangle className="h-5 w-5" />} className="ui-auth-feedback">
+            {error}
+          </Alert>
         )}
 
         {success && (
-          <div className="bg-success/10 shadow-inner border border-success/30 rounded-2xl p-4 mb-6">
-            <div className="flex items-center space-x-3">
-              <CheckCircleIcon />
-              <p className="text-success text-body-small">{success}</p>
-            </div>
-          </div>
+          <Alert tone="success" icon={<CheckCircle2 className="h-5 w-5" />} className="ui-auth-feedback">
+            {success}
+          </Alert>
         )}
 
-        <div className="space-y-3 mb-6">
+        <div className="ui-auth-social">
           <Button
             type="button"
             onClick={handleGoogleSignIn}
@@ -229,22 +176,14 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
           </Button>
         </div>
 
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
-          </div>
-          <div className="relative flex justify-center text-body-small">
-            <span className="px-3 bg-background text-subtle">or sign in with email</span>
-          </div>
+        <div className="ui-auth-divider">
+          <span className="ui-auth-divider__label text-body-small">or sign in with email</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="ui-auth-form">
           <div className="ui-search">
             <span className="ui-search__leading" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-subtle">
-                <rect width="20" height="16" x="2" y="4" rx="2"/>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-              </svg>
+              <Mail className="h-5 w-5 text-subtle" />
             </span>
             <Input
               type="email"
@@ -259,10 +198,7 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
 
           <div className="ui-search">
             <span className="ui-search__leading" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-subtle">
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
+              <Lock className="h-5 w-5 text-subtle" />
             </span>
             <Input
               type={showPassword ? 'text' : 'password'}
@@ -275,23 +211,26 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
             />
             <span className="ui-search__trailing">
               <Button
+                type="button"
                 variant="icon"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </Button>
             </span>
           </div>
 
           <div className="flex items-center justify-between text-body-small">
-            <button
+            <Button
               type="button"
               onClick={handleForgotPassword}
-              className="text-primary hover:text-primary/90 transition-colors"
+              variant="text"
+              size="sm"
+              className="ui-auth-link"
             >
               Forgot password?
-            </button>
+            </Button>
           </div>
 
           <Button
@@ -307,23 +246,24 @@ const InstallerSignInModal: React.FC<InstallerSignInProps> = ({ isOpen, onClose,
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="ui-auth-footer">
           <p className="text-body-small text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <button
+            <Button
               type="button"
               onClick={() => {
                 handleClose();
                 if (typeof onOpenSignup === 'function') onOpenSignup();
               }}
-              className="text-primary hover:text-primary/90 transition-colors"
+              variant="text"
+              size="sm"
+              className="ui-auth-link"
             >
               Sign up
-            </button>
+            </Button>
           </p>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

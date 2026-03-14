@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import SavingsChart from './SavingsChart';
-import { AlertCircle, ArrowLeft, ArrowRight, Battery, Building, Button, Calculator, CheckCircle2, DollarSign, Home, Info, Input, Loader2, MapPin, Select, Zap } from '@/ds';
+import { AlertCircle, ArrowLeft, ArrowRight, Battery, Building, Button, Calculator, CheckCircle2, DollarSign, Home, Info, Input, Loader2, MapPin, Pressable, Select, Zap } from '@/ds';
 
 const InfoTooltip = ({ text }: { text: string }) => (
     <span className="ml-1 inline-flex items-center" title={text}>
@@ -754,7 +754,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
   return (
     <div className="max-w-4xl mx-auto">
       <div className="max-w-md mx-auto grid grid-cols-2 gap-3 mb-6">
-          <button
+            <Pressable
               type="button"
               onClick={() => setQuoteType('residential')}
               className={`flex items-center space-x-3 p-4 rounded-2xl border transition-colors duration-200 ${
@@ -771,8 +771,8 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                   <span className="text-body-small text-foreground">Residential</span>
                   <span className="block text-caption text-muted-foreground">For your home</span>
               </div>
-          </button>
-          <button
+              </Pressable>
+              <Pressable
               type="button"
               onClick={() => setQuoteType('commercial')}
               className={`flex items-center space-x-3 p-4 rounded-2xl border transition-colors duration-200 ${
@@ -789,7 +789,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                   <span className="text-body-small text-foreground">Commercial</span>
                   <span className="block text-caption text-muted-foreground">For business</span>
               </div>
-          </button>
+              </Pressable>
       </div>
       <div className="flex items-center justify-center mb-8">
         <div className="flex items-center space-x-4">
@@ -930,7 +930,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         <p className="text-foreground">Do you already have solar panels?</p>
                         <p className="text-subtle text-body-small mt-1">We&apos;ll factor this into your quote calculations</p>
                       </div>
-                      <button 
+                      <Pressable 
                         type="button"
                         onClick={() => handleInputChange('hasExistingSystem', !formData.hasExistingSystem)} 
                         className={`toggle-switch toggle-switch-md ${formData.hasExistingSystem ? 'toggle-switch-on' : 'toggle-switch-off'}`}
@@ -938,7 +938,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         aria-describedby="existing-system-description"
                       >
                         <span className={`toggle-knob toggle-knob-md ${formData.hasExistingSystem ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/>
-                      </button>
+                      </Pressable>
                     </div>
                   </fieldset>
                   
@@ -1161,7 +1161,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         <option value="max_roi">Maximize ROI</option>
                       </Select>
                     </div>
-                    <div className="info-section md:col-span-2 flex items-center justify-between"><p className="text-foreground">Is it a three-phase power supply?</p><button onClick={() => handleInputChange('isThreePhase', !formData.isThreePhase)} className={`toggle-switch toggle-switch-md ${formData.isThreePhase ? 'toggle-switch-on' : 'toggle-switch-off'}`}><span className={`toggle-knob toggle-knob-md ${formData.isThreePhase ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/></button></div>
+                    <div className="info-section md:col-span-2 flex items-center justify-between"><p className="text-foreground">Is it a three-phase power supply?</p><Pressable onClick={() => handleInputChange('isThreePhase', !formData.isThreePhase)} className={`toggle-switch toggle-switch-md ${formData.isThreePhase ? 'toggle-switch-on' : 'toggle-switch-off'}`} aria-pressed={formData.isThreePhase}><span className={`toggle-knob toggle-knob-md ${formData.isThreePhase ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/></Pressable></div>
                 </div>
               )}
 
@@ -1319,14 +1319,14 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         <label className="text-foreground">Power Optimizers</label>
                         <p className="text-caption text-subtle">Maximize output in shading</p>
                       </div>
-                      <button 
+                      <Pressable 
                         type="button"
                         onClick={() => handleInputChange('includeOptimizers', !formData.includeOptimizers)} 
                         className={`toggle-switch toggle-switch-sm ${formData.includeOptimizers ? 'toggle-switch-on' : 'toggle-switch-off'}`}
                         aria-pressed={formData.includeOptimizers}
                       >
                         <span className={`toggle-knob toggle-knob-sm ${formData.includeOptimizers ? 'toggle-knob-on-sm' : 'toggle-knob-off-sm'}`}/>
-                      </button>
+                      </Pressable>
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -1334,14 +1334,14 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                         <label className="text-foreground">Microinverters</label>
                         <p className="text-caption text-subtle">Panel-level monitoring</p>
                       </div>
-                      <button 
+                      <Pressable 
                         type="button"
                         onClick={() => handleInputChange('includeMicroinverters', !formData.includeMicroinverters)} 
                         className={`toggle-switch toggle-switch-sm ${formData.includeMicroinverters ? 'toggle-switch-on' : 'toggle-switch-off'}`}
                         aria-pressed={formData.includeMicroinverters}
                       >
                         <span className={`toggle-knob toggle-knob-sm ${formData.includeMicroinverters ? 'toggle-knob-on-sm' : 'toggle-knob-off-sm'}`}/>
-                      </button>
+                      </Pressable>
                     </div>
                   </div>
                 </div>
@@ -1456,7 +1456,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                       <p className="text-subtle text-body-small">Up to $3,000 rebate available • Reduce bills by 70-90%</p>
                     </div>
                   </div>
-                  <button 
+                  <Pressable 
                     type="button"
                     onClick={() => handleInputChange('batteryIncluded', !formData.batteryIncluded)} 
                     className={`toggle-switch toggle-switch-md ${formData.batteryIncluded ? 'toggle-switch-on' : 'toggle-switch-off'}`}
@@ -1464,7 +1464,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     aria-describedby="battery-toggle-help"
                   >
                     <span className={`toggle-knob toggle-knob-md ${formData.batteryIncluded ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/>
-                  </button>
+                  </Pressable>
                 </div>
                 
                 {formData.batteryIncluded && (
@@ -1593,14 +1593,14 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                             <label className="text-foreground">Virtual Power Plant (VPP)</label>
                             <p className="text-caption text-subtle">Earn money by sharing battery capacity</p>
                           </div>
-                          <button 
+                          <Pressable 
                             type="button"
                             onClick={() => handleInputChange('includeVPP', !formData.includeVPP)} 
                             className={`toggle-switch toggle-switch-sm ${formData.includeVPP ? 'toggle-switch-on' : 'toggle-switch-off'}`}
                             aria-pressed={formData.includeVPP}
                           >
                             <span className={`toggle-knob toggle-knob-sm ${formData.includeVPP ? 'toggle-knob-on-sm' : 'toggle-knob-off-sm'}`}/>
-                          </button>
+                          </Pressable>
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -1608,14 +1608,14 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                             <label className="text-foreground">EV Charging Integration</label>
                             <p className="text-caption text-muted-foreground">Optimize for electric vehicle charging</p>
                           </div>
-                          <button 
+                          <Pressable 
                             type="button"
                             onClick={() => handleInputChange('includeEVCharging', !formData.includeEVCharging)} 
                             className={`toggle-switch toggle-switch-sm ${formData.includeEVCharging ? 'toggle-switch-on' : 'toggle-switch-off'}`}
                             aria-pressed={formData.includeEVCharging}
                           >
                             <span className={`toggle-knob toggle-knob-sm ${formData.includeEVCharging ? 'toggle-knob-on-sm' : 'toggle-knob-off-sm'}`}/>
-                          </button>
+                          </Pressable>
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -1623,14 +1623,14 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                             <label className="text-foreground">Smart Home Integration</label>
                             <p className="text-caption text-muted-foreground">Connect with smart home systems</p>
                           </div>
-                          <button 
+                          <Pressable 
                             type="button"
                             onClick={() => handleInputChange('includeSmartHome', !formData.includeSmartHome)} 
                             className={`toggle-switch toggle-switch-sm ${formData.includeSmartHome ? 'toggle-switch-on' : 'toggle-switch-off'}`}
                             aria-pressed={formData.includeSmartHome}
                           >
                             <span className={`toggle-knob toggle-knob-sm ${formData.includeSmartHome ? 'toggle-knob-on-sm' : 'toggle-knob-off-sm'}`}/>
-                          </button>
+                          </Pressable>
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -1638,14 +1638,14 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                             <label className="text-foreground">Grid Services Revenue</label>
                             <p className="text-caption text-muted-foreground">FCAS and grid stabilization earnings</p>
                           </div>
-                          <button 
+                          <Pressable 
                             type="button"
                             onClick={() => handleInputChange('includeGridServices', !formData.includeGridServices)} 
                             className={`toggle-switch toggle-switch-sm ${formData.includeGridServices ? 'toggle-switch-on' : 'toggle-switch-off'}`}
                             aria-pressed={formData.includeGridServices}
                           >
                             <span className={`toggle-knob toggle-knob-sm ${formData.includeGridServices ? 'toggle-knob-on-sm' : 'toggle-knob-off-sm'}`}/>
-                          </button>
+                          </Pressable>
                         </div>
                       </div>
                     </div>
@@ -1912,7 +1912,7 @@ const InstantQuoteForm: React.FC<InstantQuoteFormProps> = ({ onProceedToDetailed
                     <div className="detail-card">
                       <div className="text-center">
                         <p className="performance-item-label">Estimated Out-of-Pocket Cost</p>
-                        <p className="text-heading-1 md:text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
+                        <p className="text-heading-1 text-primary tracking-tight mt-1">{formatCurrency(quoteResult.finalPrice)}</p>
                       </div>
                       <div className="mt-6 pt-6 border-t border-border">
                         <h3 className="detail-card-header justify-center">Cost Breakdown</h3>

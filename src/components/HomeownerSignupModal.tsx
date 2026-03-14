@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
-import { Button, Input, Modal } from '@/ds';
+import { Button, Input, Modal, Pressable } from '@/ds';
 
 // --- Icon Components (matching SOT) ---
 const UserIcon = () => (
@@ -249,7 +249,7 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
       ariaLabel="Create account"
     >
         {/* Close Button */}
-        <button
+        <Pressable
           onClick={handleClose}
           className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
           aria-label="Close"
@@ -257,7 +257,7 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
-        </button>
+        </Pressable>
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -290,7 +290,7 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
 
           {/* Social Sign Up Buttons */}
           <div className="space-y-3">
-            <button
+            <Pressable
               type="button"
               onClick={handleGoogleSignup}
               disabled={loading}
@@ -298,9 +298,9 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
             >
               <GoogleIcon />
               <span>Continue with Google</span>
-            </button>
+            </Pressable>
             
-            <button
+            <Pressable
               type="button"
               onClick={handleAppleSignup}
               disabled={loading}
@@ -308,7 +308,7 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
             >
               <AppleIcon />
               <span>Continue with Apple</span>
-            </button>
+            </Pressable>
           </div>
 
           {/* Divider */}
@@ -351,10 +351,11 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
                 minLength={8}
                 className="w-full pl-11 pr-12 py-3"
               />
-              <button
+              <Pressable
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-subtle hover:text-foreground transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -366,7 +367,7 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
                 )}
-              </button>
+              </Pressable>
             </div>
 
             {/* Confirm Password */}
@@ -413,12 +414,12 @@ const HomeownerSignupModal: React.FC<HomeownerSignupModalProps> = ({
         <div className="mt-6 text-center">
           <p className="text-subtle text-body-small">
             Already have an account?{' '}
-            <button
+            <Pressable
               onClick={onSwitchToSignIn}
               className="text-primary text-body hover:underline"
             >
               Sign In
-            </button>
+            </Pressable>
           </p>
         </div>
     </Modal>

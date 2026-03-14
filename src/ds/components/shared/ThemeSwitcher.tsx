@@ -18,14 +18,16 @@ function cx(...classes: Array<string | false | undefined | null>) {
 }
 
 export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
-  const [theme, setTheme] = React.useState<ThemeName>("dark");
+  const [theme, setTheme] = React.useState<ThemeName>("light");
 
   React.useEffect(() => {
     const stored = readStoredTheme();
-    const next = stored ?? "dark";
+    const next = stored ?? "light";
     setTheme(next);
     applyTheme(next);
   }, []);
+
+  if (THEMES.length <= 1) return null;
 
   const set = (next: ThemeName) => {
     setTheme(next);

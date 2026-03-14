@@ -1,11 +1,8 @@
-import './globals.css'
+import '../ds/styles/index.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { ThemeProvider } from '../components/ThemeProvider'
-import LayoutContent from '../components/LayoutContent'
-import NextAuthProvider from '../components/NextAuthProvider'
 import { Toaster } from 'sonner'
-import { ThemeInitScript } from '@/ds'
+import { AppChrome, NextAuthProvider, ThemeInitScript, ThemeProvider } from '@/ds'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -27,7 +24,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <NextAuthProvider>
           <ThemeProvider>
-            <LayoutContent>{children}</LayoutContent>
+            <AppChrome>{children}</AppChrome>
             <Toaster position="top-right" richColors closeButton />
           </ThemeProvider>
         </NextAuthProvider>

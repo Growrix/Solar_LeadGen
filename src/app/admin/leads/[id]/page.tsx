@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme } from '@/components/ThemeProvider';
+import { useTheme } from '@/ds';
 import { Button } from '@/ds';
 import QuoteDataDisplay from '@/components/admin/QuoteDataDisplay';
 import InstallerSelectorModal from '@/components/admin/InstallerSelectorModal';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Footer from '@/components/Footer';
+import { Footer } from '@/ds';
 
 export default function FooterNav() {
   const router = useRouter();

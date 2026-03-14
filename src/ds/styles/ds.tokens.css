@@ -56,9 +56,9 @@
     --ds-space-nav-padding: var(--ds-space-4);
 
     /* Radii */
-    --ds-radius-default: 0.25rem;
-    --ds-radius-card: 0.5rem;
-    --ds-radius-modal: 0.5rem;
+    --ds-radius-default: 0.875rem;
+    --ds-radius-card: 1.375rem;
+    --ds-radius-modal: 1.5rem;
     --ds-radius-full: 9999px;
 
     /* Radius scale aliases (used by existing component CSS) */
@@ -74,8 +74,8 @@
     --ds-duration-slow: 300ms;
 
     /* Shadows */
-    --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --ds-shadow-sm: 0 12px 24px rgba(79, 57, 36, 0.08);
+    --ds-shadow-md: 0 28px 64px rgba(79, 57, 36, 0.16);
 
     /* Z-index */
     --ds-z-modal: 1000;
@@ -85,7 +85,7 @@
     --ds-z-toast: 1300;
     --ds-z-sticky: 100;
 
-    /* Semantic colors (SolarConnect Dark) */
+    /* Semantic colors (active baseline = warm light) */
     /*
       Pro-grade structure:
       - Palette tokens: scale-able building blocks (neutral/brand/status)
@@ -93,33 +93,33 @@
       - Theme selectors (html.theme-*) override palette + semantic mapping
     */
 
-    /* Palette: neutrals (default = dark theme baseline) */
-    --ds-palette-neutral-0: #ffffff;
-    --ds-palette-neutral-50: #f3f4f6;
-    --ds-palette-neutral-100: #e5e7eb;
-    --ds-palette-neutral-200: #d1d5db;
-    --ds-palette-neutral-300: #cbd5e1;
-    --ds-palette-neutral-400: #9ca3af;
-    --ds-palette-neutral-500: #6b7280;
-    --ds-palette-neutral-600: #4b5563;
-    --ds-palette-neutral-700: #374151;
-    --ds-palette-neutral-800: #262626;
-    --ds-palette-neutral-850: #1b1b1e;
-    --ds-palette-neutral-900: #151419;
-    --ds-palette-neutral-950: #0b0b0c;
+    /* Palette: neutrals */
+    --ds-palette-neutral-0: #fffdfa;
+    --ds-palette-neutral-50: #f8f3ea;
+    --ds-palette-neutral-100: #efe6d7;
+    --ds-palette-neutral-200: #e3d4be;
+    --ds-palette-neutral-300: #d0bba1;
+    --ds-palette-neutral-400: #b89f85;
+    --ds-palette-neutral-500: #93785f;
+    --ds-palette-neutral-600: #6f5845;
+    --ds-palette-neutral-700: #4d3b2d;
+    --ds-palette-neutral-800: #37291f;
+    --ds-palette-neutral-850: #2d221a;
+    --ds-palette-neutral-900: #241b15;
+    --ds-palette-neutral-950: #1a120e;
 
-    /* Palette: brand (default accent) */
-    --ds-palette-brand-50: #f4f0ff;
-    --ds-palette-brand-100: #e7dcff;
-    --ds-palette-brand-200: #cebaff;
-    --ds-palette-brand-300: #b18cff;
-    --ds-palette-brand-400: #9156ff;
-    --ds-palette-brand-500: #7b42f2;
-    --ds-palette-brand-600: #6d3be2;
-    --ds-palette-brand-700: #5c2fc6;
-    --ds-palette-brand-800: #452291;
-    --ds-palette-brand-900: #2e1660;
-    --ds-palette-brand-950: #230f4f;
+    /* Palette: brand */
+    --ds-palette-brand-50: #fff3ea;
+    --ds-palette-brand-100: #ffe2cc;
+    --ds-palette-brand-200: #ffc497;
+    --ds-palette-brand-300: #ffa461;
+    --ds-palette-brand-400: #f68633;
+    --ds-palette-brand-500: #e46c1a;
+    --ds-palette-brand-600: #cf5b0f;
+    --ds-palette-brand-700: #a9490d;
+    --ds-palette-brand-800: #7f370b;
+    --ds-palette-brand-900: #5e2709;
+    --ds-palette-brand-950: #3c1705;
 
     /* Palette: status base (kept minimal; scale can expand later) */
     --ds-palette-success-600: #16a34a;
@@ -127,17 +127,20 @@
     --ds-palette-danger-600: #dc2626;
     --ds-palette-info-600: #2563eb;
 
-    /* Semantic colors (default = dark) */
-    --ds-color-background: var(--ds-palette-neutral-900);
-    --ds-color-surface: var(--ds-palette-neutral-850);
-    --ds-color-border: var(--ds-palette-neutral-800);
-    --ds-color-foreground: var(--ds-palette-neutral-400);
-    --ds-color-foreground-secondary: var(--ds-palette-neutral-50);
+    /* Semantic colors (default = warm light) */
+    --ds-color-background: var(--ds-palette-neutral-50);
+    --ds-color-surface: var(--ds-palette-neutral-0);
+    --ds-color-border: var(--ds-palette-neutral-200);
+    --ds-color-foreground: var(--ds-palette-neutral-600);
+    --ds-color-foreground-secondary: var(--ds-palette-neutral-900);
     --ds-color-accent: var(--ds-palette-brand-600);
-    --ds-color-accent-foreground: var(--ds-palette-brand-950);
+    --ds-color-accent-foreground: var(--ds-palette-neutral-0);
 
     --ds-color-primary: var(--ds-color-accent);
-    --ds-color-on-primary: var(--ds-color-foreground-secondary);
+    --ds-color-on-primary: var(--ds-palette-neutral-0);
+
+    /* Secondary semantic color (used for secondary action surfaces) */
+    --ds-color-secondary: color-mix(in oklab, var(--ds-color-surface) 86%, var(--ds-color-primary) 14%);
 
     --ds-color-success: var(--ds-palette-success-600);
     --ds-color-warning: var(--ds-palette-warning-600);
@@ -145,31 +148,31 @@
     --ds-color-info: var(--ds-palette-info-600);
 
     /* RGB helpers (space-separated, for use with rgb(var(--x) / a)) */
-    --ds-color-background-rgb: 21 20 25;
-    --ds-color-surface-rgb: 27 27 30;
-    --ds-color-border-rgb: 38 38 38;
-    --ds-color-foreground-rgb: 156 163 175;
-    --ds-color-foreground-secondary-rgb: 243 244 246;
-    --ds-color-on-primary-rgb: 243 244 246;
-    --ds-color-accent-rgb: 109 59 226;
+    --ds-color-background-rgb: 248 243 234;
+    --ds-color-surface-rgb: 255 253 250;
+    --ds-color-border-rgb: 227 212 190;
+    --ds-color-foreground-rgb: 111 88 69;
+    --ds-color-foreground-secondary-rgb: 36 27 21;
+    --ds-color-on-primary-rgb: 255 253 250;
+    --ds-color-accent-rgb: 207 91 15;
     --ds-color-success-rgb: 22 163 74;
     --ds-color-warning-rgb: 245 158 11;
     --ds-color-danger-rgb: 220 38 38;
     --ds-color-info-rgb: 37 99 235;
 
     /* Effects */
-    --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.45);
-    --ds-color-overlay: rgb(0 0 0 / 0.55);
+    --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.18);
+    --ds-color-overlay: rgb(36 27 21 / 0.24);
 
     /* Interactive states */
-    --ds-color-accent-hover: color-mix(in oklab, var(--ds-color-accent) 86%, white);
-    --ds-color-accent-active: color-mix(in oklab, var(--ds-color-accent) 78%, black);
+    --ds-color-accent-hover: color-mix(in oklab, var(--ds-color-accent) 78%, white);
+    --ds-color-accent-active: color-mix(in oklab, var(--ds-color-accent) 88%, black);
 
     /* Legacy aliases (kept for existing classnames) */
     --ds-color-bg: var(--ds-color-background);
     --ds-color-text: var(--ds-color-foreground);
-    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
-    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 72%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 72%, var(--ds-color-background));
 
     /* Internal aliases used by some DS styles */
     --ds-color-fg: var(--ds-color-foreground-secondary);
@@ -227,43 +230,43 @@
     --ds-space-tooltip-gap: var(--ds-space-2);
   }
 
-  /* Theme: light (semantic + palette overrides) */
-  html.theme-light {
+  /* Theme: dark (dormant for later re-enable) */
+  html.theme-dark {
     --ds-palette-neutral-0: #ffffff;
-    --ds-palette-neutral-50: #f9fafb;
-    --ds-palette-neutral-100: #f3f4f6;
-    --ds-palette-neutral-200: #e5e7eb;
-    --ds-palette-neutral-300: #d1d5db;
+    --ds-palette-neutral-50: #f3f4f6;
+    --ds-palette-neutral-100: #e5e7eb;
+    --ds-palette-neutral-200: #d1d5db;
+    --ds-palette-neutral-300: #cbd5e1;
     --ds-palette-neutral-400: #9ca3af;
     --ds-palette-neutral-500: #6b7280;
     --ds-palette-neutral-600: #4b5563;
     --ds-palette-neutral-700: #374151;
-    --ds-palette-neutral-800: #1f2937;
-    --ds-palette-neutral-850: #111827;
-    --ds-palette-neutral-900: #0f172a;
-    --ds-palette-neutral-950: #020617;
+    --ds-palette-neutral-800: #262626;
+    --ds-palette-neutral-850: #1b1b1e;
+    --ds-palette-neutral-900: #151419;
+    --ds-palette-neutral-950: #0b0b0c;
 
-    --ds-color-background: #ffffff;
-    --ds-color-surface: #ffffff;
-    --ds-color-border: #e5e7eb;
-    --ds-color-foreground: #374151;
-    --ds-color-foreground-secondary: #111827;
-
-    --ds-color-accent: var(--ds-palette-brand-600);
+    --ds-color-background: var(--ds-palette-neutral-900);
+    --ds-color-surface: var(--ds-palette-neutral-850);
+    --ds-color-border: var(--ds-palette-neutral-800);
+    --ds-color-foreground: var(--ds-palette-neutral-400);
+    --ds-color-foreground-secondary: var(--ds-palette-neutral-50);
+    --ds-color-accent: #6d3be2;
     --ds-color-accent-foreground: #ffffff;
-    --ds-color-on-primary: #ffffff;
-
-    --ds-color-overlay: rgb(0 0 0 / 0.35);
-
-    --ds-color-background-rgb: 255 255 255;
-    --ds-color-surface-rgb: 255 255 255;
-    --ds-color-border-rgb: 229 231 235;
-    --ds-color-foreground-rgb: 55 65 81;
-    --ds-color-foreground-secondary-rgb: 17 24 39;
-    --ds-color-on-primary-rgb: 255 255 255;
+    --ds-color-on-primary: #f3f4f6;
+    --ds-color-background-rgb: 21 20 25;
+    --ds-color-surface-rgb: 27 27 30;
+    --ds-color-border-rgb: 38 38 38;
+    --ds-color-foreground-rgb: 156 163 175;
+    --ds-color-foreground-secondary-rgb: 243 244 246;
+    --ds-color-on-primary-rgb: 243 244 246;
+    --ds-color-accent-rgb: 109 59 226;
+    --ds-color-overlay: rgb(0 0 0 / 0.55);
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
   }
 
-  /* Theme: purple (example variant; keeps dark surfaces, shifts brand scale) */
+  /* Theme: purple (dormant for later re-enable) */
   html.theme-purple {
     --ds-palette-brand-50: #faf5ff;
     --ds-palette-brand-100: #f3e8ff;
@@ -277,7 +280,24 @@
     --ds-palette-brand-900: #581c87;
     --ds-palette-brand-950: #3b0764;
 
+    --ds-color-background: #151419;
+    --ds-color-surface: #1b1b1e;
+    --ds-color-border: #262626;
+    --ds-color-foreground: #9ca3af;
+    --ds-color-foreground-secondary: #f3f4f6;
+    --ds-color-accent: #9333ea;
+    --ds-color-accent-foreground: #ffffff;
+    --ds-color-on-primary: #f3f4f6;
+    --ds-color-background-rgb: 21 20 25;
+    --ds-color-surface-rgb: 27 27 30;
+    --ds-color-border-rgb: 38 38 38;
+    --ds-color-foreground-rgb: 156 163 175;
+    --ds-color-foreground-secondary-rgb: 243 244 246;
+    --ds-color-on-primary-rgb: 243 244 246;
     --ds-color-accent-rgb: 147 51 234;
+    --ds-color-overlay: rgb(0 0 0 / 0.55);
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
   }
 
   /* Density + platform knobs (scopable per page via a wrapper) */
@@ -309,34 +329,6 @@
 
   /* Platform presets (scopable per page via a wrapper) */
   :where(html[data-platform="mobile"], [data-platform="mobile"]) {
-     /* Helios-style app surface (mobile-only)
-       Keeps desktop classic by scoping to data-platform. */
-     --ds-color-background: #020617; /* slate-950 */
-     --ds-color-surface: #0f172a; /* slate-900 */
-     --ds-color-border: #1e293b; /* slate-800 */
-     --ds-color-overlay: rgb(2 6 23 / 0.8);
-
-     /* App-like text hierarchy (prototype uses light text + muted gray) */
-     --ds-color-foreground: #f8fafc; /* slate-50 */
-     --ds-color-foreground-secondary: #ffffff;
-     --ds-color-text-muted: #64748b; /* slate-500 */
-
-     /* Accent (prototype red) */
-     --ds-color-accent: #ef4444; /* red-500 */
-     --ds-color-accent-foreground: #7f1d1d; /* red-900-ish for mixes */
-     --ds-color-on-primary: #ffffff;
-     --ds-color-accent-rgb: 239 68 68;
-
-    --ds-color-background-rgb: 2 6 23;
-    --ds-color-surface-rgb: 15 23 42;
-    --ds-color-border-rgb: 30 41 59;
-    --ds-color-foreground-rgb: 248 250 252;
-    --ds-color-foreground-secondary-rgb: 255 255 255;
-    --ds-color-on-primary-rgb: 255 255 255;
-
-     /* Common surfaces used by hover/secondary states */
-     --ds-color-surface-2: #1e293b; /* slate-800 */
-
     /* App-like mobile typography: smaller headings, clearer body text.
        Scoped to data-platform so desktop remains classic. */
     --ds-font-size-1: 0.75rem; /* 12px */

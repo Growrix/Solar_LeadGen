@@ -6,14 +6,20 @@ export type ThemeDefinition = {
   colorScheme: "dark" | "light";
 };
 
-export const DEFAULT_THEME: ThemeName = "dark";
-
-export const THEMES: ThemeDefinition[] = [
+export const ALL_THEMES: ThemeDefinition[] = [
   { name: "dark", label: "Dark", colorScheme: "dark" },
   { name: "light", label: "Light", colorScheme: "light" },
   { name: "purple", label: "Purple", colorScheme: "dark" },
 ];
 
+export const THEMES: ThemeDefinition[] = ALL_THEMES.filter((theme) => theme.name === "light");
+
+export const DEFAULT_THEME: ThemeName = "light";
+
 export function isThemeName(value: string | null | undefined): value is ThemeName {
   return value === "dark" || value === "light" || value === "purple";
+}
+
+export function isActiveThemeName(value: string | null | undefined): value is ThemeName {
+  return THEMES.some((theme) => theme.name === value);
 }

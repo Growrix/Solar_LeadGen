@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Modal } from '@/ds';
+import { Button, Modal, Pressable } from '@/ds';
 
 // --- Icon Components (matching HomeownerSignInModal SOT) ---
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
@@ -122,13 +122,13 @@ const HomeownersInfoForm: React.FC<HomeownersInfoFormProps> = ({
       className="relative w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-in-up"
       ariaLabel="Contact information"
     >
-      <button
+      <Pressable
         onClick={handleClose}
         className="absolute top-4 right-4 text-subtle hover:text-foreground transition-colors"
         aria-label="Close"
       >
         <XIcon />
-      </button>
+      </Pressable>
 
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-surface shadow-card rounded-2xl mx-auto mb-6 flex items-center justify-center">

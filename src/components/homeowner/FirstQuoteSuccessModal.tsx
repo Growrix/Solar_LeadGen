@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React from 'react';
-import { Button } from '@/ds';
+import { Button, Pressable } from '@/ds';
 
 // --- Icon Components ---
 const XIcon = () => (
@@ -67,13 +67,13 @@ const FirstQuoteSuccessModal: React.FC<FirstQuoteSuccessModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
-        <button
+        <Pressable
           onClick={onClose}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
           aria-label="Close"
         >
           <XIcon />
-        </button>
+        </Pressable>
 
         {/* Success Icon */}
         <div className="flex flex-col items-center justify-center pt-8 pb-6">

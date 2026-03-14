@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme, type Theme } from '@/components/ThemeProvider';
+import { useTheme, type Theme } from '@/ds';
 import { LiveCountdownBar } from '@/components/LiveCountdownBar';
 import { Button, Input, Select } from '@/ds';
 

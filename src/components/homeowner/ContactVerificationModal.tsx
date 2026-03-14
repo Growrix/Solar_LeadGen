@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Modal } from '@/ds';
+import { Button, Modal, Pressable } from '@/ds';
 import { useSession } from 'next-auth/react';
 
 interface ContactVerificationModalProps {
@@ -214,14 +214,14 @@ const ContactVerificationModal: React.FC<ContactVerificationModalProps> = ({
       className="relative w-full max-w-lg animate-scale-in"
       ariaLabelledBy="contact-verification-title"
     >
-      <button
+      <Pressable
         type="button"
         onClick={onClose}
         className="absolute right-4 top-4 rounded-full p-2 text-muted transition-colors hover:bg-surface hover:text-foreground"
         aria-label="Close"
       >
         <CloseIcon />
-      </button>
+      </Pressable>
 
         <div className="mb-6 flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">

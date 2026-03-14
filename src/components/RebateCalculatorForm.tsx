@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select } from '@/ds';
+import { Button, Input, Pressable, Select } from '@/ds';
 
 // -------------------------
 // Improved Rebate Calculator (React)
@@ -294,7 +294,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
               aria-label="Battery status"
               style={{marginBottom: 0}}
             />
-            <button 
+            <Pressable 
               id="battery-toggle"
               type="button"
               onClick={() => handleInput('includeBattery', !inputs.includeBattery)} 
@@ -303,7 +303,7 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
               aria-label={`${inputs.includeBattery ? 'Disable' : 'Enable'} battery storage`}
             >
               <span className={`toggle-knob toggle-knob-md ${inputs.includeBattery ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/>
-            </button>
+            </Pressable>
           </div>
         </div>
             </div>

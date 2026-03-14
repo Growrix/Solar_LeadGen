@@ -33,9 +33,11 @@ module.exports = {
         'foreground-tertiary': 'var(--ds-color-text-muted)',
         'foreground-subtle': 'var(--ds-color-text-muted)',
         'foreground-muted': 'var(--ds-color-text-muted)',
-        muted: 'var(--ds-color-surface-2)',
+        // NOTE: `muted`/`subtle` are used widely with Tailwind opacity modifiers
+        // (e.g. `bg-muted/20`, `border-muted/30`). These must support `<alpha-value>`.
+        muted: 'rgb(var(--ds-color-foreground-rgb) / <alpha-value>)',
         'muted-foreground': 'var(--ds-color-text-muted)',
-        subtle: 'var(--ds-color-surface-2)',
+        subtle: 'rgb(var(--ds-color-foreground-rgb) / <alpha-value>)',
 
         // Icon color
         icon: 'rgb(var(--ds-color-foreground-secondary-rgb) / <alpha-value>)',

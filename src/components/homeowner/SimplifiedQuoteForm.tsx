@@ -1,8 +1,7 @@
 ﻿'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
-import SavingsChart from '../SavingsChart';
-import { AlertCircle, ArrowLeft, ArrowRight, Battery, Building, Button, Calculator, CheckCircle2, DollarSign, Home, Info, Input, Loader2, MapPin, Select, Zap } from '@/ds';
+import { AlertCircle, ArrowLeft, ArrowRight, Battery, Building, Button, Calculator, CheckCircle2, DollarSign, Home, Info, Input, Loader2, MapPin, SavingsChart, Select, Zap } from '@/ds';
 
 const InfoTooltip = ({ text }: { text: string }) => (
     <span className="ml-1 inline-flex items-center" title={text}>

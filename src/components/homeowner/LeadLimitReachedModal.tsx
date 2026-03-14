@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Modal } from '@/ds';
+import { Button, Modal, Pressable } from '@/ds';
 
 // --- Icon Components ---
 const XIcon = () => (
@@ -58,13 +58,13 @@ const LeadLimitReachedModal: React.FC<LeadLimitReachedModalProps> = ({
       <div className="relative w-full max-h-[90vh] overflow-y-auto animate-slide-in-up">
         <div className="card bg-surface shadow-card-md text-foreground">
         {/* Close Button */}
-        <button
+        <Pressable
           onClick={onClose}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors z-10"
           aria-label="Close"
         >
           <XIcon />
-        </button>
+        </Pressable>
 
         {/* Warning Icon */}
         <div className="flex flex-col items-center justify-center pt-8 pb-6">

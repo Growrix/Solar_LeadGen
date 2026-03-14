@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { useTheme, type Theme } from '@/components/ThemeProvider';
+import { useTheme, type Theme } from '@/ds';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { Footer } from '@/ds';
 import InstallerBottomNavBar from '@/components/InstallerBottomNavBar';
 import InstallerMobileSidebarMenu from '@/components/InstallerMobileSidebarMenu';
 import { Button } from '@/ds';

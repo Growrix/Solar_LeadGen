@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { type Theme } from './ThemeProvider';
+import { type Theme } from '@/ds';
 import { Container } from '@/ds';
 import { ThemeSwitcher } from '@/ds';
 

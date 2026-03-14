@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { LeadStatus as LeadStatusEnum } from '@prisma/client';
-import { useTheme, type Theme } from '@/components/ThemeProvider';
+import { useTheme, type Theme } from '@/ds';
 import { toast } from 'sonner';
 import HomeownerBottomNavBar from '@/components/HomeownerBottomNavBar';
 import HomeownerMobileSidebarMenu from '@/components/HomeownerMobileSidebarMenu';

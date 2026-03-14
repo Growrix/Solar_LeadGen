@@ -1,4 +1,4 @@
-import { DEFAULT_THEME, isThemeName, type ThemeName } from "./registry";
+import { DEFAULT_THEME, isActiveThemeName, type ThemeName } from "./registry";
 
 export const THEME_STORAGE_KEY = "solarmatch-theme";
 
@@ -17,7 +17,7 @@ export function applyTheme(theme: ThemeName) {
 export function readStoredTheme(): ThemeName | null {
   if (typeof window === "undefined") return null;
   const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (isThemeName(raw)) return raw;
+  if (isActiveThemeName(raw)) return raw;
   return null;
 }
 
@@ -27,6 +27,6 @@ export function storeTheme(theme: ThemeName) {
 }
 
 export function resolveTheme(value: string | null | undefined): ThemeName {
-  if (isThemeName(value)) return value;
+  if (isActiveThemeName(value)) return value;
   return DEFAULT_THEME;
 }

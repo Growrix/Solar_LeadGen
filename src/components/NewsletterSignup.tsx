@@ -204,7 +204,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                             <div className="w-20 h-20 bg-background shadow-inner rounded-2xl flex items-center justify-center mx-auto mb-6">
                                 <PaperPlaneIcon />
                             </div>
-                            <h2 className="text-heading-2 lg:text-heading-1 text-foreground mb-4">
+                            <h2 className="ui-section-title text-foreground mb-4">
                                 Go Solar, Smarter.
                             </h2>
                             <p className="text-body-large text-muted-foreground max-w-2xl mx-auto">

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Footer from '@/components/Footer';
+import { Footer } from '@/ds';
 import { Button } from '@/ds';
 import type { Post } from '@/types/blog';
 import BlogSidebarClient, { type SidebarCategory, type SidebarRecentPost } from './BlogSidebarClient';

@@ -1,0 +1,18 @@
+[    1611ms] [WARNING] ./src/components/QuoteOptionsModal.tsx
+Attempted import error: 'OTPVerificationModal' is not exported from '@/ds' (imported as 'OTPVerificationModal'). @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:226
+[   95627ms] [WARNING] ./src/components/QuoteOptionsModal.tsx
+Attempted import error: 'OTPVerificationModal' is not exported from '@/ds' (imported as 'OTPVerificationModal'). @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:226
+[ 2507077ms] [WARNING] ./src/components/QuoteOptionsModal.tsx
+Attempted import error: 'OTPVerificationModal' is not exported from '@/ds' (imported as 'OTPVerificationModal').
+
+Import trace for requested module:
+./src/components/QuoteOptionsModal.tsx
+./src/app/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:226
+[ 2509296ms] [WARNING] ./src/components/QuoteOptionsModal.tsx
+Attempted import error: 'OTPVerificationModal' is not exported from '@/ds' (imported as 'OTPVerificationModal').
+
+Import trace for requested module:
+./src/components/QuoteOptionsModal.tsx
+./src/app/page.tsx @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:226
+[ 2511193ms] [WARNING] ./src/components/QuoteOptionsModal.tsx
+Attempted import error: 'OTPVerificationModal' is not exported from '@/ds' (imported as 'OTPVerificationModal'). @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/app/hot-reloader-client.js:226

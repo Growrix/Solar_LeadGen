@@ -1,6 +1,6 @@
 'use client';
 
-import { useTheme } from '@/components/ThemeProvider';
+import { useTheme } from '@/ds';
 import { useEffect, useState } from 'react';
 
 /**

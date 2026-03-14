@@ -39,8 +39,8 @@ export default function ThemeTestPage() {
         <Stack gap="compact">
           <Heading variant={2}>Visual regression surface</Heading>
           <Text tone="muted">
-            This page intentionally uses only the Design System. Use the theme switcher in the header to verify dark,
-            light, and purple themes.
+            This page intentionally uses only the Design System. The current rollout keeps one active warm-light theme
+            while preserving dormant theme infrastructure for later re-enable.
           </Text>
         </Stack>
       </Section>
@@ -118,7 +118,7 @@ export default function ThemeTestPage() {
           </CardHeader>
           <CardContent>
             <Stack gap="tight">
-              <Text>1) Switch themes and verify contrast and readability.</Text>
+              <Text>1) Verify contrast, readability, and field/button affordance in the active theme.</Text>
               <Text>2) Tab through buttons to confirm focus ring visibility.</Text>
               <Text>3) Confirm the page has no legacy theme toggles.</Text>
             </Stack>

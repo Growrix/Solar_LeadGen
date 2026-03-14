@@ -146,6 +146,12 @@ export * from "./layouts/DashboardShell";
 export * from "./layouts/DocsShell";
 
 export * from "./themes/ThemeInitScript";
+export * from "./foundation/themes/ThemeProvider";
+export * from "./runtime/web/AppChrome";
+export * from "./runtime/web/NextAuthProvider";
+export * from "./runtime/web/HeaderMenu";
+export * from "./runtime/web/TopBar";
+export * from "./runtime/web/Footer";
 
 // Updated blueprint layers (scaffolded, non-breaking)
 export * from "./foundation";
