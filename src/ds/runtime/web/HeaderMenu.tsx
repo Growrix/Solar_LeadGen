@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-import { Badge } from '../../components/shared/Badge';
+import { DropdownMenu, DropdownMenuButton } from '../../components/shared/DropdownMenu';
 import { ThemeSwitcher } from '../../components/shared/ThemeSwitcher';
 import { Button } from '../../primitives/Button';
 import { Container } from '../../primitives/Container';
@@ -25,6 +26,20 @@ export interface HeaderMenuProps {
   onAdminDashboardClick?: () => void;
 }
 
+const ChevronDownIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ui-public-header__menu-icon">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ui-public-header__menu-icon">
+    <path d="M3 6h18" />
+    <path d="M3 12h18" />
+    <path d="M3 18h18" />
+  </svg>
+);
+
 export function HeaderMenu({
   isLoggedIn = false,
   onLoginClick = () => console.log('Login clicked'),
@@ -32,6 +47,8 @@ export function HeaderMenu({
   onLogoutClick = () => console.log('Logout clicked'),
   onDashboardClick = () => console.log('Dashboard clicked'),
 }: HeaderMenuProps) {
+  const router = useRouter();
+
   return (
     <header className="ui-public-header ui-header-pad">
       <Container>
@@ -40,13 +57,32 @@ export function HeaderMenu({
             <div className="ui-public-header__brand-group">
               <Link href="/" className="ui-public-header__brand">
                 <SunIcon />
-                <span className="text-heading-2 ui-public-header__brand-wordmark">SolarMatch</span>
-              </Link>
-              <Link href="/component-library" className="ui-public-header__devlink text-caption">
-                <span>Component Library</span>
-                <Badge tone="warning" className="ui-public-header__devbadge">DEV</Badge>
+                <span className="ui-public-header__brand-wordmark">SolarMatch</span>
               </Link>
             </div>
+
+            <nav className="ui-public-header__nav" aria-label="Primary">
+              <Link href="/" className="ui-public-header__navlink">Home</Link>
+              <Link href="/blog" className="ui-public-header__navlink">Blog</Link>
+              <Link href="/#news-section" className="ui-public-header__navlink">News</Link>
+              <DropdownMenu
+                className="ui-public-header__menu"
+                trigger={(
+                  <button type="button" className="ui-public-header__menu-trigger" aria-label="Open calculators menu">
+                    <span>Calculators</span>
+                    <ChevronDownIcon />
+                  </button>
+                )}
+              >
+                <DropdownMenuButton onClick={() => router.push('/#instant-quote-calculator')}>
+                  Instant Quote Calculator
+                </DropdownMenuButton>
+                <DropdownMenuButton onClick={() => router.push('/#battery-rebate-calculator')}>
+                  Battery Rebate Calculator
+                </DropdownMenuButton>
+              </DropdownMenu>
+              <Link href="/#contact-section" className="ui-public-header__navlink">Contact</Link>
+            </nav>
 
             <div className="ui-public-header__controls">
               <ThemeSwitcher />
@@ -54,24 +90,72 @@ export function HeaderMenu({
               <div className="ui-public-header__actions">
                 {isLoggedIn ? (
                   <>
-                    <Button onClick={onDashboardClick} variant="ghost" size="sm">
+                    <Button onClick={onDashboardClick} variant="ghost" size="sm" className="ui-public-header__action">
                       Dashboard
                     </Button>
-                    <Button onClick={onLogoutClick} variant="secondary" size="sm">
+                    <Button onClick={onLogoutClick} variant="secondary" size="sm" className="ui-public-header__action">
                       Logout
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button onClick={onLoginClick} variant="ghost" size="sm">
+                    <Button onClick={onLoginClick} variant="ghost" size="sm" className="ui-public-header__action">
                       Login
                     </Button>
-                    <Button onClick={onSignupClick} variant="primary" size="sm">
+                    <Button onClick={onSignupClick} variant="primary" size="sm" className="ui-public-header__action">
                       Sign Up
                     </Button>
                   </>
                 )}
               </div>
+
+              <DropdownMenu
+                className="ui-public-header__mobile-menu"
+                panelClassName="ui-public-header__mobile-panel"
+                trigger={(
+                  <button type="button" className="ui-public-header__mobile-trigger" aria-label="Open site menu">
+                    <MenuIcon />
+                  </button>
+                )}
+              >
+                <DropdownMenuButton className="ui-public-header__mobile-item" onClick={() => router.push('/')}>
+                  Home
+                </DropdownMenuButton>
+                <DropdownMenuButton className="ui-public-header__mobile-item" onClick={() => router.push('/blog')}>
+                  Blog
+                </DropdownMenuButton>
+                <DropdownMenuButton className="ui-public-header__mobile-item" onClick={() => router.push('/#news-section')}>
+                  News
+                </DropdownMenuButton>
+                <DropdownMenuButton className="ui-public-header__mobile-item" onClick={() => router.push('/#instant-quote-calculator')}>
+                  Instant Quote Calculator
+                </DropdownMenuButton>
+                <DropdownMenuButton className="ui-public-header__mobile-item" onClick={() => router.push('/#battery-rebate-calculator')}>
+                  Battery Rebate Calculator
+                </DropdownMenuButton>
+                <DropdownMenuButton className="ui-public-header__mobile-item" onClick={() => router.push('/#contact-section')}>
+                  Contact
+                </DropdownMenuButton>
+                {isLoggedIn ? (
+                  <>
+                    <DropdownMenuButton className="ui-public-header__mobile-item" onClick={onDashboardClick}>
+                      Dashboard
+                    </DropdownMenuButton>
+                    <DropdownMenuButton className="ui-public-header__mobile-item" onClick={onLogoutClick}>
+                      Logout
+                    </DropdownMenuButton>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuButton className="ui-public-header__mobile-item" onClick={onLoginClick}>
+                      Login
+                    </DropdownMenuButton>
+                    <DropdownMenuButton className="ui-public-header__mobile-item" onClick={onSignupClick}>
+                      Sign Up
+                    </DropdownMenuButton>
+                  </>
+                )}
+              </DropdownMenu>
             </div>
           </div>
         </div>

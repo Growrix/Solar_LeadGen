@@ -25,9 +25,10 @@ export type DropdownMenuProps = {
   }>;
   children: React.ReactNode;
   className?: string;
+  panelClassName?: string;
 };
 
-export function DropdownMenu({ trigger, children, className }: DropdownMenuProps) {
+export function DropdownMenu({ trigger, children, className, panelClassName }: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
   const [anchor, setAnchor] = React.useState<HTMLSpanElement | null>(null);
@@ -107,7 +108,7 @@ export function DropdownMenu({ trigger, children, className }: DropdownMenuProps
               <div
                 id={menuId}
                 ref={panelRef}
-                className="ui-menu__panel"
+                className={cx("ui-menu__panel", panelClassName)}
                 role="menu"
               >
                 {children}

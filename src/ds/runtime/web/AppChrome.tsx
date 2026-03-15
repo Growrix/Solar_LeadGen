@@ -203,7 +203,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <div className="ui-page">
       {!isInstallerRoute && !isHomeownerRoute && !isAdminRoute && (
-        <div className={`ui-sticky-top transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className={`ui-sticky-top ${pathname === '/' && !isLoggedIn ? 'ui-sticky-top--overlay-home' : ''} transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
           {!isLoggedIn ? <TopBar onBecomePartnerClick={handleBecomePartner} onPartnerSignInClick={handlePartnerSignIn} /> : null}
           <HeaderMenu
             isLoggedIn={isLoggedIn}

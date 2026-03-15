@@ -18,7 +18,7 @@ export function TopBar({ onBecomePartnerClick, onPartnerSignInClick }: TopBarPro
   return (
     <div id="top-bar" className="ui-topbar-band">
       <Container>
-        <div className="ui-topbar text-caption">
+        <div className="ui-topbar">
           <Badge tone="neutral" className="ui-topbar__badge">
             <Building className="ui-topbar__icon" />
             <span className="ui-topbar__label">For Solar Installers:</span>
