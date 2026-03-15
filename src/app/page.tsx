@@ -73,10 +73,27 @@ export default function Home() {
   const [userBiddingLimit, setUserBiddingLimit] = useState<number>(1); // Phase 13S.2: Bidding limit
   const [userBiddingCount, setUserBiddingCount] = useState<number>(0); // Phase 13S.2: Bidding count
 
+  const syncCalculatorFromHash = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hash === '#battery-rebate-calculator') {
+      setActiveCalculator('rebate');
+      return;
+    }
+    if (window.location.hash === '#instant-quote-calculator') {
+      setActiveCalculator('quote');
+    }
+  }, []);
+
   // Ensure page starts at top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    syncCalculatorFromHash();
+    window.addEventListener('hashchange', syncCalculatorFromHash);
+    return () => window.removeEventListener('hashchange', syncCalculatorFromHash);
+  }, [syncCalculatorFromHash]);
 
   // Fetch user lead count and verification status for authenticated users
   useEffect(() => {
@@ -721,13 +738,17 @@ export default function Home() {
           
           {/* Calculator Forms */}
           {activeCalculator === 'quote' ? (
-            <InstantQuoteForm 
-              onProceedToDetailedQuote={handleProceedToDetailedQuote}
-              onQuoteCalculated={handleQuoteCalculated}
-              hideSubmitButton={false}
-            />
+            <div id="instant-quote-calculator">
+              <InstantQuoteForm 
+                onProceedToDetailedQuote={handleProceedToDetailedQuote}
+                onQuoteCalculated={handleQuoteCalculated}
+                hideSubmitButton={false}
+              />
+            </div>
           ) : (
-            <RebateCalculatorForm onGetQuotesClick={() => setIsQuoteOptionsModalOpen(true)} />
+            <div id="battery-rebate-calculator">
+              <RebateCalculatorForm onGetQuotesClick={() => setIsQuoteOptionsModalOpen(true)} />
+            </div>
           )}
         </div>
       </section>
@@ -829,7 +850,9 @@ export default function Home() {
   </section>
 
       {/* Newsletter Section */}
-      <NewsletterSignup />
+      <section id="news-section">
+        <NewsletterSignup />
+      </section>
 
       {/* Footer */}
       <Footer

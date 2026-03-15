@@ -10,7 +10,7 @@
   }
 
   .ui-header-pad {
-    padding-block: var(--ds-space-4);
+    padding-block: var(--ds-space-header-pad-y);
   }
 
   .ui-band {
@@ -25,6 +25,14 @@
   .ui-sticky-top {
     position: sticky;
     top: 0;
+    z-index: var(--ds-z-sticky);
+  }
+
+  .ui-sticky-top--overlay-home {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: var(--ds-z-sticky);
   }
 
@@ -522,7 +530,7 @@
 
   .ui-hero-title {
     font-family: var(--ds-font-sans);
-    font-size: var(--ds-font-size-6);
+    font-size: var(--ds-font-size-hero-title);
     font-weight: var(--ds-font-weight-bold);
     line-height: var(--ds-line-height-tight);
     letter-spacing: var(--ds-letter-spacing-tight);
@@ -530,21 +538,21 @@
 
   @media (min-width: 40rem) {
     .ui-hero-title {
-      font-size: var(--ds-font-size-7);
+      font-size: var(--ds-font-size-hero-title);
     }
   }
 
   .ui-hero-subtitle {
     font-family: var(--ds-font-sans);
-    font-size: var(--ds-font-size-3);
-    line-height: var(--ds-line-height-normal);
+    font-size: var(--ds-font-size-hero-subtitle);
+    line-height: var(--ds-line-height-section);
   }
 
   @media (min-width: 40rem) {
     .ui-hero-subtitle {
-      font-family: var(--ds-font-display);
-      font-size: var(--ds-font-size-4);
-      font-weight: var(--ds-font-weight-bold);
+      font-family: var(--ds-font-sans);
+      font-size: var(--ds-font-size-hero-subtitle);
+      font-weight: var(--ds-font-weight-medium);
       line-height: var(--ds-line-height-section);
     }
   }

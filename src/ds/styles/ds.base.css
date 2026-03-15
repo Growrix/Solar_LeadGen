@@ -10,6 +10,16 @@
 
   html {
     scroll-behavior: smooth;
+    background-color: var(--ds-color-background);
+    color-scheme: light;
+  }
+
+  html.theme-dark {
+    color-scheme: dark;
+  }
+
+  html.theme-light {
+    color-scheme: light;
   }
 
   body {
@@ -20,6 +30,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    transition: background-color var(--ds-duration-slow) var(--ds-ease-standard),
+      color var(--ds-duration-slow) var(--ds-ease-standard);
   }
 
   * {

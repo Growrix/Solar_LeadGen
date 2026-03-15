@@ -15,6 +15,8 @@
     --ds-font-size-5: 1.25rem; /* 20px */
     --ds-font-size-6: 1.875rem; /* 30px */
     --ds-font-size-7: 2rem; /* 32px */
+    --ds-font-size-8: 3rem; /* 48px */
+    --ds-font-size-9: 4.5rem; /* 72px */
 
     --ds-font-weight-regular: 400;
     --ds-font-weight-book: 450;
@@ -38,6 +40,7 @@
     --ds-space-2: 0.5rem;
     --ds-space-3: 0.75rem;
     --ds-space-4: 1rem;
+    --ds-space-5: 1.25rem;
     --ds-space-6: 1.5rem;
     --ds-space-7: 2rem;
     --ds-space-8: 2.5rem;
@@ -54,6 +57,21 @@
     --ds-space-input-pad-x: var(--ds-space-4);
     --ds-space-input-pad-y: var(--ds-space-2);
     --ds-space-nav-padding: var(--ds-space-4);
+    --ds-space-topbar-pad-y: var(--ds-space-1);
+    --ds-space-header-pad-y: var(--ds-space-2);
+    --ds-space-header-pad-x: var(--ds-space-3);
+    --ds-space-header-nav-gap: var(--ds-space-4);
+    --ds-space-header-controls-gap: var(--ds-space-3);
+
+    /* Header typography */
+    --ds-font-size-topbar: var(--ds-font-size-1);
+    --ds-font-size-header-nav: var(--ds-font-size-2);
+    --ds-font-size-header-brand: var(--ds-font-size-5);
+
+    /* Hero typography */
+    --ds-font-size-hero-eyebrow: clamp(var(--ds-font-size-5), 2.6vw, var(--ds-font-size-6));
+    --ds-font-size-hero-title: clamp(var(--ds-font-size-6), 3.8vw, var(--ds-font-size-7));
+    --ds-font-size-hero-subtitle: clamp(var(--ds-font-size-3), 1.4vw, var(--ds-font-size-4));
 
     /* Radii */
     --ds-radius-default: 0.875rem;
@@ -72,10 +90,12 @@
     --ds-duration-fast: 120ms;
     --ds-duration-normal: 200ms;
     --ds-duration-slow: 300ms;
+    --ds-duration-hero-slide: 700ms;
+    --ds-duration-hero-pan: 12000ms;
 
     /* Shadows */
-    --ds-shadow-sm: 0 12px 24px rgba(79, 57, 36, 0.08);
-    --ds-shadow-md: 0 28px 64px rgba(79, 57, 36, 0.16);
+    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --ds-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
 
     /* Z-index */
     --ds-z-modal: 1000;
@@ -85,7 +105,7 @@
     --ds-z-toast: 1300;
     --ds-z-sticky: 100;
 
-    /* Semantic colors (active baseline = warm light) */
+    /* Semantic colors (active baseline = clean neutral light) */
     /*
       Pro-grade structure:
       - Palette tokens: scale-able building blocks (neutral/brand/status)
@@ -94,19 +114,19 @@
     */
 
     /* Palette: neutrals */
-    --ds-palette-neutral-0: #fffdfa;
-    --ds-palette-neutral-50: #f8f3ea;
-    --ds-palette-neutral-100: #efe6d7;
-    --ds-palette-neutral-200: #e3d4be;
-    --ds-palette-neutral-300: #d0bba1;
-    --ds-palette-neutral-400: #b89f85;
-    --ds-palette-neutral-500: #93785f;
-    --ds-palette-neutral-600: #6f5845;
-    --ds-palette-neutral-700: #4d3b2d;
-    --ds-palette-neutral-800: #37291f;
-    --ds-palette-neutral-850: #2d221a;
-    --ds-palette-neutral-900: #241b15;
-    --ds-palette-neutral-950: #1a120e;
+    --ds-palette-neutral-0: #ffffff;
+    --ds-palette-neutral-50: #f5f5f5;
+    --ds-palette-neutral-100: #e5e5e5;
+    --ds-palette-neutral-200: #d4d4d4;
+    --ds-palette-neutral-300: #a3a3a3;
+    --ds-palette-neutral-400: #737373;
+    --ds-palette-neutral-500: #525252;
+    --ds-palette-neutral-600: #404040;
+    --ds-palette-neutral-700: #262626;
+    --ds-palette-neutral-800: #1a1a1a;
+    --ds-palette-neutral-850: #141414;
+    --ds-palette-neutral-900: #0f0f0f;
+    --ds-palette-neutral-950: #0a0a0a;
 
     /* Palette: brand */
     --ds-palette-brand-50: #fff3ea;
@@ -127,13 +147,13 @@
     --ds-palette-danger-600: #dc2626;
     --ds-palette-info-600: #2563eb;
 
-    /* Semantic colors (default = warm light) */
+    /* Semantic colors (default = clean neutral light) */
     --ds-color-background: var(--ds-palette-neutral-50);
     --ds-color-surface: var(--ds-palette-neutral-0);
     --ds-color-border: var(--ds-palette-neutral-200);
-    --ds-color-foreground: var(--ds-palette-neutral-600);
-    --ds-color-foreground-secondary: var(--ds-palette-neutral-900);
-    --ds-color-accent: var(--ds-palette-brand-600);
+    --ds-color-foreground: var(--ds-palette-neutral-500);
+    --ds-color-foreground-secondary: var(--ds-palette-neutral-800);
+    --ds-color-accent: var(--ds-palette-neutral-950);
     --ds-color-accent-foreground: var(--ds-palette-neutral-0);
 
     --ds-color-primary: var(--ds-color-accent);
@@ -148,13 +168,13 @@
     --ds-color-info: var(--ds-palette-info-600);
 
     /* RGB helpers (space-separated, for use with rgb(var(--x) / a)) */
-    --ds-color-background-rgb: 248 243 234;
-    --ds-color-surface-rgb: 255 253 250;
-    --ds-color-border-rgb: 227 212 190;
-    --ds-color-foreground-rgb: 111 88 69;
-    --ds-color-foreground-secondary-rgb: 36 27 21;
-    --ds-color-on-primary-rgb: 255 253 250;
-    --ds-color-accent-rgb: 207 91 15;
+    --ds-color-background-rgb: 245 245 245;
+    --ds-color-surface-rgb: 255 255 255;
+    --ds-color-border-rgb: 212 212 212;
+    --ds-color-foreground-rgb: 82 82 82;
+    --ds-color-foreground-secondary-rgb: 26 26 26;
+    --ds-color-on-primary-rgb: 255 255 255;
+    --ds-color-accent-rgb: 10 10 10;
     --ds-color-success-rgb: 22 163 74;
     --ds-color-warning-rgb: 245 158 11;
     --ds-color-danger-rgb: 220 38 38;
@@ -162,7 +182,7 @@
 
     /* Effects */
     --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.18);
-    --ds-color-overlay: rgb(36 27 21 / 0.24);
+    --ds-color-overlay: rgb(0 0 0 / 0.2);
 
     /* Interactive states */
     --ds-color-accent-hover: color-mix(in oklab, var(--ds-color-accent) 78%, white);
@@ -185,16 +205,29 @@
 
     /* Sizing */
     --ds-size-hero-min-h: 28rem;
+    --ds-size-hero-slide-h: 18rem;
+    --ds-size-hero-slide-h-mobile: 14rem;
+    --ds-size-hero-option-icon: 3rem;
+    --ds-size-hero-indicator: var(--ds-space-2);
+    --ds-size-hero-indicator-active: var(--ds-space-7);
+    --ds-size-hero-eyebrow-rule: calc(var(--ds-space-7) + var(--ds-space-1));
+    --ds-size-topbar-h: calc((var(--ds-size-touch-target) - var(--ds-space-1)) + (var(--ds-space-topbar-pad-y) * 2));
      /* Header band height (used for sticky offsets + viewport calculations).
        Matches shells that use .ui-header-pad (padding-block: --ds-space-4)
        around a row of controls that are at least --ds-size-touch-target tall. */
-     --ds-size-header-h: calc(var(--ds-size-touch-target) + var(--ds-space-4) + var(--ds-space-4));
+    --ds-size-header-h: calc(var(--ds-size-touch-target) + var(--ds-space-header-pad-y) + var(--ds-space-header-pad-y));
+    --ds-size-public-chrome-h: calc(var(--ds-size-topbar-h) + var(--ds-size-header-h));
     --ds-size-viewport-minus-header: calc(100dvh - var(--ds-size-header-h));
 
     --ds-size-touch-target: 2.75rem;
     --ds-size-input-min-h: var(--ds-size-touch-target);
     --ds-size-button-min-h: var(--ds-size-touch-target);
     --ds-size-icon-button: var(--ds-size-touch-target);
+      --ds-size-header-brand-icon: calc(var(--ds-size-touch-target) - var(--ds-space-2));
+      --ds-size-header-control-h: calc(var(--ds-size-touch-target) - var(--ds-space-2));
+      --ds-size-theme-toggle-w: calc(var(--ds-size-touch-target) + var(--ds-space-6));
+      --ds-size-theme-toggle-h: calc(var(--ds-size-touch-target) - var(--ds-space-2));
+      --ds-size-theme-toggle-thumb: calc(var(--ds-size-theme-toggle-h) - var(--ds-space-1));
     --ds-size-fab: 3.25rem;
     --ds-size-tabs-h: var(--ds-size-touch-target);
     --ds-size-bottom-nav-h: 4rem;
@@ -230,40 +263,28 @@
     --ds-space-tooltip-gap: var(--ds-space-2);
   }
 
-  /* Theme: dark (dormant for later re-enable) */
+  /* Theme: dark */
   html.theme-dark {
-    --ds-palette-neutral-0: #ffffff;
-    --ds-palette-neutral-50: #f3f4f6;
-    --ds-palette-neutral-100: #e5e7eb;
-    --ds-palette-neutral-200: #d1d5db;
-    --ds-palette-neutral-300: #cbd5e1;
-    --ds-palette-neutral-400: #9ca3af;
-    --ds-palette-neutral-500: #6b7280;
-    --ds-palette-neutral-600: #4b5563;
-    --ds-palette-neutral-700: #374151;
-    --ds-palette-neutral-800: #262626;
-    --ds-palette-neutral-850: #1b1b1e;
-    --ds-palette-neutral-900: #151419;
-    --ds-palette-neutral-950: #0b0b0c;
-
-    --ds-color-background: var(--ds-palette-neutral-900);
-    --ds-color-surface: var(--ds-palette-neutral-850);
-    --ds-color-border: var(--ds-palette-neutral-800);
-    --ds-color-foreground: var(--ds-palette-neutral-400);
-    --ds-color-foreground-secondary: var(--ds-palette-neutral-50);
-    --ds-color-accent: #6d3be2;
-    --ds-color-accent-foreground: #ffffff;
-    --ds-color-on-primary: #f3f4f6;
-    --ds-color-background-rgb: 21 20 25;
-    --ds-color-surface-rgb: 27 27 30;
-    --ds-color-border-rgb: 38 38 38;
-    --ds-color-foreground-rgb: 156 163 175;
-    --ds-color-foreground-secondary-rgb: 243 244 246;
-    --ds-color-on-primary-rgb: 243 244 246;
-    --ds-color-accent-rgb: 109 59 226;
-    --ds-color-overlay: rgb(0 0 0 / 0.55);
-    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
-    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
+    --ds-color-background: #000000;
+    --ds-color-surface: #0f0f0f;
+    --ds-color-border: #27272a;
+    --ds-color-foreground: #a1a1aa;
+    --ds-color-foreground-secondary: #f4f4f5;
+    --ds-color-accent: #ffffff;
+    --ds-color-accent-foreground: #000000;
+    --ds-color-on-primary: #000000;
+    --ds-color-background-rgb: 0 0 0;
+    --ds-color-surface-rgb: 15 15 15;
+    --ds-color-border-rgb: 39 39 42;
+    --ds-color-foreground-rgb: 161 161 170;
+    --ds-color-foreground-secondary-rgb: 244 244 245;
+    --ds-color-on-primary-rgb: 0 0 0;
+    --ds-color-accent-rgb: 255 255 255;
+    --ds-color-overlay: rgb(0 0 0 / 0.6);
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 72%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 65%, var(--ds-color-background));
+    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05);
+    --ds-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.04);
   }
 
   /* Theme: purple (dormant for later re-enable) */
@@ -296,6 +317,7 @@
     --ds-color-on-primary-rgb: 243 244 246;
     --ds-color-accent-rgb: 147 51 234;
     --ds-color-overlay: rgb(0 0 0 / 0.55);
+    --ds-color-transparent: transparent;
     --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
     --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
   }
