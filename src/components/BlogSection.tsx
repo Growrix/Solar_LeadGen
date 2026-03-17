@@ -202,7 +202,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
                 <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center gap-1.5 bg-brand-500 text-brand-950 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                  <span className="inline-flex items-center gap-1.5 bg-brand-500 text-brand-950 px-3 py-1 rounded-full text-xs font-bold shadow-lg uppercase tracking-wider">
                     {article.category}
                   </span>
                 </div>
@@ -216,7 +216,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                   <span className="text-xs text-slate-400">{article.readTime}</span>
                 </div>
                 
-                <h3 className="text-lg font-semibold text-white mb-3 leading-snug group-hover:text-brand-300 transition-colors">
+                <h3 className="text-lg font-semibold text-white mb-3 leading-snug group-hover:text-brand-400 transition-colors">
                   {article.title}
                 </h3>
                 <p className="text-sm text-slate-400 mb-5 leading-relaxed flex-1">
@@ -235,7 +235,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                       onNavigateToPost(article);
                     }}
                   >
-                    <span>Read</span>
+                    <span>Read Article</span>
                     <ArrowRightIcon />
                   </div>
                 </div>

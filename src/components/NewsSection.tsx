@@ -108,7 +108,7 @@ const NewsSection: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
 
                 <div className="absolute top-6 left-6">
-                  <span className="inline-flex items-center gap-1.5 bg-brand-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide uppercase">
+                  <span className="inline-flex items-center gap-1.5 bg-brand-500 text-brand-950 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide uppercase">
                     Featured Story
                   </span>
                 </div>

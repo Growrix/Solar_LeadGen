@@ -118,7 +118,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
 
     const isSection = variant !== 'compact';
     const inputCls = isSection
-        ? 'w-full pl-12 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40 transition-colors duration-300'
+        ? 'w-full pl-12 pr-4 py-3 rounded-xl bg-slate-900/40 border border-white/10 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-colors duration-300'
         : `w-full pl-12 pr-4 py-2.5 rounded-xl bg-background shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-300 text-foreground placeholder:text-muted-foreground`;
 
     const form = (
@@ -146,7 +146,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                 type="submit"
                                 variant={isSection ? 'primary' : 'secondary'}
                                 size="lg"
-                                className={isSection ? 'w-full justify-center bg-white text-brand-700 hover:bg-white/90 border-0' : 'w-full justify-center'}
+                                className={isSection ? 'w-full justify-center bg-white text-brand-950 hover:bg-white/90 border-0' : 'w-full justify-center'}
                                 disabled={status === 'loading'}
                             >
                                 {status === 'loading' ? (
@@ -200,7 +200,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
     return (
         <section className="py-24 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="rounded-3xl p-8 md:p-16 text-center md:text-left shadow-modal relative overflow-hidden ring-1 ring-white/10 bg-gradient-to-br from-brand-600 to-brand-800">
+                <div className="rounded-3xl p-8 md:p-16 text-center md:text-left shadow-modal relative overflow-hidden ring-1 ring-white/10 bg-gradient-to-br from-brand-600 to-brand-700">
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl bg-brand-500" />
                     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl bg-brand-900" />
 

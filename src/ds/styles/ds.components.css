@@ -794,12 +794,12 @@
     gap: var(--ds-space-5);
     min-height: var(--ds-size-hero-card-min-h);
     padding: var(--ds-space-6);
-    border: 1px solid rgb(var(--ds-color-on-primary-rgb) / 0.18);
+    border: 1px solid #262626;
     border-radius: 1.75rem;
-    background: rgb(var(--ds-color-on-primary-rgb) / 0.96);
+    background: rgb(27 27 30 / 0.9);
     backdrop-filter: blur(18px);
-    box-shadow: 0 24px 60px rgb(0 0 0 / 0.24);
-    color: rgb(var(--ds-color-hero-base-rgb) / 0.96);
+    box-shadow: 0 24px 60px rgb(0 0 0 / 0.36);
+    color: rgb(255 255 255 / 0.92);
     transition: border-color var(--ds-duration-normal) var(--ds-ease-standard), transform var(--ds-duration-normal) var(--ds-ease-standard);
   }
   .ui-hero-option:not(.is-emphasized):hover {
@@ -865,11 +865,11 @@
   }
 
   .ui-hero-option__title {
-    color: rgb(var(--ds-color-hero-base-rgb) / 0.94);
+    color: rgb(255 255 255 / 0.94);
   }
 
   .ui-hero-option__description {
-    color: rgb(var(--ds-color-foreground-rgb) / 0.64);
+    color: rgb(255 255 255 / 0.60);
   }
 
   .ui-hero-option.is-emphasized .ui-hero-option__description {
@@ -885,14 +885,14 @@
     border: 0;
     background: transparent;
     box-shadow: none;
-    color: rgb(var(--ds-color-hero-base-rgb) / 0.92);
+    color: rgb(255 255 255 / 0.75);
   }
 
   .ui-hero-option__cta.ui-button:hover,
   .ui-hero-option__cta.ui-button:focus-visible {
     background: transparent;
     border-color: transparent;
-    color: var(--ds-color-hero-accent-strong);
+    color: var(--ds-color-hero-accent-soft);
   }
 
   .ui-hero-option.is-emphasized .ui-hero-option__cta.ui-button {
