@@ -1,14 +1,18 @@
 ﻿'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight,
   Badge,
   Button,
+  Card,
   CheckCircle2,
   Container,
+  FileText,
+  Gavel,
   Heading,
+  Phone,
   Text,
 } from '@/ds';
 
@@ -19,84 +23,83 @@ interface HeroProps {
 
 const HERO_SLIDE_INTERVAL_MS = 6000;
 
-type HeroAction = 'quote' | 'rebate' | 'guides';
+type HeroAction = 'quote' | 'rebate';
 
 type HeroSlide = {
   id: string;
-  badge: string;
+  image: string;
   headline: string;
   support: string;
-  primaryCta: {
-    label: string;
-    action: HeroAction;
-    variant: 'primary' | 'secondary' | 'ghost';
-  };
-  secondaryCta?: {
-    label: string;
-    action: HeroAction;
-    variant: 'primary' | 'secondary' | 'ghost';
-  };
+};
+
+type HeroOption = {
+  id: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  icon: LucideIcon;
+  action: HeroAction;
+  emphasized?: boolean;
 };
 
 const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
   {
-    id: 'assessment',
-    badge: 'Free quote planning',
-    headline: 'See the numbers before you talk to anyone.',
-    support: 'Get an instant solar estimate, check likely rebates, and explore your next step without pressure or obligation.',
-    primaryCta: {
-      label: 'Start Instant Quote',
-      action: 'quote',
-      variant: 'primary',
-    },
-    secondaryCta: {
-      label: 'Check Battery Rebates',
-      action: 'rebate',
-      variant: 'secondary',
-    },
+    id: 'future',
+    image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop',
+    headline: 'Power Your Future with Solar Energy',
+    support: 'Join thousands of homeowners saving money and the planet. Switch to clean energy today.',
   },
   {
-    id: 'quote-paths',
-    badge: 'Choose your quote path',
-    headline: 'Request quotes your way, not the installer’s way.',
-    support: 'Choose a call or site visit, ask for written quotes, or open a bidding flow depending on how hands-on or private you want the process to be.',
-    primaryCta: {
-      label: 'Request Quotes',
-      action: 'quote',
-      variant: 'primary',
-    },
-    secondaryCta: {
-      label: 'Compare Quote Types',
-      action: 'quote',
-      variant: 'ghost',
-    },
+    id: 'savings',
+    image: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=2058&auto=format&fit=crop',
+    headline: 'Maximize Your Savings',
+    support: 'Take advantage of the 30% Federal Tax Credit and eliminate your electricity bill.',
   },
   {
     id: 'compare',
-    badge: 'Verified installer matching',
-    headline: 'Compare offers with more leverage and less guesswork.',
-    support: 'Match with verified installers, review written offers, and use negotiation or bidding tools to make the strongest decision for your home.',
-    primaryCta: {
-      label: 'Explore Quote Options',
-      action: 'quote',
-      variant: 'primary',
-    },
-    secondaryCta: {
-      label: 'Read Homeowner Guides',
-      action: 'guides',
-      variant: 'ghost',
-    },
+    image: 'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=2000&auto=format&fit=crop',
+    headline: 'Compare & Save Instantly',
+    support: 'Get competing quotes from top-rated local installers in minutes, not days.',
   },
 ];
 
-const TRUST_INDICATORS = ['Verified installers', 'Free starting quote flow', 'Rebate-aware planning'] as const;
+const HERO_OPTIONS: ReadonlyArray<HeroOption> = [
+  {
+    id: 'consultation',
+    title: 'Book Consultation',
+    description: 'Schedule a direct call or home visit with a certified expert.',
+    ctaLabel: 'Schedule',
+    icon: Phone,
+    action: 'quote',
+  },
+  {
+    id: 'bidding',
+    title: 'Start Live Bidding',
+    description: 'Launch a reverse auction for the lowest price.',
+    ctaLabel: 'Start Auction',
+    icon: Gavel,
+    action: 'quote',
+    emphasized: true,
+  },
+  {
+    id: 'written',
+    title: 'Get Written Quotes',
+    description: 'Receive detailed, fixed-price proposals to compare.',
+    ctaLabel: 'Request',
+    icon: FileText,
+    action: 'quote',
+  },
+];
+
+const HERO_BADGE_LABEL = 'Start Saving Today';
+
+const TRUST_INDICATORS = ['Trusted by 50,000+ Homeowners', 'Verified Local Installers', 'Zero Obligation'] as const;
 
 function cx(...classes: Array<string | false | undefined | null>) {
   return classes.filter(Boolean).join(' ');
 }
 
 const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClick }) => {
-  const router = useRouter();
   const [currentSlide, setCurrentSlide] = React.useState(0);
   const [isInteractionPaused, setIsInteractionPaused] = React.useState(false);
 
@@ -116,9 +119,6 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
     switch (action) {
       case 'rebate':
         onRebateCalculatorClick();
-        return;
-      case 'guides':
-        router.push('/blog');
         return;
       default:
         onInstantQuoteClick();
@@ -142,70 +142,49 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
         {HERO_SLIDES.map((slide, index) => (
           <div
             key={slide.id}
-            className={cx(
-              'ui-hero__background',
-              `ui-hero__background--${slide.id}`,
-              index === currentSlide && 'is-active'
-            )}
+            className={cx('ui-hero__background', index === currentSlide && 'is-active')}
+            style={{ backgroundImage: `url(${slide.image})` }}
           />
         ))}
         <div className="ui-hero__overlay" />
       </div>
 
-      <Container>
-        <div className="ui-hero__layout">
+      <Container width="wide">
+        <div
+          className="ui-hero__layout"
+          onMouseEnter={() => setIsInteractionPaused(true)}
+          onMouseLeave={() => setIsInteractionPaused(false)}
+        >
           <div
-            className="ui-hero__copy"
-            onMouseEnter={() => setIsInteractionPaused(true)}
-            onMouseLeave={() => setIsInteractionPaused(false)}
+            className="ui-hero__masthead"
           >
             <div className="ui-hero__slides" aria-live="polite">
               {HERO_SLIDES.map((slide, index) => (
-                (() => {
-                  const secondaryCta = slide.secondaryCta;
-
-                  return (
-                    <div
-                      key={slide.id}
-                      className={cx('ui-hero__slide', index === currentSlide && 'is-active')}
-                      aria-hidden={index !== currentSlide}
+                <div
+                  key={slide.id}
+                  className={cx('ui-hero__slide', index === currentSlide && 'is-active')}
+                  aria-hidden={index !== currentSlide}
+                >
+                  <div className="ui-hero__badge-wrap">
+                    <button
+                      type="button"
+                      className="ui-hero__badge-button ui-focus-ring"
+                      onClick={() => handleAction('rebate')}
+                      aria-label="Check battery rebates"
                     >
-                      <div className="ui-hero__badge-wrap">
-                        <Badge tone="neutral" className="ui-kicker ui-hero__kicker">
-                          <CheckCircle2 className="ui-hero__kicker-icon" />
-                          <span>{slide.badge}</span>
-                        </Badge>
-                      </div>
-                      <Heading variant={1} className="ui-hero-title ui-hero__headline text-foreground">
-                        {slide.headline}
-                      </Heading>
-                      <Text tone="muted" className="ui-hero-subtitle ui-hero__subcopy">
-                        {slide.support}
-                      </Text>
-                      <div className="ui-hero__actions">
-                        <Button
-                          variant={slide.primaryCta.variant}
-                          size="lg"
-                          className="ui-hero__action"
-                          onClick={() => handleAction(slide.primaryCta.action)}
-                        >
-                          <span>{slide.primaryCta.label}</span>
-                          <ArrowRight className="ui-hero__action-icon" />
-                        </Button>
-                        {secondaryCta ? (
-                          <Button
-                            variant={secondaryCta.variant}
-                            size="lg"
-                            className="ui-hero__action ui-hero__action--secondary"
-                            onClick={() => handleAction(secondaryCta.action)}
-                          >
-                            <span>{secondaryCta.label}</span>
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                  );
-                })()
+                      <Badge tone="neutral" className="ui-kicker ui-hero__kicker">
+                        <CheckCircle2 className="ui-hero__kicker-icon" />
+                        <span>{HERO_BADGE_LABEL}</span>
+                      </Badge>
+                    </button>
+                  </div>
+                  <Heading variant={1} className="ui-hero__headline">
+                    {slide.headline}
+                  </Heading>
+                  <Text className="ui-hero__subcopy">
+                    {slide.support}
+                  </Text>
+                </div>
               ))}
             </div>
 
@@ -222,6 +201,41 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
                 />
               ))}
             </div>
+          </div>
+
+          <div className="ui-hero__options" aria-label="Quote options">
+            {HERO_OPTIONS.map((option) => {
+              const Icon = option.icon;
+
+              return (
+                <Card
+                  key={option.id}
+                  className={cx('ui-hero-option', option.emphasized && 'is-emphasized')}
+                >
+                  {option.emphasized ? <div className="ui-hero-option__ribbon">Most Popular</div> : null}
+                  <div className="ui-hero-option__icon-wrap" aria-hidden="true">
+                    <Icon className="ui-hero-option__icon" />
+                  </div>
+                  <div className="ui-hero-option__body">
+                    <Heading variant={4} className="ui-hero-option__title">
+                      {option.title}
+                    </Heading>
+                    <Text className="ui-hero-option__description">
+                      {option.description}
+                    </Text>
+                  </div>
+                  <Button
+                    variant={option.emphasized ? 'secondary' : 'ghost'}
+                    size="md"
+                    className="ui-hero-option__cta"
+                    onClick={() => handleAction(option.action)}
+                  >
+                    <span>{option.ctaLabel}</span>
+                    <ArrowRight className="ui-hero-option__cta-icon" />
+                  </Button>
+                </Card>
+              );
+            })}
           </div>
 
           <div className="ui-hero__trust" aria-label="Trust indicators">

@@ -57,21 +57,21 @@
     --ds-space-input-pad-x: var(--ds-space-4);
     --ds-space-input-pad-y: var(--ds-space-2);
     --ds-space-nav-padding: var(--ds-space-4);
-    --ds-space-topbar-pad-y: var(--ds-space-1);
-    --ds-space-header-pad-y: var(--ds-space-2);
+    --ds-space-topbar-pad-y: 0.375rem;
+    --ds-space-header-pad-y: 0.625rem;
     --ds-space-header-pad-x: var(--ds-space-3);
-    --ds-space-header-nav-gap: var(--ds-space-4);
-    --ds-space-header-controls-gap: var(--ds-space-3);
+    --ds-space-header-nav-gap: var(--ds-space-6);
+    --ds-space-header-controls-gap: var(--ds-space-4);
 
     /* Header typography */
-    --ds-font-size-topbar: var(--ds-font-size-1);
-    --ds-font-size-header-nav: var(--ds-font-size-2);
-    --ds-font-size-header-brand: var(--ds-font-size-5);
+    --ds-font-size-topbar: 0.75rem;
+    --ds-font-size-header-nav: 0.875rem;
+    --ds-font-size-header-brand: clamp(1.25rem, 1.6vw, 1.5rem);
 
     /* Hero typography */
-    --ds-font-size-hero-eyebrow: clamp(var(--ds-font-size-5), 2.6vw, var(--ds-font-size-6));
-    --ds-font-size-hero-title: clamp(var(--ds-font-size-6), 3.8vw, var(--ds-font-size-7));
-    --ds-font-size-hero-subtitle: clamp(var(--ds-font-size-3), 1.4vw, var(--ds-font-size-4));
+    --ds-font-size-hero-eyebrow: clamp(0.72rem, 0.9vw, 0.82rem);
+    --ds-font-size-hero-title: clamp(3rem, 5.3vw, 5rem);
+    --ds-font-size-hero-subtitle: clamp(1.0625rem, 1.7vw, 1.5rem);
 
     /* Radii */
     --ds-radius-default: 0.875rem;
@@ -180,6 +180,15 @@
     --ds-color-danger-rgb: 220 38 38;
     --ds-color-info-rgb: 37 99 235;
 
+    /* Hero-local prototype palette */
+    --ds-color-hero-accent: #6d3be2;
+    --ds-color-hero-accent-strong: #5e2cd1;
+    --ds-color-hero-accent-soft: #8d6eeb;
+    --ds-color-hero-accent-rgb: 109 59 226;
+    --ds-color-hero-base-rgb: 21 20 25;
+    --ds-color-hero-surface-rgb: 27 27 30;
+    --ds-color-hero-muted-rgb: 203 213 225;
+
     /* Effects */
     --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.18);
     --ds-color-overlay: rgb(0 0 0 / 0.2);
@@ -205,9 +214,12 @@
 
     /* Sizing */
     --ds-size-hero-min-h: 28rem;
-    --ds-size-hero-slide-h: 18rem;
+    --ds-size-hero-copy-max: 50rem;
+    --ds-size-hero-options-max: 68rem;
+    --ds-size-hero-slide-h: 15rem;
     --ds-size-hero-slide-h-mobile: 14rem;
     --ds-size-hero-option-icon: 3rem;
+    --ds-size-hero-card-min-h: 15.5rem;
     --ds-size-hero-indicator: var(--ds-space-2);
     --ds-size-hero-indicator-active: var(--ds-space-7);
     --ds-size-hero-eyebrow-rule: calc(var(--ds-space-7) + var(--ds-space-1));

@@ -51,7 +51,7 @@ export function HeaderMenu({
 
   return (
     <header className="ui-public-header ui-header-pad">
-      <Container>
+      <Container width="wide">
         <div className="ui-public-header__bar">
           <div className="ui-public-header__inner">
             <div className="ui-public-header__brand-group">
@@ -85,24 +85,24 @@ export function HeaderMenu({
             </nav>
 
             <div className="ui-public-header__controls">
-              <ThemeSwitcher />
+              <ThemeSwitcher className="ui-public-header__theme-toggle" />
 
               <div className="ui-public-header__actions">
                 {isLoggedIn ? (
                   <>
-                    <Button onClick={onDashboardClick} variant="ghost" size="sm" className="ui-public-header__action">
+                    <Button onClick={onDashboardClick} variant="ghost" size="sm" className="ui-public-header__action ui-public-header__action--login">
                       Dashboard
                     </Button>
-                    <Button onClick={onLogoutClick} variant="secondary" size="sm" className="ui-public-header__action">
+                    <Button onClick={onLogoutClick} variant="secondary" size="sm" className="ui-public-header__action ui-public-header__action--signup">
                       Logout
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button onClick={onLoginClick} variant="ghost" size="sm" className="ui-public-header__action">
+                    <Button onClick={onLoginClick} variant="ghost" size="sm" className="ui-public-header__action ui-public-header__action--login">
                       Login
                     </Button>
-                    <Button onClick={onSignupClick} variant="primary" size="sm" className="ui-public-header__action">
+                    <Button onClick={onSignupClick} variant="primary" size="sm" className="ui-public-header__action ui-public-header__action--signup">
                       Sign Up
                     </Button>
                   </>

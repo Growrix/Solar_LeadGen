@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import { Badge } from '../../components/shared/Badge';
 import { Building } from '../../index';
 import { Button } from '../../primitives/Button';
 import { Container } from '../../primitives/Container';
@@ -17,12 +16,12 @@ export interface TopBarProps {
 export function TopBar({ onBecomePartnerClick, onPartnerSignInClick }: TopBarProps) {
   return (
     <div id="top-bar" className="ui-topbar-band">
-      <Container>
+      <Container width="wide">
         <div className="ui-topbar">
-          <Badge tone="neutral" className="ui-topbar__badge">
+          <div className="ui-topbar__lead" aria-label="Installer actions">
             <Building className="ui-topbar__icon" />
-            <span className="ui-topbar__label">For Solar Installers:</span>
-          </Badge>
+            <span className="ui-topbar__label">For Solar Installers</span>
+          </div>
 
           <div className="ui-topbar__actions">
             <Button onClick={onBecomePartnerClick} variant="secondary" size="sm" className="ui-topbar__action ui-topbar__action--subtle">

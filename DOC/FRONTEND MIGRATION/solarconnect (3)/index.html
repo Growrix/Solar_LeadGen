@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SolarConnect - Power Your Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#f4f1fd',
+                100: '#e8e2fb',
+                200: '#d0c3f7',
+                300: '#b09cf2',
+                400: '#8d6eeb',
+                500: '#6d3be2', // Deep Purple Primary
+                600: '#5e2cd1',
+                700: '#5023b3',
+                800: '#431f94',
+                900: '#381b7a',
+                950: '#230f4f',
+              },
+              slate: {
+                50: '#FBFBFB', // Snow
+                100: '#f3f4f6',
+                200: '#e5e7eb',
+                300: '#d1d5db',
+                400: '#9ca3af',
+                500: '#878787', // Dusty Grey
+                600: '#4b5563',
+                700: '#262626', // Slate Grey
+                800: '#1B1B1E', // Gluon Grey
+                900: '#151419', // Dark Void
+                950: '#0b0a0d',
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
