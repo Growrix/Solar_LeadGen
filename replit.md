@@ -167,6 +167,10 @@ A full public-facing frontend redesign was applied to align with the prototype i
 | `src/components/BlogSection.tsx` | Dark prototype markup — `bg-surface` cards, category badge overlaid on image, hover scale |
 | `src/components/NewsletterSignup.tsx` | Purple gradient card (`#5e2cd1 → #4c1db8`) with decorative blobs, translucent white inputs |
 | `src/ds/runtime/web/Footer.tsx` | Replaced undefined `tactile` CSS class with `bg-surface border border-border` equivalents |
+| `tailwind.config.js` | Added `brand.*` color scale (50–950) matching prototype purple palette |
+| `src/ds/styles/ds.components.css` | Nav uppercase/tracking, hero option card hover transitions, icon-wrap brand colors |
+| `src/components/NewsSection.tsx` | New component — featured news card + sidebar article list (mirrors prototype NewsSection) |
+| `src/app/page.tsx` | Imported and inserted `NewsSection` between BlogSection and NewsletterSignup; fixed `id="news-section"` anchor |
 
 ### Pre-existing TypeScript Errors (Not From Redesign)
 

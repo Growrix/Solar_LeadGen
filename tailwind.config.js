@@ -11,6 +11,21 @@ module.exports = {
     extend: {
       // Semantic color tokens with theme-aware variants (CSS VARIABLES)
       colors: {
+        // Prototype brand-* scale (purple, matches DOC prototype)
+        brand: {
+          50:  '#f4f1fd',
+          100: '#e8e2fb',
+          200: '#d0c3f7',
+          300: '#b09cf2',
+          400: '#8d6eeb',
+          500: '#6d3be2',
+          600: '#5e2cd1',
+          700: '#5023b3',
+          800: '#431f94',
+          900: '#381b7a',
+          950: '#230f4f',
+        },
+
         // Brand colors (DS-driven)
         primary: 'rgb(var(--ds-color-accent-rgb) / <alpha-value>)',
         'primary-hover': 'var(--ds-color-accent-hover)',
