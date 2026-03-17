@@ -144,20 +144,28 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
   }, []);
 
   return (
-    <section className="blog-section">
+    <section className="py-24 bg-background border-t border-border" id="resources">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="ui-section-title text-foreground mb-4">
-            Latest Solar News & Insights
-          </h2>
-          <p className="text-body-large text-muted-foreground max-w-3xl mx-auto">
-            Stay informed with expert insights, industry updates, and practical tips from our solar specialists.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground-secondary mb-4 tracking-tight">
+              Latest Solar News & Insights
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Stay informed with expert insights, industry updates, and practical tips from our solar specialists.
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <Button onClick={onSeeAllPostsClick} variant="secondary" size="md">
+              <span>View All Posts</span>
+              <ArrowRightLargeIcon />
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
           {error ? (
-            <div className="col-span-full bg-background rounded-2xl shadow-inner p-6 text-center text-muted-foreground">
+            <div className="col-span-full bg-surface rounded-2xl p-6 text-center text-muted-foreground border border-border">
               {error}
             </div>
           ) : null}
@@ -175,7 +183,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
             <article 
               key={index} 
               onClick={() => !loading && onNavigateToPost(article)}
-              className={`bg-background rounded-2xl shadow-card hover:shadow-modal overflow-hidden group transition-colors duration-300 ${
+              className={`bg-surface rounded-2xl overflow-hidden group border border-border transition-all duration-300 hover:border-primary/30 hover:shadow-modal ${
                 loading ? 'opacity-60 cursor-default' : 'cursor-pointer'
               }`}
               role="button"
@@ -183,59 +191,52 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
               aria-label={`Read article: ${article.title}`}
               onKeyDown={(e) => !loading && e.key === 'Enter' && onNavigateToPost(article)}
             >
-              <div className="relative w-full h-44 bg-background shadow-inner">
+              <div className="relative w-full h-48 bg-surface overflow-hidden">
                 <Image
                   src={article.image || '/images/blog-placeholder.svg'}
                   alt={article.title}
                   fill
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority={index < 2}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
-              </div>
-              <div className="p-6 lg:p-8 flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="inline-flex items-center gap-2 bg-background shadow-inner px-3 py-1.5 rounded-xl">
-                    <div className="w-2 h-2 rounded-full bg-primary shadow-inner"></div>
-                    <span className="text-caption text-foreground">
-                      {article.category}
-                    </span>
-                  </div>
-                  <span className="text-caption text-muted-foreground">
-                    {article.readTime}
+                <div className="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/20 to-transparent" />
+                <div className="absolute top-4 left-4">
+                  <span className="inline-flex items-center gap-1.5 bg-surface/70 backdrop-blur-sm border border-border px-3 py-1 rounded-full text-xs font-medium text-foreground-secondary">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                    {article.category}
                   </span>
                 </div>
+              </div>
+              <div className="p-6 flex flex-col">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CalendarIcon />
+                    <span>{article.date}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{article.readTime}</span>
+                </div>
                 
-                <h3 className="text-heading-4 text-foreground mb-3 group-hover:text-primary transition-colors">
+                <h3 className="text-lg font-semibold text-foreground-secondary mb-3 leading-snug group-hover:text-primary transition-colors">
                   {article.title}
                 </h3>
-                <p className="text-body text-muted-foreground mb-5">
+                <p className="text-sm text-muted-foreground mb-5 leading-relaxed flex-1">
                   {article.excerpt}
                 </p>
                 
-                <div className="flex items-center justify-between text-body-small text-muted-foreground mb-6 border-t border-border pt-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <UserIcon />
-                      <span className="text-muted-foreground">{article.author}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CalendarIcon />
-                      <span className="text-muted-foreground">{article.date}</span>
-                    </div>
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <UserIcon />
+                    <span>{article.author}</span>
                   </div>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-border">
                   <div
-                    className="text-primary group-hover:text-primary/80 transition-colors inline-flex items-center space-x-2 cursor-pointer"
+                    className="text-primary text-sm font-medium inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
                       onNavigateToPost(article);
                     }}
                   >
-                    <span>Read Article</span>
+                    <span>Read</span>
                     <ArrowRightIcon />
                   </div>
                 </div>
@@ -244,12 +245,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
           ))}
         </div>
 
-        <div className="text-center">
-          <Button
-            onClick={onSeeAllPostsClick}
-            variant="secondary"
-            size="lg"
-          >
+        <div className="mt-8 md:hidden flex justify-center">
+          <Button onClick={onSeeAllPostsClick} variant="secondary" size="lg">
             <span>See All Posts</span>
             <ArrowRightLargeIcon />
           </Button>

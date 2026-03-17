@@ -116,12 +116,17 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
         }
     };
 
+    const isSection = variant !== 'compact';
+    const inputCls = isSection
+        ? 'w-full pl-12 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40 transition-colors duration-300'
+        : `w-full pl-12 pr-4 py-2.5 rounded-xl bg-background shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-300 text-foreground placeholder:text-muted-foreground`;
+
     const form = (
         <form onSubmit={handleSubmit} className={className}>
-            <div className={variant === 'compact' ? 'space-y-3' : 'h-24'}>
+            <div className="space-y-3">
                 {status !== 'success' ? (
                     <>
-                        <div className={variant === 'compact' ? 'flex flex-col gap-3' : 'flex flex-col sm:flex-row items-center gap-3'}>
+                        <div className={isSection ? 'flex flex-col gap-3' : 'flex flex-col gap-3'}>
                             <div className="relative flex-grow w-full">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                                     <MailIcon />
@@ -132,15 +137,16 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                     onChange={handleEmailChange}
                                     placeholder="Enter your email address"
                                     aria-label="Email address for newsletter"
-                                    className={`w-full pl-12 pr-4 ${variant === 'compact' ? 'py-2.5 rounded-xl' : 'py-3 rounded-2xl'} bg-background shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 focus:shadow-inner transition-colors duration-300 text-foreground placeholder:text-muted-foreground`}
+                                    className={inputCls}
                                     disabled={status === 'loading'}
                                     autoComplete="email"
                                 />
                             </div>
                             <Button
                                 type="submit"
-                                variant="secondary"
-                                className={variant === 'compact' ? 'w-full px-5 py-2.5 flex items-center justify-center space-x-2' : 'w-full sm:w-auto px-6 py-3 flex items-center justify-center space-x-2'}
+                                variant={isSection ? 'primary' : 'secondary'}
+                                size="lg"
+                                className={isSection ? 'w-full justify-center bg-white text-purple-900 hover:bg-white/90 border-0' : 'w-full justify-center'}
                                 disabled={status === 'loading'}
                             >
                                 {status === 'loading' ? (
@@ -150,7 +156,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                     </>
                                 ) : (
                                     <>
-                                        <span>Subscribe</span>
+                                        <span>Subscribe Now</span>
                                         <ArrowRightIcon />
                                     </>
                                 )}
@@ -159,7 +165,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                         {(inputError || (status === 'error' && message)) && (
                             <p
                                 role="alert"
-                                className={`mt-3 ${variant === 'compact' ? 'text-caption justify-start' : 'text-body-small justify-center'} text-destructive flex items-center gap-2 animate-fade-in`}
+                                className={`mt-2 text-sm ${isSection ? 'text-white/80' : 'text-destructive'} flex items-center gap-2 animate-fade-in`}
                             >
                                 <AlertCircleIcon /> {inputError || message}
                             </p>
@@ -168,10 +174,10 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                 ) : (
                     <div
                         role="status"
-                        className={`p-4 bg-success/10 shadow-inner border border-success/30 ${variant === 'compact' ? 'rounded-xl' : 'rounded-2xl'} flex flex-col items-center justify-center gap-3 animate-fade-in ${variant === 'compact' ? '' : 'h-full'}`}
+                        className={`p-4 ${isSection ? 'bg-white/15 border-white/20' : 'bg-success/10 border-success/30'} border rounded-xl flex flex-col items-center justify-center gap-3 animate-fade-in`}
                     >
                         <CheckCircleIcon />
-                        <p className="text-success text-center">{message}</p>
+                        <p className={`text-center text-sm ${isSection ? 'text-white' : 'text-success'}`}>{message}</p>
                     </div>
                 )}
             </div>
@@ -192,35 +198,53 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
     }
 
     return (
-        <section className="py-16 sm:py-24 bg-background">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="bg-background rounded-3xl shadow-modal p-8 sm:p-12 lg:p-16 text-center relative overflow-hidden">
-                    {/* Decorative elements */}
-                    <div className="absolute -top-16 -right-16 w-40 h-40 bg-primary/5 rounded-full blur-3xl animate-fade-in transition-colors duration-500"></div>
-                    <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-primary/5 rounded-full blur-3xl animate-fade-in" style={{ animationDelay: '300ms' }}></div>
+        <section className="py-24 bg-background border-t border-border relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div
+                    className="rounded-3xl p-8 md:p-16 text-center md:text-left shadow-modal relative overflow-hidden ring-1 ring-white/10"
+                    style={{ background: 'linear-gradient(135deg, #5e2cd1 0%, #4c1db8 100%)' }}
+                >
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl" style={{ background: '#6d3be2' }} />
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl" style={{ background: '#2e0f7a' }} />
 
-                    <div className="relative z-10">
-                        <div className="animate-fade-in">
-                            <div className="w-20 h-20 bg-background shadow-inner rounded-2xl flex items-center justify-center mx-auto mb-6">
-                                <PaperPlaneIcon />
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
+                        <div className="max-w-xl">
+                            <div className="mb-6">
+                                <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium px-3 py-1.5 rounded-full">
+                                    <MailIcon />
+                                    Newsletter
+                                </span>
                             </div>
-                            <h2 className="ui-section-title text-foreground mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
                                 Go Solar, Smarter.
                             </h2>
-                            <p className="text-body-large text-muted-foreground max-w-2xl mx-auto">
+                            <p className="text-lg text-white/80 leading-relaxed">
                                 Get the latest solar news, government rebate updates, and exclusive tips delivered straight to your inbox.
                             </p>
+                            <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start text-sm text-white/90 font-medium">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircleIcon />
+                                    <span>Weekly updates</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <CheckCircleIcon />
+                                    <span>Rebate alerts</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <CheckCircleIcon />
+                                    <span>No spam</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="max-w-lg mx-auto mt-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                        <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-inner">
                             {form}
+                            {status !== 'success' && (
+                                <p className="text-center text-xs text-white/60 mt-3">
+                                    We respect your privacy. Unsubscribe at any time.
+                                </p>
+                            )}
                         </div>
-
-                        {status !== 'success' && (
-                            <p className="text-caption text-muted-foreground mt-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                                We respect your privacy. Unsubscribe at any time.
-                            </p>
-                        )}
                     </div>
                 </div>
             </div>

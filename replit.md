@@ -143,3 +143,31 @@ TWILIO_PHONE_NUMBER=
 - Always warn before any destructive database operation.
 - Use `prisma migrate deploy` in production; use `prisma migrate dev` in development only.
 - Admin password seeding is done via `npm run seed:admin` — never hardcode credentials in source.
+
+---
+
+## Frontend Redesign (Cinematic Purple Theme)
+
+A full public-facing frontend redesign was applied to align with the prototype in `DOC/FRONTEND MIGRATION/solarconnect (3)/`. This is **frontend-only** — no backend, API, auth, or logic changes were made.
+
+### Theme
+
+- **Single theme**: `purple` only. Registry reduced to one entry (`DEFAULT_THEME = "purple"`, `THEMES = [purple]`).
+- **Palette**: background `#151419`, surface `#1c1b21`, border `#2a2830`, accent `#6d3be2`.
+- **DS tokens** (`src/ds/styles/ds.tokens.css`): `--color-accent` set to `#6d3be2` under `.theme-purple`.
+
+### Changed Files
+
+| File | Change |
+|------|--------|
+| `src/ds/foundation/themes/registry.ts` | Single purple theme, `DEFAULT_THEME = "purple"` |
+| `src/ds/foundation/themes/ThemeInitScript.tsx` | Fixed hydration bug — inlines `THEMES.map(t => t.name)` as JSON instead of using `isActiveThemeName.toString()` |
+| `src/ds/styles/ds.tokens.css` | Purple theme accent `#6d3be2`, darker shadow tokens |
+| `src/ds/runtime/web/HeaderMenu.tsx` | Removed `ThemeSwitcher` import and JSX element |
+| `src/components/BlogSection.tsx` | Dark prototype markup — `bg-surface` cards, category badge overlaid on image, hover scale |
+| `src/components/NewsletterSignup.tsx` | Purple gradient card (`#5e2cd1 → #4c1db8`) with decorative blobs, translucent white inputs |
+| `src/ds/runtime/web/Footer.tsx` | Replaced undefined `tactile` CSS class with `bg-surface border border-border` equivalents |
+
+### Pre-existing TypeScript Errors (Not From Redesign)
+
+Backend-only TS errors exist (Prisma schema mismatches, missing `@types/react-dom`, missing `@testing-library/react`). None are caused by frontend changes.

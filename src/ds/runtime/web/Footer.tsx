@@ -40,10 +40,10 @@ export function Footer({ onBecomePartnerClick, onPartnerSignInClick, onScrollToQ
               Get quotes, calculate rebates, and go solar with confidence.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="tactile p-4" aria-label="Facebook"><Facebook /></a>
-              <a href="#" className="tactile p-4" aria-label="Twitter"><Twitter /></a>
-              <a href="#" className="tactile p-4" aria-label="Instagram"><Instagram /></a>
-              <a href="#" className="tactile p-4" aria-label="LinkedIn"><Linkedin /></a>
+              <a href="#" className="p-2.5 rounded-full border border-border bg-surface hover:border-primary/50 transition-colors" aria-label="Facebook"><Facebook /></a>
+              <a href="#" className="p-2.5 rounded-full border border-border bg-surface hover:border-primary/50 transition-colors" aria-label="Twitter"><Twitter /></a>
+              <a href="#" className="p-2.5 rounded-full border border-border bg-surface hover:border-primary/50 transition-colors" aria-label="Instagram"><Instagram /></a>
+              <a href="#" className="p-2.5 rounded-full border border-border bg-surface hover:border-primary/50 transition-colors" aria-label="LinkedIn"><Linkedin /></a>
             </div>
           </div>
 
@@ -77,7 +77,7 @@ export function Footer({ onBecomePartnerClick, onPartnerSignInClick, onScrollToQ
               <div className="flex items-center gap-3"><Mail className="h-5 w-5 text-primary" /><span className="text-body text-muted-foreground">hello@solarmatch.com.au</span></div>
               <div className="flex items-start gap-3"><MapPin className="h-5 w-5 text-primary mt-1" /><span className="text-body text-muted-foreground">Level 10, 123 Collins Street<br />Melbourne VIC 3000</span></div>
             </div>
-            <div className="tactile p-4">
+            <div className="p-4 rounded-xl bg-surface border border-border">
               <p className="text-body-small text-foreground mb-2">Operating Hours:</p>
               <p className="text-body-small text-muted-foreground">Mon - Fri: 8:00 AM - 6:00 PM AEST<br />Sat: 9:00 AM - 4:00 PM AEST</p>
             </div>
@@ -85,7 +85,7 @@ export function Footer({ onBecomePartnerClick, onPartnerSignInClick, onScrollToQ
         </div>
 
         <div className="mt-16 pt-8">
-          <div className="tactile p-4 rounded-2xl">
+          <div className="p-4 rounded-2xl bg-surface border border-border">
             <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
               <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-3">
                 <a href="#" className="text-body-small text-muted-foreground hover:text-primary transition-colors">About Us</a>

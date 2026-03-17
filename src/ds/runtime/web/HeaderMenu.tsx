@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { DropdownMenu, DropdownMenuButton } from '../../components/shared/DropdownMenu';
-import { ThemeSwitcher } from '../../components/shared/ThemeSwitcher';
 import { Button } from '../../primitives/Button';
 import { Container } from '../../primitives/Container';
 
@@ -85,8 +84,6 @@ export function HeaderMenu({
             </nav>
 
             <div className="ui-public-header__controls">
-              <ThemeSwitcher className="ui-public-header__theme-toggle" />
-
               <div className="ui-public-header__actions">
                 {isLoggedIn ? (
                   <>

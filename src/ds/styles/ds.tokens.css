@@ -299,39 +299,41 @@
     --ds-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.04);
   }
 
-  /* Theme: purple (dormant for later re-enable) */
+  /* Theme: purple — cinematic dark (active public theme) */
   html.theme-purple {
-    --ds-palette-brand-50: #faf5ff;
-    --ds-palette-brand-100: #f3e8ff;
-    --ds-palette-brand-200: #e9d5ff;
-    --ds-palette-brand-300: #d8b4fe;
-    --ds-palette-brand-400: #c084fc;
-    --ds-palette-brand-500: #a855f7;
-    --ds-palette-brand-600: #9333ea;
-    --ds-palette-brand-700: #7e22ce;
-    --ds-palette-brand-800: #6b21a8;
-    --ds-palette-brand-900: #581c87;
-    --ds-palette-brand-950: #3b0764;
+    --ds-palette-brand-50: #f5f3ff;
+    --ds-palette-brand-100: #ede9fe;
+    --ds-palette-brand-200: #ddd6fe;
+    --ds-palette-brand-300: #c4b5fd;
+    --ds-palette-brand-400: #a78bfa;
+    --ds-palette-brand-500: #6d3be2;
+    --ds-palette-brand-600: #5e2cd1;
+    --ds-palette-brand-700: #4c1db8;
+    --ds-palette-brand-800: #3b1499;
+    --ds-palette-brand-900: #2e0f7a;
+    --ds-palette-brand-950: #1a0854;
 
     --ds-color-background: #151419;
-    --ds-color-surface: #1b1b1e;
-    --ds-color-border: #262626;
-    --ds-color-foreground: #9ca3af;
-    --ds-color-foreground-secondary: #f3f4f6;
-    --ds-color-accent: #9333ea;
+    --ds-color-surface: #1c1b21;
+    --ds-color-border: #2a2830;
+    --ds-color-foreground: #94a3b8;
+    --ds-color-foreground-secondary: #f1f5f9;
+    --ds-color-accent: #6d3be2;
     --ds-color-accent-foreground: #ffffff;
-    --ds-color-on-primary: #f3f4f6;
+    --ds-color-on-primary: #ffffff;
     --ds-color-background-rgb: 21 20 25;
-    --ds-color-surface-rgb: 27 27 30;
-    --ds-color-border-rgb: 38 38 38;
-    --ds-color-foreground-rgb: 156 163 175;
-    --ds-color-foreground-secondary-rgb: 243 244 246;
-    --ds-color-on-primary-rgb: 243 244 246;
-    --ds-color-accent-rgb: 147 51 234;
-    --ds-color-overlay: rgb(0 0 0 / 0.55);
+    --ds-color-surface-rgb: 28 27 33;
+    --ds-color-border-rgb: 42 40 48;
+    --ds-color-foreground-rgb: 148 163 184;
+    --ds-color-foreground-secondary-rgb: 241 245 249;
+    --ds-color-on-primary-rgb: 255 255 255;
+    --ds-color-accent-rgb: 109 59 226;
+    --ds-color-overlay: rgb(0 0 0 / 0.6);
     --ds-color-transparent: transparent;
-    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 78%, var(--ds-color-background));
-    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
+    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 80%, var(--ds-color-background));
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 68%, var(--ds-color-background));
+    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.04);
+    --ds-shadow-md: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 2px rgba(255, 255, 255, 0.03);
   }
 
   /* Density + platform knobs (scopable per page via a wrapper) */

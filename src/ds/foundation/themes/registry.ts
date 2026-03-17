@@ -12,9 +12,9 @@ export const ALL_THEMES: ThemeDefinition[] = [
   { name: "purple", label: "Purple", colorScheme: "dark" },
 ];
 
-export const THEMES: ThemeDefinition[] = ALL_THEMES.filter((theme) => theme.name === "light" || theme.name === "dark");
+export const THEMES: ThemeDefinition[] = ALL_THEMES.filter((theme) => theme.name === "purple");
 
-export const DEFAULT_THEME: ThemeName = "light";
+export const DEFAULT_THEME: ThemeName = "purple";
 
 export function isThemeName(value: string | null | undefined): value is ThemeName {
   return value === "dark" || value === "light" || value === "purple";
