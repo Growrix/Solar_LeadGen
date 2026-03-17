@@ -144,7 +144,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
   }, []);
 
   return (
-    <section className="py-24 bg-background border-t border-border" id="resources">
+    <section className="py-24 bg-slate-900 border-t border-slate-800" id="resources">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="max-w-2xl">
