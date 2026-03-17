@@ -118,7 +118,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
 
     const isSection = variant !== 'compact';
     const inputCls = isSection
-        ? 'w-full pl-12 pr-4 py-3 rounded-xl bg-slate-900/40 border border-white/10 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-colors duration-300'
+        ? 'w-full pl-12 pr-4 py-3 rounded-lg bg-slate-900/40 border border-white/10 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-colors duration-300'
         : `w-full pl-12 pr-4 py-2.5 rounded-xl bg-background shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-300 text-foreground placeholder:text-muted-foreground`;
 
     const form = (
@@ -146,7 +146,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                 type="submit"
                                 variant={isSection ? 'primary' : 'secondary'}
                                 size="lg"
-                                className={isSection ? 'w-full justify-center bg-white text-brand-950 hover:bg-white/90 border-0' : 'w-full justify-center'}
+                                className={isSection ? 'w-full justify-center bg-white text-brand-950 hover:bg-slate-100 border-0' : 'w-full justify-center'}
                                 disabled={status === 'loading'}
                             >
                                 {status === 'loading' ? (

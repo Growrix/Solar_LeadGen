@@ -3150,7 +3150,7 @@
   .ui-public-header__navlink:focus-visible,
   .ui-public-header__menu-trigger:hover,
   .ui-public-header__menu-trigger:focus-visible {
-    color: var(--ui-public-chrome-text, var(--ds-color-accent));
+    color: #8d6eeb;
   }
 
   .ui-public-header__menu {

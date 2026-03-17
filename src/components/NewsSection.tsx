@@ -23,7 +23,7 @@ const NEWS_ARTICLES: NewsArticle[] = [
     snippet: 'A historic achievement for renewable energy as solar adoption accelerates worldwide, driven by falling panel costs and government initiatives across major economies.',
     date: '2 hours ago',
     url: '#',
-    imageUrl: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=1200&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/solar-farm/1200/800',
   },
   {
     id: '2',
@@ -32,16 +32,16 @@ const NEWS_ARTICLES: NewsArticle[] = [
     snippet: 'Breakthrough research promises safer, longer-lasting home battery solutions for solar systems.',
     date: '5 hours ago',
     url: '#',
-    imageUrl: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/battery/800/600',
   },
   {
     id: '3',
     source: 'Solar Power World',
-    title: 'California Updates Net Metering Policies for 2025',
-    snippet: 'What homeowners need to know about the new NEM 3.0 regulations and export rates effective this year.',
+    title: 'California Updates Net Metering Policies for 2024',
+    snippet: 'What homeowners need to know about the new NEM 3.0 regulations and export rates effective this month.',
     date: '1 day ago',
     url: '#',
-    imageUrl: 'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/meter/800/600',
   },
   {
     id: '4',
@@ -50,7 +50,7 @@ const NEWS_ARTICLES: NewsArticle[] = [
     snippet: 'Government launches new grant program to make clean energy accessible to more communities.',
     date: '2 days ago',
     url: '#',
-    imageUrl: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://picsum.photos/seed/roof-worker/800/600',
   },
 ];
 
