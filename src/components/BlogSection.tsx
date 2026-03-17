@@ -183,7 +183,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
             <article 
               key={index} 
               onClick={() => !loading && onNavigateToPost(article)}
-              className={`bg-surface rounded-2xl overflow-hidden group border border-border transition-all duration-300 hover:border-primary/30 hover:shadow-modal ${
+              className={`bg-slate-800 rounded-2xl overflow-hidden group border border-slate-700 transition-all duration-300 hover:border-brand-500/50 hover:-translate-y-1 hover:shadow-modal ${
                 loading ? 'opacity-60 cursor-default' : 'cursor-pointer'
               }`}
               role="button"
@@ -191,7 +191,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
               aria-label={`Read article: ${article.title}`}
               onKeyDown={(e) => !loading && e.key === 'Enter' && onNavigateToPost(article)}
             >
-              <div className="relative w-full h-48 bg-surface overflow-hidden">
+              <div className="relative w-full h-48 bg-slate-900 overflow-hidden">
                 <Image
                   src={article.image || '/images/blog-placeholder.svg'}
                   alt={article.title}
@@ -200,37 +200,36 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority={index < 2}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
                 <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center gap-1.5 bg-surface/70 backdrop-blur-sm border border-border px-3 py-1 rounded-full text-xs font-medium text-foreground-secondary">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+                  <span className="inline-flex items-center gap-1.5 bg-brand-500 text-brand-950 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
                     {article.category}
                   </span>
                 </div>
               </div>
               <div className="p-6 flex flex-col">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
                     <CalendarIcon />
                     <span>{article.date}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{article.readTime}</span>
+                  <span className="text-xs text-slate-400">{article.readTime}</span>
                 </div>
                 
-                <h3 className="text-lg font-semibold text-foreground-secondary mb-3 leading-snug group-hover:text-primary transition-colors">
+                <h3 className="text-lg font-semibold text-white mb-3 leading-snug group-hover:text-brand-300 transition-colors">
                   {article.title}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-5 leading-relaxed flex-1">
+                <p className="text-sm text-slate-400 mb-5 leading-relaxed flex-1">
                   {article.excerpt}
                 </p>
                 
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
                     <UserIcon />
                     <span>{article.author}</span>
                   </div>
                   <div
-                    className="text-primary text-sm font-medium inline-flex items-center gap-1.5 group-hover:gap-2.5 transition-all"
+                    className="text-brand-400 text-sm font-semibold inline-flex items-center gap-1.5 group-hover:text-brand-300 group-hover:gap-2.5 transition-all"
                     onClick={(e) => {
                       e.stopPropagation();
                       onNavigateToPost(article);

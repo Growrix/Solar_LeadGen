@@ -26,6 +26,21 @@ module.exports = {
           950: '#230f4f',
         },
 
+        // Prototype slate-* overrides (exact dark cinematic values from DOC)
+        slate: {
+          50:  '#FBFBFB',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#878787',
+          600: '#4b5563',
+          700: '#262626',
+          800: '#1B1B1E',
+          900: '#151419',
+          950: '#0b0a0d',
+        },
+
         // Brand colors (DS-driven)
         primary: 'rgb(var(--ds-color-accent-rgb) / <alpha-value>)',
         'primary-hover': 'var(--ds-color-accent-hover)',

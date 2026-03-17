@@ -146,7 +146,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                 type="submit"
                                 variant={isSection ? 'primary' : 'secondary'}
                                 size="lg"
-                                className={isSection ? 'w-full justify-center bg-white text-purple-900 hover:bg-white/90 border-0' : 'w-full justify-center'}
+                                className={isSection ? 'w-full justify-center bg-white text-brand-700 hover:bg-white/90 border-0' : 'w-full justify-center'}
                                 disabled={status === 'loading'}
                             >
                                 {status === 'loading' ? (
@@ -198,14 +198,11 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
     }
 
     return (
-        <section className="py-24 bg-background border-t border-border relative overflow-hidden">
+        <section className="py-24 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div
-                    className="rounded-3xl p-8 md:p-16 text-center md:text-left shadow-modal relative overflow-hidden ring-1 ring-white/10"
-                    style={{ background: 'linear-gradient(135deg, #5e2cd1 0%, #4c1db8 100%)' }}
-                >
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl" style={{ background: '#6d3be2' }} />
-                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl" style={{ background: '#2e0f7a' }} />
+                <div className="rounded-3xl p-8 md:p-16 text-center md:text-left shadow-modal relative overflow-hidden ring-1 ring-white/10 bg-gradient-to-br from-brand-600 to-brand-800">
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl bg-brand-500" />
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl bg-brand-900" />
 
                     <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
                         <div className="max-w-xl">

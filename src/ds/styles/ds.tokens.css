@@ -314,16 +314,16 @@
     --ds-palette-brand-950: #1a0854;
 
     --ds-color-background: #151419;
-    --ds-color-surface: #1c1b21;
-    --ds-color-border: #2a2830;
+    --ds-color-surface: #1B1B1E;
+    --ds-color-border: #262626;
     --ds-color-foreground: #94a3b8;
     --ds-color-foreground-secondary: #f1f5f9;
     --ds-color-accent: #6d3be2;
     --ds-color-accent-foreground: #ffffff;
     --ds-color-on-primary: #ffffff;
     --ds-color-background-rgb: 21 20 25;
-    --ds-color-surface-rgb: 28 27 33;
-    --ds-color-border-rgb: 42 40 48;
+    --ds-color-surface-rgb: 27 27 30;
+    --ds-color-border-rgb: 38 38 38;
     --ds-color-foreground-rgb: 148 163 184;
     --ds-color-foreground-secondary-rgb: 241 245 249;
     --ds-color-on-primary-rgb: 255 255 255;

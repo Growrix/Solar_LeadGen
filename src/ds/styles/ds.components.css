@@ -2906,6 +2906,17 @@
     --ui-public-chrome-mobile-border: rgb(var(--ds-color-on-primary-rgb) / 0.12);
   }
 
+  /* Scrolled state — frosted background when user scrolls past hero top */
+  .ui-sticky-top--scrolled {
+    background: rgb(var(--ds-color-hero-base-rgb) / 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 1px 0 rgb(var(--ds-color-on-primary-rgb) / 0.06);
+    transition: background var(--ds-duration-normal) var(--ds-ease-standard),
+      backdrop-filter var(--ds-duration-normal) var(--ds-ease-standard),
+      box-shadow var(--ds-duration-normal) var(--ds-ease-standard);
+  }
+
   .ui-badge--accent {
     background: color-mix(in oklab, var(--ds-color-accent) 20%, var(--ds-color-surface));
     border-color: color-mix(in oklab, var(--ds-color-accent) 30%, var(--ds-color-border));

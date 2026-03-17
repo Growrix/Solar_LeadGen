@@ -24,6 +24,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const isInstallerRoute = pathname?.startsWith('/installer');
   const isHomeownerRoute = pathname?.startsWith('/homeowner');
@@ -60,6 +61,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
 
     const handleScroll = () => {
       const currentScroll = window.scrollY;
+      setIsScrolled(currentScroll > 20);
       if (currentScroll <= HEADER_HEIGHT) {
         setIsHeaderVisible(true);
         lastScroll = currentScroll;
@@ -203,7 +205,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <div className="ui-page">
       {!isInstallerRoute && !isHomeownerRoute && !isAdminRoute && (
-        <div className={`ui-sticky-top ${pathname === '/' && !isLoggedIn ? 'ui-sticky-top--overlay-home' : ''} transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <div className={`ui-sticky-top ${pathname === '/' && !isLoggedIn ? 'ui-sticky-top--overlay-home' : ''} ${pathname === '/' && !isLoggedIn && isScrolled ? 'ui-sticky-top--scrolled' : ''} transition-transform duration-300 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'}`}>
           {!isLoggedIn ? <TopBar onBecomePartnerClick={handleBecomePartner} onPartnerSignInClick={handlePartnerSignIn} /> : null}
           <HeaderMenu
             isLoggedIn={isLoggedIn}
