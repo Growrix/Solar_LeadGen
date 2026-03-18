@@ -13,6 +13,7 @@
  */
 
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 import { glob } from 'glob';
 
 interface Violation {
@@ -101,15 +102,52 @@ function checkFile(filePath: string) {
   });
 }
 
+function getStagedTsxJsxFiles(): string[] {
+  const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((file) => /\.(tsx|jsx)$/.test(file))
+    .filter((file) => !file.startsWith('node_modules/'))
+    .filter((file) => !file.startsWith('dist/'))
+    .filter((file) => !file.startsWith('build/'))
+    .filter((file) => !file.startsWith('.next/'));
+}
+
 async function main() {
-  const filePattern = process.argv[2] || 'src/**/*.{tsx,jsx}';
-  
-  console.log(`🔍 Validating className usage: ${filePattern}\n`);
-  
-  const files = await glob(filePattern, { ignore: ['node_modules/**', 'dist/**', 'build/**', '.next/**'] });
-  
-  for (const file of files) {
-    checkFile(file);
+  const args = process.argv.slice(2);
+  const wantsAll = args.includes('--all');
+  const explicitPattern = args.find((arg) => arg !== '--all');
+
+  if (!explicitPattern && !wantsAll) {
+    const stagedFiles = getStagedTsxJsxFiles();
+    console.log(`🔍 Validating className usage (staged files): ${stagedFiles.length}\n`);
+
+    if (stagedFiles.length === 0) {
+      console.log('✅ No staged TSX/JSX files to validate.\n');
+      process.exit(0);
+    }
+
+    for (const file of stagedFiles) {
+      checkFile(file);
+    }
+  } else {
+    const filePattern = explicitPattern || 'src/**/*.{tsx,jsx}';
+    const label = wantsAll && !explicitPattern ? 'src/**/*.{tsx,jsx}' : filePattern;
+    console.log(`🔍 Validating className usage: ${label}\n`);
+
+    const files = await glob(filePattern, {
+      ignore: ['node_modules/**', 'dist/**', 'build/**', '.next/**'],
+    });
+
+    for (const file of files) {
+      checkFile(file);
+    }
   }
   
   if (VIOLATIONS.length === 0) {

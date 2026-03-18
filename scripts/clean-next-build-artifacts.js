@@ -15,3 +15,7 @@ function removeDir(relativePath) {
 
 removeDir(path.join(".next", "export"));
 removeDir(path.join(".next", "types"));
+
+// Next build can intermittently fail with missing page modules when stale
+// partial artifacts remain. A full clean makes builds deterministic.
+removeDir(".next");

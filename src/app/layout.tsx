@@ -3,9 +3,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { AppChrome, NextAuthProvider, ThemeInitScript, ThemeProvider } from '@/ds'
-import { PlatformPresetScript } from '@/ds/runtime/app/PlatformPresetScript'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'Solar Match - Solar Lead Generation',
@@ -21,9 +20,8 @@ export default function RootLayout({
     <html lang="en" style={{ scrollBehavior: 'smooth' }} suppressHydrationWarning>
       <head>
         <ThemeInitScript />
-        <PlatformPresetScript />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${inter.className}`}>
         <NextAuthProvider>
           <ThemeProvider>
             <AppChrome>{children}</AppChrome>

@@ -149,7 +149,7 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
         <div className="ui-hero__overlay" />
       </div>
 
-      <Container width="wide">
+      <Container width="wide" className="ui-hero__container">
         <div
           className="ui-hero__layout"
           onMouseEnter={() => setIsInteractionPaused(true)}
@@ -188,19 +188,20 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
               ))}
             </div>
 
-            <div className="ui-hero__indicators" role="tablist" aria-label="Hero slides">
-              {HERO_SLIDES.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={index === currentSlide}
-                  aria-label={`Go to slide ${index + 1}: ${slide.headline}`}
-                  className={cx('ui-hero__indicator', index === currentSlide && 'is-active')}
-                  onClick={() => setCurrentSlide(index)}
-                />
-              ))}
-            </div>
+          </div>
+
+          <div className="ui-hero__indicators" role="tablist" aria-label="Hero slides">
+            {HERO_SLIDES.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                role="tab"
+                aria-selected={index === currentSlide}
+                aria-label={`Go to slide ${index + 1}: ${slide.headline}`}
+                className={cx('ui-hero__indicator', index === currentSlide && 'is-active')}
+                onClick={() => setCurrentSlide(index)}
+              />
+            ))}
           </div>
 
           <div className="ui-hero__options" aria-label="Quote options">

@@ -24,6 +24,7 @@
     --ds-font-weight-demibold: 550;
     --ds-font-weight-semibold: 600;
     --ds-font-weight-bold: 700;
+    --ds-font-weight-extrabold: 800;
 
     --ds-line-height-tight: 1.2;
     --ds-line-height-section: 1.2778;
@@ -31,8 +32,9 @@
     --ds-line-height-normal: 1.5;
     --ds-line-height-relaxed: 1.75;
 
-    --ds-letter-spacing-tight: -0.02em;
-    --ds-letter-spacing-loose: 0.02em;
+    /* Matches Tailwind: tracking-tight (-0.025em) / tracking-wide (0.025em) */
+    --ds-letter-spacing-tight: -0.025em;
+    --ds-letter-spacing-loose: 0.025em;
 
     /* Spacing (4px base) */
     --ds-space-0: 0;
@@ -66,12 +68,15 @@
     /* Header typography */
     --ds-font-size-topbar: 0.75rem;
     --ds-font-size-header-nav: 0.875rem;
-    --ds-font-size-header-brand: clamp(1.25rem, 1.6vw, 1.5rem);
+    --ds-font-size-header-brand: 1.25rem;
+    --ds-letter-spacing-header-nav: 0.025em;
 
     /* Hero typography */
-    --ds-font-size-hero-eyebrow: clamp(0.72rem, 0.9vw, 0.82rem);
-    --ds-font-size-hero-title: clamp(3rem, 5.3vw, 5rem);
-    --ds-font-size-hero-subtitle: clamp(1.0625rem, 1.7vw, 1.5rem);
+    --ds-font-size-hero-eyebrow: 0.75rem;
+    --ds-font-size-hero-title: 2.25rem;
+    --ds-font-size-hero-title-md: 3rem;
+    --ds-font-size-hero-title-lg: 3.75rem;
+    --ds-font-size-hero-subtitle: 1.25rem;
 
     /* Radii */
     --ds-radius-default: 0.875rem;
@@ -214,15 +219,22 @@
 
     /* Sizing */
     --ds-size-hero-min-h: 28rem;
-    --ds-size-hero-copy-max: 50rem;
-    --ds-size-hero-options-max: 68rem;
+    --ds-size-hero-copy-max: 56rem;
+    --ds-size-hero-options-max: 72rem;
     --ds-size-hero-slide-h: 15rem;
-    --ds-size-hero-slide-h-mobile: 14rem;
+    --ds-size-hero-slide-h-mobile: 11.25rem;
+    --ds-size-hero-slide-h-sm: 12.5rem;
     --ds-size-hero-option-icon: 3rem;
     --ds-size-hero-card-min-h: 15.5rem;
     --ds-size-hero-indicator: var(--ds-space-2);
     --ds-size-hero-indicator-active: var(--ds-space-7);
     --ds-size-hero-eyebrow-rule: calc(var(--ds-space-7) + var(--ds-space-1));
+    --ds-size-hero-container-max: 80rem;
+    --ds-size-hero-headline-max: 56rem;
+    --ds-size-hero-headline-max-mobile: 20rem;
+    --ds-size-hero-headline-max-sm: 36rem;
+    --ds-size-hero-headline-max-md: 44rem;
+    --ds-size-hero-subcopy-max: 42rem;
     --ds-size-topbar-h: calc((var(--ds-size-touch-target) - var(--ds-space-1)) + (var(--ds-space-topbar-pad-y) * 2));
      /* Header band height (used for sticky offsets + viewport calculations).
        Matches shells that use .ui-header-pad (padding-block: --ds-space-4)

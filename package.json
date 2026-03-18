@@ -8,6 +8,7 @@
     "build": "node scripts/clean-next-build-artifacts.js && next build",
     "start": "next start",
     "lint": "next lint",
+    "verify:classnames": "npx tsx scripts/validate-classnames.ts --all",
     "seed:admin": "npx tsx prisma/seed-admin.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
