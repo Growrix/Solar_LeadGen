@@ -37,7 +37,7 @@ export default function HomeownerHomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-teal-50/30 to-white">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="hero-section relative flex items-center justify-center min-h-[70vh] sm:min-h-[calc(100vh-80px)] overflow-hidden pt-8 sm:pt-24 pb-12 sm:pb-0">
         {/* Gradient Overlay */}
@@ -48,7 +48,7 @@ export default function HomeownerHomePage() {
           {/* Floating Geometric Shapes */}
           <div className="absolute top-20 left-10 w-16 h-16 border border-primary/20" style={{ animation: 'float-slow 8s ease-in-out infinite' }}></div>
           <div className="absolute top-40 right-20 w-8 h-8 bg-primary/10 rounded-full" style={{ animation: 'float-medium 6s ease-in-out infinite' }}></div>
-          <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-slate-500/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
+          <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-border/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
           
           {/* Pulsating Sun Element */}
           <div className="absolute top-32 right-32">

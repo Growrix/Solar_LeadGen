@@ -116,6 +116,10 @@
     padding-block: var(--ds-space-9);
   }
 
+  .ui-section--xl {
+    padding-block: var(--ds-space-section);
+  }
+
   @media (max-width: 48rem) {
     .ui-section {
       padding-block: var(--ds-space-7);
@@ -876,5 +880,20 @@
     border-radius: var(--ds-radius-card);
     padding: var(--ds-space-6);
     box-shadow: var(--ds-shadow-sm);
+  }
+
+  /* Line-clamp utilities */
+  .ui-line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .ui-line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }

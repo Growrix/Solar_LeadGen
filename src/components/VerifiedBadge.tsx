@@ -98,7 +98,7 @@ const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
   // Color classes based on verification status
   const colorClasses = verified
     ? 'text-emerald-600 bg-emerald-50 border-emerald-200'
-    : 'text-muted bg-slate-100 border-border';
+    : 'text-muted bg-surface border-border';
 
   // Tooltip text
   const tooltipText = verified

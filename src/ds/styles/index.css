@@ -1,4 +1,17 @@
 @tailwind base;
+
+/*
+ * Counter Tailwind preflight heading reset.
+ * Tailwind emits `h1-h6 { font-size: inherit; font-weight: inherit; }` un-layered,
+ * which per CSS Cascade 5 always beats @layer-wrapped DS rules.
+ * `revert-layer` removes the un-layered contribution and lets the named
+ * @layer cascade (ds.components > ds.utilities) resolve the final value.
+ */
+h1, h2, h3, h4, h5, h6 {
+  font-size: revert-layer;
+  font-weight: revert-layer;
+}
+
 @tailwind components;
 @tailwind utilities;
 

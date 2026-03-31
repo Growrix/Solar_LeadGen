@@ -2,44 +2,32 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-import { DEFAULT_THEME } from "./registry";
-import { applyTheme, resolveTheme, THEME_STORAGE_KEY } from "./theme";
+import { DEFAULT_THEME, isActiveThemeName, type ThemeName } from "./registry";
+import { applyTheme, readStoredTheme, storeTheme } from "./theme";
 
-export type Theme = "dark" | "light" | "purple" | "system";
+// Back-compat alias for existing app imports.
+export type Theme = ThemeName;
 
 export interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: ThemeName;
+  setTheme: (theme: ThemeName) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<ThemeName>(DEFAULT_THEME);
 
   useEffect(() => {
-    const raw = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-
-    if (raw === "system") {
-      setTheme("system");
-      applyTheme(DEFAULT_THEME);
-      return;
-    }
-
-    const resolved = resolveTheme(raw);
+    const raw = readStoredTheme();
+    const resolved = raw && isActiveThemeName(raw) ? raw : DEFAULT_THEME;
     setTheme(resolved);
     applyTheme(resolved);
   }, []);
 
-  const handleSetTheme = (newTheme: Theme) => {
+  const handleSetTheme = (newTheme: ThemeName) => {
     setTheme(newTheme);
-    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-
-    if (newTheme === "system") {
-      applyTheme(DEFAULT_THEME);
-      return;
-    }
-
+    storeTheme(newTheme);
     applyTheme(newTheme);
   };
 

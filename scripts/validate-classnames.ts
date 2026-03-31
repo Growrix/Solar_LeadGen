@@ -1,12 +1,11 @@
 /**
  * ClassName Validation Script (T018)
  * 
- * Checks for forbidden patterns in className usage:
- * - Hardcoded colors (bg-teal-600, text-blue-500)
- * - Raw typography utilities (text-2xl, font-bold)
- * - transition-all (performance issue)
- * 
- * Suggests fixes using semantic tokens.
+ * Prototype-first validator.
+ *
+ * The repo now allows Tailwind utilities (prototype is Tailwind-based).
+ * This script only flags truly hardcoded literal colors embedded in
+ * className strings, e.g. `bg-[#fff]`, `text-[rgb(0,0,0)]`.
  * Exits with error if violations found (for CI/CD).
  * 
  * Usage: npx tsx scripts/validate-classnames.ts [file-pattern]
@@ -20,25 +19,15 @@ interface Violation {
   file: string;
   line: number;
   className: string;
-  type: 'hardcoded-color' | 'raw-typography' | 'transition-all';
+  type: 'literal-color';
   suggestion: string;
 }
 
 const VIOLATIONS: Violation[] = [];
 
-const HARDCODED_COLOR_PATTERNS = [
-  { pattern: /bg-(red|blue|green|yellow|purple|pink|indigo|teal|orange|cyan|lime|emerald|violet|fuchsia|rose|sky|amber)-\d+/, suggestion: 'bg-primary, bg-secondary, bg-surface' },
-  { pattern: /text-(red|blue|green|yellow|purple|pink|indigo|teal|orange|cyan|lime|emerald|violet|fuchsia|rose|sky|amber)-\d+/, suggestion: 'text-foreground, text-muted-foreground, text-primary' },
-  { pattern: /border-(red|blue|green|yellow|purple|pink|indigo|teal|orange|cyan|lime|emerald|violet|fuchsia|rose|sky|amber)-\d+/, suggestion: 'border-border, border-primary' },
-];
-
-const RAW_TYPOGRAPHY_PATTERNS = [
-  { pattern: /text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)(?!\w)/, suggestion: 'text-heading-1, text-heading-2, text-body, text-body-small, text-caption' },
-  { pattern: /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)(?!\w)/, suggestion: 'Use semantic typography tokens (included in text-heading-*, text-body)' },
-];
-
-const FORBIDDEN_PATTERNS = [
-  { pattern: /transition-all/, suggestion: 'transition-colors, transition-shadow, transition-transform, transition-opacity' },
+const LITERAL_COLOR_PATTERNS = [
+  { pattern: /#[0-9a-fA-F]{3,8}/, suggestion: 'Use Tailwind palette tokens (e.g. brand/slate) instead of hex.' },
+  { pattern: /(rgba?|hsla?)\(/, suggestion: 'Use Tailwind palette tokens instead of rgb()/hsl().' },
 ];
 
 function checkFile(filePath: string) {
@@ -59,40 +48,14 @@ function checkFile(filePath: string) {
       const classes = classString.split(/\s+/);
       
       classes.forEach(className => {
-        // Check hardcoded colors
-        for (const { pattern, suggestion } of HARDCODED_COLOR_PATTERNS) {
+        // Check literal colors embedded in className tokens
+        for (const { pattern, suggestion } of LITERAL_COLOR_PATTERNS) {
           if (pattern.test(className)) {
             VIOLATIONS.push({
               file: filePath,
               line: lineNumber,
               className,
-              type: 'hardcoded-color',
-              suggestion,
-            });
-          }
-        }
-        
-        // Check raw typography
-        for (const { pattern, suggestion } of RAW_TYPOGRAPHY_PATTERNS) {
-          if (pattern.test(className)) {
-            VIOLATIONS.push({
-              file: filePath,
-              line: lineNumber,
-              className,
-              type: 'raw-typography',
-              suggestion,
-            });
-          }
-        }
-        
-        // Check forbidden patterns
-        for (const { pattern, suggestion } of FORBIDDEN_PATTERNS) {
-          if (pattern.test(className)) {
-            VIOLATIONS.push({
-              file: filePath,
-              line: lineNumber,
-              className,
-              type: 'transition-all',
+              type: 'literal-color',
               suggestion,
             });
           }

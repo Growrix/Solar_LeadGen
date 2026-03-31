@@ -1,0 +1,419 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e6]:
+        - generic "Installer actions" [ref=e7]:
+          - img [ref=e8]
+          - text: For Solar Installers
+        - generic [ref=e11]:
+          - button "Become a Partner" [ref=e12]:
+            - img [ref=e13]
+            - text: Become a Partner
+          - button "Partner Sign In" [ref=e16]:
+            - img [ref=e17]
+            - text: Partner Sign In
+      - banner [ref=e20]:
+        - generic [ref=e23]:
+          - link "SolarMatch" [ref=e25] [cursor=pointer]:
+            - /url: /
+            - img [ref=e26]
+            - text: SolarMatch
+          - navigation "Primary" [ref=e28]:
+            - link "Home" [ref=e29] [cursor=pointer]:
+              - /url: /
+            - link "Blog" [ref=e30] [cursor=pointer]:
+              - /url: /blog
+            - link "News" [ref=e31] [cursor=pointer]:
+              - /url: /#news-section
+            - button "Open calculators menu" [ref=e34]:
+              - text: Calculators
+              - img [ref=e35]
+            - link "Contact" [ref=e37] [cursor=pointer]:
+              - /url: /#contact-section
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - button "Login" [ref=e40]
+              - button "Sign Up" [ref=e41]
+            - button "Open site menu" [ref=e44]:
+              - img [ref=e45]
+    - main [ref=e47]:
+      - generic [ref=e50]:
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - button "Check battery rebates" [ref=e55]:
+              - generic [ref=e56]:
+                - img [ref=e57]
+                - text: Start Saving Today
+            - heading "Power Your Future with Solar Energy" [level=1] [ref=e60]
+            - paragraph [ref=e61]: Join thousands of homeowners saving money and the planet. Switch to clean energy today.
+          - generic [ref=e62]:
+            - button [ref=e64]:
+              - generic [ref=e65]:
+                - img [ref=e66]
+                - text: Start Saving Today
+            - heading [level=1] [ref=e69]: Maximize Your Savings
+            - paragraph [ref=e70]: Take advantage of the 30% Federal Tax Credit and eliminate your electricity bill.
+          - generic [ref=e71]:
+            - button [ref=e73]:
+              - generic [ref=e74]:
+                - img [ref=e75]
+                - text: Start Saving Today
+            - heading [level=1] [ref=e78]: Compare & Save Instantly
+            - paragraph [ref=e79]: Get competing quotes from top-rated local installers in minutes, not days.
+        - tablist "Hero slides" [ref=e80]:
+          - 'tab "Go to slide 1: Power Your Future with Solar Energy" [selected] [ref=e81]'
+          - 'tab "Go to slide 2: Maximize Your Savings" [ref=e82]'
+          - 'tab "Go to slide 3: Compare & Save Instantly" [ref=e83]'
+        - generic "Quote options" [ref=e84]:
+          - generic [ref=e85]:
+            - img [ref=e87]
+            - generic [ref=e89]:
+              - heading "Book Consultation" [level=4] [ref=e90]
+              - paragraph [ref=e91]: Schedule a direct call or home visit with a certified expert.
+            - button "Schedule" [ref=e92]:
+              - text: Schedule
+              - img [ref=e93]
+          - generic [ref=e95]:
+            - generic [ref=e96]: Most Popular
+            - img [ref=e98]
+            - generic [ref=e104]:
+              - heading "Start Live Bidding" [level=4] [ref=e105]
+              - paragraph [ref=e106]: Launch a reverse auction for the lowest price.
+            - button "Start Auction" [ref=e107]:
+              - text: Start Auction
+              - img [ref=e108]
+          - generic [ref=e110]:
+            - img [ref=e112]
+            - generic [ref=e115]:
+              - heading "Get Written Quotes" [level=4] [ref=e116]
+              - paragraph [ref=e117]: Receive detailed, fixed-price proposals to compare.
+            - button "Request" [ref=e118]:
+              - text: Request
+              - img [ref=e119]
+        - generic "Trust indicators" [ref=e121]:
+          - generic [ref=e122]: Trusted by 50,000+ Homeowners
+          - generic [ref=e123]: Verified Local Installers
+          - generic [ref=e124]: Zero Obligation
+      - generic [ref=e126]:
+        - generic [ref=e127]:
+          - heading "How Much Could You Save?" [level=2] [ref=e128]
+          - paragraph [ref=e129]: Find out now. Our calculators provide a transparent, no-jargon estimate of your solar savings and government incentives.
+        - generic [ref=e131]:
+          - button "Instant Quote" [pressed] [ref=e132]:
+            - img [ref=e133]
+            - text: Instant Quote
+          - button "Rebate Calculator" [ref=e135]:
+            - img [ref=e136]
+            - text: Rebate Calculator
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - button "ResidentialFor your home" [pressed] [ref=e142]:
+              - img [ref=e144]
+              - generic [ref=e147]: ResidentialFor your home
+            - button "CommercialFor business" [ref=e148]:
+              - img [ref=e150]
+              - generic [ref=e153]: CommercialFor business
+          - generic [ref=e155]:
+            - generic [ref=e156]: "1"
+            - generic [ref=e157]: "2"
+            - generic [ref=e158]: "3"
+          - tabpanel [ref=e160]:
+            - 'heading "Step 1: Your Property Details" [level=2] [ref=e161]'
+            - generic [ref=e163]:
+              - generic [ref=e164]:
+                - generic [ref=e165]:
+                  - img [ref=e166]
+                  - text: Postcode *
+                  - generic "Your postcode determines solar rebate zones and local weather data for accurate estimates." [ref=e169]:
+                    - img [ref=e170]
+                - textbox "Postcode *Your postcode determines solar rebate zones and local weather data for accurate estimates." [ref=e172]:
+                  - /placeholder: e.g., 2000
+              - generic [ref=e173]:
+                - generic [ref=e174]:
+                  - img [ref=e175]
+                  - text: Location (Suburb) *
+                - textbox "Location (Suburb) *" [ref=e178]:
+                  - /placeholder: e.g., Sydney
+              - generic [ref=e179]:
+                - generic [ref=e180]:
+                  - text: State *
+                  - generic "Different states have varying solar rebates, feed-in tariffs, and weather conditions." [ref=e181]:
+                    - img [ref=e182]
+                - combobox "State *Different states have varying solar rebates, feed-in tariffs, and weather conditions." [ref=e185]:
+                  - option "Select your state" [selected]
+                  - option "New South Wales"
+                  - option "Victoria"
+                  - option "Queensland"
+                  - option "Western Australia"
+                  - option "South Australia"
+                  - option "Tasmania"
+                  - option "Australian Capital Territory"
+                  - option "Northern Territory"
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - text: Electricity Retailer (Optional)
+                  - generic "Knowing your retailer helps provide more accurate tariff estimates." [ref=e188]:
+                    - img [ref=e189]
+                - combobox "Electricity Retailer (Optional)Knowing your retailer helps provide more accurate tariff estimates." [ref=e192]:
+                  - option "Select retailer (optional)" [selected]
+                  - option "Origin Energy"
+                  - option "AGL Energy"
+                  - option "Energy Australia"
+                  - option "Red Energy"
+                  - option "Alinta Energy"
+                  - option "Ergon Energy (QLD)"
+                  - option "Synergy (WA)"
+                  - option "Other"
+              - group "Existing solar system" [ref=e194]:
+                - generic [ref=e195]: Existing solar system
+                - generic [ref=e196]:
+                  - generic [ref=e197]:
+                    - paragraph [ref=e198]: Do you already have solar panels?
+                    - paragraph [ref=e199]: We'll factor this into your quote calculations
+                  - button [ref=e200]
+            - button "Next Step" [ref=e202]:
+              - text: Next Step
+              - img [ref=e203]
+      - generic [ref=e206]:
+        - generic [ref=e207]:
+          - generic [ref=e208]:
+            - heading "Latest Solar News & Insights" [level=2] [ref=e209]
+            - paragraph [ref=e210]: Stay informed with expert insights, industry updates, and practical tips from our solar specialists.
+          - button "View All Posts" [ref=e212]:
+            - text: View All Posts
+            - img [ref=e213]
+        - generic [ref=e215]:
+          - 'button "Read article: Loading…" [ref=e216]':
+            - generic [ref=e217]:
+              - img "Loading…" [ref=e218]
+              - generic [ref=e219]: Blog
+            - generic [ref=e220]:
+              - generic [ref=e221]:
+                - generic [ref=e222]:
+                  - img [ref=e223]
+                  - text: —
+                - text: —
+              - heading "Loading…" [level=3] [ref=e225]
+              - paragraph [ref=e226]: Loading latest posts…
+              - generic [ref=e227]:
+                - generic [ref=e228]:
+                  - img [ref=e229]
+                  - text: —
+                - generic [ref=e232]:
+                  - text: Read Article
+                  - img [ref=e233]
+          - 'button "Read article: Loading…" [ref=e235]':
+            - generic [ref=e236]:
+              - img "Loading…" [ref=e237]
+              - generic [ref=e238]: Blog
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - generic [ref=e241]:
+                  - img [ref=e242]
+                  - text: —
+                - text: —
+              - heading "Loading…" [level=3] [ref=e244]
+              - paragraph [ref=e245]: Loading latest posts…
+              - generic [ref=e246]:
+                - generic [ref=e247]:
+                  - img [ref=e248]
+                  - text: —
+                - generic [ref=e251]:
+                  - text: Read Article
+                  - img [ref=e252]
+          - 'button "Read article: Loading…" [ref=e254]':
+            - generic [ref=e255]:
+              - img "Loading…" [ref=e256]
+              - generic [ref=e257]: Blog
+            - generic [ref=e258]:
+              - generic [ref=e259]:
+                - generic [ref=e260]:
+                  - img [ref=e261]
+                  - text: —
+                - text: —
+              - heading "Loading…" [level=3] [ref=e263]
+              - paragraph [ref=e264]: Loading latest posts…
+              - generic [ref=e265]:
+                - generic [ref=e266]:
+                  - img [ref=e267]
+                  - text: —
+                - generic [ref=e270]:
+                  - text: Read Article
+                  - img [ref=e271]
+        - button "See All Posts" [ref=e274]:
+          - text: See All Posts
+          - img [ref=e275]
+      - generic [ref=e278]:
+        - generic [ref=e279]:
+          - generic [ref=e280]:
+            - generic [ref=e281]:
+              - img [ref=e282]
+              - text: In the News
+            - heading "Industry News & Updates" [level=2] [ref=e285]
+            - paragraph [ref=e286]: Stay informed with the latest headlines from the renewable energy sector.
+          - button "More News" [ref=e288]:
+            - text: More News
+            - img [ref=e289]
+        - generic [ref=e291]:
+          - link "Global Solar Capacity Surpasses 1 Terawatt Milestone Featured Story Clean Energy Wire 2 hours ago Global Solar Capacity Surpasses 1 Terawatt Milestone A historic achievement for renewable energy as solar adoption accelerates worldwide, driven by falling panel costs and government initiatives across major economies. Read Full Story" [ref=e293] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e294]:
+              - img "Global Solar Capacity Surpasses 1 Terawatt Milestone" [ref=e295]
+              - generic [ref=e296]: Featured Story
+              - generic [ref=e297]:
+                - generic [ref=e298]:
+                  - text: Clean Energy Wire
+                  - generic [ref=e299]:
+                    - img [ref=e300]
+                    - text: 2 hours ago
+                - heading "Global Solar Capacity Surpasses 1 Terawatt Milestone" [level=3] [ref=e303]
+                - paragraph [ref=e304]: A historic achievement for renewable energy as solar adoption accelerates worldwide, driven by falling panel costs and government initiatives across major economies.
+                - generic [ref=e305]:
+                  - text: Read Full Story
+                  - img [ref=e306]
+          - generic [ref=e309]:
+            - link "TechCrunch•5 hours ago New Solid-State Battery Tech Could Double Storage Efficiency Read More" [ref=e310] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e312]:
+                - generic [ref=e313]: TechCrunch•5 hours ago
+                - heading "New Solid-State Battery Tech Could Double Storage Efficiency" [level=3] [ref=e314]
+                - generic [ref=e315]:
+                  - text: Read More
+                  - img [ref=e316]
+            - link "Solar Power World•1 day ago California Updates Net Metering Policies for 2024 Read More" [ref=e320] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e322]:
+                - generic [ref=e323]: Solar Power World•1 day ago
+                - heading "California Updates Net Metering Policies for 2024" [level=3] [ref=e324]
+                - generic [ref=e325]:
+                  - text: Read More
+                  - img [ref=e326]
+            - link "Reuters•2 days ago Major Solar Incentives Announced for Low-Income Households Read More" [ref=e330] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e332]:
+                - generic [ref=e333]: Reuters•2 days ago
+                - heading "Major Solar Incentives Announced for Low-Income Households" [level=3] [ref=e334]
+                - generic [ref=e335]:
+                  - text: Read More
+                  - img [ref=e336]
+        - button "More News" [ref=e341]:
+          - text: More News
+          - img [ref=e342]
+      - generic [ref=e347]:
+        - generic [ref=e348]:
+          - generic [ref=e350]:
+            - img [ref=e351]
+            - text: Newsletter
+          - heading "Go Solar, Smarter." [level=2] [ref=e354]
+          - paragraph [ref=e355]: Get the latest solar news, government rebate updates, and exclusive tips delivered straight to your inbox.
+          - generic [ref=e356]:
+            - generic [ref=e357]:
+              - img [ref=e358]
+              - text: Weekly updates
+            - generic [ref=e361]:
+              - img [ref=e362]
+              - text: Rebate alerts
+            - generic [ref=e365]:
+              - img [ref=e366]
+              - text: No spam
+        - generic [ref=e369]:
+          - generic [ref=e372]:
+            - generic [ref=e373]:
+              - img [ref=e375]
+              - textbox "Email address for newsletter" [ref=e378]:
+                - /placeholder: Enter your email address
+            - button "Subscribe Now" [ref=e379]:
+              - text: Subscribe Now
+              - img [ref=e380]
+          - paragraph [ref=e382]: We respect your privacy. Unsubscribe at any time.
+      - generic [ref=e384]:
+        - generic [ref=e385]:
+          - generic [ref=e386]:
+            - generic [ref=e387]:
+              - img [ref=e389]
+              - text: SolarMatch
+            - paragraph [ref=e395]: Australia's trusted platform for connecting homeowners with verified solar installers. Get quotes, calculate rebates, and go solar with confidence.
+            - generic [ref=e396]:
+              - link "Facebook" [ref=e397] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e398]
+              - link "Twitter" [ref=e400] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e401]
+              - link "Instagram" [ref=e403] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e404]
+              - link "LinkedIn" [ref=e407] [cursor=pointer]:
+                - /url: "#"
+                - img [ref=e408]
+          - generic [ref=e412]:
+            - heading "Quick Links" [level=3] [ref=e413]
+            - list [ref=e414]:
+              - listitem [ref=e415]:
+                - button "How It Works" [ref=e416]
+              - listitem [ref=e417]:
+                - button "Rebate Calculator" [ref=e418]
+              - listitem [ref=e419]:
+                - button "Get Your Instant Quote" [ref=e420]
+              - listitem [ref=e421]:
+                - button "Blog & News" [ref=e422]
+              - listitem [ref=e423]:
+                - button "Government News" [ref=e424]
+          - generic [ref=e425]:
+            - heading "For Installers" [level=3] [ref=e426]
+            - list [ref=e427]:
+              - listitem [ref=e428]:
+                - button "Become a Partner" [ref=e429]:
+                  - img [ref=e430]
+                  - text: Become a Partner
+              - listitem [ref=e433]:
+                - link "Partner Benefits" [ref=e434] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e435]:
+                - link "Lead Quality" [ref=e436] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e437]:
+                - link "Pricing Plans" [ref=e438] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e439]:
+                - link "Support Center" [ref=e440] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e441]:
+                - button "Partner Login" [ref=e442]
+          - generic [ref=e443]:
+            - heading "Contact Us" [level=3] [ref=e444]
+            - generic [ref=e445]:
+              - generic [ref=e446]:
+                - img [ref=e447]
+                - text: 1300 SOLAR (76527)
+              - generic [ref=e449]:
+                - img [ref=e450]
+                - text: hello@solarmatch.com.au
+              - generic [ref=e453]:
+                - img [ref=e454]
+                - generic [ref=e457]:
+                  - text: Level 10, 123 Collins Street
+                  - text: Melbourne VIC 3000
+            - generic [ref=e458]:
+              - paragraph [ref=e459]: "Operating Hours:"
+              - paragraph [ref=e460]:
+                - text: "Mon - Fri: 8:00 AM - 6:00 PM AEST"
+                - text: "Sat: 9:00 AM - 4:00 PM AEST"
+        - generic [ref=e463]:
+          - generic [ref=e464]:
+            - link "About Us" [ref=e465] [cursor=pointer]:
+              - /url: "#"
+            - link "Privacy Policy" [ref=e466] [cursor=pointer]:
+              - /url: "#"
+            - link "Terms of Service" [ref=e467] [cursor=pointer]:
+              - /url: "#"
+            - link "Installer Terms" [ref=e468] [cursor=pointer]:
+              - /url: "#"
+            - link "Cookie Policy" [ref=e469] [cursor=pointer]:
+              - /url: "#"
+            - link "Sitemap" [ref=e470] [cursor=pointer]:
+              - /url: "#"
+          - generic [ref=e471]:
+            - paragraph [ref=e472]: © 2026 SolarMatch Australia. All rights reserved.
+            - paragraph [ref=e473]: "ABN: 12 345 678 901"
+  - region "Notifications alt+T"

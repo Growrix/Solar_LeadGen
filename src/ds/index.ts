@@ -147,6 +147,7 @@ export * from "./layouts/DocsShell";
 
 export * from "./themes/ThemeInitScript";
 export * from "./foundation/themes/ThemeProvider";
+export type { ThemeName as Theme } from "./foundation/themes/registry";
 export * from "./runtime/web/AppChrome";
 export * from "./runtime/web/NextAuthProvider";
 export * from "./runtime/web/HeaderMenu";

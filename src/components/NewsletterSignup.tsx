@@ -1,14 +1,8 @@
 ﻿"use client";
 
 import React, { useState } from 'react';
-import { Button } from '@/ds';
-
-// --- Icon Components ---
-const MailIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-muted-foreground"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>;
-const ArrowRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
-const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-success"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
-const AlertCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-destructive"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>;
-const PaperPlaneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>;
+import { Button, Section } from '@/ds';
+import { Mail, ArrowRight, CheckCircle, AlertCircle, Send } from '@/ds/icons';
 
 
 type NewsletterSignupProps = {
@@ -118,8 +112,14 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
 
     const isSection = variant !== 'compact';
     const inputCls = isSection
-        ? 'w-full pl-12 pr-4 py-3 rounded-lg bg-slate-900/40 border border-white/10 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-colors duration-300'
-        : `w-full pl-12 pr-4 py-2.5 rounded-xl bg-background shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-300 text-foreground placeholder:text-muted-foreground`;
+        ? 'w-full pl-12 pr-4 py-3 rounded-lg border transition-colors duration-300'
+        : `w-full pl-12 pr-4 py-2.5 rounded-xl shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-300 text-foreground placeholder:text-muted-foreground`;
+
+    const inputSectionStyle = isSection ? {
+        background: 'color-mix(in oklab, var(--ds-color-background) 60%, transparent)',
+        borderColor: 'color-mix(in oklab, var(--ds-color-foreground-secondary) 10%, transparent)',
+        color: 'var(--ds-color-foreground-secondary)',
+    } : undefined;
 
     const form = (
         <form onSubmit={handleSubmit} className={className}>
@@ -129,7 +129,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                         <div className={isSection ? 'flex flex-col gap-3' : 'flex flex-col gap-3'}>
                             <div className="relative flex-grow w-full">
                                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                    <MailIcon />
+                                    <Mail size={20} style={{ color: 'var(--ds-color-text-muted)' }} />
                                 </div>
                                 <input
                                     type="email"
@@ -138,6 +138,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                     placeholder="Enter your email address"
                                     aria-label="Email address for newsletter"
                                     className={inputCls}
+                                    style={inputSectionStyle}
                                     disabled={status === 'loading'}
                                     autoComplete="email"
                                 />
@@ -146,7 +147,8 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                 type="submit"
                                 variant={isSection ? 'primary' : 'secondary'}
                                 size="lg"
-                                className={isSection ? 'w-full justify-center bg-white text-brand-950 hover:bg-slate-100 border-0' : 'w-full justify-center'}
+                                className={isSection ? 'w-full justify-center border-0' : 'w-full justify-center'}
+                                style={isSection ? { background: 'var(--ds-color-foreground-secondary)', color: 'var(--ds-color-background)' } : undefined}
                                 disabled={status === 'loading'}
                             >
                                 {status === 'loading' ? (
@@ -157,7 +159,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                                 ) : (
                                     <>
                                         <span>Subscribe Now</span>
-                                        <ArrowRightIcon />
+                                        <ArrowRight size={20} />
                                     </>
                                 )}
                             </Button>
@@ -165,19 +167,25 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                         {(inputError || (status === 'error' && message)) && (
                             <p
                                 role="alert"
-                                className={`mt-2 text-sm ${isSection ? 'text-white/80' : 'text-destructive'} flex items-center gap-2 animate-fade-in`}
+                                className="mt-2 flex items-center gap-2 animate-fade-in text-body-small"
+                                style={{ color: isSection ? 'color-mix(in oklab, var(--ds-color-foreground-secondary) 80%, transparent)' : 'var(--ds-color-destructive)' }}
                             >
-                                <AlertCircleIcon /> {inputError || message}
+                                <AlertCircle size={20} /> {inputError || message}
                             </p>
                         )}
                     </>
                 ) : (
                     <div
                         role="status"
-                        className={`p-4 ${isSection ? 'bg-white/15 border-white/20' : 'bg-success/10 border-success/30'} border rounded-xl flex flex-col items-center justify-center gap-3 animate-fade-in`}
+                        className="border rounded-xl flex flex-col items-center justify-center gap-3 animate-fade-in"
+                        style={{
+                            padding: 'var(--ds-space-4)',
+                            background: isSection ? 'color-mix(in oklab, var(--ds-color-foreground-secondary) 15%, transparent)' : 'color-mix(in oklab, var(--ds-color-success) 10%, transparent)',
+                            borderColor: isSection ? 'color-mix(in oklab, var(--ds-color-foreground-secondary) 20%, transparent)' : 'color-mix(in oklab, var(--ds-color-success) 30%, transparent)',
+                        }}
                     >
-                        <CheckCircleIcon />
-                        <p className={`text-center text-sm ${isSection ? 'text-white' : 'text-success'}`}>{message}</p>
+                        <CheckCircle size={24} style={{ color: 'var(--ds-color-success)' }} />
+                        <p className="text-center text-body-small" style={{ color: isSection ? 'var(--ds-color-foreground-secondary)' : 'var(--ds-color-success)' }}>{message}</p>
                     </div>
                 )}
             </div>
@@ -198,54 +206,58 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
     }
 
     return (
-        <section className="py-24 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="rounded-3xl p-8 md:p-16 text-center md:text-left shadow-modal relative overflow-hidden ring-1 ring-white/10 bg-gradient-to-br from-brand-600 to-brand-700">
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl bg-brand-500" />
-                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl bg-brand-900" />
+        <Section size="xl" tone="surface" container="wide">
+                <div className="ui-surface--brand-gradient rounded-3xl shadow-modal relative overflow-hidden" style={{ padding: 'var(--ds-space-8)', outline: '1px solid color-mix(in oklab, var(--ds-color-foreground-secondary) 10%, transparent)' }}>
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl" style={{ background: 'var(--ds-color-accent)' }} />
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl" style={{ background: 'var(--ds-color-background)' }} />
 
-                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-                        <div className="max-w-xl">
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12" style={{ padding: 'var(--ds-space-8)' }}>
+                        <div style={{ maxWidth: '36rem' }}>
                             <div className="mb-6">
-                                <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium px-3 py-1.5 rounded-full">
-                                    <MailIcon />
+                                <span className="ui-kicker">
+                                    <Mail size={16} />
                                     Newsletter
                                 </span>
                             </div>
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
+                            <h2 className="text-heading-2 mb-4">
                                 Go Solar, Smarter.
                             </h2>
-                            <p className="text-lg text-white/80 leading-relaxed">
+                            <p className="text-body-large" style={{ color: 'color-mix(in oklab, var(--ds-color-foreground-secondary) 80%, transparent)' }}>
                                 Get the latest solar news, government rebate updates, and exclusive tips delivered straight to your inbox.
                             </p>
-                            <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start text-sm text-white/90 font-medium">
+                            <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start" style={{ fontSize: 'var(--ds-font-size-2)', fontWeight: 'var(--ds-font-weight-medium)' }}>
                                 <div className="flex items-center gap-2">
-                                    <CheckCircleIcon />
+                                    <CheckCircle size={24} style={{ color: 'var(--ds-color-success)' }} />
                                     <span>Weekly updates</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <CheckCircleIcon />
+                                    <CheckCircle size={24} style={{ color: 'var(--ds-color-success)' }} />
                                     <span>Rebate alerts</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <CheckCircleIcon />
+                                    <CheckCircle size={24} style={{ color: 'var(--ds-color-success)' }} />
                                     <span>No spam</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-inner">
+                        <div className="w-full rounded-2xl" style={{
+                            maxWidth: '28rem',
+                            background: 'color-mix(in oklab, var(--ds-color-foreground-secondary) 10%, transparent)',
+                            backdropFilter: 'blur(12px)',
+                            padding: 'var(--ds-space-6)',
+                            border: '1px solid color-mix(in oklab, var(--ds-color-foreground-secondary) 10%, transparent)',
+                        }}>
                             {form}
                             {status !== 'success' && (
-                                <p className="text-center text-xs text-white/60 mt-3">
+                                <p className="text-center text-caption mt-3" style={{ color: 'color-mix(in oklab, var(--ds-color-foreground-secondary) 60%, transparent)' }}>
                                     We respect your privacy. Unsubscribe at any time.
                                 </p>
                             )}
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+        </Section>
     );
 };
 

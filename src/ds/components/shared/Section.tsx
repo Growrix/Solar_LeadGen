@@ -1,7 +1,7 @@
 import * as React from "react";
 
 export type SectionTone = "default" | "surface";
-export type SectionSize = "sm" | "md" | "lg";
+export type SectionSize = "sm" | "md" | "lg" | "xl";
 export type SectionContainer = "default" | "narrow" | "wide" | "full";
 
 export type SectionProps = React.HTMLAttributes<HTMLElement> & {
@@ -30,6 +30,7 @@ export function Section({
           "ui-container ui-section",
           size === "sm" && "ui-section--sm",
           size === "lg" && "ui-section--lg",
+          size === "xl" && "ui-section--xl",
           container === "narrow" && "ui-container--narrow",
           container === "wide" && "ui-container--wide",
           container === "full" && "ui-container--full",

@@ -1,14 +1,7 @@
 @layer ds.theme {
   :root {
-    color-scheme: light;
-  }
-
-  html.theme-dark {
+    /* Prototype is cinematic dark (purple theme). */
     color-scheme: dark;
-  }
-
-  html.theme-light {
-    color-scheme: light;
   }
 
   html.theme-purple {

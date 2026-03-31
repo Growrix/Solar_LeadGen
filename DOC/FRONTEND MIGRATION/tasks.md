@@ -430,6 +430,336 @@ description: "DS-only frontend migration task list (SOT)"
 
 ---
 
+## Phase 12: User Story 10 - Prototype-to-DS Conversion (SolarConnect Prototype) (Priority: P1) 🎯
+
+**Goal**: Analyze, audit, and fully convert the Vite-based SolarConnect prototype (`DOC/FRONTEND MIGRATION/solarconnect (3)`) into a strict DS-driven implementation with 100% visual parity, zero inline styling or hardcoded values, and full adherence to the DS architecture.
+
+**Input**: Prototype source at `DOC/FRONTEND MIGRATION/solarconnect (3)/`
+**Prerequisites**: Phase 10 (US8) and Phase 11 (US9) complete or in progress; DS foundation stable
+
+**Scope (this phase)**:
+- Prototype surfaces (visual truth):
+  - `solarconnect (3)/components/home/*` (Hero, BlogSection, BlogCard, FeaturedNewsCard, NewsSection, NewsCard, NewsletterSection, QuoteOptionCard)
+  - `solarconnect (3)/components/layout/*` (Header, DocsSubNav)
+  - `solarconnect (3)/components/ui/*` (25 primitives: Accordion, Avatar, Badge, Breadcrumbs, Button, Card, Checkbox, Container, Divider, Drawer, Grid, Input, Label, Modal, Pagination, Progress, Radio, Select, Spinner, Stack, Switch, Tabs, Textarea, Tooltip, Typography)
+  - `solarconnect (3)/pages/*` (ComponentLibrary, LayoutStructure, Dashboard)
+- DS files to extend:
+  - `src/ds/styles/ds.tokens.css` (new/updated token variables)
+  - `src/ds/styles/ds.theme.css` (theme variable alignment)
+  - `src/ds/styles/ds.components.css` (new component class patterns)
+  - `src/ds/styles/ds.utilities.css` (new layout/typography utilities)
+  - `src/ds/components/shared/*` (new or updated shared components)
+  - `src/ds/primitives/*` (primitive variant updates)
+  - `src/ds/icons.ts` (missing icon exports)
+  - `src/ds/index.ts` (barrel exports for any new DS additions)
+- App feature files to rebuild using DS:
+  - `src/components/Hero.tsx`
+  - `src/components/BlogSection.tsx`
+  - `src/components/NewsletterSignup.tsx`
+  - `src/components/Footer.tsx`
+  - `src/components/Header.tsx`
+  - `src/components/TopBar.tsx`
+  - `src/app/page.tsx`
+  - Dashboard surfaces (as applicable)
+
+**Hard Rules (non-negotiable)**:
+- ❌ No inline styles (`style={{}}`) in feature code
+- ❌ No hardcoded values (px, hex, rgba, shadows) in feature code
+- ❌ No direct Tailwind or raw CSS usage in feature code — all styling via DS classes/tokens
+- ❌ No importing from DS internals — only `@/ds` barrel
+- ❌ No direct `lucide-react` imports — use DS icons only
+- ✅ Prototype is **visual truth** but NOT copied directly — recompose using DS patterns
+- ✅ UI ONLY: do not change business logic, state variables, event handlers, API calls, auth flows, or validation rules
+- ✅ If something cannot be represented using current DS → extend the DS properly, never hack
+
+**Independent Test**:
+- Rebuilt screens visually match prototype (spacing, color, typography, alignment, shadow)
+- Only `@/ds` imports used in feature code
+- No inline styles or hardcoded values in feature code
+- Gate0 tasks: Typecheck + Next build
+
+---
+
+### Phase 12a: Prototype Audit (Deep Analysis) [US10]
+
+**Purpose**: Extract every visual decision, layout pattern, component pattern, and interaction pattern from the prototype
+
+- [x] T110 [US10] Gate0 health check before prototype conversion:
+  - Run Gate0 Typecheck + Next build tasks
+
+- [x] T111 [US10] Deep prototype audit — visual tokens extraction:
+  - Create: `DOC/FRONTEND MIGRATION/audits/T111-prototype-visual-audit.md`
+  - Extract and document:
+    - Color palette: primary (brand-50→brand-950), neutral (slate-50→slate-950), accent (red, green, emerald)
+    - Spacing scale: all padding, gap, margin values used across prototype
+    - Border radius system: rounded-lg, rounded-xl, rounded-2xl, rounded-3xl, rounded-full
+    - Shadow and elevation: shadow-sm through shadow-2xl, brand-tinted shadows
+    - Typography scale: heading levels 1–6, body sizes (xs→xl), font weights, tracking, leading
+    - Gradient patterns: `bg-gradient-to-t`, `bg-gradient-to-br` with exact color stops
+    - Animation/transition patterns: ken-burns (15s), fade-in-up, slide transitions, hover effects
+
+- [x] T112 [US10] Deep prototype audit — layout and component patterns:
+  - Append to: `DOC/FRONTEND MIGRATION/audits/T111-prototype-visual-audit.md`
+  - Document:
+    - Page structure: full-screen hero + section bands (py-24) + footer
+    - Section patterns: header row with CTA + content grid + mobile CTA variant
+    - Card patterns: BlogCard, FeaturedNewsCard (gradient overlay), NewsCard (compact list), QuoteOptionCard (recommended variant)
+    - Grid patterns: 3-col responsive, 12-col featured+sidebar, 2-col docs
+    - Navigation patterns: fixed header with scroll-blur, DocsSubNav tabs, mobile hamburger + overlay menu
+    - Overlay patterns: Modal (sm/md/lg/xl), Drawer (left/right), backdrop-blur overlays
+    - Platform patterns: mobile-first responsive (hidden sm:block, md:hidden), no native app-like surface detected
+
+- [x] T113 [US10] Deep prototype audit — interaction and state patterns:
+  - Append to: `DOC/FRONTEND MIGRATION/audits/T111-prototype-visual-audit.md`
+  - Document:
+    - Hero: background image auto-rotation (6s interval), ken-burns zoom, fade transitions, slide indicator dots
+    - Header: scroll detection → backdrop-blur + shadow-lg, mobile menu toggle
+    - Cards: group-hover scale/opacity transitions, hover border reveal
+    - Forms: input focus ring (ring-2 ring-brand-500/50), password toggle, select dropdown open/close
+    - Modals: backdrop click close, escape key close, scroll lock
+    - Dashboard: stepper progress, stat card icon overlays with hover
+
+---
+
+### Phase 12b: DS Gap Analysis [US10]
+
+**Purpose**: Compare prototype requirements against current DS inventory and identify all gaps
+
+- [x] T114 [US10] DS gap analysis — tokens:
+  - Create: `DOC/FRONTEND MIGRATION/audits/T114-ds-gap-analysis.md`
+  - Compare prototype token needs vs `src/ds/styles/ds.tokens.css`:
+    - Missing color tokens (brand scale completeness, gradient stops, tinted shadows)
+    - Missing spacing tokens (section padding py-24, hero heights, specific gaps)
+    - Missing shadow tokens (brand-tinted shadows: `shadow-brand-500/20`, `shadow-brand-900/50`)
+    - Missing animation tokens (ken-burns keyframes, hero slide transitions, fade-in-up)
+    - Missing gradient tokens/utilities
+    - Missing backdrop-blur tokens
+
+- [x] T115 [US10] DS gap analysis — components and primitives:
+  - Append to: `DOC/FRONTEND MIGRATION/audits/T114-ds-gap-analysis.md`
+  - Compare prototype components vs DS inventory:
+    - Primitives needing variant updates: Button (white, link, danger, success variants), Badge (glass variant), Card (glass, highlight variants)
+    - Missing DS components: FeaturedCard (gradient overlay pattern), CompactListCard (news-item pattern), PricingOptionCard (recommended variant pattern)
+    - Missing DS patterns: SectionBand (py-24 section with header+grid), HeroSlider (auto-rotating background), TrustIndicators (pill strip)
+    - Missing DS utilities: line-clamp helpers, gradient overlays, ken-burns animation class
+    - Missing icons in `src/ds/icons.ts`: compare prototype lucide-react usage vs current 82 exports
+
+- [x] T116 [US10] DS gap analysis — output summary:
+  - Append to: `DOC/FRONTEND MIGRATION/audits/T114-ds-gap-analysis.md`
+  - Produce categorized action list:
+    - **Tokens to add** (with proposed CSS variable names)
+    - **Components to create** (with proposed file names)
+    - **Primitives to update** (with proposed variant additions)
+    - **Utilities to add** (with proposed class names)
+    - **Icons to export** (with lucide-react icon names)
+
+---
+
+### Phase 12c: Tokenization [US10]
+
+**Purpose**: Convert all visual decisions from the prototype into DS tokens — no duplication, theme-compatible
+
+- [x] T117 [US10] Extend DS tokens for prototype visual language:
+  - `src/ds/styles/ds.tokens.css`:
+    - Add missing spacing tokens (section-level padding, hero heights)
+    - Add animation/motion tokens (ken-burns duration, hero-slide interval, fade durations)
+    - Add shadow tokens for brand-tinted elevation
+    - Add gradient tokens if applicable
+  - Document rationale for each added token in `DOC/FRONTEND MIGRATION/audits/T117-token-additions.md`
+
+- [x] T118 [US10] Extend DS theme variables for prototype color system:
+  - `src/ds/styles/ds.theme.css`:
+    - Ensure active theme covers full brand color scale (brand-50→brand-950)
+    - Ensure neutral scale (slate-50→slate-950) is token-addressable
+    - Add any missing accent color tokens (danger/success/eco)
+  - Verify theme compatibility — tokens must work under current active theme
+
+---
+
+### Phase 12d: DS Extension [US10]
+
+**Purpose**: Create or update DS primitives, components, and utilities to cover all prototype patterns
+
+- [x] T119 [P] [US10] Update DS primitives with missing variants:
+  - Review and align DS Button variants with prototype (white, link, danger, success, fab size)
+  - Review and align DS Badge variants with prototype (glass, solid, soft, outline, surface)
+  - Review and align DS Card variants with prototype (glass, highlight + composable Header/Content/Footer)
+  - Review and align DS Typography/Heading levels with prototype responsive scaling
+  - All changes in `src/ds/primitives/*` and `src/ds/styles/ds.components.css`
+
+- [x] T120 [P] [US10] Add missing DS shared components for prototype patterns:
+  - Create or extend in `src/ds/components/shared/`:
+    - `FeaturedCard.tsx` — gradient-overlay image card (for featured news/blog)
+    - `CompactListItem.tsx` — thumbnail + meta list item (for news sidebar)
+    - `PricingOptionCard.tsx` — option card with recommended variant (for quote options)
+  - Each component must use only DS tokens/classes — zero hardcoded values
+  - Export from `src/ds/index.ts`
+
+- [x] T121 [P] [US10] Add DS utilities for prototype layout patterns:
+  - `src/ds/styles/ds.utilities.css`:
+    - Section band pattern (`.ui-section-band` — standardized section padding + border-top)
+    - Section header pattern (`.ui-section-header` — flex row with title/subtitle/CTA)
+    - Line-clamp utilities (`.ui-line-clamp-2`, `.ui-line-clamp-3`)
+    - Gradient overlay utility (`.ui-gradient-overlay`)
+  - `src/ds/styles/ds.components.css`:
+    - Ken-burns animation class (`.ui-ken-burns`)
+    - Hero-slide fade transition class (`.ui-hero-fade`)
+    - Background blur utility (`.ui-backdrop-blur`)
+
+- [x] T122 [P] [US10] Export missing icons from DS:
+  - `src/ds/icons.ts`:
+    - Compare prototype lucide-react usage against current 82 exports
+    - Add any missing icons (e.g., Newspaper, Leaf, ChevronRight if not present)
+  - Verify all prototype icon needs are covered by DS exports
+
+---
+
+### Phase 12e: Screen Rebuild [US10]
+
+**Purpose**: Rebuild all app screens to match prototype visuals using DS primitives, components, and layout shells — do NOT copy prototype JSX directly; recompose using DS patterns
+
+- [x] T123 [US10] Pre-rebuild verification — run 6 SOT verification commands for all target files:
+  - `src/components/Hero.tsx`
+  - `src/components/BlogSection.tsx`
+  - `src/components/NewsletterSignup.tsx`
+  - `src/components/Footer.tsx`
+  - `src/components/Header.tsx`
+  - `src/app/page.tsx`
+
+- [x] T124 [US10] Rebuild homepage Hero section using DS (UI-only):
+  - `src/components/Hero.tsx`:
+    - Background slider with DS animation tokens (ken-burns, fade transitions)
+    - Quote option cards using DS `PricingOptionCard` or DS `Card` composable
+    - Trust indicators using DS `Badge` or DS utility pattern
+    - Slide indicator dots using DS tokens
+    - All text using DS `Heading`, `Text` primitives
+    - All layout using DS `Container`, `Stack`, `Grid`
+  - Preserve: all state (useState for slide index, useEffect for auto-rotation), event handlers, timers
+
+- [x] T125 [US10] Rebuild homepage BlogSection using DS (UI-only):
+  - `src/components/BlogSection.tsx`:
+    - Section band using DS section pattern (section header + grid)
+    - Blog cards using DS `Card` composable or DS `ImageCard`
+    - CTA buttons using DS `Button`
+    - Responsive grid using DS `Grid`
+  - Preserve: all data props, conditional rendering, mobile/desktop CTA logic
+
+- [x] T126 [US10] Rebuild homepage NewsSection using DS (UI-only):
+  - Create or update news section component:
+    - Featured article card using DS `FeaturedCard`
+    - Sidebar news list using DS `CompactListItem`
+    - 12-col grid layout using DS `Grid` (featured: 7–8 cols, sidebar: 4–5 cols)
+    - Section header with CTA using DS pattern
+  - Preserve: all data props, link targets, external URL handling
+
+- [x] T127 [US10] Rebuild homepage NewsletterSection using DS (UI-only):
+  - `src/components/NewsletterSignup.tsx`:
+    - Gradient background card using DS tokens (no hardcoded gradient colors)
+    - Newsletter form using DS `Input` + DS `Button`
+    - Feature indicators using DS `Badge` or DS utility
+    - Decorative elements using DS visual tokens only
+  - Preserve: form submit handler, email validation, loading state
+
+- [x] T128 [US10] Rebuild Header/navigation using DS (UI-only):
+  - `src/components/Header.tsx` / `src/components/TopBar.tsx`:
+    - Fixed header with scroll-aware backdrop-blur using DS tokens
+    - Desktop nav links using DS `LinkText` or DS nav pattern
+    - Mobile hamburger menu using DS `Drawer` or DS pattern
+    - Logo + brand using DS typography tokens
+    - Auth buttons using DS `Button` variants
+  - Preserve: scroll event handler, mobile menu toggle state, navigation callbacks
+
+- [x] T129 [US10] Rebuild homepage route composition:
+  - `src/app/page.tsx`:
+    - Compose sections using DS `PublicShell` layout
+    - Ensure section ordering matches prototype: Hero → BlogSection → NewsSection → Newsletter
+    - All container/spacing using DS layout primitives
+
+---
+
+### Phase 12f: Platform Mode Verification [US10]
+
+**Purpose**: Verify correct platform treatment — prototype is a web page (not mobile app), confirm DS runtime is set accordingly
+
+- [x] T130 [US10] Platform mode verification:
+  - Confirm prototype is treated as **responsive web** (not mobile-app UI)
+  - Verify no `data-platform="mobile"` overrides are applied to public homepage
+  - Verify DS `PublicShell` layout is used (not mobile `AppShell`)
+  - Document any breakpoint-specific behavior differences in audit
+
+---
+
+### Phase 12g: Pixel-Perfect Validation [US10]
+
+**Purpose**: Visual comparison of rebuilt screens against prototype — fix tokens not component code for any mismatches
+
+- [x] T131 [US10] Post-rebuild verification — run 6 SOT verification commands for all rebuilt files:
+  - All 6 commands must return 0 matches for every rebuilt file
+  - Files: Hero, BlogSection, NewsSection/component, NewsletterSignup, Header, `src/app/page.tsx`
+
+- [x] T132 [US10] Visual validation per screen:
+  - Hero: verify spacing, color, typography, alignment, shadow, animation timing
+  - BlogSection: verify card layout, grid gaps, responsive breakpoints, hover effects
+  - NewsSection: verify featured+sidebar grid, card styles, link treatments
+  - NewsletterSection: verify gradient, form styling, badge indicators
+  - Header: verify scroll behavior, blur effect, nav link styles, mobile menu
+  - If mismatch found → fix tokens in `src/ds/styles/*`, NOT component code
+
+- [x] T133 [US10] Multi-theme visual check:
+  - Verify all rebuilt screens under active theme
+  - Verify DS token overrides apply correctly
+  - Verify no theme-specific hardcoded values leaked into feature code
+
+- [x] T134 [US10] Responsive validation:
+  - 5 breakpoints: 320px / 375px / 768px / 1024px / 1440px
+  - Verify: hero layout, card grids, section padding, navigation, mobile CTA visibility
+  - Verify: text sizing, spacing compression, image handling at each breakpoint
+
+- [x] T135 [US10] Accessibility check:
+  - Keyboard navigation: all interactive elements focusable and operable
+  - Focus ring visible (DS `ui-focus-ring`)
+  - Contrast: WCAG 2.1 AA for all text/background combinations
+  - ARIA labels: on navigation, buttons, modals, form inputs
+
+---
+
+### Phase 12h: Compliance Checklist + Build Validation [US10]
+
+**Purpose**: Final verification that all hard rules are met and the build is clean
+
+- [x] T136 [US10] DS compliance checklist verification:
+  - [x] Only `@/ds` imports used in feature code (no DS internals)
+  - [x] No inline styles (`style={{}}`) in any rebuilt file
+  - [x] No hardcoded values (px, hex, rgba, shadows) in any rebuilt file
+  - [x] No direct Tailwind in feature code — all styling from DS classes/tokens
+  - [x] No direct `lucide-react` imports — all icons from DS
+  - [x] All new DS components are reusable and theme-safe
+  - [x] All new DS tokens follow naming convention (`--ds-*`)
+  - [x] Platform-aware: public pages use web layout, no mobile-app misapplication
+
+- [x] T137 [US10] Build validation:
+  - `npx tsc --noEmit`
+  - `npm run build`
+  - Both must pass with zero errors
+
+- [x] T138 [US10] Capture final audit snapshot:
+  - Create: `DOC/FRONTEND MIGRATION/audits/US10_prototype_conversion_status.md`
+  - Include:
+    - Audit report summary (tokens extracted, gaps found)
+    - DS extensions made (tokens added, components created, utilities added)
+    - Screens rebuilt (with parity notes)
+    - Remaining work (if any screens deferred)
+    - Before/after metrics (hardcoded value count, DS import coverage)
+
+**Definition of Done**:
+- All rebuilt screens visually match prototype (perceptually identical)
+- Zero inline styles or hardcoded values in feature code
+- Only `@/ds` imports in feature code — no DS internals, no raw Tailwind, no direct lucide-react
+- All new DS tokens, components, and utilities properly exported and documented
+- Gate0 tasks pass: Typecheck + Next build
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -437,5 +767,6 @@ description: "DS-only frontend migration task list (SOT)"
 - **Setup (Phase 1)**: Completed
 - **Foundational (Phase 2)**: Completed
 - **User Stories (Phase 3+)**: Execute sequentially (US1 → US2 → US3 → US4 → US5 → US6 → US7)
+- **Phase 12 (US10)**: Depends on Phase 10 (US8) + Phase 11 (US9) for DS foundation stability; execute sub-phases sequentially (12a → 12b → 12c → 12d → 12e → 12f → 12g → 12h); tasks marked [P] within a sub-phase can run in parallel
 
 

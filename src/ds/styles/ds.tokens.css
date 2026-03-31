@@ -1,21 +1,27 @@
 @layer ds.tokens {
-  :root {
-    /* Yahoo-like typography (fonts via Google/Next self-hosting; palette unchanged) */
-    --ds-font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-      Arial, sans-serif;
-    --ds-font-display: var(--font-display), var(--ds-font-sans);
-    --ds-font-mono: var(--font-fira-code), "Fira Code", Consolas, Monaco, "Courier New",
-      monospace;
+  /*
+    Prototype-first DS tokens.
+    Source of truth: DOC/FRONTEND MIGRATION/solarconnect (3)/index.html
+    Goal: keep only prototype primitives + minimal app-wide sizing tokens.
+  */
 
-    /* Typography (Yahoo-like scale) */
-    --ds-font-size-1: 0.625rem; /* 10px */
-    --ds-font-size-2: 0.8125rem; /* 13px */
-    --ds-font-size-3: 1rem; /* 16px */
-    --ds-font-size-4: 1.125rem; /* 18px */
-    --ds-font-size-5: 1.25rem; /* 20px */
-    --ds-font-size-6: 1.875rem; /* 30px */
-    --ds-font-size-7: 2rem; /* 32px */
-    --ds-font-size-8: 3rem; /* 48px */
+  :root {
+    /* Font */
+    --ds-font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      Arial, sans-serif;
+    --ds-font-display: var(--ds-font-sans);
+    --ds-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+
+    /* Typography (Tailwind-aligned; used by ds.utilities.css semantic text classes) */
+    --ds-font-size-1: 0.75rem; /* 12px (text-xs) */
+    --ds-font-size-2: 0.875rem; /* 14px (text-sm) */
+    --ds-font-size-3: 1rem; /* 16px (text-base) */
+    --ds-font-size-4: 1.125rem; /* 18px (text-lg) */
+    --ds-font-size-5: 1.25rem; /* 20px (text-xl) */
+    --ds-font-size-6: 1.5rem; /* 24px (text-2xl) */
+    --ds-font-size-7: 1.875rem; /* 30px (text-3xl) */
+    --ds-font-size-8: 3rem; /* 48px (text-5xl) */
     --ds-font-size-9: 4.5rem; /* 72px */
 
     --ds-font-weight-regular: 400;
@@ -26,17 +32,16 @@
     --ds-font-weight-bold: 700;
     --ds-font-weight-extrabold: 800;
 
-    --ds-line-height-tight: 1.2;
-    --ds-line-height-section: 1.2778;
+    --ds-line-height-tight: 1.25;
+    --ds-line-height-section: 1.375;
     --ds-line-height-meta: 1.4;
     --ds-line-height-normal: 1.5;
-    --ds-line-height-relaxed: 1.75;
+    --ds-line-height-relaxed: 1.625;
 
-    /* Matches Tailwind: tracking-tight (-0.025em) / tracking-wide (0.025em) */
     --ds-letter-spacing-tight: -0.025em;
     --ds-letter-spacing-loose: 0.025em;
 
-    /* Spacing (4px base) */
+    /* Spacing (Tailwind scale subset; 4px base) */
     --ds-space-0: 0;
     --ds-space-1: 0.25rem;
     --ds-space-2: 0.5rem;
@@ -48,43 +53,28 @@
     --ds-space-8: 2.5rem;
     --ds-space-9: 3rem;
 
-    /* Semantic spacing */
+    /* Semantic spacing (still consumed by DS component CSS) */
     --ds-space-card-padding: var(--ds-space-6);
     --ds-space-modal-padding: var(--ds-space-6);
     --ds-space-form-gap: var(--ds-space-4);
-    --ds-space-section-margin: var(--ds-space-9);
-    --ds-space-heading-margin: var(--ds-space-4);
     --ds-space-button-pad-x: var(--ds-space-4);
     --ds-space-button-pad-y: var(--ds-space-2);
     --ds-space-input-pad-x: var(--ds-space-4);
     --ds-space-input-pad-y: var(--ds-space-2);
-    --ds-space-nav-padding: var(--ds-space-4);
     --ds-space-topbar-pad-y: 0.375rem;
     --ds-space-header-pad-y: 0.625rem;
-    --ds-space-header-pad-x: var(--ds-space-3);
     --ds-space-header-nav-gap: var(--ds-space-6);
     --ds-space-header-controls-gap: var(--ds-space-4);
+    --ds-space-popover-pad: var(--ds-space-2);
+    --ds-space-tooltip-gap: var(--ds-space-2);
 
-    /* Header typography */
-    --ds-font-size-topbar: 0.75rem;
-    --ds-font-size-header-nav: 0.875rem;
-    --ds-font-size-header-brand: 1.25rem;
-    --ds-letter-spacing-header-nav: 0.025em;
-
-    /* Hero typography */
-    --ds-font-size-hero-eyebrow: 0.75rem;
-    --ds-font-size-hero-title: 2.25rem;
-    --ds-font-size-hero-title-md: 3rem;
-    --ds-font-size-hero-title-lg: 3.75rem;
-    --ds-font-size-hero-subtitle: 1.25rem;
-
-    /* Radii */
-    --ds-radius-default: 0.875rem;
-    --ds-radius-card: 1.375rem;
-    --ds-radius-modal: 1.5rem;
+    /* Radii (prototype uses rounded-lg/xl) */
+    --ds-radius-default: 0.5rem; /* rounded-lg */
+    --ds-radius-card: 0.75rem; /* rounded-xl */
+    --ds-radius-modal: 0.75rem; /* rounded-xl */
     --ds-radius-full: 9999px;
 
-    /* Radius scale aliases (used by existing component CSS) */
+    /* Radius aliases (referenced by existing DS CSS) */
     --ds-radius-sm: var(--ds-radius-default);
     --ds-radius-1: var(--ds-radius-default);
     --ds-radius-2: var(--ds-radius-default);
@@ -98,9 +88,16 @@
     --ds-duration-hero-slide: 700ms;
     --ds-duration-hero-pan: 12000ms;
 
-    /* Shadows */
-    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-    --ds-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+    /* Shadows (prototype: subtle dark shadows + brand glow) */
+    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.04);
+    --ds-shadow-md: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 2px rgba(255, 255, 255, 0.03);
+    --ds-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 2px rgba(255, 255, 255, 0.03);
+    --ds-shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 3px rgba(255, 255, 255, 0.02);
+    --ds-shadow-2xl: 0 28px 60px rgba(0, 0, 0, 0.7), 0 0 4px rgba(255, 255, 255, 0.02);
+    --ds-shadow-modal: var(--ds-shadow-2xl);
+
+    /* Section spacing (prototype sections use py-24 = 6rem) */
+    --ds-space-section: 6rem;
 
     /* Z-index */
     --ds-z-modal: 1000;
@@ -110,114 +107,153 @@
     --ds-z-toast: 1300;
     --ds-z-sticky: 100;
 
-    /* Semantic colors (active baseline = clean neutral light) */
-    /*
-      Pro-grade structure:
-      - Palette tokens: scale-able building blocks (neutral/brand/status)
-      - Semantic tokens: what components should consume
-      - Theme selectors (html.theme-*) override palette + semantic mapping
-    */
+    /* Layout */
+    --ds-container-max: 64rem;
+    --ds-container-narrow: 56rem;
+    --ds-container-wide: 72rem;
 
-    /* Palette: neutrals */
-    --ds-palette-neutral-0: #ffffff;
-    --ds-palette-neutral-50: #f5f5f5;
-    --ds-palette-neutral-100: #e5e5e5;
-    --ds-palette-neutral-200: #d4d4d4;
-    --ds-palette-neutral-300: #a3a3a3;
-    --ds-palette-neutral-400: #737373;
-    --ds-palette-neutral-500: #525252;
-    --ds-palette-neutral-600: #404040;
-    --ds-palette-neutral-700: #262626;
-    --ds-palette-neutral-800: #1a1a1a;
-    --ds-palette-neutral-850: #141414;
-    --ds-palette-neutral-900: #0f0f0f;
-    --ds-palette-neutral-950: #0a0a0a;
+    /* Touch targets */
+    --ds-size-touch-target: 2.75rem;
+    --ds-size-input-min-h: var(--ds-size-touch-target);
+    --ds-size-button-min-h: var(--ds-size-touch-target);
+    --ds-size-icon-button: var(--ds-size-touch-target);
+    --ds-size-fab: 3.25rem;
+    --ds-size-tabs-h: var(--ds-size-touch-target);
+    --ds-size-bottom-nav-h: 4rem;
 
-    /* Palette: brand */
-    --ds-palette-brand-50: #fff3ea;
-    --ds-palette-brand-100: #ffe2cc;
-    --ds-palette-brand-200: #ffc497;
-    --ds-palette-brand-300: #ffa461;
-    --ds-palette-brand-400: #f68633;
-    --ds-palette-brand-500: #e46c1a;
-    --ds-palette-brand-600: #cf5b0f;
-    --ds-palette-brand-700: #a9490d;
-    --ds-palette-brand-800: #7f370b;
-    --ds-palette-brand-900: #5e2709;
-    --ds-palette-brand-950: #3c1705;
+    /* Header typography (used by DS header styles/utilities) */
+    --ds-font-size-topbar: 0.75rem;
+    --ds-font-size-header-nav: 0.875rem;
+    --ds-font-size-header-brand: 1.25rem;
+    --ds-letter-spacing-header-nav: 0.025em;
 
-    /* Palette: status base (kept minimal; scale can expand later) */
-    --ds-palette-success-600: #16a34a;
-    --ds-palette-warning-600: #f59e0b;
-    --ds-palette-danger-600: #dc2626;
-    --ds-palette-info-600: #2563eb;
+    /* Header sizing (used for sticky offsets + viewport calculations) */
+    --ds-size-topbar-h: calc((var(--ds-size-touch-target) - var(--ds-space-1)) + (var(--ds-space-topbar-pad-y) * 2));
+    --ds-size-header-h: calc(var(--ds-size-touch-target) + var(--ds-space-header-pad-y) + var(--ds-space-header-pad-y));
+    --ds-size-public-chrome-h: calc(var(--ds-size-topbar-h) + var(--ds-size-header-h));
+    --ds-size-viewport-minus-header: calc(100dvh - var(--ds-size-header-h));
+    --ds-size-header-brand-icon: calc(var(--ds-size-touch-target) - var(--ds-space-2));
+    --ds-size-header-control-h: calc(var(--ds-size-touch-target) - var(--ds-space-2));
+    --ds-size-theme-toggle-w: calc(var(--ds-size-touch-target) + var(--ds-space-6));
+    --ds-size-theme-toggle-h: calc(var(--ds-size-touch-target) - var(--ds-space-2));
+    --ds-size-theme-toggle-thumb: calc(var(--ds-size-theme-toggle-h) - var(--ds-space-1));
 
-    /* Semantic colors (default = clean neutral light) */
-    --ds-color-background: var(--ds-palette-neutral-50);
-    --ds-color-surface: var(--ds-palette-neutral-0);
-    --ds-color-border: var(--ds-palette-neutral-200);
-    --ds-color-foreground: var(--ds-palette-neutral-500);
-    --ds-color-foreground-secondary: var(--ds-palette-neutral-800);
-    --ds-color-accent: var(--ds-palette-neutral-950);
-    --ds-color-accent-foreground: var(--ds-palette-neutral-0);
+    /* Device preview sizing (used by component-library previews) */
+    --ds-size-device-phone-w: 24.375rem; /* 390px */
+    --ds-size-device-phone-h: 52.75rem; /* 844px */
 
+    /* Virtualized list sizing */
+    --ds-size-virtual-list-h: 22rem;
+
+    /* Dashboard shell sizing */
+    --ds-size-shell-left: 13rem;
+    --ds-size-shell-right: 16rem;
+    --ds-size-shell-collapsed: 4.5rem;
+
+    /* Media / masonry layout sizing */
+    --ds-size-media-cell-sm: 6.5rem;
+    --ds-size-media-cell-md: 8rem;
+    --ds-size-media-cell-lg: 10rem;
+    --ds-size-masonry-col-sm: 14rem;
+    --ds-size-masonry-col-md: 18rem;
+    --ds-size-masonry-col-lg: 22rem;
+
+    /* Parallax strength */
+    --ds-size-parallax-strength-sm: 0.75rem;
+    --ds-size-parallax-strength-md: 1.25rem;
+    --ds-size-parallax-strength-lg: 1.75rem;
+
+    /* Prototype palettes (exact) */
+    --ds-palette-brand-50: #f4f1fd;
+    --ds-palette-brand-100: #e8e2fb;
+    --ds-palette-brand-200: #d0c3f7;
+    --ds-palette-brand-300: #b09cf2;
+    --ds-palette-brand-400: #8d6eeb;
+    --ds-palette-brand-500: #6d3be2;
+    --ds-palette-brand-600: #5e2cd1;
+    --ds-palette-brand-700: #5023b3;
+    --ds-palette-brand-800: #431f94;
+    --ds-palette-brand-900: #381b7a;
+    --ds-palette-brand-950: #230f4f;
+
+    --ds-palette-slate-50: #FBFBFB;
+    --ds-palette-slate-100: #f3f4f6;
+    --ds-palette-slate-200: #e5e7eb;
+    --ds-palette-slate-300: #d1d5db;
+    --ds-palette-slate-400: #9ca3af;
+    --ds-palette-slate-500: #878787;
+    --ds-palette-slate-600: #4b5563;
+    --ds-palette-slate-700: #262626;
+    --ds-palette-slate-800: #1B1B1E;
+    --ds-palette-slate-900: #151419;
+    --ds-palette-slate-950: #0b0a0d;
+
+    /* Semantic colors (prototype is cinematic dark) */
+    --ds-color-background: var(--ds-palette-slate-900);
+    --ds-color-surface: var(--ds-palette-slate-800);
+    --ds-color-border: var(--ds-palette-slate-700);
+    --ds-color-foreground: var(--ds-palette-slate-300);
+    --ds-color-foreground-secondary: var(--ds-palette-slate-50);
+    --ds-color-accent: var(--ds-palette-brand-500);
+    --ds-color-accent-foreground: #ffffff;
     --ds-color-primary: var(--ds-color-accent);
-    --ds-color-on-primary: var(--ds-palette-neutral-0);
-
-    /* Secondary semantic color (used for secondary action surfaces) */
+    --ds-color-on-primary: #ffffff;
     --ds-color-secondary: color-mix(in oklab, var(--ds-color-surface) 86%, var(--ds-color-primary) 14%);
 
-    --ds-color-success: var(--ds-palette-success-600);
-    --ds-color-warning: var(--ds-palette-warning-600);
-    --ds-color-danger: var(--ds-palette-danger-600);
-    --ds-color-info: var(--ds-palette-info-600);
-
-    /* RGB helpers (space-separated, for use with rgb(var(--x) / a)) */
-    --ds-color-background-rgb: 245 245 245;
-    --ds-color-surface-rgb: 255 255 255;
-    --ds-color-border-rgb: 212 212 212;
-    --ds-color-foreground-rgb: 82 82 82;
-    --ds-color-foreground-secondary-rgb: 26 26 26;
+    /* RGB helpers (space-separated) */
+    --ds-color-background-rgb: 21 20 25;
+    --ds-color-surface-rgb: 27 27 30;
+    --ds-color-border-rgb: 38 38 38;
+    --ds-color-foreground-rgb: 209 213 219;
+    --ds-color-foreground-secondary-rgb: 251 251 251;
     --ds-color-on-primary-rgb: 255 255 255;
-    --ds-color-accent-rgb: 10 10 10;
-    --ds-color-success-rgb: 22 163 74;
-    --ds-color-warning-rgb: 245 158 11;
-    --ds-color-danger-rgb: 220 38 38;
-    --ds-color-info-rgb: 37 99 235;
+    --ds-color-accent-rgb: 109 59 226;
 
-    /* Hero-local prototype palette */
-    --ds-color-hero-accent: #6d3be2;
-    --ds-color-hero-accent-strong: #5e2cd1;
-    --ds-color-hero-accent-soft: #8d6eeb;
-    --ds-color-hero-accent-rgb: 109 59 226;
-    --ds-color-hero-base-rgb: 21 20 25;
-    --ds-color-hero-surface-rgb: 27 27 30;
-    --ds-color-hero-muted-rgb: 203 213 225;
+    /* Status (kept minimal; used in a few UI states) */
+    --ds-color-success-rgb: 34 197 94;
+    --ds-color-warning-rgb: 245 158 11;
+    --ds-color-danger-rgb: 239 68 68;
+    --ds-color-info-rgb: 59 130 246;
+
+    --ds-color-success: rgb(var(--ds-color-success-rgb));
+    --ds-color-warning: rgb(var(--ds-color-warning-rgb));
+    --ds-color-danger: rgb(var(--ds-color-danger-rgb));
+    --ds-color-info: rgb(var(--ds-color-info-rgb));
 
     /* Effects */
-    --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.18);
-    --ds-color-overlay: rgb(0 0 0 / 0.2);
+    --ds-color-focus-ring: rgb(var(--ds-color-accent-rgb) / 0.5);
+    --ds-color-overlay: rgb(0 0 0 / 0.6);
+    --ds-color-transparent: transparent;
 
     /* Interactive states */
     --ds-color-accent-hover: color-mix(in oklab, var(--ds-color-accent) 78%, white);
     --ds-color-accent-active: color-mix(in oklab, var(--ds-color-accent) 88%, black);
 
-    /* Legacy aliases (kept for existing classnames) */
+    /* Text + surface aliases (consumed by existing DS CSS) */
     --ds-color-bg: var(--ds-color-background);
     --ds-color-text: var(--ds-color-foreground);
-    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 72%, var(--ds-color-background));
-    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 72%, var(--ds-color-background));
-
-    /* Internal aliases used by some DS styles */
+    --ds-color-text-muted: var(--ds-palette-slate-400);
+    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 70%, var(--ds-color-background));
     --ds-color-fg: var(--ds-color-foreground-secondary);
     --ds-color-fg-muted: var(--ds-color-text-muted);
 
-    /* Layout dimensions */
-    --ds-container-max: 64rem;
-    --ds-container-narrow: 56rem;
-    --ds-container-wide: 72rem;
+    /* Hero-local tokens (kept because the landing hero uses them) */
+    --ds-color-hero-accent: var(--ds-palette-brand-500);
+    --ds-color-hero-accent-strong: var(--ds-palette-brand-600);
+    --ds-color-hero-accent-soft: var(--ds-palette-brand-400);
+    --ds-color-hero-accent-rgb: 109 59 226;
+    --ds-color-hero-base-rgb: 21 20 25;
+    --ds-color-hero-surface-rgb: 27 27 30;
+    --ds-color-hero-muted-rgb: 209 213 219;
 
-    /* Sizing */
+    /* Hero typography (used by ds.utilities.css) */
+    --ds-font-size-hero-eyebrow: 0.75rem;
+    --ds-font-size-hero-title: 2.25rem;
+    --ds-font-size-hero-title-md: 3rem;
+    --ds-font-size-hero-title-lg: 3.75rem;
+    --ds-font-size-hero-subtitle: 1.25rem;
+
+    /* Hero sizing (used by ds.components.css / ds.utilities.css) */
     --ds-size-hero-min-h: 28rem;
     --ds-size-hero-copy-max: 56rem;
     --ds-size-hero-options-max: 72rem;
@@ -235,170 +271,10 @@
     --ds-size-hero-headline-max-sm: 36rem;
     --ds-size-hero-headline-max-md: 44rem;
     --ds-size-hero-subcopy-max: 42rem;
-    --ds-size-topbar-h: calc((var(--ds-size-touch-target) - var(--ds-space-1)) + (var(--ds-space-topbar-pad-y) * 2));
-     /* Header band height (used for sticky offsets + viewport calculations).
-       Matches shells that use .ui-header-pad (padding-block: --ds-space-4)
-       around a row of controls that are at least --ds-size-touch-target tall. */
-    --ds-size-header-h: calc(var(--ds-size-touch-target) + var(--ds-space-header-pad-y) + var(--ds-space-header-pad-y));
-    --ds-size-public-chrome-h: calc(var(--ds-size-topbar-h) + var(--ds-size-header-h));
-    --ds-size-viewport-minus-header: calc(100dvh - var(--ds-size-header-h));
-
-    --ds-size-touch-target: 2.75rem;
-    --ds-size-input-min-h: var(--ds-size-touch-target);
-    --ds-size-button-min-h: var(--ds-size-touch-target);
-    --ds-size-icon-button: var(--ds-size-touch-target);
-      --ds-size-header-brand-icon: calc(var(--ds-size-touch-target) - var(--ds-space-2));
-      --ds-size-header-control-h: calc(var(--ds-size-touch-target) - var(--ds-space-2));
-      --ds-size-theme-toggle-w: calc(var(--ds-size-touch-target) + var(--ds-space-6));
-      --ds-size-theme-toggle-h: calc(var(--ds-size-touch-target) - var(--ds-space-2));
-      --ds-size-theme-toggle-thumb: calc(var(--ds-size-theme-toggle-h) - var(--ds-space-1));
-    --ds-size-fab: 3.25rem;
-    --ds-size-tabs-h: var(--ds-size-touch-target);
-    --ds-size-bottom-nav-h: 4rem;
-
-    /* Media / masonry layout sizing */
-    --ds-size-media-cell-sm: 6.5rem;
-    --ds-size-media-cell-md: 8rem;
-    --ds-size-media-cell-lg: 10rem;
-
-    --ds-size-masonry-col-sm: 14rem;
-    --ds-size-masonry-col-md: 18rem;
-    --ds-size-masonry-col-lg: 22rem;
-
-    /* Parallax strength (multiplied by a unitless progress value) */
-    --ds-size-parallax-strength-sm: 0.75rem;
-    --ds-size-parallax-strength-md: 1.25rem;
-    --ds-size-parallax-strength-lg: 1.75rem;
-
-    /* Device preview sizing (used by component-library previews) */
-    --ds-size-device-phone-w: 24.375rem; /* 390px */
-    --ds-size-device-phone-h: 52.75rem; /* 844px */
-
-    /* Virtualized list sizing */
-    --ds-size-virtual-list-h: 22rem;
-
-    /* Dashboard shell sizing */
-    --ds-size-shell-left: 13rem;
-    --ds-size-shell-right: 16rem;
-    --ds-size-shell-collapsed: 4.5rem;
-
-    /* Popovers / tooltips */
-    --ds-space-popover-pad: var(--ds-space-2);
-    --ds-space-tooltip-gap: var(--ds-space-2);
   }
 
-  /* Theme: dark */
-  html.theme-dark {
-    --ds-color-background: #000000;
-    --ds-color-surface: #0f0f0f;
-    --ds-color-border: #27272a;
-    --ds-color-foreground: #a1a1aa;
-    --ds-color-foreground-secondary: #f4f4f5;
-    --ds-color-accent: #ffffff;
-    --ds-color-accent-foreground: #000000;
-    --ds-color-on-primary: #000000;
-    --ds-color-background-rgb: 0 0 0;
-    --ds-color-surface-rgb: 15 15 15;
-    --ds-color-border-rgb: 39 39 42;
-    --ds-color-foreground-rgb: 161 161 170;
-    --ds-color-foreground-secondary-rgb: 244 244 245;
-    --ds-color-on-primary-rgb: 0 0 0;
-    --ds-color-accent-rgb: 255 255 255;
-    --ds-color-overlay: rgb(0 0 0 / 0.6);
-    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 72%, var(--ds-color-background));
-    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 65%, var(--ds-color-background));
-    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05);
-    --ds-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.04);
-  }
-
-  /* Theme: purple — cinematic dark (active public theme) */
+  /* Single active theme (prototype): keep selector for compatibility */
   html.theme-purple {
-    --ds-palette-brand-50: #f5f3ff;
-    --ds-palette-brand-100: #ede9fe;
-    --ds-palette-brand-200: #ddd6fe;
-    --ds-palette-brand-300: #c4b5fd;
-    --ds-palette-brand-400: #a78bfa;
-    --ds-palette-brand-500: #6d3be2;
-    --ds-palette-brand-600: #5e2cd1;
-    --ds-palette-brand-700: #4c1db8;
-    --ds-palette-brand-800: #3b1499;
-    --ds-palette-brand-900: #2e0f7a;
-    --ds-palette-brand-950: #1a0854;
-
-    --ds-color-background: #151419;
-    --ds-color-surface: #1B1B1E;
-    --ds-color-border: #262626;
-    --ds-color-foreground: #94a3b8;
-    --ds-color-foreground-secondary: #f1f5f9;
-    --ds-color-accent: #6d3be2;
-    --ds-color-accent-foreground: #ffffff;
-    --ds-color-on-primary: #ffffff;
-    --ds-color-background-rgb: 21 20 25;
-    --ds-color-surface-rgb: 27 27 30;
-    --ds-color-border-rgb: 38 38 38;
-    --ds-color-foreground-rgb: 148 163 184;
-    --ds-color-foreground-secondary-rgb: 241 245 249;
-    --ds-color-on-primary-rgb: 255 255 255;
-    --ds-color-accent-rgb: 109 59 226;
-    --ds-color-overlay: rgb(0 0 0 / 0.6);
-    --ds-color-transparent: transparent;
-    --ds-color-text-muted: color-mix(in oklab, var(--ds-color-foreground) 80%, var(--ds-color-background));
-    --ds-color-surface-2: color-mix(in oklab, var(--ds-color-surface) 68%, var(--ds-color-background));
-    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.04);
-    --ds-shadow-md: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 2px rgba(255, 255, 255, 0.03);
-  }
-
-  /* Density + platform knobs (scopable per page via a wrapper) */
-  :where(html[data-density="compact"], [data-density="compact"]) {
-    --ds-space-card-padding: var(--ds-space-4);
-    --ds-space-modal-padding: var(--ds-space-4);
-    --ds-space-form-gap: var(--ds-space-3);
-    --ds-space-section-margin: var(--ds-space-8);
-    --ds-space-nav-padding: var(--ds-space-3);
-  }
-
-  /* Visual variants (token-first; component styles may optionally respond) */
-  :where(html[data-visual="glass"], [data-visual="glass"]) {
-    --ds-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --ds-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.18);
-  }
-
-  :where(html[data-visual="neumorph"], [data-visual="neumorph"]) {
-    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.18);
-    --ds-shadow-md: 0 14px 38px rgba(0, 0, 0, 0.28);
-  }
-
-  :where(html[data-visual="sleek"], [data-visual="sleek"]) {
-    --ds-shadow-sm: none;
-    --ds-shadow-md: none;
-    --ds-radius-default: 0.375rem;
-    --ds-radius-card: 0.5rem;
-  }
-
-  /* Platform presets (scopable per page via a wrapper) */
-  :where(html[data-platform="mobile"], [data-platform="mobile"]) {
-    /* App-like mobile typography: smaller headings, clearer body text.
-       Scoped to data-platform so desktop remains classic. */
-    --ds-font-size-1: 0.75rem; /* 12px */
-    --ds-font-size-2: 0.875rem; /* 14px */
-    --ds-font-size-3: 1rem; /* 16px */
-    --ds-font-size-4: 1.125rem; /* 18px */
-    --ds-font-size-5: 1.125rem; /* 18px */
-    --ds-font-size-6: 1.375rem; /* 22px */
-    --ds-font-size-7: 1.75rem; /* 28px */
-
-    /* App-like spacing + shape */
-    --ds-space-card-padding: var(--ds-space-4);
-    --ds-space-modal-padding: var(--ds-space-4);
-    --ds-space-form-gap: var(--ds-space-3);
-    --ds-space-nav-padding: var(--ds-space-3);
-
-    --ds-radius-default: 0.5rem;
-    --ds-radius-card: 0.75rem;
-    --ds-radius-modal: 0.75rem;
-
-    --ds-size-touch-target: 3rem;
-    --ds-size-bottom-nav-h: 4.25rem;
-    --ds-size-tabs-h: var(--ds-size-touch-target);
+    /* Intentionally empty: :root already matches the prototype theme. */
   }
 }

@@ -122,7 +122,7 @@ export default function InstallerHomePage() {
             {/* Floating Geometric Shapes */}
             <div className="absolute top-20 left-10 w-16 h-16 border border-primary/20" style={{ animation: 'float-slow 8s ease-in-out infinite' }}></div>
             <div className="absolute top-40 right-20 w-8 h-8 bg-primary/10 rounded-full" style={{ animation: 'float-medium 6s ease-in-out infinite' }}></div>
-            <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-slate-500/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
+            <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-border/20 rounded-full" style={{ animation: 'float-fast 4s ease-in-out infinite' }}></div>
             <div className="absolute top-60 left-1/3 w-6 h-6 bg-primary/15 transform rotate-45" style={{ animation: 'float-slow 8s ease-in-out infinite 1s' }}></div>
             <div className="absolute bottom-60 right-1/3 w-10 h-10 border border-border" style={{ animation: 'float-medium 6s ease-in-out infinite 1s' }}></div>
             
@@ -153,7 +153,7 @@ export default function InstallerHomePage() {
             <div className="absolute bottom-20 left-20">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="relative w-16 h-10 m-1 inline-block" style={{ animation: `panel-track 6s ease-in-out infinite ${i * 0.5}s` }}>
-                  <div className="panel-surface w-full h-full bg-slate-200 border border-primary/20 rounded relative">
+                  <div className="panel-surface w-full h-full bg-surface border border-primary/20 rounded relative">
                     <div className="panel-glow" style={{ animation: `panel-glow-anim 4s ease-in-out infinite ${i * 0.3}s` }}></div>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function InstallerHomePage() {
                 >
                   Try It Free
                 </Button>
-                <button className="bg-transparent border-2 border-slate-800 text-foreground px-8 py-3 rounded-xl text-heading-4 hover:bg-surface hover:text-foreground-secondary transition-colors shadow-lg">
+                <button className="bg-transparent border-2 border-border text-foreground px-8 py-3 rounded-xl text-heading-4 hover:bg-surface hover:text-foreground-secondary transition-colors shadow-lg">
                   Watch Installer Stories
                 </button>
               </div>
