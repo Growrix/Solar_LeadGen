@@ -30,9 +30,9 @@ export const AuthButton: React.FC<AuthButtonProps> = ({
 
   // Variant-specific classes using design system
   const variantClasses = {
-    primary: 'neu-btn-primary',
-    secondary: 'neu-btn-secondary',
-    social: 'neu-btn-secondary flex items-center justify-center space-x-3',
+    primary: 'ui-button ui-button--primary',
+    secondary: 'ui-button ui-button--secondary',
+    social: 'ui-button ui-button--secondary flex items-center justify-center space-x-3',
   };
 
   const baseClasses = [

@@ -11,7 +11,7 @@ export function ActionPanel({ role, disabled, onMockAction }: Props) {
   const [amount, setAmount] = useState<string>("");
 
   return (
-    <div className="neu-card bg-surface shadow-card border border-border rounded-xl p-4 flex flex-col gap-3">
+    <div className="bg-surface shadow-card border border-border rounded-xl p-4 flex flex-col gap-3">
       <h3 className="text-heading-3 text-foreground">Actions</h3>
       {role === 'HOMEOWNER' ? (
         <div className="flex items-end gap-2">
@@ -20,7 +20,7 @@ export function ActionPanel({ role, disabled, onMockAction }: Props) {
             <input
               aria-label="Your counter amount"
               type="number"
-              className="neu-input w-full bg-background text-foreground shadow-inner border border-border rounded-lg px-3 py-2"
+              className="ui-input w-full"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="e.g. 4800"
@@ -28,7 +28,7 @@ export function ActionPanel({ role, disabled, onMockAction }: Props) {
             />
           </div>
           <button
-            className="neu-btn-primary px-4 py-2 rounded-lg shadow-card"
+            className="ui-button ui-button--primary px-4 py-2 rounded-lg"
             disabled={disabled}
             onClick={() => onMockAction?.('COUNTER')}
           >
@@ -42,7 +42,7 @@ export function ActionPanel({ role, disabled, onMockAction }: Props) {
             <input
               aria-label="New offer amount"
               type="number"
-              className="neu-input w-full bg-background text-foreground shadow-inner border border-border rounded-lg px-3 py-2"
+              className="ui-input w-full"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="e.g. 5000"
@@ -51,14 +51,14 @@ export function ActionPanel({ role, disabled, onMockAction }: Props) {
           </div>
           <div className="flex gap-2">
             <button
-              className="neu-btn-secondary px-4 py-2 rounded-lg shadow-card"
+              className="ui-button ui-button--secondary px-4 py-2 rounded-lg"
               disabled={disabled}
               onClick={() => onMockAction?.('OFFER')}
             >
               Send Offer
             </button>
             <button
-              className="neu-btn-primary px-4 py-2 rounded-lg shadow-card"
+              className="ui-button ui-button--primary px-4 py-2 rounded-lg"
               disabled={disabled}
               onClick={() => onMockAction?.('DONE')}
             >

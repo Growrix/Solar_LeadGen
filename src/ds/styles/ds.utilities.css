@@ -838,6 +838,10 @@
     padding: var(--ds-space-4);
   }
 
+  .info-section--lg {
+    padding: var(--ds-space-6);
+  }
+
   /**
    * cost-item-label
    * Label for a cost or savings row in financial result cards.

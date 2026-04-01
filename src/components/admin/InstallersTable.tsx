@@ -13,7 +13,6 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import styles from './InstallersTable.module.css';
 import Image from 'next/image';
 import { Button, Card, CardContent, Input, Select } from '@/ds';
 
@@ -301,11 +300,11 @@ const InstallersTable: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
-                          <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.phoneVerified === true ? 'text-success' : 'text-error'}`}> 
+                          <span className={`text-body-small font-medium py-0.5 px-1 rounded-xl flex items-center gap-2 ${installer.phoneVerified === true ? 'text-success' : 'text-error'}`}> 
                             <span className={`inline-block w-2 h-2 rounded-full ${installer.phoneVerified === true ? 'bg-success' : 'bg-error'}`}></span>
                             {installer.phoneVerified === true ? <span>✓ Phone</span> : <span>✗ Phone</span>}
                           </span>
-                          <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.installerVerified === true ? 'text-success' : 'text-error'}`}> 
+                          <span className={`text-body-small font-medium py-0.5 px-1 rounded-xl flex items-center gap-2 ${installer.installerVerified === true ? 'text-success' : 'text-error'}`}> 
                             <span className={`inline-block w-2 h-2 rounded-full ${installer.installerVerified === true ? 'bg-success' : 'bg-error'}`}></span>
                             {installer.installerVerified === true ? <span>✓ Installer</span> : <span>✗ Installer</span>}
                           </span>
@@ -401,11 +400,11 @@ const InstallersTable: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Verified:</span>
                       <div className="flex gap-1">
-                        <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.phoneVerified === true ? 'text-success' : 'text-error'}`}> 
+                        <span className={`text-body-small font-medium py-0.5 px-1 rounded-xl flex items-center gap-2 ${installer.phoneVerified === true ? 'text-success' : 'text-error'}`}> 
                           <span className={`inline-block w-2 h-2 rounded-full ${installer.phoneVerified === true ? 'bg-success' : 'bg-error'}`}></span>
                           {installer.phoneVerified === true ? <span>✓ Phone</span> : <span>✗ Phone</span>}
                         </span>
-                        <span className={`${styles['badge-verify']} flex items-center gap-2 ${installer.installerVerified === true ? 'text-success' : 'text-error'}`}> 
+                        <span className={`text-body-small font-medium py-0.5 px-1 rounded-xl flex items-center gap-2 ${installer.installerVerified === true ? 'text-success' : 'text-error'}`}> 
                           <span className={`inline-block w-2 h-2 rounded-full ${installer.installerVerified === true ? 'bg-success' : 'bg-error'}`}></span>
                           {installer.installerVerified === true ? <span>✓ Installer</span> : <span>✗ Installer</span>}
                         </span>

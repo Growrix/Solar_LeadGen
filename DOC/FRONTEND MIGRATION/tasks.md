@@ -768,5 +768,258 @@ description: "DS-only frontend migration task list (SOT)"
 - **Foundational (Phase 2)**: Completed
 - **User Stories (Phase 3+)**: Execute sequentially (US1 → US2 → US3 → US4 → US5 → US6 → US7)
 - **Phase 12 (US10)**: Depends on Phase 10 (US8) + Phase 11 (US9) for DS foundation stability; execute sub-phases sequentially (12a → 12b → 12c → 12d → 12e → 12f → 12g → 12h); tasks marked [P] within a sub-phase can run in parallel
+- **Phase 13 (US11)**: No dependencies beyond Phase 12h completion; eliminates competing styling systems
+- **Phase 14 (US12)**: Depends on Phase 13; converts all raw HTML form elements to DS primitives
+
+---
+
+## Phase 13: DS Consolidation — Eliminate Competing Styling Systems (Critical) 🧹
+
+**Purpose**: Eliminate ALL non-DS styling patterns so the codebase has exactly ONE styling system: the DS (`src/ds/`). No raw Tailwind form styling, no local class-string constants, no ghost CSS classes, no CSS modules.
+
+**Goal**: After this phase, every visual styling decision flows through DS tokens/primitives/utilities defined in `src/ds/`. Components may use Tailwind utilities for layout (flex, grid, gap, padding, margin) but NOT for visual appearance (colors, shadows, borders, typography on form controls).
+
+**Scope**: All TSX files under `src/components/`, `src/app/`, `src/ds/runtime/`
+
+**Hard Rules**:
+- ❌ No `baseInputClasses` or similar local style-string constants
+- ❌ No `placeholder-*` Tailwind classes (DS handles placeholder styling via `ui-input`)
+- ❌ No `shadow-inner` for neumorphic effects (use DS shadow tokens)
+- ❌ No raw `<input>` with bespoke Tailwind for visual styling (use DS `Input` or `ui-input` class)
+- ❌ No raw `<select>` with bespoke Tailwind (use DS `Select` or `ui-select__control` class)
+- ❌ No inline `focus:border-*`, `focus:ring-*`, `focus:outline-none` on form elements (DS `ui-focus-ring` handles this)
+- ✅ Layout-only Tailwind is OK: `w-full`, `flex`, `gap-*`, `p-*`, `m-*`, `grid`, etc.
+- ✅ DS semantic classes are OK: `text-foreground`, `bg-surface`, `border-border`, `text-heading-*`, `text-body-*`, `text-caption`, `text-label`
+
+---
+
+### Phase 13a: Remove `baseInputClasses` Pattern
+
+**Purpose**: Eliminate the local `baseInputClasses` constant pattern that competes with DS Input styling
+
+- [ ] T200 Replace `baseInputClasses` in `DetailedQuoteAuthModal.tsx`:
+  - File: `src/components/DetailedQuoteAuthModal.tsx`
+  - Remove the `const baseInputClasses = "..."` declaration (line ~92)
+  - Replace all 7 `<input className={baseInputClasses...}>` with `<input className="ui-input ui-focus-ring w-full">`
+  - Remove `placeholder-slate-500` (DS handles placeholder color)
+  - Preserve: all onChange handlers, validation logic, error state borders
+
+- [ ] T201 Replace `baseInputClasses` in `SimplifiedQuoteForm.tsx`:
+  - File: `src/components/homeowner/SimplifiedQuoteForm.tsx`
+  - Remove the `const baseInputClasses = "..."` declaration (line ~707)
+  - Replace all 10+ `<input className={baseInputClasses}>` and `<select className={baseInputClasses}>` with DS classes
+  - Inputs → `className="ui-input ui-focus-ring w-full"`
+  - Selects → `className="ui-select__control ui-focus-ring w-full"`
+  - Remove `placeholder-muted-foreground` (DS handles it)
+  - Preserve: all form state, onChange handlers, validation
+
+---
+
+### Phase 13b: Replace `placeholder-*` Tailwind Classes
+
+**Purpose**: Remove explicit placeholder color classes — DS `ui-input` handles placeholder styling
+
+- [ ] T202 Clean `HomeownersInfoForm.tsx` placeholder + bespoke input styling:
+  - File: `src/components/HomeownersInfoForm.tsx`
+  - Lines ~166-220: Replace 3 raw `<input>` elements with bespoke Tailwind
+  - Current: `className="w-full bg-surface shadow-inner border border-border rounded-2xl px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"`
+  - Replace with: `className="ui-input ui-focus-ring w-full"`
+  - Preserve: all value/onChange/placeholder/name/type props
+
+---
+
+### Phase 13c: Replace `shadow-inner` Neumorphic Patterns
+
+**Purpose**: Eliminate legacy `shadow-inner` usage that competes with DS shadow tokens
+
+**Files affected** (~80+ occurrences across many components):
+
+- [ ] T203 Remove `shadow-inner` from DS runtime component:
+  - File: `src/ds/runtime/web/Footer.tsx` (line ~33)
+  - Replace `shadow-inner` with nothing (or `shadow-card` if container needs shadow)
+
+- [ ] T204 Remove `shadow-inner` from written-quote components:
+  - Files: `src/app/components/written-quote/HistoryList.tsx`, `CurrentStateCard.tsx`
+  - Replace `shadow-inner` with DS shadow token or remove
+
+- [ ] T205 Remove `shadow-inner` from `InstantQuoteForm.tsx`:
+  - File: `src/components/InstantQuoteForm.tsx` (~18 occurrences)
+  - Audit each `shadow-inner` usage and replace with DS class or remove
+  - Preserve: all form logic, conditionals, state
+
+- [ ] T206 Remove `shadow-inner` from remaining components:
+  - Scan all files for `shadow-inner` and replace/remove
+  - Key files: `InstallerLeadFeed.tsx`, `VerificationModal.tsx`, `HomeownersInfoForm.tsx`
+  - Priority: user-facing components first
+
+---
+
+### Phase 13d: Convert Raw `<input>` Elements to DS
+
+**Purpose**: All text/email/number/tel inputs must use DS `Input` primitive or `ui-input` class
+
+**Files with raw `<input>` (non-DS)**:
+
+- [ ] T207 Convert `ProfileManagement.tsx` inputs (8 raw inputs):
+  - File: `src/components/ProfileManagement.tsx`
+  - Replace raw `<input>` elements with DS `Input` primitive import
+  - Or apply `className="ui-input ui-focus-ring"` to existing `<input>` elements
+  - Preserve: all form state, onChange, value bindings, validation
+
+- [ ] T208 Convert `InstantQuoteForm.tsx` inputs (5 raw inputs):
+  - File: `src/components/InstantQuoteForm.tsx`
+  - Replace raw `<input>` with `ui-input ui-focus-ring` class
+  - Preserve: all form logic
+
+- [ ] T209 Convert `MessagingModal.tsx` inputs (2 raw inputs):
+  - File: `src/components/MessagingModal.tsx`
+
+- [ ] T210 Convert `WrittenQuoteBuilderModal.tsx` inputs (2 raw inputs):
+  - File: `src/components/WrittenQuoteBuilderModal.tsx`
+
+- [ ] T211 Convert `OTPVerificationModal.tsx` input:
+  - File: `src/components/OTPVerificationModal.tsx`
+
+- [ ] T212 Convert `NewsletterSignup.tsx` input:
+  - File: `src/components/NewsletterSignup.tsx`
+
+- [ ] T213 Convert `InstallerMessagingModal.tsx` input:
+  - File: `src/components/InstallerMessagingModal.tsx`
+
+- [ ] T214 Convert `DetailedInformationModal.tsx` inputs:
+  - File: `src/components/DetailedInformationModal.tsx`
+
+- [ ] T215 Convert remaining raw `<input>` elements:
+  - Run audit script: `npx tsx scripts/diagnostics/ui-consistency-audit.ts`
+  - Convert any remaining raw inputs not in `src/ds/` to use DS classes
+  - Exception: `<input type="file">`, `<input type="hidden">`, `<input type="checkbox">`, `<input type="radio">` — these have their own DS primitives
+
+---
+
+### Phase 13e: Convert Raw `<select>` Elements to DS
+
+**Purpose**: All `<select>` dropdowns must use DS `Select` primitive or `ui-select__control` class
+
+- [ ] T216 Convert `SimplifiedQuoteForm.tsx` selects (7 raw selects):
+  - File: `src/components/homeowner/SimplifiedQuoteForm.tsx`
+  - Replace raw `<select>` with `className="ui-select__control ui-focus-ring"`
+  - Preserve: all option values, onChange handlers
+
+- [ ] T217 Convert `AdminHomeownersList.tsx` select:
+  - File: `src/components/AdminHomeownersList.tsx`
+
+- [ ] T218 Convert `HomeownerWrittenQuoteReviewModal.tsx` select:
+  - File: `src/components/homeowner/HomeownerWrittenQuoteReviewModal.tsx`
+
+- [ ] T219 Convert `HomeownerBiddingReviewModal.tsx` select:
+  - File: `src/components/homeowner/HomeownerBiddingReviewModal.tsx`
+
+---
+
+### Phase 13f: Verification & Audit
+
+- [ ] T220 Run full audit and verify zero competing patterns:
+  - Run: `npx tsx scripts/diagnostics/ui-consistency-audit.ts`
+  - Expected: 0 `baseInputClasses`, 0 `placeholder-*`, 0 `shadow-inner` on form controls
+  - All raw `<input>`/`<select>` should be in `src/ds/` only (primitives defining them)
+  - Run Gate0: `npx tsc -p tsconfig.gate.json --noEmit` + `npm run build`
+
+**Definition of Done (Phase 13)**:
+- Zero `baseInputClasses` or similar local style constants
+- Zero `placeholder-*` classes outside DS CSS
+- Zero `shadow-inner` for form element neumorphic effects
+- All `<input>`/`<select>` in feature code use DS classes (`ui-input`, `ui-select__control`)
+- Gate0 passes: TypeScript ✓, Next.js build ✓
+
+---
+
+## Phase 14: DS Adoption — Component-Level Migration (Medium) 🔄
+
+**Purpose**: Migrate remaining components from raw HTML + DS class to using DS React primitives (import from `@/ds`). This ensures component-level consistency and access to built-in props (error states, sizes, etc.).
+
+**Goal**: All form controls use DS React primitives (`Input`, `Select`, `Button`, `Switch`, `Checkbox`, `Radio`) imported from `@/ds` instead of raw HTML elements with DS class names.
+
+**Scope**: All components that were given `ui-*` classes in Phase 13 should now import and use the actual DS primitive components.
+
+---
+
+### Phase 14a: Migrate to DS `Input` Primitive
+
+- [ ] T300 Migrate `DetailedQuoteAuthModal.tsx` to DS `Input`:
+  - Import `Input` from `@/ds`
+  - Replace `<input className="ui-input...">` → `<Input {...props} />`
+  - Preserve: all validation, error states, onChange handlers
+
+- [ ] T301 Migrate `HomeownersInfoForm.tsx` to DS `Input`:
+  - Same pattern as T300
+
+- [ ] T302 Migrate `ProfileManagement.tsx` to DS `Input`:
+  - Same pattern as T300
+
+- [ ] T303 Migrate `InstantQuoteForm.tsx` to DS `Input`:
+  - Same pattern as T300
+
+- [ ] T304 Migrate remaining components to DS `Input`:
+  - `MessagingModal.tsx`, `WrittenQuoteBuilderModal.tsx`, `OTPVerificationModal.tsx`,
+    `NewsletterSignup.tsx`, `InstallerMessagingModal.tsx`, `DetailedInformationModal.tsx`
+
+---
+
+### Phase 14b: Migrate to DS `Select` Primitive
+
+- [ ] T305 Migrate `SimplifiedQuoteForm.tsx` to DS `Select`:
+  - Import `Select` from `@/ds`
+  - Replace `<select className="ui-select__control...">` → `<Select {...props}><option>...</option></Select>`
+
+- [ ] T306 Migrate remaining selects to DS `Select`:
+  - `AdminHomeownersList.tsx`, `HomeownerWrittenQuoteReviewModal.tsx`, `HomeownerBiddingReviewModal.tsx`
+
+---
+
+### Phase 14c: Migrate `toggle-switch` to DS `Switch` Primitive
+
+**Note**: `toggle-switch` classes ARE defined in DS CSS but components use raw `<div>` with these classes instead of the DS `Switch` primitive.
+
+- [ ] T307 Migrate `InstantQuoteForm.tsx` toggle switches (~9 usages):
+  - Import `Switch` from `@/ds`
+  - Replace raw `<div className="toggle-switch toggle-switch-md...">` → `<Switch checked={...} onChange={...} />`
+  - Preserve: all toggle state logic
+
+- [ ] T308 Migrate `SimplifiedQuoteForm.tsx` toggle switches (~9 usages):
+  - Same pattern as T307
+
+---
+
+### Phase 14d: Migrate Auth Components to DS Primitives
+
+- [ ] T309 Migrate `AuthButton.tsx` to use DS `Button`:
+  - Replace the custom AuthButton component with DS `Button` primitive
+  - Or update it to wrap DS `Button` if variant behavior is needed
+
+- [ ] T310 Migrate `AuthInput.tsx` to use DS `Input`:
+  - Replace the custom AuthInput component with DS `Input` primitive
+  - Or update it to wrap DS `Input` with icon/password-toggle overlay
+
+---
+
+### Phase 14e: Final Verification
+
+- [ ] T311 Run full audit — zero raw form elements in feature code:
+  - Run: `npx tsx scripts/diagnostics/ui-consistency-audit.ts`
+  - Expected: All raw `<input>`/`<select>` only in `src/ds/primitives/`
+  - All form components import from `@/ds`
+  - Run Gate0: TypeScript ✓, Next.js build ✓
+
+- [ ] T312 Visual regression check:
+  - Verify all migrated forms look identical pre/post migration
+  - Test all 3 themes (Dark, Light, Purple)
+  - Test responsive at 320px, 768px, 1024px, 1440px
+
+**Definition of Done (Phase 14)**:
+- Zero raw `<input>/<select>` in feature code (only in `src/ds/primitives/`)
+- All form controls imported from `@/ds`
+- All toggle switches use DS `Switch` primitive
+- Gate0 passes: TypeScript ✓, Next.js build ✓
+- Visual parity maintained across all 3 themes
 
 

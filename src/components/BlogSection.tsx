@@ -147,11 +147,11 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
             <h2 className="text-heading-2 mb-4">
               Latest Solar News & Insights
             </h2>
-            <p className="text-body-large" style={{ color: 'var(--ds-color-text-muted)' }}>
+            <p className="text-body-large ui-text-muted">
               Stay informed with expert insights, industry updates, and practical tips from our solar specialists.
             </p>
           </div>
-          <div className="hidden md:block">
+          <div className="ui-only-desktop">
             <Button onClick={onSeeAllPostsClick} variant="secondary" size="md">
               <span>View All Posts</span>
               <ArrowRight size={20} />
@@ -161,7 +161,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
 
         <div className="ui-grid ui-grid--3 mb-10">
           {error ? (
-            <div className="col-span-full ui-card" style={{ textAlign: 'center', color: 'var(--ds-color-text-muted)' }}>
+            <div className="col-span-full ui-card ui-text-center ui-text-muted">
               {error}
             </div>
           ) : null}
@@ -179,10 +179,9 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
             <article 
               key={index} 
               onClick={() => !loading && onNavigateToPost(article)}
-              className={`ui-card group transition-all duration-300 overflow-hidden ${
+              className={`ui-card ui-card--flush group transition-all duration-300 overflow-hidden ${
                 loading ? 'opacity-60 cursor-default' : 'cursor-pointer'
               }`}
-              style={{ padding: 0 }}
               role="button"
               tabIndex={0}
               aria-label={`Read article: ${article.title}`}
@@ -199,7 +198,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                 />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--ds-color-background) 0%, transparent 60%)' }} />
                 <div className="absolute top-4 left-4">
-                  <span className="ui-badge ui-badge--accent" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <span className="ui-badge ui-badge--accent">
                     {article.category}
                   </span>
                 </div>
@@ -213,10 +212,10 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
                   <span className="text-caption">{article.readTime}</span>
                 </div>
                 
-                <h3 className="text-heading-4 mb-3 leading-snug transition-colors" style={{ color: 'var(--ds-color-foreground-secondary)' }}>
+                <h3 className="text-heading-4 mb-3 leading-snug transition-colors">
                   {article.title}
                 </h3>
-                <p className="text-body-small mb-5 leading-relaxed flex-1" style={{ color: 'var(--ds-color-text-muted)' }}>
+                <p className="text-body-small ui-text-muted mb-5 leading-relaxed flex-1">
                   {article.excerpt}
                 </p>
                 
@@ -242,7 +241,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onSeeAllPostsClick, onNavigat
           ))}
         </div>
 
-        <div className="mt-8 md:hidden flex justify-center">
+        <div className="ui-only-mobile flex justify-center">
           <Button onClick={onSeeAllPostsClick} variant="secondary" size="lg">
             <span>See All Posts</span>
             <ArrowRight size={20} />

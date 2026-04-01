@@ -42,9 +42,9 @@ export const AuthInput: React.FC<AuthInputProps> = ({
 
   // Base classes using design system tokens only
   const baseClasses = [
-    'neu-input',
+    'ui-input',
     'w-full',
-    icon ? 'neu-input-with-icon' : 'pl-4',
+    icon ? 'pl-12' : 'pl-4',
     showPasswordToggle ? 'pr-12' : 'pr-4',
     error ? 'border-destructive' : '',
     disabled ? 'opacity-50 cursor-not-allowed' : '',
@@ -70,7 +70,7 @@ export const AuthInput: React.FC<AuthInputProps> = ({
 
       {/* Icon inside input, left-aligned */}
       {icon && (
-        <div className="neu-input-icon">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
           {icon}
         </div>
       )}

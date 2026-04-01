@@ -12,7 +12,7 @@ export default function WrittenQuoteDevPage() {
           <label className="text-caption text-muted-foreground">Role</label>
           <select
             aria-label="Preview role"
-            className="neu-input bg-surface border border-border shadow-inner rounded-lg px-3 py-2"
+            className="ui-input bg-surface"
             value={role}
             onChange={(e) => setRole(e.target.value as any)}
           >

@@ -8,7 +8,7 @@ type Props = {
 
 export function CurrentStateCard({ state }: Props) {
   return (
-    <div className="neu-card bg-surface shadow-card border border-border rounded-xl p-4 flex flex-col gap-3">
+    <div className="bg-surface shadow-card border border-border rounded-xl p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h3 className="text-heading-3 text-foreground">Written Quote</h3>
         <span className={`text-caption px-2 py-0.5 rounded-lg shadow-inner ${state.status === 'OPEN' ? 'text-success bg-success/10' : 'text-muted-foreground bg-muted/10'}`}>

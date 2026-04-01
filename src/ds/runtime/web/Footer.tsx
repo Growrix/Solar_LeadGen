@@ -49,24 +49,24 @@ export function Footer({ onBecomePartnerClick, onPartnerSignInClick, onScrollToQ
 
           <div>
             <h3 className="text-heading-4 text-foreground mb-6">Quick Links</h3>
-            <ul className="space-y-3">
-              <li><Pressable onClick={() => alert('How It Works Clicked')} className="text-body text-muted-foreground hover:text-primary transition-colors text-left w-full">How It Works</Pressable></li>
-              <li><Pressable onClick={onScrollToRebate} className="text-body text-muted-foreground hover:text-primary transition-colors text-left w-full">Rebate Calculator</Pressable></li>
-              <li><Pressable onClick={onScrollToQuote} className="text-body text-muted-foreground hover:text-primary transition-colors text-left w-full">Get Your Instant Quote</Pressable></li>
-              <li><Pressable onClick={onBlogClick} className="text-body text-muted-foreground hover:text-primary transition-colors text-left w-full">Blog & News</Pressable></li>
-              <li><Pressable onClick={onGovernmentNewsClick} className="text-body text-muted-foreground hover:text-primary transition-colors text-left w-full">Government News</Pressable></li>
+            <ul className="ui-footer__nav-list">
+              <li><Pressable onClick={() => alert('How It Works Clicked')} className="ui-footer__nav-link">How It Works</Pressable></li>
+              <li><Pressable onClick={onScrollToRebate} className="ui-footer__nav-link">Rebate Calculator</Pressable></li>
+              <li><Pressable onClick={onScrollToQuote} className="ui-footer__nav-link">Get Your Instant Quote</Pressable></li>
+              <li><Pressable onClick={onBlogClick} className="ui-footer__nav-link">Blog &amp; News</Pressable></li>
+              <li><Pressable onClick={onGovernmentNewsClick} className="ui-footer__nav-link">Government News</Pressable></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-heading-4 text-foreground mb-6">For Installers</h3>
-            <ul className="space-y-3">
-              <li><Pressable onClick={onBecomePartnerClick} className="text-body text-muted-foreground hover:text-primary transition-colors text-left flex items-center gap-2 w-full"><Building /><span>Become a Partner</span></Pressable></li>
-              <li><a href="#" className="text-body text-muted-foreground hover:text-primary transition-colors block">Partner Benefits</a></li>
-              <li><a href="#" className="text-body text-muted-foreground hover:text-primary transition-colors block">Lead Quality</a></li>
-              <li><a href="#" className="text-body text-muted-foreground hover:text-primary transition-colors block">Pricing Plans</a></li>
-              <li><a href="#" className="text-body text-muted-foreground hover:text-primary transition-colors block">Support Center</a></li>
-              <li><Pressable onClick={onPartnerSignInClick} className="text-body text-muted-foreground hover:text-primary transition-colors text-left w-full">Partner Login</Pressable></li>
+            <ul className="ui-footer__nav-list">
+              <li><Pressable onClick={onBecomePartnerClick} className="ui-footer__nav-link"><Building /><span>Become a Partner</span></Pressable></li>
+              <li><a href="#" className="ui-footer__nav-link">Partner Benefits</a></li>
+              <li><a href="#" className="ui-footer__nav-link">Lead Quality</a></li>
+              <li><a href="#" className="ui-footer__nav-link">Pricing Plans</a></li>
+              <li><a href="#" className="ui-footer__nav-link">Support Center</a></li>
+              <li><Pressable onClick={onPartnerSignInClick} className="ui-footer__nav-link">Partner Login</Pressable></li>
             </ul>
           </div>
 

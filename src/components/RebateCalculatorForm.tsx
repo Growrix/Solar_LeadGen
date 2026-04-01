@@ -1,25 +1,22 @@
 ﻿'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Pressable, Select } from '@/ds';
-
-// -------------------------
-// Improved Rebate Calculator (React)
-// - Implements clearer STC (SRES) calc using postcode->zone multiplier
-// - Calculates federal battery rebate using usable kWh & configurable cap/per-kWh value
-// - Includes state program lookup and eligibility checks with clear messages
-// - Adds hooks/placeholders for live data (STC price, zone map, state programs, feed-in rates)
-// - Displays explicit messages when no rebate is available
-// - Client-side only: replace placeholder fetch* functions with server endpoints for production
-// -------------------------
-
-// --- Icon components (kept small) ---
-const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
-const Calculator = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary-foreground"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
-const MapPin = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline h-4 w-4 mr-1"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-const Battery = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-primary"><rect width="16" height="10" x="4" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>;
-const Info = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>;
-const SlidersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-2"><line x1="4" x2="4" y1="21" y2="14" /><line x1="4" x2="4" y1="10" y2="3" /><line x1="12" x2="12" y1="21" y2="12" /><line x1="12" x2="12" y1="8" y2="3" /><line x1="20" x2="20" y1="21" y2="16" /><line x1="20" x2="20" y1="12" y2="3" /><line x1="1" x2="7" y1="14" y2="14" /><line x1="9" x2="15" y1="8" y2="8" /><line x1="17" x2="23" y1="16" y2="16" /></svg>;
+import {
+  Alert,
+  Battery,
+  Button,
+  Calculator,
+  Field,
+  Info,
+  Input,
+  MapPin,
+  Modal,
+  Select,
+  SlidersHorizontal,
+  Spinner,
+  Switch,
+  X,
+} from '@/ds';
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
@@ -110,21 +107,6 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
     fetchSTCPrice().then(p => setStcPrice(p)).catch(() => setStcPrice(40));
     fetchStatePrograms().then(r => setPrograms(r)).catch(() => setPrograms(STATE_PROGRAMS));
   }, []);
-  
-  useEffect(() => {
-    if (!showModal) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            setShowModal(false);
-        }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-        document.body.style.overflow = 'auto';
-    };
-  }, [showModal]);
 
   const validatePostcode = (pc: string) => {
     if (!pc) return 'Postcode is required.';
@@ -249,192 +231,141 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in">
-      <div className="bg-surface rounded-card border border-border shadow-card p-6 sm:p-8">
-        <div className="space-y-10">
+    <div className="ui-container animate-fade-in">
+      <div className="ui-card">
+        <div className="ui-stack">
             <fieldset>
-            <legend className="text-heading-3 text-foreground mb-6">Location & System</legend>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-                <div>
-                <label htmlFor="postcode" className="flex items-center text-muted-foreground text-label mb-2">
-                    <MapPin />
-                    <span>Postcode *</span>
-                </label>
-                <Input 
-                    id="postcode"
+            <legend className="text-heading-3 text-foreground">Location &amp; System</legend>
+            <div className="ui-grid ui-grid--2">
+                <Field
+                  id="postcode"
+                  label={<><MapPin /> Postcode *</>}
+                  error={errors.postcode}
+                  hint={!errors.postcode ? (inputs.postcode && inputs.postcode.length === 4 ? `📍 ${postcodeToState(inputs.postcode)} - STC Zone ${getZoneByPostcode(inputs.postcode)}` : 'Determines STC zone and state rebates') : undefined}
+                >
+                  <Input
                     type="text"
-                  className={`w-full px-4 py-3 ${errors.postcode ? 'border-destructive ring-red-500' : 'focus:border-primary focus:ring-primary'}`}
-                    value={inputs.postcode} 
-                    onChange={(e) => handleInput('postcode', e.target.value)} 
-                    onBlur={(e) => setErrors({ ...errors, postcode: validatePostcode(e.target.value) })} 
-                    placeholder="e.g., 2000, 3000, 4000" 
+                    value={inputs.postcode}
+                    onChange={(e) => handleInput('postcode', e.target.value)}
+                    onBlur={(e) => setErrors({ ...errors, postcode: validatePostcode(e.target.value) })}
+                    placeholder="e.g., 2000, 3000, 4000"
                     maxLength={4}
                     aria-required="true"
-                    aria-describedby={errors.postcode ? 'postcode-error' : 'postcode-help'}
-                />
-                {!errors.postcode && (
-                    <p id="postcode-help" className="text-caption text-muted-foreground mt-1.5">
-                    {inputs.postcode && inputs.postcode.length === 4 ? `?? ${postcodeToState(inputs.postcode)} - STC Zone ${getZoneByPostcode(inputs.postcode)}` : 'Determines STC zone and state rebates'}
-                    </p>
-                )}
-                {errors.postcode && <p id="postcode-error" className="text-destructive text-caption mt-1.5" role="alert">{errors.postcode}</p>}
-                </div>
+                  />
+                </Field>
 
-        <div className="flex flex-col justify-end h-full">
-          <label htmlFor="battery-toggle" className="text-muted-foreground text-label mb-2">
-            Include Battery Storage
-          </label>
-          <div className={`info-section flex items-center w-full ${inputs.includeBattery ? 'border-primary/50' : ''}`} style={{ minHeight: '48px' }}>
-            <Input
-              type="text"
-              tabIndex={-1}
-              readOnly
-              className="w-full px-4 py-3 pointer-events-none bg-transparent border-none shadow-none text-foreground text-body-small placeholder:text-foreground/70 focus:ring-0 focus:outline-none"
-              value={inputs.includeBattery ? 'Battery Included' : 'Solar Only'}
-              aria-label="Battery status"
-              style={{marginBottom: 0}}
-            />
-            <Pressable 
-              id="battery-toggle"
-              type="button"
-              onClick={() => handleInput('includeBattery', !inputs.includeBattery)} 
-              className={`toggle-switch toggle-switch-md ml-3 ${inputs.includeBattery ? 'toggle-switch-on' : 'toggle-switch-off'}`}
-              aria-pressed={inputs.includeBattery}
-              aria-label={`${inputs.includeBattery ? 'Disable' : 'Enable'} battery storage`}
-            >
-              <span className={`toggle-knob toggle-knob-md ${inputs.includeBattery ? 'toggle-knob-on-md' : 'toggle-knob-off-md'}`}/>
-            </Pressable>
-          </div>
-        </div>
-            </div>
-            
-      <div className="info-section info-section-lg mt-8">
-        <h4 className="text-label text-foreground mb-4 flex items-center">
-          System Configuration <span className="ml-2 text-heading-4">?</span>
-        </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-                    <div>
-                    <label htmlFor="systemSize" className="block text-muted-foreground text-label mb-2">
-                        System Size (kW) *
-                    </label>
-                    <Select 
-                        id="systemSize"
-                        value={inputs.systemSizeKw} 
-                        onChange={(e) => handleInput('systemSizeKw', parseFloat(e.target.value))} 
-                      className="w-full"
-                    >
-                        {[3, 4, 5, 6, 6.6, 7, 8, 9, 10, 11, 12, 13.2, 15, 20].map(s => (
-                        <option key={s} value={s}>
-                            {s} kW{s === 6.6 ? ' (most popular)' : ''}
-                        </option>
-                        ))}
-                    </Select>
-                    </div>
-
-                    <div>
-                    <label htmlFor="batterySize" className="block text-muted-foreground text-label mb-2">
-                        Battery Size (kWh)
-                    </label>
-                    <Input 
-                        id="batterySize"
-                      className={`w-full px-4 py-3 ${!inputs.includeBattery ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        type="number" 
-                        value={inputs.batterySizeKwh} 
-                        onChange={(e) => handleInput('batterySizeKwh', Math.max(0, parseFloat(e.target.value || '0')))} 
-                        disabled={!inputs.includeBattery}
-                        min="0" max="100" step="0.5"
-                        placeholder="e.g., 13.5"
+                <div className="ui-field">
+                  <span className="ui-label">Include Battery Storage</span>
+                  <div className="info-section ui-row">
+                    <span className="text-body-small text-foreground">
+                      {inputs.includeBattery ? 'Battery Included' : 'Solar Only'}
+                    </span>
+                    <Switch
+                      checked={inputs.includeBattery}
+                      onCheckedChange={(v) => handleInput('includeBattery', v)}
+                      label=""
                     />
-                    </div>
+                  </div>
                 </div>
+            </div>
+
+            <div className="info-section info-section--lg">
+              <h4 className="text-label text-foreground ui-row">
+                System Configuration <SlidersHorizontal />
+              </h4>
+              <div className="ui-grid ui-grid--2">
+                  <Field id="systemSize" label="System Size (kW) *">
+                    <Select
+                      value={inputs.systemSizeKw}
+                      onChange={(e) => handleInput('systemSizeKw', parseFloat(e.target.value))}
+                    >
+                      {[3, 4, 5, 6, 6.6, 7, 8, 9, 10, 11, 12, 13.2, 15, 20].map(s => (
+                        <option key={s} value={s}>
+                          {s} kW{s === 6.6 ? ' (most popular)' : ''}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+
+                  <Field id="batterySize" label="Battery Size (kWh)">
+                    <Input
+                      type="number"
+                      value={inputs.batterySizeKwh}
+                      onChange={(e) => handleInput('batterySizeKwh', Math.max(0, parseFloat(e.target.value || '0')))}
+                      disabled={!inputs.includeBattery}
+                      min="0" max="100" step="0.5"
+                      placeholder="e.g., 13.5"
+                    />
+                  </Field>
+              </div>
             </div>
             </fieldset>
 
-            <fieldset className="pt-6">
-            <legend className="text-heading-3 text-foreground mb-6">Eligibility Details</legend>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-                <div>
-                <label htmlFor="installationYear" className="block text-muted-foreground text-label mb-2">
-                    Planned Installation Year *
-                </label>
-                <Select 
-                    id="installationYear"
-                  className="w-full"
-                    value={inputs.installationYear} 
+            <fieldset>
+            <legend className="text-heading-3 text-foreground">Eligibility Details</legend>
+            <div className="ui-grid ui-grid--2">
+                <Field id="installationYear" label="Planned Installation Year *">
+                  <Select
+                    value={inputs.installationYear}
                     onChange={(e) => handleInput('installationYear', parseInt(e.target.value || `${currentYear}`))}
-                >
+                  >
                     {[...Array(6)].map((_, i) => (
-                    <option key={i} value={currentYear + i}>
+                      <option key={i} value={currentYear + i}>
                         {currentYear + i}{i === 0 ? ' (This year)' : ''}
-                    </option>
+                      </option>
                     ))}
-                </Select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div>
-                <label htmlFor="propertyStatus" className="block text-muted-foreground text-label mb-2">
-                    Property Status *
-                </label>
-                <Select 
-                    id="propertyStatus"
-                  className="w-full"
-                    value={inputs.ownerOccupier ? 'owner' : 'renter'} 
+                <Field id="propertyStatus" label="Property Status *">
+                  <Select
+                    value={inputs.ownerOccupier ? 'owner' : 'renter'}
                     onChange={(e) => handleInput('ownerOccupier', e.target.value === 'owner')}
-                >
+                  >
                     <option value="owner">Owner-occupier</option>
                     <option value="renter">Investor / Landlord</option>
-                </Select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div>
-                <label htmlFor="householdIncome" className="block text-muted-foreground text-label mb-2">
-                    Combined Household Income *
-                </label>
-                <Select 
-                    id="householdIncome"
-                  className="w-full"
-                    value={inputs.householdIncome} 
+                <Field id="householdIncome" label="Combined Household Income *">
+                  <Select
+                    value={inputs.householdIncome}
                     onChange={(e) => handleInput('householdIncome', parseInt(e.target.value || '0'))}
-                >
+                  >
                     <option value={40000}>Under $75,000</option>
                     <option value={80000}>$75k - $180k</option>
                     <option value={200000}>Over $180k</option>
-                </Select>
-                </div>
+                  </Select>
+                </Field>
 
-                <div>
-                <label htmlFor="propertyValue" className="block text-muted-foreground text-label mb-2">
-                    Property Value (Victoria only) *
-                </label>
-                <Select 
-                    id="propertyValue"
-                  className="w-full"
-                    value={inputs.propertyValue} 
+                <Field id="propertyValue" label="Property Value (Victoria only) *">
+                  <Select
+                    value={inputs.propertyValue}
                     onChange={(e) => handleInput('propertyValue', parseInt(e.target.value || '0'))}
-                >
+                  >
                     <option value={600000}>Under $3M</option>
                     <option value={3500000}>Over $3M</option>
-                </Select>
-                </div>
+                  </Select>
+                </Field>
             </div>
             </fieldset>
         </div>
 
         {errors.general && (
-          <div className="mt-6 bg-destructive/10 border border-destructive rounded-xl p-4 flex items-center gap-3">
-            <p className="text-destructive text-body-small">{errors.general}</p>
-          </div>
+          <Alert tone="danger">
+            <p>{errors.general}</p>
+          </Alert>
         )}
 
-        <div className="relative mt-10">
-          <Button 
-            disabled={isCalculating || !inputs.postcode} 
-            onClick={handleCalculate} 
+        <div>
+          <Button
+            disabled={isCalculating || !inputs.postcode}
+            onClick={handleCalculate}
             variant="primary"
-            className="w-full"
+            className="ui-w-full"
           >
             {isCalculating ? (
-              <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Calculating...</span></>
+              <><Spinner size="sm" /><span>Calculating...</span></>
             ) : (
               <>
                 <Calculator />
@@ -445,56 +376,56 @@ const RebateCalculatorForm: React.FC<Props> = ({ onGetQuotesClick }) => {
         </div>
       </div>
 
-      {showModal && result && (
-            <div className="ui-overlay px-4 py-8 animate-fade-in" onClick={() => setShowModal(false)}>
-                <div className="bg-surface rounded-card border border-border shadow-card relative w-full max-w-2xl p-6 sm:p-8 animate-slide-in-up max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-heading-2 text-foreground">Your Rebate Estimate</h2>
-                      <Button 
-                        onClick={() => setShowModal(false)} 
-                        variant="ghost"
-                        className="p-2 -mr-2"
-                        aria-label="Close"
-                      >
-                        <XIcon />
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-6">
-                        {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-surface rounded-card border border-border shadow-card p-6 text-center"><h3 className="text-body-small text-muted-foreground">Total Rebate</h3><p className="text-heading-1 text-accent mt-1">{formatCurrency(result.totalRebate)}</p></div>
-              <div className="bg-surface rounded-card border border-border shadow-card p-6 text-center"><h3 className="text-body-small text-muted-foreground">Federal Rebate (STC)</h3><p className="text-heading-1 text-success mt-1">{formatCurrency(result.federalSTCValue)}</p></div>
-              <div className="bg-surface rounded-card border border-border shadow-card p-6 text-center"><h3 className="text-body-small text-muted-foreground">State & Battery</h3><p className="text-heading-1 text-info mt-1">{formatCurrency(result.stateSolar + result.batteryTotal)}</p></div>
+      <Modal open={showModal} onClose={() => setShowModal(false)} title="Your Rebate Estimate">
+        <div className="ui-stack ui-stack--compact">
+          {/* Stat Cards */}
+          <div className="ui-grid ui-grid--3">
+            <div className="ui-card ui-text-center">
+              <h3 className="text-body-small ui-text-muted">Total Rebate</h3>
+              <p className="text-heading-1 text-accent">{result && formatCurrency(result.totalRebate)}</p>
             </div>
-
-                        {/* Eligibility Notes */}
-                        <div className="info-section info-section-lg rounded-xl p-6 border border-border"><h5 className="text-foreground mb-3">Eligibility Summary</h5><div className="space-y-2 text-body-small"><p className="text-muted-foreground"><strong>Solar Rebate:</strong> {result.eligibilityNotes.stateSolar}</p>{inputs.includeBattery && <p className="text-muted-foreground"><strong>Battery Rebate:</strong> {result.eligibilityNotes.stateBattery}</p>}</div></div>
-
-                        {/* Disclaimers */}
-                        <div className="info-section info-section-warning rounded-xl p-6 border border-warning"><h5 className="text-warning mb-3">Important Information</h5><ul className="space-y-2 list-disc list-inside text-body-small text-warning">{result.disclaimers.map((d: string, i: number) => (<li key={i}>{d}</li>))}</ul></div>
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                            <Button 
-                              onClick={() => { setShowModal(false); onGetQuotesClick && onGetQuotesClick(); }} 
-                              variant="primary"
-                              className="w-full sm:w-auto"
-                            >
-                              Get Installer Quotes →
-                            </Button>
-                            <Button 
-                              onClick={() => setShowModal(false)} 
-                              variant="secondary"
-                              className="w-full sm:w-auto"
-                            >
-                              Close
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+            <div className="ui-card ui-text-center">
+              <h3 className="text-body-small ui-text-muted">Federal Rebate (STC)</h3>
+              <p className="text-heading-1 text-success">{result && formatCurrency(result.federalSTCValue)}</p>
             </div>
-        )}
+            <div className="ui-card ui-text-center">
+              <h3 className="text-body-small ui-text-muted">State &amp; Battery</h3>
+              <p className="text-heading-1 text-info">{result && formatCurrency(result.stateSolar + result.batteryTotal)}</p>
+            </div>
+          </div>
+
+          {/* Eligibility Notes */}
+          <Alert tone="info" title="Eligibility Summary">
+            <div className="ui-stack ui-stack--tight">
+              <p><strong>Solar Rebate:</strong> {result?.eligibilityNotes.stateSolar}</p>
+              {inputs.includeBattery && <p><strong>Battery Rebate:</strong> {result?.eligibilityNotes.stateBattery}</p>}
+            </div>
+          </Alert>
+
+          {/* Disclaimers */}
+          <Alert tone="warning" title="Important Information">
+            <ul>
+              {result?.disclaimers.map((d: string, i: number) => (<li key={i}>{d}</li>))}
+            </ul>
+          </Alert>
+
+          {/* Action Buttons */}
+          <div className="ui-row ui-row--center">
+            <Button
+              onClick={() => { setShowModal(false); onGetQuotesClick && onGetQuotesClick(); }}
+              variant="primary"
+            >
+              Get Installer Quotes →
+            </Button>
+            <Button
+              onClick={() => setShowModal(false)}
+              variant="secondary"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

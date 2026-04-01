@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useState } from 'react';
-import { Button, Section } from '@/ds';
+import { Button, Section, Spinner } from '@/ds';
 import { Mail, ArrowRight, CheckCircle, AlertCircle, Send } from '@/ds/icons';
 
 
@@ -112,8 +112,8 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
 
     const isSection = variant !== 'compact';
     const inputCls = isSection
-        ? 'w-full pl-12 pr-4 py-3 rounded-lg border transition-colors duration-300'
-        : `w-full pl-12 pr-4 py-2.5 rounded-xl shadow-inner border ${inputError ? 'border-destructive' : 'border-border'} focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors duration-300 text-foreground placeholder:text-muted-foreground`;
+        ? 'ui-input pl-12'
+        : `ui-input pl-12 ${inputError ? 'border-destructive' : ''}`;
 
     const inputSectionStyle = isSection ? {
         background: 'color-mix(in oklab, var(--ds-color-background) 60%, transparent)',
@@ -153,7 +153,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
                             >
                                 {status === 'loading' ? (
                                     <>
-                                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                        <Spinner size="sm" />
                                         <span>Joining...</span>
                                     </>
                                 ) : (
@@ -207,7 +207,7 @@ const NewsletterSignup = ({ variant = 'section', className }: NewsletterSignupPr
 
     return (
         <Section size="xl" tone="surface" container="wide">
-                <div className="ui-surface--brand-gradient rounded-3xl shadow-modal relative overflow-hidden" style={{ padding: 'var(--ds-space-8)', outline: '1px solid color-mix(in oklab, var(--ds-color-foreground-secondary) 10%, transparent)' }}>
+                <div className="ui-surface--brand-gradient ui-surface--brand-gradient--card">
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-30 blur-3xl" style={{ background: 'var(--ds-color-accent)' }} />
                     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full opacity-40 blur-3xl" style={{ background: 'var(--ds-color-background)' }} />
 

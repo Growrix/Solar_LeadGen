@@ -32,7 +32,7 @@ export default function InstallerDashboardLayout({ children }: { children: React
 	};
 	
 	return (
-		<div className="homeowner-dashboard-bg min-h-screen text-foreground animate-fade-in">
+		<div className="bg-background min-h-screen text-foreground animate-fade-in">
 			<div className={`transition-colors duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
 				{/* Desktop Sidebar - Always visible on desktop */}
 				<div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex">

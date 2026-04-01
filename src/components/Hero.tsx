@@ -1,18 +1,15 @@
 ﻿'use client';
 
 import React from 'react';
-import type { LucideIcon } from 'lucide-react';
 import {
   ArrowRight,
   Badge,
+  Battery,
   Button,
-  Card,
+  Calculator,
   CheckCircle2,
   Container,
-  FileText,
-  Gavel,
   Heading,
-  Phone,
   Text,
 } from '@/ds';
 
@@ -23,23 +20,11 @@ interface HeroProps {
 
 const HERO_SLIDE_INTERVAL_MS = 6000;
 
-type HeroAction = 'quote' | 'rebate';
-
 type HeroSlide = {
   id: string;
   image: string;
   headline: string;
   support: string;
-};
-
-type HeroOption = {
-  id: string;
-  title: string;
-  description: string;
-  ctaLabel: string;
-  icon: LucideIcon;
-  action: HeroAction;
-  emphasized?: boolean;
 };
 
 const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
@@ -60,34 +45,6 @@ const HERO_SLIDES: ReadonlyArray<HeroSlide> = [
     image: 'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=2000&auto=format&fit=crop',
     headline: 'Compare & Save Instantly',
     support: 'Get competing quotes from top-rated local installers in minutes, not days.',
-  },
-];
-
-const HERO_OPTIONS: ReadonlyArray<HeroOption> = [
-  {
-    id: 'consultation',
-    title: 'Book Consultation',
-    description: 'Schedule a direct call or home visit with a certified expert.',
-    ctaLabel: 'Schedule',
-    icon: Phone,
-    action: 'quote',
-  },
-  {
-    id: 'bidding',
-    title: 'Start Live Bidding',
-    description: 'Launch a reverse auction for the lowest price.',
-    ctaLabel: 'Start Auction',
-    icon: Gavel,
-    action: 'quote',
-    emphasized: true,
-  },
-  {
-    id: 'written',
-    title: 'Get Written Quotes',
-    description: 'Receive detailed, fixed-price proposals to compare.',
-    ctaLabel: 'Request',
-    icon: FileText,
-    action: 'quote',
   },
 ];
 
@@ -114,16 +71,6 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
 
     return () => window.clearInterval(timer);
   }, [isInteractionPaused]);
-
-  const handleAction = (action: HeroAction) => {
-    switch (action) {
-      case 'rebate':
-        onRebateCalculatorClick();
-        return;
-      default:
-        onInstantQuoteClick();
-    }
-  };
 
   const handleBlurCapture = (event: React.FocusEvent<HTMLElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -155,88 +102,94 @@ const Hero: React.FC<HeroProps> = ({ onInstantQuoteClick, onRebateCalculatorClic
           onMouseEnter={() => setIsInteractionPaused(true)}
           onMouseLeave={() => setIsInteractionPaused(false)}
         >
-          <div
-            className="ui-hero__masthead"
-          >
-            <div className="ui-hero__slides" aria-live="polite">
-              {HERO_SLIDES.map((slide, index) => (
-                <div
-                  key={slide.id}
-                  className={cx('ui-hero__slide', index === currentSlide && 'is-active')}
-                  aria-hidden={index !== currentSlide}
-                >
-                  <div className="ui-hero__badge-wrap">
-                    <button
-                      type="button"
-                      className="ui-hero__badge-button ui-focus-ring"
-                      onClick={() => handleAction('rebate')}
-                      aria-label="Check battery rebates"
-                    >
-                      <Badge tone="neutral" className="ui-kicker ui-hero__kicker">
-                        <CheckCircle2 className="ui-hero__kicker-icon" />
-                        <span>{HERO_BADGE_LABEL}</span>
-                      </Badge>
-                    </button>
-                  </div>
-                  <Heading variant={1} className="ui-hero__headline">
-                    {slide.headline}
-                  </Heading>
-                  <Text className="ui-hero__subcopy">
-                    {slide.support}
-                  </Text>
-                </div>
-              ))}
-            </div>
-
-          </div>
-
-          <div className="ui-hero__indicators" role="tablist" aria-label="Hero slides">
-            {HERO_SLIDES.map((slide, index) => (
-              <button
-                key={slide.id}
-                type="button"
-                role="tab"
-                aria-selected={index === currentSlide}
-                aria-label={`Go to slide ${index + 1}: ${slide.headline}`}
-                className={cx('ui-hero__indicator', index === currentSlide && 'is-active')}
-                onClick={() => setCurrentSlide(index)}
-              />
-            ))}
-          </div>
-
-          <div className="ui-hero__options" aria-label="Quote options">
-            {HERO_OPTIONS.map((option) => {
-              const Icon = option.icon;
-
-              return (
-                <Card
-                  key={option.id}
-                  className={cx('ui-hero-option', option.emphasized && 'is-emphasized')}
-                >
-                  {option.emphasized ? <div className="ui-hero-option__ribbon">Most Popular</div> : null}
-                  <div className="ui-hero-option__icon-wrap" aria-hidden="true">
-                    <Icon className="ui-hero-option__icon" />
-                  </div>
-                  <div className="ui-hero-option__body">
-                    <Heading variant={4} className="ui-hero-option__title">
-                      {option.title}
+          <div className="ui-hero__split">
+            {/* Left column — slides */}
+            <div className="ui-hero__masthead">
+              <div className="ui-hero__slides" aria-live="polite">
+                {HERO_SLIDES.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={cx('ui-hero__slide', index === currentSlide && 'is-active')}
+                    aria-hidden={index !== currentSlide}
+                  >
+                    <div className="ui-hero__badge-wrap">
+                      <button
+                        type="button"
+                        className="ui-hero__badge-button ui-focus-ring"
+                        onClick={onRebateCalculatorClick}
+                        aria-label="Check battery rebates"
+                      >
+                        <Badge tone="neutral" className="ui-kicker ui-hero__kicker">
+                          <CheckCircle2 className="ui-hero__kicker-icon" />
+                          <span>{HERO_BADGE_LABEL}</span>
+                        </Badge>
+                      </button>
+                    </div>
+                    <Heading variant={1} className="ui-hero__headline">
+                      {slide.headline}
                     </Heading>
-                    <Text className="ui-hero-option__description">
-                      {option.description}
+                    <Text className="ui-hero__subcopy">
+                      {slide.support}
                     </Text>
                   </div>
-                  <Button
-                    variant={option.emphasized ? 'secondary' : 'ghost'}
-                    size="md"
-                    className="ui-hero-option__cta"
-                    onClick={() => handleAction(option.action)}
-                  >
-                    <span>{option.ctaLabel}</span>
-                    <ArrowRight className="ui-hero-option__cta-icon" />
-                  </Button>
-                </Card>
-              );
-            })}
+                ))}
+              </div>
+
+              <div className="ui-hero__indicators" role="tablist" aria-label="Hero slides">
+                {HERO_SLIDES.map((slide, index) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={index === currentSlide}
+                    aria-label={`Go to slide ${index + 1}: ${slide.headline}`}
+                    className={cx('ui-hero__indicator', index === currentSlide && 'is-active')}
+                    onClick={() => setCurrentSlide(index)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Right column — action buttons */}
+            <div className="ui-hero__cta-panel">
+              <button
+                type="button"
+                className="ui-hero__cta-card ui-focus-ring"
+                onClick={onInstantQuoteClick}
+              >
+                <span className="ui-hero__cta-icon-wrap" aria-hidden="true">
+                  <Calculator className="ui-hero__cta-icon" />
+                </span>
+                <span className="ui-hero__cta-body">
+                  <Heading variant={4} className="ui-hero__cta-title">
+                    Instant Quote Calculator
+                  </Heading>
+                  <Text className="ui-hero__cta-desc">
+                    Get a personalised solar estimate in under 60 seconds.
+                  </Text>
+                </span>
+                <ArrowRight className="ui-hero__cta-arrow" />
+              </button>
+
+              <button
+                type="button"
+                className="ui-hero__cta-card ui-hero__cta-card--accent ui-focus-ring"
+                onClick={onRebateCalculatorClick}
+              >
+                <span className="ui-hero__cta-icon-wrap" aria-hidden="true">
+                  <Battery className="ui-hero__cta-icon" />
+                </span>
+                <span className="ui-hero__cta-body">
+                  <Heading variant={4} className="ui-hero__cta-title">
+                    Battery Rebate Calculator
+                  </Heading>
+                  <Text className="ui-hero__cta-desc">
+                    See how much you can save with battery storage rebates.
+                  </Text>
+                </span>
+                <ArrowRight className="ui-hero__cta-arrow" />
+              </button>
+            </div>
           </div>
 
           <div className="ui-hero__trust" aria-label="Trust indicators">

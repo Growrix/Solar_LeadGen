@@ -45,6 +45,7 @@
     --ds-space-0: 0;
     --ds-space-1: 0.25rem;
     --ds-space-2: 0.5rem;
+    --ds-space-2-5: 0.625rem;
     --ds-space-3: 0.75rem;
     --ds-space-4: 1rem;
     --ds-space-5: 1.25rem;
@@ -60,7 +61,7 @@
     --ds-space-button-pad-x: var(--ds-space-4);
     --ds-space-button-pad-y: var(--ds-space-2);
     --ds-space-input-pad-x: var(--ds-space-4);
-    --ds-space-input-pad-y: var(--ds-space-2);
+    --ds-space-input-pad-y: var(--ds-space-2-5);
     --ds-space-topbar-pad-y: 0.375rem;
     --ds-space-header-pad-y: 0.625rem;
     --ds-space-header-nav-gap: var(--ds-space-6);
@@ -72,6 +73,8 @@
     --ds-radius-default: 0.5rem; /* rounded-lg */
     --ds-radius-card: 0.75rem; /* rounded-xl */
     --ds-radius-modal: 0.75rem; /* rounded-xl */
+    --ds-radius-2xl: 1rem; /* rounded-2xl */
+    --ds-radius-3xl: 1.5rem; /* rounded-3xl */
     --ds-radius-full: 9999px;
 
     /* Radius aliases (referenced by existing DS CSS) */
@@ -88,12 +91,12 @@
     --ds-duration-hero-slide: 700ms;
     --ds-duration-hero-pan: 12000ms;
 
-    /* Shadows (prototype: subtle dark shadows + brand glow) */
-    --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.04);
-    --ds-shadow-md: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 2px rgba(255, 255, 255, 0.03);
-    --ds-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 2px rgba(255, 255, 255, 0.03);
-    --ds-shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 3px rgba(255, 255, 255, 0.02);
-    --ds-shadow-2xl: 0 28px 60px rgba(0, 0, 0, 0.7), 0 0 4px rgba(255, 255, 255, 0.02);
+    /* Shadows (simple, matching Tailwind dark-theme equivalents) */
+    --ds-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --ds-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --ds-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --ds-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --ds-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
     --ds-shadow-modal: var(--ds-shadow-2xl);
 
     /* Section spacing (prototype sections use py-24 = 6rem) */
@@ -116,6 +119,12 @@
     --ds-size-touch-target: 2.75rem;
     --ds-size-input-min-h: var(--ds-size-touch-target);
     --ds-size-button-min-h: var(--ds-size-touch-target);
+
+    /* Switch sizing (prototype: w-12 h-7 thumb h-5 w-5) */
+    --ds-size-switch-w: 3rem;
+    --ds-size-switch-h: 1.75rem;
+    --ds-size-switch-thumb: 1.25rem;
+    --ds-size-switch-travel: 1.25rem;
     --ds-size-icon-button: var(--ds-size-touch-target);
     --ds-size-fab: 3.25rem;
     --ds-size-tabs-h: var(--ds-size-touch-target);
